@@ -1,0 +1,2 @@
+# frontend
+Jangingmall frontend application
