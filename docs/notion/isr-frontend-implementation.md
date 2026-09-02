@@ -19,26 +19,26 @@
 
 ## 태그 계약
 
-| 태그 | 적용 대상 | 변경 시 재검증 |
-| --- | --- | --- |
-| products | 모든 공개 상품 목록·검색·필터 결과 | 공개 상품 생성·수정·상태 변경·삭제·게시 |
-| product:{productId} | 상품 상세 | 해당 상품 공개 데이터 변경 |
-| product-artisan | 상품 상세에 포함된 장인 소개 | 장인 공개 프로필 변경 |
-| product-taxonomy | 카테고리·소재 | 분류 데이터 변경 |
-| artisans | 공개 장인 목록 | 장인 공개 상태·목록 표현 변경 |
-| artisan:{artisanId} | 장인 상세 | 해당 장인 프로필 변경 |
+| 태그                | 적용 대상                          | 변경 시 재검증                          |
+| ------------------- | ---------------------------------- | --------------------------------------- |
+| products            | 모든 공개 상품 목록·검색·필터 결과 | 공개 상품 생성·수정·상태 변경·삭제·게시 |
+| product:{productId} | 상품 상세                          | 해당 상품 공개 데이터 변경              |
+| product-artisan     | 상품 상세에 포함된 장인 소개       | 장인 공개 프로필 변경                   |
+| product-taxonomy    | 카테고리·소재                      | 분류 데이터 변경                        |
+| artisans            | 공개 장인 목록                     | 장인 공개 상태·목록 표현 변경           |
+| artisan:{artisanId} | 장인 상세                          | 해당 장인 프로필 변경                   |
 
 상품 상세에 장인 ID가 포함되기 전에는 알 수 없으므로 product-artisan 공통 태그를 둔다. 장인 프로필 변경은 상품 상세 캐시를 넓게 stale 처리할 수 있지만, 정합성을 우선한다.
 
 ## 요청 계층
 
-~~~text
+```text
 Server Component 또는 서버 데이터 함수
   → 도메인 API 함수
     → fetchPublicApi 또는 fetchPrivateApi
       → 공통 apiFetch
         → Spring REST API
-~~~
+```
 
 - apiFetch는 base URL 결합, 공통 헤더, HTTP 오류 변환, 성공 응답 래퍼 파싱만 담당한다.
 - fetchPublicApi는 next.tags와 next.revalidate를 추가한다.
@@ -58,23 +58,23 @@ Server Component 또는 서버 데이터 함수
 
 ## 이벤트별 태그
 
-| 이벤트 | 재검증 태그 |
-| --- | --- |
-| product.updated | product:{productId}, products |
-| product.statusChanged | product:{productId}, products |
-| product.deleted | product:{productId}, products |
-| product.contentPublished | product:{productId}, products |
-| artisan.updated | artisan:{artisanId}, artisans, product-artisan, products |
-| artisan.statusChanged | artisan:{artisanId}, artisans, product-artisan |
+| 이벤트                   | 재검증 태그                                              |
+| ------------------------ | -------------------------------------------------------- |
+| product.updated          | product:{productId}, products                            |
+| product.statusChanged    | product:{productId}, products                            |
+| product.deleted          | product:{productId}, products                            |
+| product.contentPublished | product:{productId}, products                            |
+| artisan.updated          | artisan:{artisanId}, artisans, product-artisan, products |
+| artisan.statusChanged    | artisan:{artisanId}, artisans, product-artisan           |
 
 product.created는 상품이 기본적으로 DRAFT이며 공개 API에 노출되지 않는다는 전제에서 공개 태그를 재검증하지 않는다.
 
 ## 환경 변수와 운영
 
-| 변수 | 용도 | 노출 |
-| --- | --- | --- |
-| API_BASE_URL | Spring REST API 기본 URL | 서버 전용 |
-| REVALIDATE_WEBHOOK_SECRET | HMAC 공유 시크릿 | 서버 전용 |
+| 변수                      | 용도                     | 노출      |
+| ------------------------- | ------------------------ | --------- |
+| API_BASE_URL              | Spring REST API 기본 URL | 서버 전용 |
+| REVALIDATE_WEBHOOK_SECRET | HMAC 공유 시크릿         | 서버 전용 |
 
 환경별 URL과 시크릿은 별도로 관리한다. 백엔드에는 각 환경의 FE 도메인/api/revalidate 주소와 해당 시크릿을 안전한 채널로 전달한다. 네트워크 오류·429·5xx는 백엔드 재시도 대상이고, 400·401은 계약 또는 인증 설정을 수정해야 한다.
 
@@ -83,4 +83,3 @@ product.created는 상품이 기본적으로 DRAFT이며 공개 API에 노출되
 - 이 문서에는 게시 API가 api/content/products/{productId}/publish로 기록돼 있다. 백엔드 연동 계약에는 api/content/products/{productId}/contents/{contentId}/publish가 기록되어 있으므로, 실제 엔드포인트를 백엔드와 확정해야 한다.
 - 리뷰·문의·찜 수·판매량처럼 빈번하게 변하는 데이터는 ISR 태그에 아직 포함하지 않는다.
 - 카테고리·소재가 ISR 대상인지와 재검증 간격은 실제 공개 조회 계약에 맞춰 확정한다.
-

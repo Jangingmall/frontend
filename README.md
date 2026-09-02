@@ -4,10 +4,10 @@ Jangingmall 팀의 Next.js App Router 프론트엔드입니다. Vercel 배포를
 
 ## 시작
 
-~~~bash
+```bash
 npm install
 npm run dev
-~~~
+```
 
 ## 현재 구성
 
@@ -32,7 +32,7 @@ npm run dev
 
 ## 명령어
 
-~~~bash
+```bash
 npm run dev
 npm run build
 npm run lint
@@ -44,7 +44,7 @@ npm run test
 npm run storybook
 npm run build-storybook
 npm run test:e2e
-~~~
+```
 
 CI는 pull request와 main push에서 환경 변수 검증, 포맷, 린트, 타입 검사, 단위 테스트, 프로덕션 빌드, Storybook 빌드, Chromium E2E를 실행합니다.
 Jangingmall frontend application

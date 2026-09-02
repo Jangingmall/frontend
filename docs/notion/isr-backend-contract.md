@@ -11,33 +11,33 @@
 
 ## 요청 계약
 
-| 항목 | 값 |
-| --- | --- |
-| Method | POST |
-| Endpoint | 환경별 FE 도메인/api/revalidate |
-| Content-Type | application/json |
-| 전송 시점 | 도메인 변경 DB 트랜잭션 커밋 후 |
+| 항목         | 값                              |
+| ------------ | ------------------------------- |
+| Method       | POST                            |
+| Endpoint     | 환경별 FE 도메인/api/revalidate |
+| Content-Type | application/json                |
+| 전송 시점    | 도메인 변경 DB 트랜잭션 커밋 후 |
 
 ### HMAC 헤더
 
-~~~text
+```text
 Content-Type: application/json
 X-Revalidate-Timestamp: Unix epoch seconds
 X-Revalidate-Signature: sha256=HMAC_SHA256_HEX
-~~~
+```
 
 서명 대상은 실제 전송하는 UTF-8 JSON 원문을 사용한 timestamp.rawRequestBody다. 재시도는 같은 eventId와 같은 이벤트 의미를 유지하되, 새 timestamp와 해당 요청의 새 서명을 생성한다.
 
 ## 이벤트 DTO
 
-~~~json
+```json
 {
   "event": "product.contentPublished",
   "eventId": "01J...",
   "occurredAt": "2026-08-31T12:00:00Z",
   "data": { "productId": 123 }
 }
-~~~
+```
 
 - eventId는 재시도에도 동일한 이벤트 식별자다.
 - occurredAt은 실제 도메인 변경 시각을 ISO 8601 UTC로 표현한다.
@@ -55,15 +55,15 @@ X-Revalidate-Signature: sha256=HMAC_SHA256_HEX
 
 ## 이벤트 목록
 
-| 이벤트 | 발생 변경 | data 필수값 |
-| --- | --- | --- |
-| product.created | 상품 기본 정보·옵션 등록 | productId |
-| product.updated | 상품 기본 정보·옵션 수정 | productId |
-| product.statusChanged | 상품 상태 변경 | productId |
-| product.deleted | 상품 삭제 | productId |
-| product.contentPublished | 상세 콘텐츠 게시 | productId |
-| artisan.updated | 장인 프로필·소개 수정 | artisanId |
-| artisan.statusChanged | 장인 승인·거절 등 상태 변경 | artisanId |
+| 이벤트                   | 발생 변경                   | data 필수값 |
+| ------------------------ | --------------------------- | ----------- |
+| product.created          | 상품 기본 정보·옵션 등록    | productId   |
+| product.updated          | 상품 기본 정보·옵션 수정    | productId   |
+| product.statusChanged    | 상품 상태 변경              | productId   |
+| product.deleted          | 상품 삭제                   | productId   |
+| product.contentPublished | 상세 콘텐츠 게시            | productId   |
+| artisan.updated          | 장인 프로필·소개 수정       | artisanId   |
+| artisan.statusChanged    | 장인 승인·거절 등 상태 변경 | artisanId   |
 
 장바구니·주문·결제·회원 정보 같은 사용자별 변경은 ISR 이벤트가 아니다. 리뷰·문의·좋아요·판매량의 이벤트 추가 여부는 별도 캐시 전략에서 결정한다.
 
@@ -71,12 +71,12 @@ X-Revalidate-Signature: sha256=HMAC_SHA256_HEX
 
 ### 상품 공개 상태
 
-| 상태 | 공개 목록·상세 | 구매 가능 |
-| --- | --- | --- |
-| DRAFT | 비노출, 상세 접근은 404 | 불가 |
-| ON_SALE | 노출 | 가능 |
-| SOLD_OUT | 품절 표시로 노출 | 불가 |
-| HIDDEN | MVP 포함 여부 미정 | 미정 |
+| 상태     | 공개 목록·상세          | 구매 가능 |
+| -------- | ----------------------- | --------- |
+| DRAFT    | 비노출, 상세 접근은 404 | 불가      |
+| ON_SALE  | 노출                    | 가능      |
+| SOLD_OUT | 품절 표시로 노출        | 불가      |
+| HIDDEN   | MVP 포함 여부 미정      | 미정      |
 
 상품 등록은 DRAFT로 시작하고, AI 상세 콘텐츠 게시 후 ON_SALE이 되어 공개 목록과 상세에 노출된다.
 
@@ -99,4 +99,3 @@ X-Revalidate-Signature: sha256=HMAC_SHA256_HEX
 - HIDDEN 상태를 MVP에 포함하는지, 그리고 공개 상세 처리 방식을 정한다.
 - 장인 신청 승인 후 공개 목록·상세 노출 조건을 확정한다.
 - 공개 목록 필터·정렬 enum과 nullable 필드를 원본 API 명세 기준으로 계속 동기화한다.
-

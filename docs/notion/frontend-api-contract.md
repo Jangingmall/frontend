@@ -12,7 +12,7 @@
 
 ## 공통 응답과 페이징
 
-~~~ts
+```ts
 type ApiSuccess<T> = {
   success: true;
   status: number;
@@ -41,27 +41,27 @@ type CursorPage<T> = {
   hasNext: boolean;
   totalCount: number;
 };
-~~~
+```
 
 목록 요청은 cursor와 limit을 사용한다. limit 기본값은 20, 최대값은 100이다. hasNext가 false이면 다음 요청을 보내지 않는다.
 
 ## 역할과 계층
 
-| 역할 | 주요 권한 |
-| --- | --- |
-| 비회원 | 공개 조회 |
-| USER | 장바구니, 주문, 찜, 리뷰 등 구매자 기능 |
+| 역할    | 주요 권한                                |
+| ------- | ---------------------------------------- |
+| 비회원  | 공개 조회                                |
+| USER    | 장바구니, 주문, 찜, 리뷰 등 구매자 기능  |
 | ARTISAN | USER 권한과 상품·콘텐츠·장인 프로필 관리 |
-| ADMIN | 관리자 기능 |
+| ADMIN   | 관리자 기능                              |
 
-~~~text
+```text
 컴포넌트
   → TanStack Query hook
     → 도메인 API 함수
       → 공통 fetcher
         → DTO 검증·변환
           → 화면용 도메인 모델
-~~~
+```
 
 컴포넌트는 API URL·HTTP method·응답 래퍼·인증 헤더를 직접 다루지 않는다. Query hook은 cache key와 무효화를, API 함수는 endpoint와 변환을 담당한다.
 
@@ -69,14 +69,14 @@ type CursorPage<T> = {
 
 ### 공개 조회
 
-| 메서드 | 경로 | 용도 |
-| --- | --- | --- |
-| GET | /api/products | 목록·검색·필터·정렬 |
-| GET | /api/products/{productId} | 상세 |
-| GET | /api/products/categories | 카테고리 필터 |
-| GET | /api/products/materials | 소재 필터 |
-| GET | /api/products/{productId}/reviews | 리뷰 목록 |
-| GET | /api/products/{productId}/questions | 문의 목록 |
+| 메서드 | 경로                                | 용도                |
+| ------ | ----------------------------------- | ------------------- |
+| GET    | /api/products                       | 목록·검색·필터·정렬 |
+| GET    | /api/products/{productId}           | 상세                |
+| GET    | /api/products/categories            | 카테고리 필터       |
+| GET    | /api/products/materials             | 소재 필터           |
+| GET    | /api/products/{productId}/reviews   | 리뷰 목록           |
+| GET    | /api/products/{productId}/questions | 문의 목록           |
 
 상품 목록은 artisanId, category, material, giftTheme, color, sort, 가격 범위, 한정·주문제작·포장·품절 제외 여부, keyword와 cursor pagination을 지원한다. URL의 q는 API 호출 직전에 keyword로 변환한다. 카테고리와 소재는 고정 프론트 enum이 아니라 조회 API의 값으로 관리한다.
 
@@ -105,7 +105,7 @@ type CursorPage<T> = {
 
 콘텐츠 상태는 DRAFT, PENDING_REVIEW, APPROVED, REJECTED, PUBLISHED다.
 
-~~~text
+```text
 상품 등록(DRAFT)
   → 인터뷰 입력·저장
   → AI 생성 요청
@@ -114,7 +114,7 @@ type CursorPage<T> = {
   → 승인 또는 반려
   → 게시
   → ON_SALE, 공개 목록·상세 노출
-~~~
+```
 
 주요 API는 인터뷰 조회·저장·수정, 생성 요청·상태 조회, 콘텐츠 목록·편집·승인·반려·버전 조회, 게시다. 생성 요청에는 이미지 목록, 상품명, 제작 방식, 관리법이 포함된다. 승인 요청에는 사실 확인과 사진 일치 확인이 포함된다.
 
@@ -130,11 +130,10 @@ type CursorPage<T> = {
 
 ## 확인이 필요한 계약
 
-| 항목 | 확인 내용 |
-| --- | --- |
-| AI 생성 careTips | 필수인지 선택 입력인지 확정 |
-| 콘텐츠 게시 | 게시 대상 선택과 PUBLISHED 전환 규칙, 최종 endpoint 확정 |
-| 상품 상태 변경 | status 요청 본문의 필수 여부와 허용 전이 |
-| 장인 신청 | 승인 완료와 공개 장인 노출의 관계 |
-| 결제·주문·회원 | 구현 전 화면별 DTO를 이 문서에 반영 |
-
+| 항목             | 확인 내용                                                |
+| ---------------- | -------------------------------------------------------- |
+| AI 생성 careTips | 필수인지 선택 입력인지 확정                              |
+| 콘텐츠 게시      | 게시 대상 선택과 PUBLISHED 전환 규칙, 최종 endpoint 확정 |
+| 상품 상태 변경   | status 요청 본문의 필수 여부와 허용 전이                 |
+| 장인 신청        | 승인 완료와 공개 장인 노출의 관계                        |
+| 결제·주문·회원   | 구현 전 화면별 DTO를 이 문서에 반영                      |

@@ -17,29 +17,29 @@
 
 ### 공개·구매자
 
-| 화면 | 경로 | 접근 및 핵심 계약 |
-| --- | --- | --- |
-| 홈 | / | 공개 |
-| 검색 | /search?q= | 공개 |
-| 상품 목록 | /products | category, sort, filter, cursor, limit |
-| 상품 상세 | /products/[slug]-[productId] | 공개, productId로 API 조회 |
-| 장인 목록 | /artisans | stage, category, sort, cursor, limit |
-| 장인 상세 | /artisans/[slug]-[artisanId] | 공개, artisanId로 API 조회 |
-| 장바구니 | /cart | 비회원 허용, 독립 페이지 |
-| 결제 | /checkout/[orderId] | 로그인 필요 |
-| 주문 완료 | /checkout/[orderId]/complete | 로그인과 본인 주문 확인 필요 |
-| 마이페이지 | /mypage | /mypage/orders로 redirect |
-| 주문·후기·찜 | /mypage/orders, /mypage/reviews, /mypage/favorites | 로그인 필요 |
-| 계정 관리 | /mypage/addresses, /mypage/payment-methods, /mypage/personal-info, /mypage/settings | 로그인 필요 |
-| 로그인·회원가입 | /login, /signup | 내부 상대 returnUrl만 허용 |
-| 고객센터 | /support | 공개, section=faq, shipping-returns, dispute |
+| 화면            | 경로                                                                                | 접근 및 핵심 계약                            |
+| --------------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| 홈              | /                                                                                   | 공개                                         |
+| 검색            | /search?q=                                                                          | 공개                                         |
+| 상품 목록       | /products                                                                           | category, sort, filter, cursor, limit        |
+| 상품 상세       | /products/[slug]-[productId]                                                        | 공개, productId로 API 조회                   |
+| 장인 목록       | /artisans                                                                           | stage, category, sort, cursor, limit         |
+| 장인 상세       | /artisans/[slug]-[artisanId]                                                        | 공개, artisanId로 API 조회                   |
+| 장바구니        | /cart                                                                               | 비회원 허용, 독립 페이지                     |
+| 결제            | /checkout/[orderId]                                                                 | 로그인 필요                                  |
+| 주문 완료       | /checkout/[orderId]/complete                                                        | 로그인과 본인 주문 확인 필요                 |
+| 마이페이지      | /mypage                                                                             | /mypage/orders로 redirect                    |
+| 주문·후기·찜    | /mypage/orders, /mypage/reviews, /mypage/favorites                                  | 로그인 필요                                  |
+| 계정 관리       | /mypage/addresses, /mypage/payment-methods, /mypage/personal-info, /mypage/settings | 로그인 필요                                  |
+| 로그인·회원가입 | /login, /signup                                                                     | 내부 상대 returnUrl만 허용                   |
+| 고객센터        | /support                                                                            | 공개, section=faq, shipping-returns, dispute |
 
 ### 판매자
 
-| 화면 | 경로 | 접근 및 핵심 계약 |
-| --- | --- | --- |
-| 판매자 진입 | /seller | 판매자 권한, /seller/products/new로 redirect |
-| AI 상세페이지 제작 | /seller/products/new | 판매자 권한, 입력→생성→편집→승인·게시 |
+| 화면               | 경로                 | 접근 및 핵심 계약                            |
+| ------------------ | -------------------- | -------------------------------------------- |
+| 판매자 진입        | /seller              | 판매자 권한, /seller/products/new로 redirect |
+| AI 상세페이지 제작 | /seller/products/new | 판매자 권한, 입력→생성→편집→승인·게시        |
 
 ## Dynamic Segment와 URL 상태
 
@@ -53,17 +53,17 @@
 
 ## 인증·인가와 예외 처리
 
-| 상황 | 처리 |
-| --- | --- |
-| 비로그인 결제·마이페이지·판매자 진입 | /login?returnUrl=...으로 이동 |
-| 로그인한 비판매자 판매자 경로 진입 | 403 권한 안내 |
-| 로그인·회원가입 완료 | 검증된 내부 returnUrl 또는 /mypage로 이동 |
-| 로그아웃 | 인증 필요 경로면 /, 공개 경로면 현재 페이지 유지 |
-| 주문 완료 직접 접근 | 로그인 후 returnUrl 복귀, 본인 주문만 노출 |
-| 존재하지 않거나 비공개 상품 | not-found, 404 |
-| 판매 중지 상품 | 상세는 노출, 구매 기능은 비활성화 |
-| 존재하지 않는 장인 | not-found, 404 |
-| 활동 중지 장인 | 공개 유지 또는 404 정책이 아직 미정 |
+| 상황                                 | 처리                                             |
+| ------------------------------------ | ------------------------------------------------ |
+| 비로그인 결제·마이페이지·판매자 진입 | /login?returnUrl=...으로 이동                    |
+| 로그인한 비판매자 판매자 경로 진입   | 403 권한 안내                                    |
+| 로그인·회원가입 완료                 | 검증된 내부 returnUrl 또는 /mypage로 이동        |
+| 로그아웃                             | 인증 필요 경로면 /, 공개 경로면 현재 페이지 유지 |
+| 주문 완료 직접 접근                  | 로그인 후 returnUrl 복귀, 본인 주문만 노출       |
+| 존재하지 않거나 비공개 상품          | not-found, 404                                   |
+| 판매 중지 상품                       | 상세는 노출, 구매 기능은 비활성화                |
+| 존재하지 않는 장인                   | not-found, 404                                   |
+| 활동 중지 장인                       | 공개 유지 또는 404 정책이 아직 미정              |
 
 ## SEO와 렌더링 경계
 
@@ -80,4 +80,3 @@
 - cursor 목록 UI를 더 보기로 할지 무한 스크롤로 할지 결정해야 한다.
 - 결제·주문 완료의 세부 IA와 MVP 테스트 범위를 설계해야 한다.
 - 입점 심사·판매 대시보드·정산·배송 백오피스·AI CS·선물하기·알림톡·주문제작 예약·보증서·분쟁 정책은 현재 route map 범위 밖이다.
-

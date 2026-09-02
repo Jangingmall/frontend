@@ -9,5 +9,7 @@ export function createQueryClient() {
 
 export function QueryProvider({ children }: PropsWithChildren) {
   const [queryClient] = useState(createQueryClient);
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
 }
