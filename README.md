@@ -16,6 +16,7 @@ npm run dev
 - React Hook Form, Zod, Day.js, browser-image-compression, Sharp
 - 공통 HTTP fetcher와 Zod 기반 환경 변수 검증
 - MSW 브라우저·Node 설정 경계
+- Vitest, Storybook, Playwright 및 GitHub Actions CI 환경
 
 ## 디렉터리 원칙
 
@@ -39,5 +40,11 @@ npm run typecheck
 npm run format
 npm run format:check
 npm run validate:env
+npm run test
+npm run storybook
+npm run build-storybook
+npm run test:e2e
 ~~~
+
+CI는 pull request와 main push에서 환경 변수 검증, 포맷, 린트, 타입 검사, 단위 테스트, 프로덕션 빌드, Storybook 빌드, Chromium E2E를 실행합니다.
 Jangingmall frontend application
