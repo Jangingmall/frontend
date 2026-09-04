@@ -5,7 +5,7 @@ import { QueryProvider } from "./query-provider";
 import "./globals.css";
 
 const pretendard = localFont({
-  src: "../../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2",
+  src: "../assets/fonts/PretendardVariable.woff2",
   variable: "--font-pretendard",
   weight: "100 900",
   display: "swap",
