@@ -11,8 +11,8 @@ npm run dev
 
 ## 현재 구성
 
-- Next.js 16.3.3, TypeScript 7.0.2, Tailwind CSS 4.3.3
-- shadcn/ui v4, TanStack Query 5.102.6, Zustand 5.0.15
+- Next.js 16.3.4, TypeScript 6.0.3, Tailwind CSS 4.3.3
+- shadcn/ui v4, TanStack Query 5.102.8, Zustand 5.0.15
 - React Hook Form, Zod, Day.js, browser-image-compression, Sharp
 - 공통 HTTP fetcher와 Zod 기반 환경 변수 검증
 - MSW 브라우저·Node 설정 경계
