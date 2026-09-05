@@ -19,7 +19,11 @@
     "test:e2e": "playwright test",
     "validate:env": "tsx scripts/validate-env.ts",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "simple-git-hooks"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -55,10 +59,12 @@
     "eslint-config-next": "16.3.4",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^30.0.1",
+    "lint-staged": "^17.4.1",
     "msw": "^2.15.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
     "shadcn": "^4.21.0",
+    "simple-git-hooks": "^2.14.0",
     "storybook": "^10.6.0",
     "tailwindcss": "4.3.3",
     "tsx": "^4.23.13",
@@ -70,6 +76,7 @@
     "msw@2.15.0": true,
     "unrs-resolver@1.12.2": true,
     "fsevents@2.3.3": true,
-    "fsevents@2.3.2": true
+    "fsevents@2.3.2": true,
+    "simple-git-hooks@2.14.0": true
   }
 }
