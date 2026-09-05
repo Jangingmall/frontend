@@ -48,3 +48,12 @@ next-env.d.ts
 
 # temp
 /temp
+
+# AI agent settings — 에이전트 종류는 개인 선택이라 설정을 공유하지 않는다.
+# 공통 지침은 AGENTS.md(+ CLAUDE.md)만 유지한다.
+CLAUDE.local.md
+.claude/
+.codex/
+.agents/
+AGENTS.override.md
+.mcp.json
