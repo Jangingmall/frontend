@@ -18,6 +18,7 @@
     "build-storybook": "storybook build",
     "test:e2e": "playwright test",
     "validate:env": "tsx scripts/validate-env.ts",
+    "generate:icons": "tsx scripts/generate-icons.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "simple-git-hooks"
@@ -48,6 +49,9 @@
     "@playwright/test": "^1.62.1",
     "@storybook/addon-a11y": "^10.6.0",
     "@storybook/nextjs-vite": "^10.6.0",
+    "@svgr/core": "^8.1.0",
+    "@svgr/plugin-jsx": "^8.1.0",
+    "@svgr/plugin-svgo": "^8.1.0",
     "@tailwindcss/postcss": "4.3.3",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
