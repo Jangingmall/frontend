@@ -12,9 +12,9 @@ import { cn } from "@/lib/utils";
  *   - footer → `variant="ghost" size="xs"` (compound 로 px-0 / 13px / 흐린 글자 처리)
  *   - icon   → 아이콘을 children 으로 넣으면 됨(별도 size 아님)
  *
- * hover/pressed 는 Figma "Stateslayer"(반투명 오버레이)를 `background-image` 위에 겹치는
- * linear-gradient 로 구현한다(가상요소 z-index 문제 회피). 색 계층은 foundation 의
- * `--states-hover`(jade-blue-400 50%) / `--states-hover-25`(25%) 를 그대로 쓴다.
+ * hover/pressed 는 Figma "Stateslayer"(버튼 위 반투명 단색 사각형)를 `::before` 오버레이로
+ * 옮긴다 — `before:-z-10` 로 배경색 위·내용 아래에 깔고 `before:bg-states-hover(-25)` 로 칠한다.
+ * solid 는 `--states-hover-25`(25%), 그 외는 `--states-hover`(50%).
  *
  * Figma 내부 불일치는 사용자 결정에 따라 정규화하지 않고 유지한다:
  *   - jade 배경이 xl 은 `--button-jade-weak`(#FAFBFC), 그 외는 `--button-jade`(#C8D9DC)
@@ -24,17 +24,17 @@ import { cn } from "@/lib/utils";
  * 확인 필요).
  */
 const buttonVariants = cva(
-  "group/button relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xs border border-transparent bg-clip-padding whitespace-nowrap transition-[background-image,border-color,color,opacity] outline-none select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill disabled:pointer-events-none disabled:opacity-60 data-loading:pointer-events-none data-loading:cursor-default [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+  "group/button relative isolate inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xs border border-transparent bg-clip-padding whitespace-nowrap transition-[border-color,color,opacity] outline-none select-none before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill disabled:pointer-events-none disabled:opacity-60 data-loading:pointer-events-none data-loading:cursor-default [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
   {
     variants: {
       variant: {
         solid:
-          "bg-(--button-black) text-font-white hover:bg-[linear-gradient(var(--states-hover-25),var(--states-hover-25))] active:bg-[linear-gradient(var(--states-hover-25),var(--states-hover-25))]",
-        jade: "bg-(--button-jade) text-font-dark hover:bg-[linear-gradient(var(--states-hover),var(--states-hover))] active:bg-[linear-gradient(var(--states-hover),var(--states-hover))]",
+          "bg-(--button-black) text-font-white hover:before:bg-states-hover-25 active:before:bg-states-hover-25",
+        jade: "bg-(--button-jade) text-font-dark hover:before:bg-states-hover active:before:bg-states-hover",
         outline:
-          "border-(--button-border-black) text-font-dark hover:bg-[linear-gradient(var(--states-hover),var(--states-hover))] active:border-border-jade-fill active:bg-[linear-gradient(var(--states-hover),var(--states-hover))]",
+          "border-(--button-border-black) text-font-dark hover:before:bg-states-hover active:border-border-jade-fill active:before:bg-states-hover",
         ghost:
-          "text-font-dark hover:bg-[linear-gradient(var(--states-hover),var(--states-hover))] active:bg-[linear-gradient(var(--states-hover),var(--states-hover))]",
+          "text-font-dark hover:before:bg-states-hover active:before:bg-states-hover",
       },
       size: {
         xl: "h-14 gap-2 px-6 text-button-xl",
