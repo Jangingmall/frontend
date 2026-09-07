@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { fn } from "storybook/test";
 
 import { SearchField } from "./search-field";
 
@@ -8,7 +9,7 @@ const meta = {
   parameters: { layout: "padded" },
   args: {
     placeholder: "검색어를 입력해주세요.",
-    onSearch: (value: string) => console.log("search:", value),
+    onSearch: fn(),
   },
   decorators: [
     (Story) => (
