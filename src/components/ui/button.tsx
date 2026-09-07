@@ -76,6 +76,7 @@ function Button({
   loading = false,
   disabled,
   children,
+  onClick,
   ...props
 }: ButtonProps) {
   return (
@@ -84,6 +85,16 @@ function Button({
       data-loading={loading || undefined}
       aria-busy={loading || undefined}
       disabled={disabled}
+      // `disabled` 는 안 걸어(Figma loading 은 흐려지지 않음) `pointer-events-none` 로만 막으면
+      // 키보드 Enter/Space·programmatic click·form submit 이 통과한다. click 을 preventDefault
+      // 하면 세 경로 모두(제출 포함) 차단된다.
+      onClick={(event) => {
+        if (loading) {
+          event.preventDefault();
+          return;
+        }
+        onClick?.(event);
+      }}
       className={cn(buttonVariants({ variant, size }), className)}
       {...props}
     >
@@ -95,7 +106,9 @@ function Button({
 function LoadingDots({ children }: { children: ReactNode }) {
   return (
     <>
-      <span className="sr-only">{children}</span>
+      <span className="sr-only">
+        {typeof children === "string" ? children : "로딩 중"}
+      </span>
       <span aria-hidden className="inline-flex items-center gap-2">
         <span className="size-2 animate-pulse rounded-full bg-current [animation-delay:-0.3s]" />
         <span className="size-2 animate-pulse rounded-full bg-current [animation-delay:-0.15s]" />

@@ -51,9 +51,12 @@ function InputField({
 }: InputFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [revealed, setRevealed] = useState(false);
-  const [hasValue, setHasValue] = useState(
-    () => String(value ?? defaultValue ?? "").length > 0,
+  // controlled 면 `value` 에서 직접 파생(외부에서 바뀌어도 정확). uncontrolled 면 state 로 추적.
+  const [uncontrolledHasValue, setUncontrolledHasValue] = useState(
+    () => String(defaultValue ?? "").length > 0,
   );
+  const hasValue =
+    value !== undefined ? String(value).length > 0 : uncontrolledHasValue;
 
   const isPassword = type === "password";
   const resolvedType = isPassword && revealed ? "text" : type;
@@ -61,7 +64,7 @@ function InputField({
   const handleValueChange: NonNullable<
     InputPrimitive.Props["onValueChange"]
   > = (next, details) => {
-    setHasValue(next.length > 0);
+    setUncontrolledHasValue(next.length > 0);
     onValueChange?.(next, details);
   };
 
@@ -75,7 +78,7 @@ function InputField({
   return (
     <Field.Root
       className="group/field flex flex-col"
-      data-invalid={error != null ? "" : undefined}
+      invalid={error != null}
       disabled={disabled}
     >
       {label != null && (
