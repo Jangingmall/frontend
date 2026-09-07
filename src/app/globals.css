@@ -4,7 +4,113 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Grid(현재 desktop만 정의됨): columns 12·gutter 24px·margin 48px는 각각 Tailwind 기본
+   grid-cols-12, spacing 기준 gap-6·px-12로 이미 커버되어 새 토큰이 필요 없음. max-width만
+   Tailwind 기본 --container-* 스케일(최대 7xl=80rem)에 없어서 새로 등록. tablet/mobile
+   그리드가 추가되면 같은 브레이크포인트 이름 규칙으로 확장한다. */
+@theme {
+  --container-desktop: 90rem;
+}
+
+/* Figma "Drop Shadow" 이펙트는 CSS box-shadow에 대응한다(투명 실루엣을 따라가는
+   filter: drop-shadow()가 아님) — 그래서 Tailwind의 --shadow-* 네임스페이스(box-shadow)를
+   쓴다. 용도명으로 등록: floating은 여러 화면에서 재사용, nav는 Nav 컴포넌트 전용. */
+@theme {
+  --shadow-floating: 0 2px 12px 0 rgb(0 0 0 / 12%);
+  --shadow-nav: 0 4px 12px 0 rgb(0 0 0 / 8%);
+}
+
+/* Figma named text style → Tailwind text-<name> 유틸리티. size/line-height/font-weight를
+   한 클래스에 묶어 등록(Tailwind의 --text-<name>--line-height, --font-weight 서브키 지원).
+   전부 letter-spacing 0%라 letter-spacing은 건드리지 않음(기본값 normal과 시각적으로 동일).
+   폰트는 프로젝트 전체가 Pretendard라 별도 지정 안 함. */
+@theme {
+  --text-display-l: 3rem;
+  --text-display-l--line-height: 1.3;
+  --text-display-l--font-weight: 600;
+
+  --text-display-m: 2rem;
+  --text-display-m--line-height: 1.3;
+  --text-display-m--font-weight: 600;
+
+  --text-display-s: 1.75rem;
+  --text-display-s--line-height: 1.3;
+  --text-display-s--font-weight: 600;
+
+  --text-title-xl: 1.625rem;
+  --text-title-xl--line-height: 1.3;
+  --text-title-xl--font-weight: 600;
+
+  --text-title-l: 1.375rem;
+  --text-title-l--line-height: 1.2;
+  --text-title-l--font-weight: 600;
+
+  --text-title-m: 1.0625rem;
+  --text-title-m--line-height: 1.3;
+  --text-title-m--font-weight: 600;
+
+  --text-title-s: 0.9375rem;
+  --text-title-s--line-height: 1.35;
+  --text-title-s--font-weight: 600;
+
+  --text-body-l: 1rem;
+  --text-body-l--line-height: 1.4;
+  --text-body-l--font-weight: 400;
+
+  --text-body-m: 0.875rem;
+  --text-body-m--line-height: 1.4;
+  --text-body-m--font-weight: 400;
+
+  --text-body-s-b: 0.8125rem;
+  --text-body-s-b--line-height: 1.4;
+  --text-body-s-b--font-weight: 600;
+
+  --text-body-s: 0.8125rem;
+  --text-body-s--line-height: 1.4;
+  --text-body-s--font-weight: 400;
+
+  --text-caption-b: 0.625rem;
+  --text-caption-b--line-height: 1.4;
+  --text-caption-b--font-weight: 600;
+
+  --text-caption: 0.625rem;
+  --text-caption--line-height: 1.4;
+  --text-caption--font-weight: 400;
+}
+
 @theme inline {
+  --color-bg-default: var(--bg-default);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-skeleton: var(--bg-skeleton);
+  --color-bg-deam: var(--bg-deam);
+  --color-fill-jade: var(--fill-jade);
+  --color-fill-jade-impact: var(--fill-jade-impact);
+  --color-fill-jade-weak: var(--fill-jade-weak);
+  --color-fill-neutral: var(--fill-neutral);
+  --color-fill-neutral-impact: var(--fill-neutral-impact);
+  --color-fill-neutral-weak: var(--fill-neutral-weak);
+  --color-border-neutral-solid: var(--border-neutral-solid);
+  --color-border-neutral-weak: var(--border-neutral-weak);
+  --color-border-neutral-subtle: var(--border-neutral-subtle);
+  --color-border-jade-fill: var(--border-jade-fill);
+  --color-border-jade-weak: var(--border-jade-weak);
+  --color-border-white: var(--border-white);
+  --color-font-dark: var(--font-dark);
+  --color-font-dark-secondary: var(--font-dark-secondary);
+  --color-font-dark-subtle: var(--font-dark-subtle);
+  --color-font-dark-weak: var(--font-dark-weak);
+  --color-font-white: var(--font-white);
+  --color-font-label: var(--font-label);
+  --color-yellow-border: var(--yellow-border);
+  --color-yellow-font: var(--yellow-font);
+  --color-yellow-fill: var(--yellow-fill);
+  --color-red-border: var(--red-border);
+  --color-red-fill: var(--red-fill);
+  --color-red-font: var(--red-font);
+  --color-states-hover: var(--states-hover);
+  --color-states-hover-25: var(--states-hover-25);
+  --color-states-hover-black: var(--states-hover-black);
+  --color-states-sold-out: var(--states-sold-out);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-pretendard);
@@ -39,13 +145,161 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Primitive 색상: 순수 값만, 의미 없음. @theme에 절대 등록하지 않는다 — Tailwind 기본
+   팔레트(blue/red/yellow 등)와 이름이 겹치면 :root 단계에서 서로의 값을 덮어써버릴 수
+   있어서, "color-" 접두사 없이 색 이름만 사용한다(Tailwind 변수는 전부 --color-* 형태).
+   semantic 계층에서만 var()로 참조한다. */
+:root {
+  --white: #ffffff;
+  --black: #101010;
+
+  --cool-grey-50: #ecedee;
+  --cool-grey-100: #c4c7ca;
+  --cool-grey-200: #a8abb0;
+  --cool-grey-300: #80858c;
+  --cool-grey-400: #676d76;
+  --cool-grey-500: #414954;
+  --cool-grey-600: #3b424c;
+  --cool-grey-700: #2e343c;
+  --cool-grey-800: #24282e;
+  --cool-grey-900: #121b29;
+
+  --jade-blue-50: #fafbfc;
+  --jade-blue-100: #eef3f4;
+  --jade-blue-200: #e6eeef;
+  --jade-blue-300: #dae6e8;
+  --jade-blue-400: #d3e1e3;
+  --jade-blue-500: #c8d9dc;
+  --jade-blue-600: #b6c5c8;
+  --jade-blue-700: #8e9a9c;
+  --jade-blue-800: #6e7779;
+  --jade-blue-900: #545b5c;
+
+  /* yellow-50은 Figma Variables에 없음(의도적으로 비움) */
+  --yellow-100: #ffecc8;
+  --yellow-200: #ffe2ad;
+  --yellow-300: #ffd587;
+  --yellow-400: #ffcd70;
+  --yellow-500: #ffc14c;
+
+  --red-300: #f0835f;
+  --red-400: #ed6b40;
+  --red-500: #e84610;
+  --red-600: #d3400f;
+  --red-700: #a5320b;
+}
+
+/* Semantic 색상: Figma의 그룹.이름 구조를 그대로 옮긴다(bg/fill/border/font/yellow/red/
+   states). 값이 같아도(예: border.white와 font.white가 둘 다 흰색) 역할이 달라서 하나로
+   합치지 않는다 — 나중에 값이 갈라질 수 있음. shadcn 슬롯(primary/secondary/muted 등)에는
+   아직 매핑하지 않는다 — 다음 작업(디자인 시스템 컴포넌트 반입)에서 컴포넌트를 새로 스타일링할
+   예정이라 지금은 shadcn placeholder 색을 그대로 둬도 무방하다고 판단.
+   알파가 섞인 값은 color-mix()로 primitive를 참조한다(button.tsx의 기존 관례와 동일).
+   Figma 그룹명을 그대로 써서 bg-default/fill-jade/border-neutral-solid처럼 일부는
+   Tailwind 유틸리티 접두사(bg-, fill-, border-)와 겹쳐 보이는 이름이 나오는데(예:
+   `bg-bg-default`), Figma와의 1:1 대응을 우선해 그대로 둔다. */
+:root {
+  --bg-default: var(--white);
+  --bg-subtle: var(--jade-blue-50);
+  --bg-skeleton: var(--jade-blue-400);
+  /* Figma 변수명 그대로("bg-deam"은 오타로 보이나 — 아마 "dim" — 원본 유지) */
+  --bg-deam: color-mix(in oklch, var(--cool-grey-900) 50%, transparent);
+
+  --fill-jade: var(--jade-blue-500);
+  --fill-jade-impact: var(--jade-blue-700);
+  --fill-jade-weak: var(--jade-blue-50);
+  --fill-neutral: var(--cool-grey-500);
+  --fill-neutral-impact: var(--cool-grey-900);
+  --fill-neutral-weak: var(--cool-grey-50);
+
+  --border-neutral-solid: var(--cool-grey-900);
+  --border-neutral-weak: color-mix(
+    in oklch,
+    var(--cool-grey-900) 30%,
+    transparent
+  );
+  --border-neutral-subtle: color-mix(
+    in oklch,
+    var(--cool-grey-900) 10%,
+    transparent
+  );
+  --border-jade-fill: var(--jade-blue-700);
+  --border-jade-weak: color-mix(
+    in oklch,
+    var(--jade-blue-500) 50%,
+    transparent
+  );
+  --border-white: var(--white);
+
+  --font-dark: var(--cool-grey-900);
+  --font-dark-secondary: var(--cool-grey-700);
+  --font-dark-subtle: var(--cool-grey-500);
+  --font-dark-weak: var(--cool-grey-300);
+  --font-white: var(--white);
+  --font-label: var(--font-dark-subtle);
+
+  --yellow-border: var(--yellow-500);
+  --yellow-font: var(--yellow-500);
+  --yellow-fill: var(--yellow-200);
+
+  --red-border: var(--red-500);
+  --red-fill: var(--red-400);
+  --red-font: var(--red-600);
+
+  --states-hover: color-mix(in oklch, var(--jade-blue-400) 50%, transparent);
+  --states-hover-25: color-mix(in oklch, var(--jade-blue-400) 25%, transparent);
+  --states-hover-black: color-mix(
+    in oklch,
+    var(--cool-grey-900) 20%,
+    transparent
+  );
+  --states-sold-out: color-mix(in oklch, var(--cool-grey-900) 50%, transparent);
+}
+
+/* Component 색상: 컴포넌트 하나에서만 쓰는 값이라 @theme에 등록하지 않는다 — 유틸리티
+   클래스를 만들지 않고, 각 컴포넌트를 실제로 만들 때 bg-(--nav-bg)처럼 괄호 shorthand로
+   바로 소비한다. semantic을 안 거치고 primitive를 직접 참조하는 것(icon.white-fill,
+   progress-bar.red/yellow, badge.red/yellow)과 progress-bar.green의 raw hex는 확인 결과
+   의도된 값이라 그대로 둔다.
+   text-field는 Tailwind의 --text-* 네임스페이스(font-size)와 이름이 겹치는 걸 피하려고
+   변수명에서만 textfield로 붙여 썼다(실제로 @theme에 안 넣어서 지금은 충돌 위험이 없지만,
+   나중에 실수로 @theme에 옮겨도 안전하도록). */
+:root {
+  --nav-bg: var(--fill-neutral-impact);
+  --nav-menu-fill: var(--fill-neutral);
+  --nav-jade: var(--fill-jade);
+
+  --icon-black: var(--border-neutral-solid);
+  --icon-black-weak: var(--fill-jade-impact);
+  --icon-white-border: var(--border-white);
+  --icon-white-fill: var(--white);
+  --icon-red-border: var(--red-border);
+  --icon-red-fill: var(--red-fill);
+  --icon-yellow-border: var(--yellow-border);
+  --icon-yellow-fill: var(--yellow-fill);
+
+  --button-black: var(--fill-neutral-impact);
+  --button-jade: var(--fill-jade);
+  --button-jade-weak: var(--fill-jade-weak);
+  --button-border-black: var(--border-neutral-subtle);
+  --button-border-jade: var(--border-jade-weak);
+
+  /* 확인 완료: primitive 팔레트에 없는 raw 값을 의도적으로 사용 */
+  --progress-bar-green: #9ae390;
+  --progress-bar-red: var(--red-400);
+  --progress-bar-yellow: var(--yellow-400);
+
+  --badge-jade: var(--fill-jade);
+  --badge-red: var(--red-500);
+  --badge-yellow: var(--yellow-500);
+
+  --textfield-underline: var(--border-jade-weak);
+  --textfield-border: var(--border-neutral-subtle);
+  --textfield-font-weak: var(--font-dark-subtle);
+  --textfield-border-jade: var(--border-jade-weak);
+  --textfield-border-selected: var(--border-jade-fill);
 }
 
 :root {
@@ -72,7 +326,6 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
