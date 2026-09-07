@@ -78,6 +78,20 @@
   --text-caption--font-weight: 400;
 }
 
+/* Button 전용 텍스트 스타일. Figma 가 foundation 13종에 없는 `body-l-btn`(16px/500),
+   `title-l-cta`(20px/600) 를 Button 라벨에 쓴다 — weight·size 가 가장 가까운 foundation
+   토큰(`body-l`=16/400, `title-l`=22/600)과 어긋나서 Button 크기명으로 별도 등록한다.
+   m 이하 크기는 foundation `text-body-m`/`text-body-s` 를 그대로 재사용한다. */
+@theme {
+  --text-button-xl: 1rem;
+  --text-button-xl--line-height: 1.5;
+  --text-button-xl--font-weight: 500;
+
+  --text-button-l: 1.25rem;
+  --text-button-l--line-height: 1.1;
+  --text-button-l--font-weight: 600;
+}
+
 @theme inline {
   --color-bg-default: var(--bg-default);
   --color-bg-subtle: var(--bg-subtle);
