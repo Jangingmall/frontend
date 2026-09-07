@@ -41,6 +41,7 @@ yarn-error.log*
 /storybook-static
 /test-results
 /playwright-report
+/.playwright-mcp
 
 # typescript
 *.tsbuildinfo
