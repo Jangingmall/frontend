@@ -125,40 +125,20 @@
   --color-states-hover-25: var(--states-hover-25);
   --color-states-hover-black: var(--states-hover-black);
   --color-states-sold-out: var(--states-sold-out);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+
+  /* shadcn 전역 슬롯: `@layer base` 의 전역 리셋(모든 요소의 기본 border/outline 색, body
+     배경·글자)이 참조한다. foundation semantic 으로 repoint. 나머지 shadcn 슬롯
+     (primary, secondary, muted, accent, destructive, card, popover, input, chart 계열,
+     sidebar 계열)은 이 디자인 시스템에서 안 써서 :root·.dark 정의째로 제거했다 — 컴포넌트는
+     foundation 토큰(semantic 유틸리티 + button 계열 bracket shorthand)을 직접 소비한다. */
+  --color-background: var(--bg-default);
+  --color-foreground: var(--font-dark);
+  --color-border: var(--border-neutral-subtle);
+  --color-ring: var(--border-jade-fill);
+
   --font-sans: var(--font-pretendard);
   --font-mono: var(--font-pretendard);
   --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
 }
 
 /* Primitive 색상: 순수 값만, 의미 없음. @theme에 절대 등록하지 않는다 — Tailwind 기본
@@ -316,82 +296,41 @@
   --textfield-border-selected: var(--border-jade-fill);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
+/* Figma `scroll-bar` 컴포넌트를 전역 스타일로 반영(별도 React 컴포넌트로 만들지 않음).
+   트랙 = --border-neutral-subtle(cool-grey-900 10%), thumb = --border-jade-fill(jade-blue-700),
+   모서리 1px. 기본 두께 8px, slim 4px. 스크롤바 화살표 버튼은 대부분 브라우저가 렌더하지
+   않고 스타일 제어도 안 돼서 재현하지 않는다. Firefox 는 두께를 thin/auto 로만 조절 가능해
+   slim 과의 두께 차이는 WebKit 계열에서만 드러난다. */
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-jade-fill) var(--border-neutral-subtle);
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--border-neutral-subtle);
+    border-radius: 1px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-jade-fill);
+    border-radius: 1px;
   }
   body {
     @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* 슬림 스크롤바: 좁은 패널·드롭다운 등에서 opt-in */
+@utility scrollbar-slim {
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
   }
 }
