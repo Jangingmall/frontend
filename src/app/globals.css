@@ -190,7 +190,9 @@
    합치지 않는다 — 나중에 값이 갈라질 수 있음. shadcn 슬롯(primary/secondary/muted 등)에는
    아직 매핑하지 않는다 — 다음 작업(디자인 시스템 컴포넌트 반입)에서 컴포넌트를 새로 스타일링할
    예정이라 지금은 shadcn placeholder 색을 그대로 둬도 무방하다고 판단.
-   알파가 섞인 값은 color-mix()로 primitive를 참조한다(button.tsx의 기존 관례와 동일).
+   알파가 섞인 값은 color-mix(in oklab, ...)로 primitive를 참조한다. oklch(극좌표)로 하면
+   `transparent`(achromatic)와 섞을 때 hue 가 powerless(none) 처리돼 채도만 남고 색상이
+   0°(붉은기)로 렌더돼 jade 계열이 분홍빛으로 나온다 — oklab(직교)은 이 문제가 없다.
    Figma 그룹명을 그대로 써서 bg-default/fill-jade/border-neutral-solid처럼 일부는
    Tailwind 유틸리티 접두사(bg-, fill-, border-)와 겹쳐 보이는 이름이 나오는데(예:
    `bg-bg-default`), Figma와의 1:1 대응을 우선해 그대로 둔다. */
@@ -213,18 +215,18 @@
 
   --border-neutral-solid: var(--cool-grey-900);
   --border-neutral-weak: color-mix(
-    in oklch,
+    in oklab,
     var(--cool-grey-900) 30%,
     transparent
   );
   --border-neutral-subtle: color-mix(
-    in oklch,
+    in oklab,
     var(--cool-grey-900) 10%,
     transparent
   );
   --border-jade-fill: var(--jade-blue-700);
   --border-jade-weak: color-mix(
-    in oklch,
+    in oklab,
     var(--jade-blue-500) 50%,
     transparent
   );
@@ -245,14 +247,14 @@
   --red-fill: var(--red-400);
   --red-font: var(--red-600);
 
-  --states-hover: color-mix(in oklch, var(--jade-blue-400) 50%, transparent);
-  --states-hover-25: color-mix(in oklch, var(--jade-blue-400) 25%, transparent);
+  --states-hover: color-mix(in oklab, var(--jade-blue-400) 50%, transparent);
+  --states-hover-25: color-mix(in oklab, var(--jade-blue-400) 25%, transparent);
   --states-hover-black: color-mix(
-    in oklch,
+    in oklab,
     var(--cool-grey-900) 20%,
     transparent
   );
-  --states-sold-out: color-mix(in oklch, var(--cool-grey-900) 50%, transparent);
+  --states-sold-out: color-mix(in oklab, var(--cool-grey-900) 50%, transparent);
 }
 
 /* Component 색상: 컴포넌트 하나에서만 쓰는 값이라 @theme에 등록하지 않는다 — 유틸리티
