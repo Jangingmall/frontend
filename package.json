@@ -23,7 +23,8 @@
     "prepare": "simple-git-hooks"
   },
   "simple-git-hooks": {
-    "pre-commit": "npx lint-staged"
+    "pre-commit": "npx lint-staged",
+    "commit-msg": "npx tsx scripts/verify-commit-msg.ts \"$1\""
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
