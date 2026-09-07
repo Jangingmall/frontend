@@ -62,7 +62,9 @@ function Checkbox({
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-2",
+        // align-middle: inline-flex 의 세로 위치가 첫 자식(체크박스) baseline 을 따라가
+        // checked 시 내부 SVG 때문에 label 이 밀리는 것을 막는다.
+        "inline-flex items-center gap-2 align-middle",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         className,
       )}

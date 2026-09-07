@@ -56,7 +56,9 @@ function Radio({ className, children, disabled, ...props }: RadioProps) {
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-2",
+        // align-middle: checked 시 인디케이터 점 때문에 inline-flex baseline 이 바뀌어
+        // label 이 세로로 밀리는 것을 막는다.
+        "inline-flex items-center gap-2 align-middle",
         disabled ? "cursor-not-allowed" : "cursor-pointer",
         className,
       )}
