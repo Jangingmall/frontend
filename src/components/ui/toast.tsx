@@ -34,7 +34,7 @@ function Toast({ children, actionLabel, onAction, className }: ToastProps) {
         <button
           type="button"
           onClick={onAction}
-          className="h-[30px] shrink-0 rounded-xs bg-fill-jade px-6 text-caption-b text-font-dark transition-[background-image] hover:[background-image:linear-gradient(var(--states-hover),var(--states-hover))]"
+          className="h-7.5 shrink-0 rounded-xs bg-fill-jade px-6 text-caption-b text-font-dark transition-[background-image] hover:bg-[linear-gradient(var(--states-hover),var(--states-hover))]"
         >
           {actionLabel}
         </button>

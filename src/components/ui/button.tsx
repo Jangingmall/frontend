@@ -29,16 +29,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         solid:
-          "bg-(--button-black) text-font-white hover:[background-image:linear-gradient(var(--states-hover-25),var(--states-hover-25))] active:[background-image:linear-gradient(var(--states-hover-25),var(--states-hover-25))]",
-        jade: "bg-(--button-jade) text-font-dark hover:[background-image:linear-gradient(var(--states-hover),var(--states-hover))] active:[background-image:linear-gradient(var(--states-hover),var(--states-hover))]",
+          "bg-(--button-black) text-font-white hover:bg-[linear-gradient(var(--states-hover-25),var(--states-hover-25))] active:bg-[linear-gradient(var(--states-hover-25),var(--states-hover-25))]",
+        jade: "bg-(--button-jade) text-font-dark hover:bg-[linear-gradient(var(--states-hover),var(--states-hover))] active:bg-[linear-gradient(var(--states-hover),var(--states-hover))]",
         outline:
-          "border-(--button-border-black) text-font-dark hover:[background-image:linear-gradient(var(--states-hover),var(--states-hover))] active:border-border-jade-fill active:[background-image:linear-gradient(var(--states-hover),var(--states-hover))]",
+          "border-(--button-border-black) text-font-dark hover:bg-[linear-gradient(var(--states-hover),var(--states-hover))] active:border-border-jade-fill active:bg-[linear-gradient(var(--states-hover),var(--states-hover))]",
         ghost:
-          "text-font-dark hover:[background-image:linear-gradient(var(--states-hover),var(--states-hover))] active:[background-image:linear-gradient(var(--states-hover),var(--states-hover))]",
+          "text-font-dark hover:bg-[linear-gradient(var(--states-hover),var(--states-hover))] active:bg-[linear-gradient(var(--states-hover),var(--states-hover))]",
       },
       size: {
         xl: "h-14 gap-2 px-6 text-button-xl",
-        l: "h-[54px] gap-2 px-6 text-button-l",
+        l: "h-13.5 gap-2 px-6 text-button-l",
         m: "h-13 gap-2 px-6 text-body-m",
         s: "h-11 gap-1.5 px-6 text-body-m",
         xs: "h-7 gap-1 px-3 text-body-m [&_svg:not([class*='size-'])]:size-4",

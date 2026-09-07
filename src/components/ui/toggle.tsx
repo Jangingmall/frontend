@@ -17,7 +17,7 @@ const toggleVariants = cva(
   {
     variants: {
       size: {
-        s: "h-[18px] w-9",
+        s: "h-4.5 w-9",
         m: "h-6 w-11",
       },
     },
@@ -30,8 +30,8 @@ const thumbVariants = cva(
   {
     variants: {
       size: {
-        s: "size-3.5 data-checked:translate-x-[18px]",
-        m: "size-5 data-checked:translate-x-[20px]",
+        s: "size-3.5 data-checked:translate-x-4.5",
+        m: "size-5 data-checked:translate-x-5",
       },
     },
     defaultVariants: { size: "m" },
