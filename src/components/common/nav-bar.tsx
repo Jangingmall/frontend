@@ -61,12 +61,15 @@ const DEFAULT_MENU_ITEMS: NavMenuItem[] = Array.from({ length: 7 }, () => ({
 interface NavBarProps {
   primaryItems?: NavPrimaryItem[];
   menuItems?: NavMenuItem[];
+  /** "primary" 면 1차 카테고리 행만, "all"(기본) 이면 2차 메가메뉴 행까지 렌더 */
+  rows?: "primary" | "all";
   className?: string;
 }
 
 function NavBar({
   primaryItems = DEFAULT_PRIMARY,
   menuItems = DEFAULT_MENU_ITEMS,
+  rows = "all",
   className,
 }: NavBarProps) {
   return (
@@ -89,57 +92,59 @@ function NavBar({
       </nav>
 
       {/* Row 2 — 카테고리 + 메가메뉴 */}
-      <NavigationMenu.Root className="relative bg-(--nav-menu-fill)">
-        <NavigationMenu.List className="flex px-8">
-          {menuItems.map((item, i) => (
-            <NavigationMenu.Item key={`${item.label}-${i}`}>
-              <NavigationMenu.Trigger className="group/navtrigger flex items-center gap-1 rounded-xs px-6 py-3 text-body-m text-font-white transition-colors outline-none hover:bg-states-hover-25 data-popup-open:bg-states-hover-25 data-popup-open:font-bold">
-                {item.label}
+      {rows === "all" && (
+        <NavigationMenu.Root className="relative bg-(--nav-menu-fill)">
+          <NavigationMenu.List className="flex px-8">
+            {menuItems.map((item, i) => (
+              <NavigationMenu.Item key={`${item.label}-${i}`}>
+                <NavigationMenu.Trigger className="group/navtrigger flex items-center gap-1 rounded-xs px-6 py-3 text-body-m text-font-white transition-colors outline-none hover:bg-states-hover-25 data-popup-open:bg-states-hover-25 data-popup-open:font-bold">
+                  {item.label}
+                  {item.menu && item.menu.length > 0 && (
+                    <ChevronDownIcon className="size-4 transition-transform group-data-popup-open/navtrigger:-rotate-180 [&_path]:fill-current" />
+                  )}
+                </NavigationMenu.Trigger>
                 {item.menu && item.menu.length > 0 && (
-                  <ChevronDownIcon className="size-4 transition-transform group-data-popup-open/navtrigger:-rotate-180 [&_path]:fill-current" />
+                  <NavigationMenu.Content className="flex gap-3 px-8 pt-4 pb-6">
+                    {item.menu.map((group, gi) => (
+                      <div
+                        key={group.title ?? gi}
+                        className="flex min-w-33 flex-col"
+                      >
+                        {group.title && (
+                          <span className="text-body-m-btn px-6 py-3 text-font-dark">
+                            {group.title}
+                          </span>
+                        )}
+                        {group.links.map((link) => (
+                          <NavigationMenu.Link
+                            key={link.label}
+                            href={link.href}
+                            className="rounded-xs px-6 py-3 text-body-m text-font-dark transition-colors hover:bg-states-hover"
+                          >
+                            {link.label}
+                          </NavigationMenu.Link>
+                        ))}
+                      </div>
+                    ))}
+                  </NavigationMenu.Content>
                 )}
-              </NavigationMenu.Trigger>
-              {item.menu && item.menu.length > 0 && (
-                <NavigationMenu.Content className="flex gap-3 px-8 pt-4 pb-6">
-                  {item.menu.map((group, gi) => (
-                    <div
-                      key={group.title ?? gi}
-                      className="flex min-w-33 flex-col"
-                    >
-                      {group.title && (
-                        <span className="text-body-m-btn px-6 py-3 text-font-dark">
-                          {group.title}
-                        </span>
-                      )}
-                      {group.links.map((link) => (
-                        <NavigationMenu.Link
-                          key={link.label}
-                          href={link.href}
-                          className="rounded-xs px-6 py-3 text-body-m text-font-dark transition-colors hover:bg-states-hover"
-                        >
-                          {link.label}
-                        </NavigationMenu.Link>
-                      ))}
-                    </div>
-                  ))}
-                </NavigationMenu.Content>
-              )}
-            </NavigationMenu.Item>
-          ))}
-        </NavigationMenu.List>
+              </NavigationMenu.Item>
+            ))}
+          </NavigationMenu.List>
 
-        <NavigationMenu.Portal>
-          <NavigationMenu.Positioner
-            className="z-50 outline-none"
-            sideOffset={0}
-            align="start"
-          >
-            <NavigationMenu.Popup className="bg-bg-default shadow-nav">
-              <NavigationMenu.Viewport />
-            </NavigationMenu.Popup>
-          </NavigationMenu.Positioner>
-        </NavigationMenu.Portal>
-      </NavigationMenu.Root>
+          <NavigationMenu.Portal>
+            <NavigationMenu.Positioner
+              className="z-50 outline-none"
+              sideOffset={0}
+              align="start"
+            >
+              <NavigationMenu.Popup className="bg-bg-default shadow-nav">
+                <NavigationMenu.Viewport />
+              </NavigationMenu.Popup>
+            </NavigationMenu.Positioner>
+          </NavigationMenu.Portal>
+        </NavigationMenu.Root>
+      )}
     </div>
   );
 }
