@@ -1,0 +1,122 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "ko-KR"
+tone_instructions: "간결하고 근거 있는 리뷰. docs/notion 의 프로젝트 컨벤션 기준으로 지적하고, 사소한 스타일은 이미 ESLint·Prettier·CI가 검증하므로 반복하지 않는다. 접근성·성능 최적화는 현 단계 범위 밖이므로 지적하지 않는다."
+
+reviews:
+  profile: "chill"
+  # 미해결 코멘트가 남아 있으면 승인 보류. 해결 시 자동으로 승인 상태로 전환.
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  sequence_diagrams: true
+  suggested_labels: false
+  auto_apply_labels: false
+  suggested_reviewers: false
+  auto_assign_reviewers: false
+
+  auto_review:
+    enabled: true
+    drafts: false
+    auto_incremental_review: true
+    # default 브랜치(dev)는 기본 대상. dev -> main 릴리스 PR도 리뷰.
+    base_branches:
+      - "main"
+    ignore_title_keywords:
+      - "WIP"
+      - "wip"
+
+  path_filters:
+    - "!**/storybook-static/**"
+    - "!**/playwright-report/**"
+    - "!**/test-results/**"
+    - "!**/.next/**"
+    - "!**/coverage/**"
+    - "!package-lock.json"
+    - "!**/*.tsbuildinfo"
+    - "!next-env.d.ts"
+    # scripts/generate-icons.ts 로 생성되는 자산. 직접 수정 대상이 아니면 리뷰 제외.
+    - "!src/assets/icons/**"
+
+  path_instructions:
+    - path: "src/**"
+      instructions: >
+        docs/notion/system-architecture.md 의 구조·의존성 원칙을 기준으로 검토한다.
+        코드는 기술적 역할(app, components, api, queries, types, hooks, lib, utils,
+        constants, stores) 기준으로 배치하고, 같은 역할 안에서는 도메인으로 묶는다.
+        특정 화면·도메인에서만 쓰는 코드를 성급하게 전역 공용 영역으로 올리지 않는다.
+        서버 상태, URL 상태, 폼 상태, 로컬 UI 상태, 전역 클라이언트 상태는 서로 다른
+        책임으로 분리한다.
+    - path: "src/api/**"
+      instructions: >
+        REST 호출, DTO 정의, 응답 검증(Zod), DTO→FE 모델 변환, 도메인별 mock 이 위치한다.
+        컴포넌트·훅에서 fetch 를 직접 사용하지 말고 공통 fetcher(src/lib/http)를 경유하는지,
+        HTTP 오류가 공통 fetcher에서 정규화되는지 확인한다.
+        API 계약은 docs/notion/frontend-api-contract.md 를 참고한다.
+    - path: "src/lib/http/**"
+      instructions: >
+        공통 fetcher. 기본 요청 처리와 HTTP 오류 정규화를 한 곳에서 담당한다.
+        인증은 JWT 를 Authorization Bearer 헤더로 전송하며, 토큰 주입·인증 헤더 처리는
+        이 계층에서만 하고 컴포넌트가 직접 다루지 않는지 확인한다.
+        (토큰 저장·갱신·401 처리 상세 규칙은 문서화 대기)
+    - path: "src/queries/**"
+      instructions: >
+        TanStack Query 로 조회·mutation 의 캐시·로딩·오류·무효화를 관리한다.
+        서버 데이터를 Zustand 등 전역 클라이언트 상태에 중복 저장하지 않는지 확인한다.
+    - path: "src/lib/isr/**"
+      instructions: >
+        ISR 재검증 경계 코드. docs/notion/isr-frontend-implementation.md 및
+        docs/notion/isr-backend-contract.md 의 계약과 일치하는지 확인한다.
+    - path: "src/components/ui/**"
+      instructions: >
+        shadcn/ui 기반 프로젝트 내부 컴포넌트. Tailwind semantic token 을 우선 사용하고,
+        디자인 시스템에 맞춘 내부 버전을 유지하는지 확인한다.
+    - path: "src/app/**"
+      instructions: >
+        Next.js route·layout·metadata 진입점. 기본은 Server Component 이고,
+        클라이언트 상태·이벤트·브라우저 API 가 필요한 최소 경계에서만 'use client' 를 선언하는지 본다.
+        상태별 책임 분리(design-token-integration.md 5.1): 로딩=Skeleton, 빈 데이터=EmptyState,
+        예상 가능한 오류=ErrorState 또는 폼 인라인, 예기치 않은 렌더링 오류=error.tsx, 없는 리소스=not-found.
+        error.tsx 는 렌더링 오류 격리 전용이며 REST 실패·입력 검증·404·권한부족을 담지 않고,
+        기술적 상세를 노출하지 않으며 fallback UI 와 재시도 경로를 제공하는지 확인한다.
+    - path: "**/{payment,payments,checkout}/**"
+      instructions: >
+        결제 흐름. 결제 완료를 결제 SDK 의 클라이언트 결과만으로 확정하지 않고,
+        결제 승인 API 의 성공 응답을 기준으로 주문 완료·주문 목록을 갱신하는지 확인한다.
+        비밀 키가 필요한 처리는 클라이언트에서 하지 않는다.
+    - path: "**/*.{ts,tsx}"
+      instructions: >
+        TypeScript 를 기본으로 하고 any·불필요한 단언을 지양한다.
+        이미지는 next/image 를 우선 사용한다. 폼은 React Hook Form + Zod 로 검증한다.
+        PR 체크리스트대로 console.log 와 불필요한 주석이 남아 있지 않은지 확인하고,
+        에러 처리가 되어 있는지 본다.
+    - path: "**/*.{test,spec}.{ts,tsx}"
+      instructions: >
+        Vitest + React Testing Library 컨벤션. 주요 동작·엣지 케이스·기존 기능 영향을
+        커버하는지 확인한다.
+    - path: "src/e2e/**"
+      instructions: >
+        Playwright E2E. 주요 구매·인증·판매자 흐름의 브라우저 단위 검증에 집중한다.
+
+  # 커밋 메시지 형식은 scripts/verify-commit-msg.ts 훅이 검증하므로 리뷰에서 중복 지적하지 않는다.
+
+chat:
+  art: false
+
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "AGENTS.md"
+      - "docs/notion/**"
+  linked_repositories:
+    - repository: "Jangingmall/backend"
+      instructions: >
+        결제·인증·상품·주문 등의 백엔드 REST API 서버. 프론트엔드와의 API 계약은
+        이 레포 docs/notion/frontend-api-contract.md, ISR 재검증 계약은
+        docs/notion/isr-backend-contract.md 를 기준으로 한다.
+
+tools:
+  # 한국어 주석·문서에서 오탐이 많아 비활성화. 문법 검사는 사람이 담당.
+  languagetool:
+    enabled: false
