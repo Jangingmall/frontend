@@ -16,6 +16,11 @@ import { cn } from "@/lib/utils";
  *
  * Item 의 *타입*은 Figma 디자인에서 확정 가능하지만 실제 카테고리 데이터는 미정 — 기본값은
  * 샘플. 반응형(모바일)은 미정.
+ *
+ * 주의: IA(글로벌 헤더 CM-1 / 메가패널 CM-2)는 이 Figma 구조와 다르다 — 내비는 링크 4~5개 +
+ * 「전체 카테고리」 전용 카테고리 브라우저 패널 1개(대분류 탭 + 소분류 그리드, 헤더 아래 공유
+ * 슬롯, 검색바와 배타)이고 클릭 시 목록으로 이동한다. 이 컴포넌트는 Figma 시각 구조만 담은
+ * 셸이라 항목 클릭 이동·활성 표시는 넣지 않았고, 화면 작업 때 IA 기준으로 재설계한다.
  */
 interface NavPrimaryItem {
   label: string;
@@ -31,7 +36,6 @@ interface NavMenuGroup {
 
 interface NavMenuItem {
   label: string;
-  href: string;
   /** 메가메뉴 소그룹들. 패널에서 가로로 나열된다. */
   menu?: NavMenuGroup[];
 }
@@ -54,7 +58,6 @@ const DEFAULT_PRIMARY: NavPrimaryItem[] = [
 
 const DEFAULT_MENU_ITEMS: NavMenuItem[] = Array.from({ length: 7 }, () => ({
   label: "키친 · 다이닝",
-  href: "#",
   menu: SAMPLE_MENU,
 }));
 

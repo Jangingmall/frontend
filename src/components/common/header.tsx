@@ -18,13 +18,12 @@ const LOGO_PLACEHOLDER = (
   </span>
 );
 
-function HeaderIconButton({
-  label,
-  children,
-}: {
+interface HeaderIconButtonProps {
   label: string;
   children: ReactNode;
-}) {
+}
+
+function HeaderIconButton({ label, children }: HeaderIconButtonProps) {
   return (
     <button
       type="button"

@@ -12,7 +12,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function Interactive({ pageCount }: { pageCount: number }) {
+interface InteractiveProps {
+  pageCount: number;
+}
+
+function Interactive({ pageCount }: InteractiveProps) {
   const [page, setPage] = useState(1);
   return (
     <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
