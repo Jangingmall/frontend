@@ -10,12 +10,17 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## 프로젝트 구조와 컨벤션
 
-작업 전에 아래 문서를 읽는다:
+작업 전에 관련 설계 문서를 읽는다. `docs/` 바로 아래:
 
-- 디렉터리 구조, 역할별 배치, 의존성 방향: `docs/notion/system-architecture.md`
-- Git 브랜치·커밋·코드 컨벤션: `docs/notion/git-convention.md`
-
-그 외 API 연동·ISR 재검증·라우팅 계약은 `docs/notion/` 아래 문서를 참고한다.
+- `architecture.md` — `src/` 디렉터리 구조·역할별 책임, 의존성 방향, import 규칙, 기술 스택
+- `conventions.md` — 네이밍·파일 규칙, type/interface, 컴포넌트, Server/Client Component, 주석
+- `data-layer.md` — 공통 fetcher, TanStack Query, DTO 검증·변환, 상태 경계, 폼, 에러 처리
+- `api-contract.md` — 공통 응답 봉투·타입 규칙·errorCode, 도메인별 엔드포인트 (BE 명세 파생)
+- `routing-and-auth.md` — URL 설계·Route Map, 인증 라이프사이클, 보호 라우트 가드, proxy, SEO
+- `isr.md` — ISR 캐시 원칙, 태그 계약, 재검증 웹훅
+- `ui-system.md` — 디자인 토큰, 컴포넌트 분류, 상태 표현 컴포넌트
+- `testing.md` — Vitest/Playwright/Storybook/MSW 배치·규칙, CI
+- `git-convention.md` — 브랜치·커밋·GitHub 운영 (프로세스)
 
 ## 명령어
 

@@ -17,7 +17,7 @@ function fail(reason: string): never {
     '  형식: "type: subject" — 헤더 한 줄만, 마침표 없이, 50자 이내',
   );
   console.error(`  type: ${COMMIT_TYPES.join(", ")}`);
-  console.error("  참고: docs/notion/git-convention.md 3장");
+  console.error("  참고: docs/git-convention.md 3장");
   process.exit(1);
 }
 
