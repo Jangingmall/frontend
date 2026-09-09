@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+
 import { z } from "zod";
 
 const MAX_TIMESTAMP_AGE_SECONDS = 5 * 60;

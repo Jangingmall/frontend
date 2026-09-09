@@ -1,5 +1,7 @@
 import { createHmac } from "node:crypto";
+
 import { describe, expect, it, vi } from "vitest";
+
 import { RevalidationRequestError, verifyAndRevalidate } from "./revalidation";
 
 const secret = "revalidate-test-secret";

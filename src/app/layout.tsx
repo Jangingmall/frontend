@@ -1,8 +1,10 @@
+import "./globals.css";
+
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { QueryProvider } from "./query-provider";
+
 import { pretendard } from "./fonts";
-import "./globals.css";
+import { QueryProvider } from "./query-provider";
 
 export const metadata: Metadata = {
   title: "장인몰",

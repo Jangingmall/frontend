@@ -1,13 +1,14 @@
 "use client";
 
 import { Input as InputPrimitive } from "@base-ui/react/input";
-import { useRef, useState } from "react";
 import type { Ref } from "react";
+import { useRef, useState } from "react";
 
-import { CancelIcon, SearchIcon } from "@/components/ui/icons";
 import { setNativeInputValue } from "@/lib/dom";
 import { useMergeRefs } from "@/lib/merge-refs";
 import { cn } from "@/lib/utils";
+
+import { CancelIcon, SearchIcon } from "./icons";
 
 /**
  * Figma `[FE] Components / search-field` set. 하단 밑줄만 있는 검색 입력 + 우측 돋보기.

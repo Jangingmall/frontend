@@ -3,8 +3,9 @@
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import type { ReactNode } from "react";
 
-import { ChevronDownIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
+
+import { ChevronDownIcon } from "./icons";
 
 /**
  * Figma `[FE] Components` 의 select-box(trigger) + select-box-module 1/2(옵션 패널)를 하나로
@@ -108,4 +109,4 @@ function SelectItem({
 }
 
 export { Select, SelectItem };
-export type { SelectProps, SelectItemProps };
+export type { SelectItemProps, SelectProps };

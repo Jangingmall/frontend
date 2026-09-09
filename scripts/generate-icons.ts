@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+
 import { transform } from "@svgr/core";
 import jsx from "@svgr/plugin-jsx";
 import svgo from "@svgr/plugin-svgo";

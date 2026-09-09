@@ -1,8 +1,9 @@
 import type { ComponentProps, ReactNode } from "react";
 
-import { Cart } from "@/components/common/cart";
 import { ProfileIcon, SearchIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
+
+import { Cart } from "./cart";
 
 /**
  * Figma `[FE] Components / Navigation-bar` 의 `header` set (1440×70, `--fill-neutral-impact`

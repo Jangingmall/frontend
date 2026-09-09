@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { Pagination, getPageWindow } from "./pagination";
+import { getPageWindow, Pagination } from "./pagination";
 
 describe("getPageWindow", () => {
   it("전체 페이지가 5 이하면 전부 노출한다", () => {

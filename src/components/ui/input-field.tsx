@@ -2,13 +2,14 @@
 
 import { Field } from "@base-ui/react/field";
 import { Input as InputPrimitive } from "@base-ui/react/input";
-import { useRef, useState } from "react";
 import type { ReactNode, Ref } from "react";
+import { useRef, useState } from "react";
 
-import { CancelIcon, EyeIcon, EyeOffIcon } from "@/components/ui/icons";
 import { setNativeInputValue } from "@/lib/dom";
 import { useMergeRefs } from "@/lib/merge-refs";
 import { cn } from "@/lib/utils";
+
+import { CancelIcon, EyeIcon, EyeOffIcon } from "./icons";
 
 /**
  * Figma `[FE] Components / input-field` set. States(default/selected/typing/filled/error +

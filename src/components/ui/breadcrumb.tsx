@@ -1,8 +1,9 @@
-import { Children, isValidElement } from "react";
 import type { ReactNode } from "react";
+import { Children, isValidElement } from "react";
 
-import { ChevronRightIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
+
+import { ChevronRightIcon } from "./icons";
 
 /**
  * Figma `[FE] Components / bread crumb` set. 경로 표시.

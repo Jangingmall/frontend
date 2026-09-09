@@ -148,4 +148,4 @@ function Footer({
 }
 
 export { Footer };
-export type { FooterProps, FooterColumn, FooterColumnItem };
+export type { FooterColumn, FooterColumnItem, FooterProps };

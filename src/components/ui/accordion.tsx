@@ -3,8 +3,9 @@
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion";
 import type { ComponentProps, ReactNode } from "react";
 
-import { ChevronDownIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
+
+import { ChevronDownIcon } from "./icons";
 
 /**
  * Figma Board-Row (`filter-mothercomponents` + `filter-descendant`). 항목을 접었다 펴는 리스트 —
@@ -93,4 +94,4 @@ function AccordionItem({
 }
 
 export { Accordion, AccordionItem };
-export type { AccordionProps, AccordionItemProps };
+export type { AccordionItemProps, AccordionProps };

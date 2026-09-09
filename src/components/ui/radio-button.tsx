@@ -69,5 +69,5 @@ function Radio({ className, children, disabled, ...props }: RadioProps) {
   );
 }
 
-export { RadioGroup, Radio };
+export { Radio, RadioGroup };
 export type { RadioProps };
