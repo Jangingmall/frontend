@@ -1,13 +1,14 @@
 import { cva } from "class-variance-authority";
 import type { ComponentProps } from "react";
 
+import { cn } from "@/lib/utils";
+
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   EndPointIcon,
   StartPointIcon,
-} from "@/components/ui/icons";
-import { cn } from "@/lib/utils";
+} from "./icons";
 
 /**
  * Figma `[FE] Components / Selecter` 의 `selecter` set → `Type=pagenation` (36×36, `rounded-xs`,
@@ -132,5 +133,5 @@ function getPageWindow(page: number, pageCount: number): number[] {
   return Array.from({ length: size }, (_, i) => start + i);
 }
 
-export { Pagination, paginationButtonVariants, getPageWindow };
+export { getPageWindow, Pagination, paginationButtonVariants };
 export type { PaginationProps };

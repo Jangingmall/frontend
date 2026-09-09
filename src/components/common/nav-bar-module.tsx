@@ -2,11 +2,12 @@
 
 import type { ReactNode } from "react";
 
-import { Header } from "@/components/common/header";
-import { NavBar } from "@/components/common/nav-bar";
-import type { NavMenuItem, NavPrimaryItem } from "@/components/common/nav-bar";
 import { SearchField } from "@/components/ui/search-field";
 import { cn } from "@/lib/utils";
+
+import { Header } from "./header";
+import type { NavMenuItem, NavPrimaryItem } from "./nav-bar";
+import { NavBar } from "./nav-bar";
 
 /**
  * Figma `[FE] Components / usage of nav-bar` 의 `nav-bar-module` set. Header + NavBar 를

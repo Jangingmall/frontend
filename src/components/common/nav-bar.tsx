@@ -153,4 +153,4 @@ function NavBar({
 }
 
 export { NavBar };
-export type { NavBarProps, NavPrimaryItem, NavMenuItem, NavMenuGroup };
+export type { NavBarProps, NavMenuGroup, NavMenuItem, NavPrimaryItem };

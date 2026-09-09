@@ -3,8 +3,9 @@
 import { NumberField } from "@base-ui/react/number-field";
 import { cva, type VariantProps } from "class-variance-authority";
 
-import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
+
+import { MinusIcon, PlusIcon } from "./icons";
 
 /**
  * Figma `[FE] Components / stepper` set 은 +/− 버튼 하나만 정의한다(Size m 36 / s 24,

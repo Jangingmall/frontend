@@ -1,6 +1,6 @@
-import { createRef, useRef } from "react";
-import type { Ref } from "react";
 import { render } from "@testing-library/react";
+import type { Ref } from "react";
+import { createRef, useRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { mergeRefs, useMergeRefs } from "./merge-refs";
