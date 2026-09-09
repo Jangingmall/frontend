@@ -2,6 +2,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import prettier from "eslint-config-prettier/flat";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 
 // 아키텍처 §12.2: 역할별 의존성 방향. 크로스-롤 참조는 항상 @/ 절대 경로(§12.1)이므로
 // import specifier 문자열 매칭으로 강제한다.
@@ -14,6 +15,21 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   prettier,
+  {
+    // import 문 그룹·순서 정렬. 그룹: ① side-effect → ② node: 빌트인 →
+    // ③ 외부 패키지(react·next·@scope/*) → ④ @/ 별칭 → ⑤ 상대 경로.
+    // 그룹 사이 빈 줄, 그룹 내 알파벳 정렬. (§12 의 역할 경계는 no-restricted-imports 가 담당)
+    plugins: { "simple-import-sort": simpleImportSort },
+    rules: {
+      "simple-import-sort/imports": [
+        "error",
+        {
+          groups: [["^\\u0000"], ["^node:"], ["^@?\\w"], ["^@/"], ["^\\."]],
+        },
+      ],
+      "simple-import-sort/exports": "error",
+    },
+  },
   {
     // 아키텍처 §12.1: 상위 디렉터리로 올라가는 상대 경로 import 금지 — 같은 디렉터리를
     // 벗어나는 참조는 항상 @/ 절대 경로를 사용한다. (이 규칙이 순수 문자열 매칭이라
