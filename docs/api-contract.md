@@ -91,12 +91,12 @@ type PagedResponse<T> = {
 
 ## 3. 역할과 인가
 
-| Role           | 대상     | 주요 권한                                   |
-| -------------- | -------- | ------------------------------------------- |
-| Guest (비인증) | 미로그인 | 상품·장인 조회, 챗봇, 게스트 장바구니(쿠키) |
-| `USER`         | 소비자   | 장바구니, 주문·결제, 찜, 후기, 배송지       |
-| `ARTISAN`      | 판매자   | `USER` + 상품·콘텐츠·장인 프로필 관리       |
-| `ADMIN`        | 운영자   | 장인 가입 승인·반려                         |
+| Role           | 대상     | 주요 권한                                                |
+| -------------- | -------- | -------------------------------------------------------- |
+| Guest (비인증) | 미로그인 | 상품·장인 조회, 챗봇, 게스트 장바구니(localStorage — §8) |
+| `USER`         | 소비자   | 장바구니, 주문·결제, 찜, 후기, 배송지                    |
+| `ARTISAN`      | 판매자   | `USER` + 상품·콘텐츠·장인 프로필 관리                    |
+| `ADMIN`        | 운영자   | 장인 가입 승인·반려                                      |
 
 - FE는 `user.roles: Role[]` 배열로 판단한다(판매자는 `["USER","ARTISAN"]`). 라우트 가드는 [routing-and-auth.md](routing-and-auth.md) §5.
 - API별 인증 수준(`Public` / `Public(게스트)` / `Authenticated` / `USER` / `ARTISAN` / `ADMIN`)은 BE `PHASE2-2` §5 표 기준.
@@ -219,7 +219,7 @@ type PagedResponse<T> = {
 | 배송      | `GET /api/payments/orders/{orderId}/delivery`                                                                                                                                                            |
 | 이미지    | `POST /api/images/presigned-url` — imageId별 320w/640w/1280w WebP variant 업로드 URL 발급, 5분 유효                                                                                                      |
 
-- 게스트 장바구니 key는 클라이언트 localStorage로 관리하고 로그인 시 `POST /api/payments/cart/merge`로 병합한다(동일 상품 수량 합산).
+- 게스트 장바구니는 클라이언트 localStorage로 관리한다(쿠키 아님). 로그인 시 `POST /api/payments/cart/merge`에 `guestCartItems: [{ productId, quantity, selectedOptions }]` 배열을 전달해 병합한다(동일 상품 수량 합산). PHASE2-1 §5-8 기준.
 - **결제 완료는 결제 SDK 클라이언트 결과만으로 확정하지 않는다.** `POST /api/payments`로 `paymentId` + `tossClientKey`를 받아 위젯을 마운트하고, 결제 후 `paymentKey`/`orderId`/`amount`를 `POST /api/payments/confirm`에 전달한다. **결제 승인 API의 성공 응답을 기준으로** 주문 완료·주문 목록을 갱신한다.
 - 주문 상태: `CREATED`, `PAID`, `PAYMENT_FAILED`, `CANCELED`, `DELIVERED`. 반품 상태(`REQUESTED` 등)는 주문 상태와 별도 관리.
 - 결제수단·환불계좌 API(`/api/payments/methods`, `/api/payments/refund-account`)는 BE `보류(추후 구현)`.
@@ -233,6 +233,7 @@ type PagedResponse<T> = {
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | errorCode 목록 정합          | `ErrorCode.java` ↔ `장인몰_API_계약서_공개조회.md`(§0-4) ↔ `PHASE2-1` 간 불일치 (`EXPIRED` vs `RESOURCE_EXPIRED`, `MISMATCH` 미반영, `TOKEN_*`). BE 단일화. FE는 `code: string` unknown-safe로 흡수 중 |
 | 페이지네이션 파라미터·응답   | `page`/`offset` 추가 요청 발신. 최종 파라미터·응답 형태 (§2.4)                                                                                                                                         |
+| 게스트 장바구니 저장 방식    | PHASE2-2(쿠키 기반) vs PHASE2-1 §5-8(localStorage + `guestCartItems`) 불일치. FE는 PHASE2-1 상세 계약 기준 localStorage 채택. BE 확정 필요                                                             |
 | login·refresh 응답 user 포함 | 응답 `data`에 `{ accessToken, user }` 포함 여부. 현재 FE는 `GET /api/member/me` 추가 호출 가정                                                                                                         |
 | `giftTheme` 영문 코드값      | `HOUSEWARMING` 등 BE 임의 지정 — PM 확정                                                                                                                                                               |
 | `color` 전체 목록            | PM 자료 "등" 표기 — 확정 목록 재확인                                                                                                                                                                   |
