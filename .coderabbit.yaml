@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 
 language: "ko-KR"
-tone_instructions: "간결하고 근거 있는 리뷰. docs/notion 의 프로젝트 컨벤션 기준으로 지적하고, 사소한 스타일은 이미 ESLint·Prettier·CI가 검증하므로 반복하지 않는다. 접근성·성능 최적화는 현 단계 범위 밖이므로 지적하지 않는다."
+tone_instructions: "간결하고 근거 있는 리뷰. docs/ 의 설계 문서 기준으로 지적하고, 사소한 스타일은 이미 ESLint·Prettier·CI가 검증하므로 반복하지 않는다. 접근성·성능 최적화는 현 단계 범위 밖이므로 지적하지 않는다."
 
 reviews:
   profile: "chill"
@@ -41,44 +41,51 @@ reviews:
   path_instructions:
     - path: "src/**"
       instructions: >
-        docs/notion/system-architecture.md 의 구조·의존성 원칙을 기준으로 검토한다.
+        docs/architecture.md 의 구조·의존성 원칙을 기준으로 검토한다.
         코드는 기술적 역할(app, components, api, queries, types, hooks, lib, utils,
         constants, stores) 기준으로 배치하고, 같은 역할 안에서는 도메인으로 묶는다.
         특정 화면·도메인에서만 쓰는 코드를 성급하게 전역 공용 영역으로 올리지 않는다.
+        의존성 방향(docs/architecture.md §8)과 네이밍·컴포넌트 규칙(docs/conventions.md)을 확인한다.
         서버 상태, URL 상태, 폼 상태, 로컬 UI 상태, 전역 클라이언트 상태는 서로 다른
-        책임으로 분리한다.
+        책임으로 분리한다(docs/data-layer.md §7).
     - path: "src/api/**"
       instructions: >
         REST 호출, DTO 정의, 응답 검증(Zod), DTO→FE 모델 변환, 도메인별 mock 이 위치한다.
-        컴포넌트·훅에서 fetch 를 직접 사용하지 말고 공통 fetcher(src/lib/http)를 경유하는지,
-        HTTP 오류가 공통 fetcher에서 정규화되는지 확인한다.
-        API 계약은 docs/notion/frontend-api-contract.md 를 참고한다.
+        컴포넌트·훅에서 fetch 를 직접 사용하지 말고 fetcher(src/lib/http)를 경유하는지,
+        모든 응답을 validation.ts 스키마로 검증 후 mapper.ts 로 camelCase 변환하는지 확인한다.
+        계층 규칙은 docs/data-layer.md, 엔드포인트·공통 봉투·errorCode 는 docs/api-contract.md 참고.
     - path: "src/lib/http/**"
       instructions: >
-        공통 fetcher. 기본 요청 처리와 HTTP 오류 정규화를 한 곳에서 담당한다.
-        인증은 JWT 를 Authorization Bearer 헤더로 전송하며, 토큰 주입·인증 헤더 처리는
-        이 계층에서만 하고 컴포넌트가 직접 다루지 않는지 확인한다.
-        (토큰 저장·갱신·401 처리 상세 규칙은 문서화 대기)
+        fetcher 계층. 서버 fetcher(fetcher.ts)와 클라이언트 fetcher(client.ts)로 나뉜다.
+        클라이언트 fetcher는 상대경로 /api, access token 을 Authorization Bearer 로 주입,
+        401 시 single-flight refresh 후 1회 재시도. 토큰·인증 헤더 처리는 이 계층에서만 하고
+        컴포넌트가 직접 다루지 않는지 확인한다. 상세는 docs/data-layer.md §4, docs/routing-and-auth.md §4.
     - path: "src/queries/**"
       instructions: >
-        TanStack Query 로 조회·mutation 의 캐시·로딩·오류·무효화를 관리한다.
-        서버 데이터를 Zustand 등 전역 클라이언트 상태에 중복 저장하지 않는지 확인한다.
+        TanStack Query 로 조회·mutation 의 캐시·무효화를 관리한다(docs/data-layer.md §6).
+        query key 는 도메인별 keys.ts 팩토리로만 생성. 조회 기본 throwOnError:false,
+        전역 onError 는 부수효과(401/403/429/5xx) 전용. 목록은 page 파라미터 기반 번호 페이지네이션.
+        서버 데이터를 Zustand 등에 중복 저장하지 않는지 확인한다.
+    - path: "src/stores/**"
+      instructions: >
+        Zustand 전역 클라이언트 상태. 실제 필요한 책임 단위로만 생성하고 서버 상태를 중복 저장하지 않는다.
+        인증 store(stores/auth.ts)는 persist 하지 않는다(access token 은 메모리 유지). docs/routing-and-auth.md §4.1.
     - path: "src/lib/isr/**"
       instructions: >
-        ISR 재검증 경계 코드. docs/notion/isr-frontend-implementation.md 및
-        docs/notion/isr-backend-contract.md 의 계약과 일치하는지 확인한다.
+        ISR 재검증 경계 코드. docs/isr.md 의 태그 계약·웹훅 검증 순서(HMAC → timestamp → DTO → 태그)와
+        일치하는지, 태그 문자열을 tags 팩토리로 생성하는지 확인한다.
     - path: "src/components/ui/**"
       instructions: >
-        shadcn/ui 기반 프로젝트 내부 컴포넌트. Tailwind semantic token 을 우선 사용하고,
-        디자인 시스템에 맞춘 내부 버전을 유지하는지 확인한다.
+        shadcn/ui 기반 프로젝트 내부 컴포넌트. semantic token 을 우선 사용하고 임의 색상·간격·크기
+        값을 직접 쓰지 않는지, cn()/cva 패턴을 따르는지 확인한다(docs/ui-system.md).
     - path: "src/app/**"
       instructions: >
         Next.js route·layout·metadata 진입점. 기본은 Server Component 이고,
         클라이언트 상태·이벤트·브라우저 API 가 필요한 최소 경계에서만 'use client' 를 선언하는지 본다.
-        상태별 책임 분리(design-token-integration.md 5.1): 로딩=Skeleton, 빈 데이터=EmptyState,
+        보호 라우트는 (protected)·(seller) route group layout 가드로 처리(docs/routing-and-auth.md §5).
+        상태별 책임 분리(docs/ui-system.md §7): 로딩=Skeleton, 빈 데이터=EmptyState,
         예상 가능한 오류=ErrorState 또는 폼 인라인, 예기치 않은 렌더링 오류=error.tsx, 없는 리소스=not-found.
-        error.tsx 는 렌더링 오류 격리 전용이며 REST 실패·입력 검증·404·권한부족을 담지 않고,
-        기술적 상세를 노출하지 않으며 fallback UI 와 재시도 경로를 제공하는지 확인한다.
+        error.tsx 는 렌더링 오류 격리 전용이며 REST 실패·입력 검증·404·권한부족을 담지 않는다.
     - path: "**/{payment,payments,checkout}/**"
       instructions: >
         결제 흐름. 결제 완료를 결제 SDK 의 클라이언트 결과만으로 확정하지 않고,
@@ -86,17 +93,17 @@ reviews:
         비밀 키가 필요한 처리는 클라이언트에서 하지 않는다.
     - path: "**/*.{ts,tsx}"
       instructions: >
-        TypeScript 를 기본으로 하고 any·불필요한 단언을 지양한다.
-        이미지는 next/image 를 우선 사용한다. 폼은 React Hook Form + Zod 로 검증한다.
-        PR 체크리스트대로 console.log 와 불필요한 주석이 남아 있지 않은지 확인하고,
-        에러 처리가 되어 있는지 본다.
+        TypeScript 를 기본으로 하고 any·불필요한 단언을 지양한다. type/interface 사용 기준은
+        docs/conventions.md §4. 이미지는 next/image 를 우선 사용한다. 폼은 React Hook Form + Zod,
+        필드 검증은 클라이언트 Zod 가 기준이고 서버 INVALID_INPUT 은 폼 레벨로만 표시한다.
+        PR 체크리스트대로 console.log 와 불필요한 주석이 남아 있지 않은지, 에러 처리가 되어 있는지 본다.
     - path: "**/*.{test,spec}.{ts,tsx}"
       instructions: >
-        Vitest + React Testing Library 컨벤션. 주요 동작·엣지 케이스·기존 기능 영향을
-        커버하는지 확인한다.
+        Vitest + React Testing Library 컨벤션(docs/testing.md). 시각·변형은 Storybook story,
+        DOM 상호작용은 .test.tsx. api/{domain}/validation.ts·mapper.ts, 도메인 훅, 폼은 테스트 대상.
     - path: "src/e2e/**"
       instructions: >
-        Playwright E2E. 주요 구매·인증·판매자 흐름의 브라우저 단위 검증에 집중한다.
+        Playwright E2E. 주요 구매·인증·판매자 흐름의 브라우저 단위 검증에 집중한다(docs/testing.md §6).
 
   # 커밋 메시지 형식은 scripts/verify-commit-msg.ts 훅이 검증하므로 리뷰에서 중복 지적하지 않는다.
 
@@ -108,13 +115,13 @@ knowledge_base:
     enabled: true
     filePatterns:
       - "AGENTS.md"
-      - "docs/notion/**"
+      - "docs/**"
   linked_repositories:
     - repository: "Jangingmall/backend"
       instructions: >
-        결제·인증·상품·주문 등의 백엔드 REST API 서버. 프론트엔드와의 API 계약은
-        이 레포 docs/notion/frontend-api-contract.md, ISR 재검증 계약은
-        docs/notion/isr-backend-contract.md 를 기준으로 한다.
+        결제·인증·상품·주문 등의 백엔드 REST API 서버. 프론트엔드와의 API 계약 요약은
+        이 레포 docs/api-contract.md, ISR 재검증 계약은 docs/isr.md 를 참고하고,
+        상세 명세는 백엔드 레포의 docs/ 및 REST Docs 가 기준이다.
 
 tools:
   # 한국어 주석·문서에서 오탐이 많아 비활성화. 문법 검사는 사람이 담당.
