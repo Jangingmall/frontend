@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
  */
 interface ToastProps {
   children: ReactNode;
-  /** 있으면 오른쪽에 액션 버튼 노출 */
+  /** `onAction` 과 함께 있어야 오른쪽에 액션 버튼이 노출된다 */
   actionLabel?: string;
   onAction?: () => void;
   className?: string;
@@ -31,7 +31,7 @@ function Toast({ children, actionLabel, onAction, className }: ToastProps) {
       )}
     >
       <span className="px-6 text-body-s text-font-white">{children}</span>
-      {actionLabel != null && (
+      {actionLabel != null && onAction != null && (
         <button
           type="button"
           onClick={onAction}
