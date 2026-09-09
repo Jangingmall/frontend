@@ -13,8 +13,12 @@ import { cn } from "@/lib/utils";
  *   - 채워진 구간: `--fill-neutral-impact`(#121B29)
  *   - thumb: 흰 원 + `shadow-floating`(그림자는 Figma 노드엔 없지만 시안상 존재 — 임의 반영)
  *   - 아래 min/max 라벨(옵션): `text-caption`(10px) `--font-dark-subtle`
- * `value`/`defaultValue` 가 배열이면 range(thumb 2개).
+ *
+ * `value`/`defaultValue` 가 `[number, number]` 면 range(thumb 2개), `number` 면 단일.
+ * 디자인 시스템상 슬라이더는 단일 또는 최소~최대 range 뿐이라 3개 이상 thumb 는 지원하지 않는다.
  */
+type SliderValue = number | [number, number];
+
 const sliderThumbVariants = cva(
   "rounded-full bg-bg-default shadow-floating outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill",
   {
@@ -25,11 +29,18 @@ const sliderThumbVariants = cva(
 
 interface SliderProps
   extends
-    Omit<SliderPrimitive.Root.Props, "className" | "render">,
+    Omit<
+      SliderPrimitive.Root.Props,
+      "className" | "render" | "value" | "defaultValue"
+    >,
     VariantProps<typeof sliderThumbVariants> {
+  value?: SliderValue;
+  defaultValue?: SliderValue;
   className?: string;
   minLabel?: ReactNode;
   maxLabel?: ReactNode;
+  /** thumb 접근성 이름. 미지정 시 range 는 "최소값"/"최대값", 단일은 "값" */
+  getAriaLabel?: (index: number) => string;
 }
 
 function Slider({
@@ -39,9 +50,13 @@ function Slider({
   maxLabel,
   value,
   defaultValue,
+  getAriaLabel,
   ...props
 }: SliderProps) {
   const isRange = Array.isArray(value ?? defaultValue);
+  const thumbAriaLabel =
+    getAriaLabel ??
+    ((index: number) => (isRange ? (index === 0 ? "최소값" : "최대값") : "값"));
 
   return (
     <SliderPrimitive.Root
@@ -67,15 +82,18 @@ function Slider({
             <>
               <SliderPrimitive.Thumb
                 index={0}
+                getAriaLabel={thumbAriaLabel}
                 className={cn(sliderThumbVariants({ size }))}
               />
               <SliderPrimitive.Thumb
                 index={1}
+                getAriaLabel={thumbAriaLabel}
                 className={cn(sliderThumbVariants({ size }))}
               />
             </>
           ) : (
             <SliderPrimitive.Thumb
+              getAriaLabel={thumbAriaLabel}
               className={cn(sliderThumbVariants({ size }))}
             />
           )}
@@ -93,4 +111,4 @@ function Slider({
 }
 
 export { Slider, sliderThumbVariants };
-export type { SliderProps };
+export type { SliderProps, SliderValue };
