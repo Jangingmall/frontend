@@ -2,9 +2,11 @@
 
 import { Input as InputPrimitive } from "@base-ui/react/input";
 import { useRef, useState } from "react";
+import type { Ref } from "react";
 
 import { CancelIcon, SearchIcon } from "@/components/ui/icons";
 import { setNativeInputValue } from "@/lib/dom";
+import { useMergeRefs } from "@/lib/merge-refs";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,6 +22,8 @@ interface SearchFieldProps extends Omit<
   InputPrimitive.Props,
   "type" | "className"
 > {
+  /** base-ui `Input.Props` 는 ref 를 omit 하므로 명시. 내부 ref 와 합쳐 `<input>` 에 연결된다. */
+  ref?: Ref<HTMLInputElement>;
   /** Enter 또는 돋보기 클릭 시 현재 값으로 호출 */
   onSearch?: (value: string) => void;
   /** 값이 있을 때 clear(X) 버튼 노출 (기본 true) */
@@ -29,6 +33,7 @@ interface SearchFieldProps extends Omit<
 }
 
 function SearchField({
+  ref,
   onSearch,
   clearable = true,
   className,
@@ -41,6 +46,7 @@ function SearchField({
   ...props
 }: SearchFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const mergedRef = useMergeRefs(inputRef, ref);
   // controlled 면 `value` 에서 직접 파생(외부에서 바뀌어도 정확). uncontrolled 면 state 로 추적.
   const [uncontrolledHasValue, setUncontrolledHasValue] = useState(
     () => String(defaultValue ?? "").length > 0,
@@ -73,7 +79,7 @@ function SearchField({
       )}
     >
       <InputPrimitive
-        ref={inputRef}
+        ref={mergedRef}
         type="search"
         disabled={disabled}
         value={value}

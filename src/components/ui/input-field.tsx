@@ -3,10 +3,11 @@
 import { Field } from "@base-ui/react/field";
 import { Input as InputPrimitive } from "@base-ui/react/input";
 import { useRef, useState } from "react";
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 
 import { CancelIcon, EyeIcon, EyeOffIcon } from "@/components/ui/icons";
 import { setNativeInputValue } from "@/lib/dom";
+import { useMergeRefs } from "@/lib/merge-refs";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,6 +24,8 @@ import { cn } from "@/lib/utils";
  * variant 는 없어서 opacity 로 임의 처리(디자이너 확인 필요).
  */
 interface InputFieldProps extends Omit<InputPrimitive.Props, "className"> {
+  /** base-ui `Input.Props` 는 ref 를 omit 하므로 명시. 내부 ref 와 합쳐 `<input>` 에 연결된다. */
+  ref?: Ref<HTMLInputElement>;
   label?: ReactNode;
   helperText?: ReactNode;
   /** 있으면 error 상태 + 이 메시지를 도움말 자리에 표시 */
@@ -36,6 +39,7 @@ interface InputFieldProps extends Omit<InputPrimitive.Props, "className"> {
 }
 
 function InputField({
+  ref,
   label,
   helperText,
   error,
@@ -50,6 +54,7 @@ function InputField({
   ...props
 }: InputFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const mergedRef = useMergeRefs(inputRef, ref);
   const [revealed, setRevealed] = useState(false);
   // controlled 면 `value` 에서 직접 파생(외부에서 바뀌어도 정확). uncontrolled 면 state 로 추적.
   const [uncontrolledHasValue, setUncontrolledHasValue] = useState(
@@ -59,7 +64,8 @@ function InputField({
     value !== undefined ? String(value).length > 0 : uncontrolledHasValue;
 
   const isPassword = type === "password";
-  const resolvedType = isPassword && revealed ? "text" : type;
+  // disabled 면 revealed 가 true 여도 평문을 노출하지 않는다.
+  const resolvedType = isPassword && revealed && !disabled ? "text" : type;
 
   const handleValueChange: NonNullable<
     InputPrimitive.Props["onValueChange"]
@@ -95,7 +101,7 @@ function InputField({
         )}
       >
         <InputPrimitive
-          ref={inputRef}
+          ref={mergedRef}
           type={resolvedType}
           disabled={disabled}
           value={value}
@@ -120,7 +126,7 @@ function InputField({
           </button>
         )}
 
-        {isPassword && (
+        {isPassword && !disabled && (
           <button
             type="button"
             onClick={() => setRevealed((prev) => !prev)}
