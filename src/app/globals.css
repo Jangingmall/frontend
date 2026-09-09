@@ -201,10 +201,10 @@
   --bg-subtle: var(--jade-blue-50);
   --bg-skeleton: var(--jade-blue-400);
   /* Figma 변수명 그대로("bg-deam"은 오타로 보이나 — 아마 "dim" — 원본 유지).
-     순수 검정 50% — primitive --black(#101010)이 아니라 raw #000000. Figma 에서
-     cool-grey-900 50% → #000000 50% 로 변경됨(2026-09-07 사용자 확인, 변수 API 스코프가
-     없어 Dev Mode 값으로 반영). shadow 토큰과 같은 rgb(0 0 0 / N%) 표기 사용. */
-  --bg-deam: rgb(0 0 0 / 50%);
+     순수 검정 75% — primitive --black(#101010)이 아니라 raw #000000. Figma 에서
+     cool-grey-900 50% → #000000 50% → 75% 로 변경됨(2026-09-09 사용자 확인, 변수 API
+     스코프가 없어 Dev Mode 값으로 반영). shadow 토큰과 같은 rgb(0 0 0 / N%) 표기 사용. */
+  --bg-deam: rgb(0 0 0 / 75%);
 
   --fill-jade: var(--jade-blue-500);
   --fill-jade-impact: var(--jade-blue-700);
