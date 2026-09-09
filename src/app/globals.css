@@ -78,6 +78,20 @@
   --text-caption--font-weight: 400;
 }
 
+/* Button 전용 텍스트 스타일. Figma 가 foundation 13종에 없는 `body-l-btn`(16px/500),
+   `title-l-cta`(20px/600) 를 Button 라벨에 쓴다 — weight·size 가 가장 가까운 foundation
+   토큰(`body-l`=16/400, `title-l`=22/600)과 어긋나서 Button 크기명으로 별도 등록한다.
+   m 이하 크기는 foundation `text-body-m`/`text-body-s` 를 그대로 재사용한다. */
+@theme {
+  --text-button-xl: 1rem;
+  --text-button-xl--line-height: 1.5;
+  --text-button-xl--font-weight: 500;
+
+  --text-button-l: 1.25rem;
+  --text-button-l--line-height: 1.1;
+  --text-button-l--font-weight: 600;
+}
+
 @theme inline {
   --color-bg-default: var(--bg-default);
   --color-bg-subtle: var(--bg-subtle);
@@ -111,40 +125,20 @@
   --color-states-hover-25: var(--states-hover-25);
   --color-states-hover-black: var(--states-hover-black);
   --color-states-sold-out: var(--states-sold-out);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+
+  /* shadcn 전역 슬롯: `@layer base` 의 전역 리셋(모든 요소의 기본 border/outline 색, body
+     배경·글자)이 참조한다. foundation semantic 으로 repoint. 나머지 shadcn 슬롯
+     (primary, secondary, muted, accent, destructive, card, popover, input, chart 계열,
+     sidebar 계열)은 이 디자인 시스템에서 안 써서 :root·.dark 정의째로 제거했다 — 컴포넌트는
+     foundation 토큰(semantic 유틸리티 + button 계열 bracket shorthand)을 직접 소비한다. */
+  --color-background: var(--bg-default);
+  --color-foreground: var(--font-dark);
+  --color-border: var(--border-neutral-subtle);
+  --color-ring: var(--border-jade-fill);
+
   --font-sans: var(--font-pretendard);
   --font-mono: var(--font-pretendard);
   --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
 }
 
 /* Primitive 색상: 순수 값만, 의미 없음. @theme에 절대 등록하지 않는다 — Tailwind 기본
@@ -196,7 +190,9 @@
    합치지 않는다 — 나중에 값이 갈라질 수 있음. shadcn 슬롯(primary/secondary/muted 등)에는
    아직 매핑하지 않는다 — 다음 작업(디자인 시스템 컴포넌트 반입)에서 컴포넌트를 새로 스타일링할
    예정이라 지금은 shadcn placeholder 색을 그대로 둬도 무방하다고 판단.
-   알파가 섞인 값은 color-mix()로 primitive를 참조한다(button.tsx의 기존 관례와 동일).
+   알파가 섞인 값은 color-mix(in oklab, ...)로 primitive를 참조한다. oklch(극좌표)로 하면
+   `transparent`(achromatic)와 섞을 때 hue 가 powerless(none) 처리돼 채도만 남고 색상이
+   0°(붉은기)로 렌더돼 jade 계열이 분홍빛으로 나온다 — oklab(직교)은 이 문제가 없다.
    Figma 그룹명을 그대로 써서 bg-default/fill-jade/border-neutral-solid처럼 일부는
    Tailwind 유틸리티 접두사(bg-, fill-, border-)와 겹쳐 보이는 이름이 나오는데(예:
    `bg-bg-default`), Figma와의 1:1 대응을 우선해 그대로 둔다. */
@@ -204,8 +200,11 @@
   --bg-default: var(--white);
   --bg-subtle: var(--jade-blue-50);
   --bg-skeleton: var(--jade-blue-400);
-  /* Figma 변수명 그대로("bg-deam"은 오타로 보이나 — 아마 "dim" — 원본 유지) */
-  --bg-deam: color-mix(in oklch, var(--cool-grey-900) 50%, transparent);
+  /* Figma 변수명 그대로("bg-deam"은 오타로 보이나 — 아마 "dim" — 원본 유지).
+     순수 검정 75% — primitive --black(#101010)이 아니라 raw #000000. Figma 에서
+     cool-grey-900 50% → #000000 50% → 75% 로 변경됨(2026-09-09 사용자 확인, 변수 API
+     스코프가 없어 Dev Mode 값으로 반영). shadow 토큰과 같은 rgb(0 0 0 / N%) 표기 사용. */
+  --bg-deam: rgb(0 0 0 / 75%);
 
   --fill-jade: var(--jade-blue-500);
   --fill-jade-impact: var(--jade-blue-700);
@@ -216,18 +215,18 @@
 
   --border-neutral-solid: var(--cool-grey-900);
   --border-neutral-weak: color-mix(
-    in oklch,
+    in oklab,
     var(--cool-grey-900) 30%,
     transparent
   );
   --border-neutral-subtle: color-mix(
-    in oklch,
+    in oklab,
     var(--cool-grey-900) 10%,
     transparent
   );
   --border-jade-fill: var(--jade-blue-700);
   --border-jade-weak: color-mix(
-    in oklch,
+    in oklab,
     var(--jade-blue-500) 50%,
     transparent
   );
@@ -248,14 +247,14 @@
   --red-fill: var(--red-400);
   --red-font: var(--red-600);
 
-  --states-hover: color-mix(in oklch, var(--jade-blue-400) 50%, transparent);
-  --states-hover-25: color-mix(in oklch, var(--jade-blue-400) 25%, transparent);
+  --states-hover: color-mix(in oklab, var(--jade-blue-400) 50%, transparent);
+  --states-hover-25: color-mix(in oklab, var(--jade-blue-400) 25%, transparent);
   --states-hover-black: color-mix(
-    in oklch,
+    in oklab,
     var(--cool-grey-900) 20%,
     transparent
   );
-  --states-sold-out: color-mix(in oklch, var(--cool-grey-900) 50%, transparent);
+  --states-sold-out: color-mix(in oklab, var(--cool-grey-900) 50%, transparent);
 }
 
 /* Component 색상: 컴포넌트 하나에서만 쓰는 값이라 @theme에 등록하지 않는다 — 유틸리티
@@ -302,82 +301,43 @@
   --textfield-border-selected: var(--border-jade-fill);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
+/* Figma `scroll-bar` 컴포넌트를 전역 스타일로 반영(별도 React 컴포넌트로 만들지 않음).
+   트랙 = --border-neutral-subtle(cool-grey-900 10%), thumb = --border-jade-fill(jade-blue-700),
+   모서리 1px. 기본 두께 8px, slim 4px. 스크롤바 화살표 버튼은 대부분 브라우저가 렌더하지
+   않고 스타일 제어도 안 돼서 재현하지 않는다. Firefox 는 두께를 thin/auto 로만 조절 가능해
+   slim 과의 두께 차이는 WebKit 계열에서만 드러난다.
+   접근성 참고: thumb↔track 대비가 흰 배경에서 약 2.36:1 로 WCAG 2.2 SC 1.4.11(3:1) 미달이나,
+   Figma scroll-bar 컴포넌트의 지정 색을 유지하기로 함(2026-09-09). */
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-jade-fill) var(--border-neutral-subtle);
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--border-neutral-subtle);
+    border-radius: 1px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-jade-fill);
+    border-radius: 1px;
   }
   body {
     @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
+  }
+}
+
+/* 슬림 스크롤바: 좁은 패널·드롭다운 등에서 opt-in */
+@utility scrollbar-slim {
+  &::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
   }
 }

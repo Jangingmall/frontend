@@ -1,15 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import localFont from "next/font/local";
 import { QueryProvider } from "./query-provider";
+import { pretendard } from "./fonts";
 import "./globals.css";
-
-const pretendard = localFont({
-  src: "../assets/fonts/PretendardVariable.woff2",
-  variable: "--font-pretendard",
-  weight: "100 900",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "장인몰",
