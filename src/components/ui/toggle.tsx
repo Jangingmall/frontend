@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
  * Figma disabled variant 는 없어 opacity 로 임의 처리(디자이너 확인 필요).
  */
 const toggleVariants = cva(
-  "inline-flex shrink-0 items-center rounded-full p-0.5 transition-colors bg-fill-neutral-weak data-checked:bg-fill-jade data-disabled:cursor-not-allowed data-disabled:opacity-40",
+  "inline-flex shrink-0 items-center rounded-full p-0.5 transition-colors bg-fill-neutral-weak outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill data-checked:bg-fill-jade data-disabled:cursor-not-allowed data-disabled:opacity-40",
   {
     variants: {
       size: {

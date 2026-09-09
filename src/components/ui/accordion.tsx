@@ -80,7 +80,7 @@ function AccordionItem({
       {...props}
     >
       <AccordionPrimitive.Header>
-        <AccordionPrimitive.Trigger className="group/accordion-trigger flex w-full items-center justify-between gap-2 border-b border-border-neutral-weak p-2 text-body-m text-font-dark outline-none select-none data-panel-open:border-transparent data-panel-open:font-bold">
+        <AccordionPrimitive.Trigger className="group/accordion-trigger flex w-full items-center justify-between gap-2 border-b border-border-neutral-weak p-2 text-body-m text-font-dark outline-none select-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-border-jade-fill data-panel-open:border-transparent data-panel-open:font-bold">
           {title}
           <ChevronDownIcon className="size-4 shrink-0 transition-transform group-data-panel-open/accordion-trigger:-rotate-180" />
         </AccordionPrimitive.Trigger>

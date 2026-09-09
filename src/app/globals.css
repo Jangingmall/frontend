@@ -305,7 +305,9 @@
    트랙 = --border-neutral-subtle(cool-grey-900 10%), thumb = --border-jade-fill(jade-blue-700),
    모서리 1px. 기본 두께 8px, slim 4px. 스크롤바 화살표 버튼은 대부분 브라우저가 렌더하지
    않고 스타일 제어도 안 돼서 재현하지 않는다. Firefox 는 두께를 thin/auto 로만 조절 가능해
-   slim 과의 두께 차이는 WebKit 계열에서만 드러난다. */
+   slim 과의 두께 차이는 WebKit 계열에서만 드러난다.
+   접근성 참고: thumb↔track 대비가 흰 배경에서 약 2.36:1 로 WCAG 2.2 SC 1.4.11(3:1) 미달이나,
+   Figma scroll-bar 컴포넌트의 지정 색을 유지하기로 함(2026-09-09). */
 @layer base {
   * {
     @apply border-border outline-ring/50;
