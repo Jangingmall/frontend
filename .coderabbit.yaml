@@ -107,6 +107,11 @@ reviews:
 
   # 커밋 메시지 형식은 scripts/verify-commit-msg.ts 훅이 검증하므로 리뷰에서 중복 지적하지 않는다.
 
+  tools:
+    # 한국어 주석·문서에서 오탐이 많아 비활성화. 문법 검사는 사람이 담당.
+    languagetool:
+      enabled: false
+
 chat:
   art: false
 
@@ -122,8 +127,3 @@ knowledge_base:
         결제·인증·상품·주문 등의 백엔드 REST API 서버. 프론트엔드와의 API 계약 요약은
         이 레포 docs/api-contract.md, ISR 재검증 계약은 docs/isr.md 를 참고하고,
         상세 명세는 백엔드 레포의 docs/ 및 REST Docs 가 기준이다.
-
-tools:
-  # 한국어 주석·문서에서 오탐이 많아 비활성화. 문법 검사는 사람이 담당.
-  languagetool:
-    enabled: false
