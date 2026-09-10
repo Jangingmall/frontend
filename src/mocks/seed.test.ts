@@ -9,6 +9,11 @@ describe("seedImageId", () => {
     expect(seedImageId(1)).toBe(seedImageId(1));
     expect(seedImageId(1)).not.toBe(seedImageId(2));
   });
+
+  it("has the ULID-shaped contract form (image_ + 26 Base32 chars)", () => {
+    expect(seedImageId(1)).toMatch(/^image_[0-9A-Z]{26}$/);
+    expect(seedImageId(123456)).toMatch(/^image_[0-9A-Z]{26}$/);
+  });
 });
 
 describe("seedImageRef", () => {

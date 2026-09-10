@@ -51,6 +51,8 @@ describe("runtime env objects", () => {
   });
 
   it('publicEnv.apiMocking is false unless NEXT_PUBLIC_API_MOCKING is exactly "enabled"', async () => {
+    // 상속된 NEXT_PUBLIC_API_MOCKING=enabled에도 결과가 흔들리지 않게 명시적으로 비운다.
+    vi.stubEnv("NEXT_PUBLIC_API_MOCKING", "");
     vi.resetModules();
     const unset = await import("./env");
     expect(unset.publicEnv.apiMocking).toBe(false);

@@ -24,6 +24,10 @@ describe("mockOk", () => {
       data: null,
     });
   });
+
+  it("rejects undefined data (would drop the data key on serialization)", () => {
+    expect(() => mockOk(undefined)).toThrow(TypeError);
+  });
 });
 
 describe("mockPaged", () => {
@@ -57,7 +61,7 @@ describe("mockError", () => {
     });
   });
 
-  it("includes message only when provided", async () => {
+  it("omits message only when undefined, preserving an explicit empty string", async () => {
     await expect(
       mockError(409, "CONFLICT", "이미 존재합니다").json(),
     ).resolves.toEqual({
@@ -69,6 +73,12 @@ describe("mockError", () => {
     await expect(mockError(409, "CONFLICT").json()).resolves.not.toHaveProperty(
       "message",
     );
+    await expect(mockError(400, "INVALID_INPUT", "").json()).resolves.toEqual({
+      success: false,
+      status: 400,
+      errorCode: "INVALID_INPUT",
+      message: "",
+    });
   });
 
   it("passes through unknown error codes verbatim", async () => {

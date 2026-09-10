@@ -8,8 +8,17 @@ import type { ApiErrorResponse, ApiResponse, PagedResponse } from "@/types/api";
  * 도메인마다 손으로 `{ success, status, data }`를 쓰다 어긋나는 것을 막는다.
  */
 
-/** 성공 봉투. 본문 없는 응답은 `data`에 `null`을 넘긴다. */
+/**
+ * 성공 봉투. 본문 없는 응답은 `data`에 `null`을 넘긴다.
+ * `undefined`는 `HttpResponse.json`의 직렬화에서 사라져 `data` 키 없는 봉투가 되므로
+ * (계약 위반) 즉시 거부한다.
+ */
 export function mockOk<T>(data: T, status = 200) {
+  if (data === undefined) {
+    throw new TypeError(
+      "mockOk: data must be null or a JSON value (received undefined)",
+    );
+  }
   return HttpResponse.json<ApiResponse<T>>(
     { success: true, status, data },
     { status },
@@ -32,10 +41,16 @@ export function mockPaged<T>(
  * 실패 봉투. `errorCode`는 문자열 그대로 싣는다 — 알려진 유니온에 없는 코드도
  * 그대로 통과시켜 소비측(fetcher·화면)의 unknown-safe 처리를 검증할 수 있게 한다.
  * (docs/api-contract.md §2.3)
+ * `message`는 넘긴 그대로 재현한다 — 빈 문자열도 보존하고 `undefined`일 때만 생략한다.
  */
 export function mockError(status: number, errorCode: string, message?: string) {
   return HttpResponse.json<ApiErrorResponse>(
-    { success: false, status, errorCode, ...(message ? { message } : {}) },
+    {
+      success: false,
+      status,
+      errorCode,
+      ...(message !== undefined ? { message } : {}),
+    },
     { status },
   );
 }

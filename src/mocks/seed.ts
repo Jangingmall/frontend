@@ -13,11 +13,16 @@ const IMAGE_VARIANT_WIDTHS = [
 ] as const satisfies readonly ImageVariantWidth[];
 
 /**
- * 순번 기반 이미지 id. ULID 자리는 아니지만 형태(`image_` 접두 + 문자열)는 계약과
- * 맞고, 순번이라 실행마다 동일하다.
+ * 순번 기반 이미지 id. 실제 백엔드처럼 `image_` + 26자 Base32(ULID 형태) — 앞 10자는
+ * 임의 고정 타임스탬프부, 뒤 16자는 순번 인코딩. 시간·랜덤에 의존하지 않아 실행마다
+ * 동일하다. 스펙 완전 준수 ULID는 아니고 형태만 맞춘 결정적 값이다.
+ * (docs/api-contract.md §2.2 — imageId 는 ULID)
  */
+const SEED_ULID_TIME = "01JQ000000"; // 고정 10자(타임스탬프 자리)
+
 export function seedImageId(seq: number): string {
-  return `image_${String(seq).padStart(6, "0")}`;
+  const tail = seq.toString(32).toUpperCase().padStart(16, "0");
+  return `image_${SEED_ULID_TIME}${tail}`;
 }
 
 /**
