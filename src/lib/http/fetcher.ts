@@ -1,3 +1,5 @@
+import { serverEnv } from "@/lib/env.server";
+
 import { ApiError } from "./api-error";
 
 type ApiSuccess<T> = {
@@ -49,11 +51,7 @@ function unwrapSuccess<T>(body: unknown): T {
 
 export async function apiFetch<T>(
   path: string,
-  {
-    baseUrl = process.env.API_BASE_URL,
-    headers,
-    ...init
-  }: ApiFetchOptions = {},
+  { baseUrl = serverEnv.apiBaseUrl, headers, ...init }: ApiFetchOptions = {},
 ): Promise<T> {
   if (!baseUrl)
     throw new Error("API_BASE_URL is required for server API requests.");
