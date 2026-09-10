@@ -56,4 +56,18 @@ describe("productListResponseDto", () => {
       }).success,
     ).toBe(false);
   });
+
+  it("ID·금액·카운트 소수값은 거부한다 (Long 계약)", () => {
+    const decimal = (patch: Record<string, unknown>) =>
+      productListResponseDto.safeParse({
+        items: [{ ...validItem, ...patch }],
+        totalCount: 1,
+      }).success;
+    expect(decimal({ id: 1.5 })).toBe(false);
+    expect(decimal({ price: 1000.5 })).toBe(false);
+    expect(decimal({ reviewCount: 2.5 })).toBe(false);
+    expect(decimal({ artisan: { ...validItem.artisan, id: 3.3 } })).toBe(false);
+    // rating은 소수 허용
+    expect(decimal({ rating: 4.8 })).toBe(true);
+  });
 });

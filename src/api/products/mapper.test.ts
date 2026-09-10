@@ -61,6 +61,13 @@ describe("상품 정렬 매핑", () => {
     expect(toProductListSortApi(null)).toBe(fallback);
     expect(toProductListSortApi(undefined)).toBe(fallback);
   });
+
+  it("Object.prototype 상속 키도 기본 정렬로 폴백한다", () => {
+    const fallback = PRODUCT_LIST_SORT[DEFAULT_PRODUCT_LIST_SORT];
+    expect(toProductListSortApi("toString")).toBe(fallback);
+    expect(toProductListSortApi("constructor")).toBe(fallback);
+    expect(toProductListSortApi("hasOwnProperty")).toBe(fallback);
+  });
 });
 
 describe("productBadgeLabel", () => {

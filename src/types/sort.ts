@@ -25,11 +25,14 @@ export const PRODUCT_LIST_SORT: Record<ProductListSort, ProductListSortApi> = {
 
 export const DEFAULT_PRODUCT_LIST_SORT: ProductListSort = "popular";
 
-/** URL 표현 → API enum. 모르는 값은 기본 정렬로 폴백한다. */
+/**
+ * URL 표현 → API enum. 모르는 값은 기본 정렬로 폴백한다.
+ * `Object.hasOwn`으로 자체 속성만 확인한다 — `in`은 `"toString"` 같은 상속 속성도 통과시킨다.
+ */
 export function toProductListSortApi(
   sort: string | null | undefined,
 ): ProductListSortApi {
-  if (sort && sort in PRODUCT_LIST_SORT) {
+  if (sort && Object.hasOwn(PRODUCT_LIST_SORT, sort)) {
     return PRODUCT_LIST_SORT[sort as ProductListSort];
   }
   return PRODUCT_LIST_SORT[DEFAULT_PRODUCT_LIST_SORT];
