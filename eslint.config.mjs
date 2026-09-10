@@ -160,6 +160,8 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "playwright-report/**",
     "test-results/**",
+    // MSW가 생성·관리하는 워커 스크립트 (npx msw init).
+    "public/mockServiceWorker.js",
   ]),
 ]);
 
