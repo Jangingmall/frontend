@@ -4,8 +4,8 @@ import type { Page } from "@/types/api";
 import { mapProductListPage } from "./mapper";
 import type { ProductSummary } from "./model";
 import {
-  DEFAULT_PRODUCT_LIST_SIZE,
   type ProductListQuery,
+  resolveProductListPaging,
   toProductListSearchParams,
 } from "./query";
 import { productListResponseDto } from "./validation";
@@ -29,9 +29,8 @@ const PRODUCT_LIST_REVALIDATE = 3600;
 export async function fetchProductList(
   query: ProductListQuery = {},
 ): Promise<Page<ProductSummary>> {
-  const page = query.page ?? 1;
-  const size = query.size ?? DEFAULT_PRODUCT_LIST_SIZE;
-  const search = toProductListSearchParams({ ...query, page, size });
+  const { page, size } = resolveProductListPaging(query);
+  const search = toProductListSearchParams(query);
 
   const dto = await fetchPublicApi<unknown>(`/api/products?${search}`, {
     tags: [PRODUCT_LIST_TAG],

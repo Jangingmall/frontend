@@ -16,6 +16,37 @@ export interface ProductListQuery {
 }
 
 export const DEFAULT_PRODUCT_LIST_SIZE = 20;
+export const MAX_PRODUCT_LIST_SIZE = 100;
+
+function clampInt(
+  value: number | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+) {
+  if (value === undefined || !Number.isFinite(value)) return fallback;
+  return Math.min(max, Math.max(min, Math.trunc(value)));
+}
+
+/**
+ * 화면/URL이 넘긴 `page`·`size`를 계약 범위로 정규화한다. (docs/api-contract.md §2.4)
+ * `0`·음수·소수·`NaN`·`Infinity`·상한 초과 입력이 서버 요청과 `Page` 모델에 그대로
+ * 실리지 않게 막는다. 쿼리스트링·fetch·페이지 모델이 같은 값을 공유하도록 한 곳에서 계산.
+ */
+export function resolveProductListPaging(query: ProductListQuery): {
+  page: number;
+  size: number;
+} {
+  return {
+    page: clampInt(query.page, 1, 1, Number.MAX_SAFE_INTEGER),
+    size: clampInt(
+      query.size,
+      DEFAULT_PRODUCT_LIST_SIZE,
+      1,
+      MAX_PRODUCT_LIST_SIZE,
+    ),
+  };
+}
 
 /**
  * 목록 파라미터 → BE 쿼리스트링. BE 페이지네이션 파라미터명(`page`+`size` vs
@@ -24,8 +55,7 @@ export const DEFAULT_PRODUCT_LIST_SIZE = 20;
 export function toProductListSearchParams(
   query: ProductListQuery,
 ): URLSearchParams {
-  const page = query.page ?? 1;
-  const size = query.size ?? DEFAULT_PRODUCT_LIST_SIZE;
+  const { page, size } = resolveProductListPaging(query);
   const params = new URLSearchParams();
   params.set("page", String(page));
   params.set("size", String(size));
