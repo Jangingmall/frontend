@@ -128,6 +128,28 @@ describe("clientFetch — 401 refresh", () => {
     });
   });
 
+  it("refresh 응답의 accessToken이 문자열이 아니면 store.clear() + 에러 전파", async () => {
+    server.use(
+      http.post("*/api/member/token/refresh", () =>
+        mockOk({ accessToken: 123 }),
+      ),
+    );
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "stale",
+      user: { id: 1, name: "n", roles: ["USER"] },
+    });
+
+    await expect(clientFetch("/api/member/me")).rejects.toMatchObject({
+      name: "ApiError",
+    });
+    expect(useAuthStore.getState()).toMatchObject({
+      status: "anonymous",
+      accessToken: null,
+      user: null,
+    });
+  });
+
   it("비-401 에러는 refresh 없이 그대로 전파한다", async () => {
     let refreshCalls = 0;
     server.use(

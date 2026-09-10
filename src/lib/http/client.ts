@@ -67,6 +67,10 @@ let refreshInFlight: Promise<string> | null = null;
  * `api/member`의 `refreshToken()`이 이 primitive를 공유해 fetch 구현을 한 곳에 둔다.
  *
  * raw `fetch`를 쓴다 — `clientFetch`를 거치면 refresh 응답의 401이 또 refresh를 부른다.
+ *
+ * 401 자동 재시도 경로는 이 primitive를 직접 호출하므로(`api/member`의 Zod를 안 거침)
+ * 여기서 `accessToken`이 비어 있지 않은 문자열인지 확인한다 — 아니면 `clientFetch`의
+ * catch가 세션을 정리한다. (docs/data-layer.md §4.3 — 인증 응답은 검증 실패 시 throw)
  */
 export function refreshAccessToken(): Promise<string> {
   refreshInFlight ??= (async () => {
@@ -77,7 +81,11 @@ export function refreshAccessToken(): Promise<string> {
     });
     const body = await parseBody(response);
     if (!response.ok) throw new ApiError(response.status, body);
-    return unwrapSuccess<{ accessToken: string }>(body).accessToken;
+    const { accessToken } = unwrapSuccess<{ accessToken?: unknown }>(body);
+    if (typeof accessToken !== "string" || accessToken.length === 0) {
+      throw new ApiError(502, body);
+    }
+    return accessToken;
   })().finally(() => {
     refreshInFlight = null;
   });
