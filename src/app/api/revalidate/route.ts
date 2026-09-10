@@ -1,6 +1,7 @@
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 
+import { serverEnv } from "@/lib/env.server";
 import {
   RevalidationRequestError,
   verifyAndRevalidate,
@@ -9,7 +10,7 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const secret = process.env.REVALIDATE_WEBHOOK_SECRET;
+  const secret = serverEnv.revalidateWebhookSecret;
   if (!secret) {
     return NextResponse.json(
       { error: "Webhook secret is not configured." },

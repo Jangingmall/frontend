@@ -4,7 +4,15 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: { "@": new URL("./src", import.meta.url).pathname },
+    alias: {
+      "@": new URL("./src", import.meta.url).pathname,
+      // `server-only`는 클라이언트 import를 막으려 로드 즉시 throw한다. Vitest는
+      // `react-server` 조건을 안 켜므로 그 throw를 그대로 맞는다 → 빈 모듈로 대체.
+      "server-only": new URL(
+        "./node_modules/server-only/empty.js",
+        import.meta.url,
+      ).pathname,
+    },
   },
   test: {
     environment: "jsdom",
@@ -12,5 +20,7 @@ export default defineConfig({
     pool: "forks",
     setupFiles: ["./src/test/setup.ts"],
     restoreMocks: true,
+    // 서버 fetcher는 절대 URL을 요구한다(`serverEnv.apiBaseUrl`). MSW 경유 테스트용 더미.
+    env: { API_BASE_URL: "http://localhost:3000" },
   },
 });
