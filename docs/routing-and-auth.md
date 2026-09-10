@@ -17,37 +17,63 @@
 
 ## 2. Route Map
 
+- `화면ID`는 팀 IA 시트 기준(최신본 확인일 2026-09-10). 이 표는 **라우트가 있는 화면만** 담는다. 모달·섹션·임베드형 화면(전역 헤더/푸터/플로팅, 상품 문의·후기 섹션, 옵션 변경·배송지 선택·PG 결제창·배송 조회·후기 작성·배송지 폼·결제수단 폼·비밀번호 변경 모달 등)은 라우트가 없어 여기 없다.
+- **범위 밖**: 판매자 영역(`/seller/**`)과 장인관(`/artisans`, `/artisans/[slug]-[artisanId]`)은 다른 트랙에서 다룬다. 표에는 경로·화면ID만 남기고 상세 계약은 적지 않는다.
+- **개발 백로그 미편성**으로 표기된 행은 IA에는 있으나 현재 개발 순번이 없는 화면이다(§9).
+
 ### 2.1 공개 · 구매자
 
-| 화면              | 경로                                                                                        | 접근 · 핵심 계약                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| 홈                | `/`                                                                                         | 공개                                                              |
-| 검색              | `/search?q=`                                                                                | 공개                                                              |
-| 상품 목록         | `/products`                                                                                 | 공개. `category`, `sort`, `filter`, `page`                        |
-| 상품 상세         | `/products/[slug]-[productId]`                                                              | 공개. `productId`로 API 조회                                      |
-| 장인 목록         | `/artisans`                                                                                 | 공개. `certificationLevel`, `category`, `initial`, `sort`, `page` |
-| 장인 상세         | `/artisans/[slug]-[artisanId]`                                                              | 공개. `artisanId`로 API 조회                                      |
-| 장바구니          | `/cart`                                                                                     | 비회원 허용, 독립 페이지                                          |
-| 결제              | `/checkout/[orderId]`                                                                       | 로그인 필요                                                       |
-| 주문 완료         | `/checkout/[orderId]/complete`                                                              | 로그인 + 본인 주문 확인                                           |
-| 마이페이지        | `/mypage`                                                                                   | `/mypage/orders`로 redirect                                       |
-| 주문·후기·찜      | `/mypage/orders`, `/mypage/reviews`, `/mypage/favorites`                                    | 로그인 필요                                                       |
-| 계정 관리         | `/mypage/addresses`, `/mypage/payment-methods`, `/mypage/personal-info`, `/mypage/settings` | 로그인 필요                                                       |
-| 로그인 · 회원가입 | `/login`, `/signup`                                                                         | 내부 상대 `returnUrl`만 허용 (§6)                                 |
-| 고객센터          | `/support`                                                                                  | 공개. `section=faq \| shipping-returns \| dispute`                |
+| 화면                 | 경로                                             | 화면ID      | 접근 · 핵심 계약                                                                                         |
+| -------------------- | ------------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------- |
+| 홈                   | `/`                                              | HO-1        | 공개                                                                                                     |
+| 검색                 | `/search?q=`                                     | SR-1        | 공개                                                                                                     |
+| 상품 목록(전체)      | `/products` · `/products?preset=new\|best\|gift` | PL-1        | 공개. `preset`(목적별 큐레이션). 필터 없음                                                               |
+| 상품 목록(대분류)    | `/products?category={대분류}`                    | PL-2        | 공개. `sort`, `filter`, `page`                                                                           |
+| 상품 목록(소분류)    | `/products?category={소분류}`                    | PL-3        | 공개. `sort`, `filter`, `page`                                                                           |
+| 상품 상세            | `/products/[slug]-[productId]`                   | PD-1        | 공개. `productId`로 API 조회                                                                             |
+| 장인 목록            | `/artisans`                                      | AL-1        | 공개. **범위 밖**(장인관)                                                                                |
+| 장인 상세            | `/artisans/[slug]-[artisanId]`                   | AD-1        | 공개. **범위 밖**(장인관)                                                                                |
+| 장바구니             | `/cart`                                          | CA-1        | 비회원 허용, 독립 페이지                                                                                 |
+| 결제                 | `/checkout/[orderId]`                            | CO-1        | 로그인 필요                                                                                              |
+| 결제 실패            | `/checkout/fail`                                 | CO-4        | 로그인 필요. 실패 사유 표시 → 재시도 시 `/checkout/[orderId]` 복귀                                       |
+| 주문 완료            | `/checkout/[orderId]/complete`                   | OC-1        | 로그인 + 본인 주문 확인                                                                                  |
+| 마이페이지           | `/mypage`                                        | MY-1        | 로그인. 대시보드(프로필 + 최근 주문·찜·최근 본 상품). 적립금·구매등급 정책 미확정 시 프로필에서 제외(§9) |
+| 주문 내역            | `/mypage/orders`                                 | MY-2        | 로그인                                                                                                   |
+| 주문 상세            | `/mypage/orders/[orderId]`                       | OD-1        | 로그인 + 본인 주문                                                                                       |
+| 주문 취소 신청       | `/mypage/orders/[orderId]/cancel`                | RT-1        | 로그인 + 본인 주문. 개발 백로그 미편성(§9)                                                               |
+| 교환·반품 신청       | `/mypage/orders/[orderId]/return`                | RT-2        | 로그인 + 본인 주문. 개발 백로그 미편성(§9)                                                               |
+| 후기 관리            | `/mypage/reviews`                                | MY-3        | 로그인                                                                                                   |
+| 찜·최근 본 상품      | `/mypage/wishlist`                               | MY-5        | 로그인. `tab=wishlist \| recent` (관심 장인 탭은 범위 밖)                                                |
+| 회원정보 수정        | `/mypage/account`                                | ID-1        | 로그인. `tab=info \| addresses \| payment-methods`. 배송지·결제수단 편집은 모달                          |
+| 설정                 | `/mypage/settings`                               | MY-11       | 로그인                                                                                                   |
+| 회원 탈퇴            | `/mypage/withdraw`                               | MY-12       | 로그인. 개발 백로그 미편성(§9)                                                                           |
+| 로그인               | `/login`                                         | LI-1        | 내부 상대 `returnUrl`만 허용 (§6)                                                                        |
+| 회원가입             | `/signup`                                        | SU-1 · SU-2 | 약관 동의 → 정보 입력을 in-page 스텝으로. IA는 약관을 `/signup/terms`로 분리하나 FE는 단일 라우트 스텝   |
+| 회원가입 완료        | `/signup/complete`                               | SU-3        | 가입 직후 1회 노출. 직접 접근 시 `/`로                                                                   |
+| 아이디·비밀번호 찾기 | `/find`                                          | LI-2        | 공개. 개발 백로그 미편성                                                                                 |
+| 비밀번호 재설정      | `/reset?token=`                                  | LI-3        | 공개. 개발 백로그 미편성                                                                                 |
+| 고객센터             | `/support`                                       | CS-1        | 공개. `section=faq \| shipping-returns \| dispute`. 개발 백로그 미편성(정적 3탭)                         |
+| 1:1 문의             | `/support/inquiry`                               | CS-2        | 공개. 개발 백로그 미편성(MVP 제외 — 이메일 안내 대체 가능)                                               |
 
 ### 2.2 판매자
 
-| 화면               | 경로                   | 접근 · 핵심 계약                                  |
-| ------------------ | ---------------------- | ------------------------------------------------- |
-| 판매자 진입        | `/seller`              | `ARTISAN` 권한. `/seller/products/new`로 redirect |
-| AI 상세페이지 제작 | `/seller/products/new` | `ARTISAN` 권한. 입력 → 생성 → 편집 → 승인·게시    |
+**범위 밖** — 판매자 트랙에서 다룬다. 경로·화면ID만 남긴다(IA `SL`/`SD`/`SP`/`SO` 계열 재확인 필요 — §9).
+
+| 화면                      | 경로                                     | 화면ID | 접근      |
+| ------------------------- | ---------------------------------------- | ------ | --------- |
+| 판매자 대시보드           | `/seller`                                | SD-1   | `ARTISAN` |
+| 상품 목록 관리            | `/seller/products`                       | SP-1   | `ARTISAN` |
+| 상품 등록·수정            | `/seller/products/new`                   | SP-2   | `ARTISAN` |
+| 상세페이지 작성 방식 선택 | `/seller/products/[id]/detail`           | SP-5   | `ARTISAN` |
+| AI 상세페이지·소재 입력   | `/seller/products/[id]/detail/ai`        | SP-7   | `ARTISAN` |
+| AI 생성 결과 편집         | `/seller/products/[id]/detail/ai/result` | SP-8   | `ARTISAN` |
 
 ## 3. Dynamic Segment와 URL 상태
 
 - 상품 상세 `/products/[slug]-[productId]`, 장인 상세 `/artisans/[slug]-[artisanId]` — `slug`는 표시·SEO용, API 조회 기준은 ID.
 - 한글 slug를 허용한다. 현재 이름과 slug가 다르면 ID로 조회하고 현재 slug의 canonical URL로 정규화한다(§8).
-- 주문은 `/checkout/[orderId]`와 완료 경로를 사용한다.
+- 주문은 `/checkout/[orderId]`와 완료 경로를 사용한다. 주문 상세·클레임은 `/mypage/orders/[orderId]`, `/mypage/orders/[orderId]/cancel`, `/mypage/orders/[orderId]/return`.
+- 상품 목록 `preset`은 목적별 큐레이션(`new` 신상품 · `best` 베스트 · `gift` 선물관)이다. 분류 이동 축인 `category`와 직교하며, `preset` 진입은 필터 없는 PL-1 상태다.
 - 상품 목록 sort URL 표현: `popular`, `newest`, `wishlist`, `sales`, `price-asc`, `price-desc` (기본 `popular`). API enum(`POPULAR` 등) 매핑은 API 계층에서 한다.
 - 장인 목록 sort URL 표현: `popular`, `most-products`, `recently-joined` (기본 `popular`) → API enum `POPULAR`, `MOST_PRODUCTS`, `RECENTLY_JOINED`.
 - 찜·최근 본 상품 탭: `tab=wishlist \| recent` (기본 `wishlist`).
@@ -115,13 +141,13 @@ interface AuthState {
 ```
 src/app/
   (protected)/
-    layout.tsx          # 로그인 가드
-    mypage/...
-    checkout/[orderId]/...
+    layout.tsx                       # 로그인 가드
+    mypage/...                        # /mypage, /mypage/orders/[orderId], /mypage/account, /mypage/settings …
+    checkout/[orderId]/...            # 결제 · 주문 완료 (/checkout/fail 포함)
   (seller)/
-    layout.tsx          # 로그인 + ARTISAN 가드
+    layout.tsx                       # 로그인 + ARTISAN 가드
     seller/...
-  products/...          # 그룹 밖 = 공개
+  products/...                       # 그룹 밖 = 공개
 ```
 
 - route group `(...)`은 URL에 반영되지 않는다. `/mypage/orders`의 실제 경로는 그대로다.
@@ -223,11 +249,15 @@ Next.js 16부터 Middleware는 **Proxy**로 이름이 바뀌었고 루트(또는
 
 ## 9. 미확정 / 후속
 
-| 항목                              | 내용                                                                                                                                                 | 해소 조건                 |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| login·refresh 응답의 user 포함    | 현재 경우 B(토큰만 + `GET /api/member/me`)로 구현. BE가 응답에 `user { id, roles: Role[], name }`를 포함하면 경우 A로 단순화. roles 배열 형식도 확인 | BE member 모듈 구현       |
-| same-origin rewrite 대상          | `vercel.json`/`next.config`의 `/api/*` rewrite 대상 백엔드 origin                                                                                    | 인프라 도메인 확정        |
-| `?page=N` SEO                     | shallow index 허용 vs page 1로 canonical                                                                                                             | 결정 필요                 |
-| 보호 페이지 optimistic pre-filter | 깜빡임이 실측상 문제면 proxy에 refresh 쿠키 존재 체크 추가                                                                                           | 관찰 후                   |
-| 활동 중지 장인 상세 공개          | 현재 FE는 `404`. PM이 개념 도입 → BE 필드 → FE 분기                                                                                                  | PM 확정 (routing.md R-13) |
-| 결제·주문 완료 세부 IA            | cart→order 생성 시점, 토스 위젯 `successUrl`/`failUrl` 흐름, `confirm` 실패 처리, `complete` 가드, 이탈 처리                                         | 별도 "결제 플로우 설계"   |
+| 항목                              | 내용                                                                                                                                                                                                            | 해소 조건                 |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| login·refresh 응답의 user 포함    | 현재 경우 B(토큰만 + `GET /api/member/me`)로 구현. BE가 응답에 `user { id, roles: Role[], name }`를 포함하면 경우 A로 단순화. roles 배열 형식도 확인                                                            | BE member 모듈 구현       |
+| same-origin rewrite 대상          | `vercel.json`/`next.config`의 `/api/*` rewrite 대상 백엔드 origin                                                                                                                                               | 인프라 도메인 확정        |
+| `?page=N` SEO                     | shallow index 허용 vs page 1로 canonical                                                                                                                                                                        | 결정 필요                 |
+| 보호 페이지 optimistic pre-filter | 깜빡임이 실측상 문제면 proxy에 refresh 쿠키 존재 체크 추가                                                                                                                                                      | 관찰 후                   |
+| 활동 중지 장인 상세 공개          | 현재 FE는 `404`. PM이 개념 도입 → BE 필드 → FE 분기                                                                                                                                                             | PM 확정 (routing.md R-13) |
+| 결제·주문 완료 세부 IA            | cart→order 생성 시점, 토스 위젯 `successUrl`/`failUrl` 흐름, `confirm` 실패 처리, `complete` 가드, 이탈 처리. 완료 경로는 `/checkout/[orderId]/complete`로 확정(IA OC-1의 `/orders/{id}/complete`는 채택 안 함) | 별도 "결제 플로우 설계"   |
+| 마이페이지 대시보드(MY-1)         | `/mypage`를 redirect가 아닌 대시보드 화면으로 매핑. 적립금·구매등급 제도가 미확정이라 정책 없이 노출하면 0/기본값 고정 — 미도입 시 프로필 카드에서 두 항목 제외. 개발 순번 미편성                               | PM 확정 + 개발 편성       |
+| 계정 관리 화면 구조               | `/mypage/account`(ID-1, `tab=info \| addresses \| payment-methods`) 단일 화면 + 배송지·결제수단 편집 모달(ID-2/ID-3). 결제수단 탭은 PG 빌링키 계약 전까지 숨김 가능                                             | 빌링키 계약 · 개발 편성   |
+| 취소·반품·탈퇴 화면               | RT-1·RT-2·MY-12는 IA에 있으나 개발 백로그 미편성. MVP 포함 여부와 "주문제작 착수 후 취소 불가" 상태 기준 확정 필요                                                                                              | PM 확정 + 개발 편성       |
+| 판매자 Route Map(§2.2)            | 현행 §2.2는 IA와 불일치(진입 redirect·"AI 상세페이지 제작" 등식이 stale). IA `SL`/`SD`/`SP`/`SO` 계열로 재확인 필요                                                                                             | 판매자 트랙               |
