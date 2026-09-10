@@ -199,6 +199,8 @@ src/components/
 | `stores/`                                | `types`, `lib`, `utils`, `constants`                            | `api`, `queries`, 화면·컴포넌트             |
 | `lib/`, `utils/`, `constants/`, `types/` | 하위 공통 코드                                                  | 상위 역할 코드                              |
 
+예외: `lib/http/client.ts`(클라이언트 fetcher)는 인증 배선 목적으로 `stores/auth`를 참조한다. 모든 인증 요청이 통과하는 단일 지점에서 메모리 access token을 읽고 401 refresh 결과를 반영해야 하며([routing-and-auth.md](routing-and-auth.md) §4.1이 이 형태를 명시), `stores/auth`는 `lib/http`를 되참조하지 않아 실제 순환은 없다. ESLint 경계 규칙에서도 이 파일만 예외로 둔다.
+
 Client Component는 서버 전용 코드·비밀 환경 변수·서버 전용 API 구현을 import하지 않는다. Server Component는 필요한 Client Component를 경계로 렌더링할 수 있다.
 
 ### 8.3 공개 export
