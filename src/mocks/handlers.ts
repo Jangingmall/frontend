@@ -1,3 +1,4 @@
+import { memberHandlers } from "@/api/member/mock/handlers";
 import { productHandlers } from "@/api/products/mock/handlers";
 
 /**
@@ -5,4 +6,4 @@ import { productHandlers } from "@/api/products/mock/handlers";
  * 공유한다. 도메인 핸들러는 각 `api/{domain}/mock/handlers.ts`에 두고 여기서 spread로
  * 등록한다. (docs/testing.md §2)
  */
-export const handlers = [...productHandlers];
+export const handlers = [...productHandlers, ...memberHandlers];
