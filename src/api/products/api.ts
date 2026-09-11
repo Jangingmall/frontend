@@ -2,6 +2,7 @@ import { fetchPublicApi } from "@/lib/http/fetcher";
 import { isrTags } from "@/lib/isr/tags";
 import type { Page } from "@/types/api";
 
+import { productCategoriesDto } from "./filter-validation";
 import { mapProductListPage } from "./mapper";
 import type { ProductSummary } from "./model";
 import {
@@ -13,6 +14,14 @@ import { productListResponseDto } from "./validation";
 
 /** 웹훅 유실 대비 안전망(1시간). 이벤트 기반 재검증이 우선이다. (docs/isr.md §2) */
 const PRODUCT_LIST_REVALIDATE = 3600;
+
+export async function fetchProductCategoriesServer() {
+  const dto = await fetchPublicApi<unknown>("/api/products/categories", {
+    tags: [isrTags.productList()],
+    revalidate: PRODUCT_LIST_REVALIDATE,
+  });
+  return productCategoriesDto.parse(dto);
+}
 
 /**
  * `GET /api/products` — 공개 상품 목록. 서버(RSC/ISR)에서 호출한다.

@@ -10,6 +10,7 @@ import {
 import type { ProductListQuery } from "@/api/products/query";
 import type { Page } from "@/types/api";
 import type { ProductSummary } from "@/types/product";
+import type { ProductCategory } from "@/types/product-filter";
 
 import { productKeys } from "./keys";
 
@@ -28,9 +29,13 @@ export function useProductList(
   });
 }
 
-export function useProductCategories(enabled: boolean) {
+export function useProductCategories(
+  enabled: boolean,
+  initialData?: ProductCategory[],
+) {
   return useQuery({
     queryKey: productKeys.categories,
+    initialData,
     queryFn: ({ signal }) => fetchProductCategories(signal),
     enabled,
     staleTime: 3600000,
