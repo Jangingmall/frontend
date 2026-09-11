@@ -9,6 +9,7 @@ import {
 import { ProductGridSkeleton } from "./_components/ProductGridSkeleton";
 import { ProductListPage } from "./_components/ProductListPage";
 import { parseProductSearchParams } from "./_lib/search-params";
+import { getProductSeo } from "./_lib/seo";
 
 interface ProductsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -18,15 +19,11 @@ export async function generateMetadata({
   searchParams,
 }: ProductsPageProps): Promise<Metadata> {
   const params = await searchParams;
-  const category =
-    typeof params.category === "string" ? params.category : undefined;
-  const hasFilters = Object.keys(params).some((key) => key !== "category");
+  const { canonical, hasFilters } = getProductSeo(params);
   return {
     title: "상품 목록 | 장인몰",
     alternates: {
-      canonical: category
-        ? `/products?category=${encodeURIComponent(category)}`
-        : "/products",
+      canonical,
     },
     robots: hasFilters ? { index: false, follow: true } : undefined,
   };

@@ -242,6 +242,7 @@ Next.js 16부터 Middleware는 **Proxy**로 이름이 바뀌었고 루트(또는
 - 전체 상품 목록과 주요 카테고리는 색인을 허용한다.
 - 필터·정렬 조합 URL은 색인을 제한하고 대표 목록 또는 카테고리 URL을 canonical로 둔다.
 - `?page=2` 이후 페이지는 대표 목록(`?page` 없음)으로 canonical을 두거나 shallow index만 허용한다 (택1, §9).
+- PL-2의 현재 구현은 대표 목록·카테고리 canonical을 유지하며, 페이지 번호만으로 `noindex`를 추가하지 않는다. 기본 정렬 `sort=popular`와 체크박스의 `false` 값도 필터로 간주하지 않는다. 실제 활성 필터·기본값이 아닌 정렬에만 `noindex`를 적용한다. §9의 최종 정책 확정 전 적용 기준이다.
 - 공개 상품·장인 상세의 대표 URL은 최신 slug를 사용한다. 다른 slug로 들어오면 canonical URL로 정규화한다.
 - 목록·상세의 loading은 route 수준과 component-level Suspense를 구분한다.
 - 공개 데이터의 서버 조회·ISR 재검증 경계는 [isr.md](isr.md).
