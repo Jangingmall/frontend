@@ -148,25 +148,6 @@ const eslintConfig = defineConfig([
       ],
     },
   },
-  {
-    // 예외: 클라이언트 fetcher는 인증 배선 목적으로 stores/auth 를 참조한다
-    // (docs/routing-and-auth.md §4.1, docs/architecture.md §8.2 각주). stores 외
-    // 상위 역할은 그대로 금지한다.
-    files: ["src/lib/http/client.ts"],
-    rules: {
-      "@typescript-eslint/no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            boundary(
-              "클라이언트 fetcher는 stores/auth 외 상위 역할을 참조하지 않습니다.",
-              ["app", "api", "queries", "hooks", "mocks", "components"],
-            ),
-          ],
-        },
-      ],
-    },
-  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

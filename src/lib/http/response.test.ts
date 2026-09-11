@@ -27,6 +27,35 @@ describe("parseBody", () => {
   it("JSON 본문을 파싱한다", async () => {
     expect(await parseBody(jsonResponse({ a: 1 }))).toEqual({ a: 1 });
   });
+
+  it("손상된 JSON은 throw하지 않고 undefined", async () => {
+    const response = new Response("{ broken", {
+      headers: { "content-type": "application/json" },
+    });
+    expect(await parseBody(response)).toBeUndefined();
+  });
+});
+
+describe("resolveResponse — 손상된 JSON", () => {
+  it("실패 응답이면 원래 status의 ApiError로 남는다", async () => {
+    const response = new Response("<html>502 Bad Gateway</html>", {
+      status: 502,
+      headers: { "content-type": "application/json" },
+    });
+    await expect(resolveResponse(response)).rejects.toMatchObject({
+      name: "ApiError",
+      status: 502,
+    });
+  });
+
+  it("성공 응답인데 파싱 불가면 ApiError(502)", async () => {
+    const response = new Response("{ broken", {
+      headers: { "content-type": "application/json" },
+    });
+    await expect(resolveResponse(response)).rejects.toMatchObject({
+      status: 502,
+    });
+  });
 });
 
 describe("unwrapSuccess", () => {
@@ -39,11 +68,9 @@ describe("unwrapSuccess", () => {
   it("봉투 형태가 아니면 ApiError(502)", () => {
     expect(() => unwrapSuccess({ nope: true })).toThrow(ApiError);
     expect(() => unwrapSuccess(null)).toThrow(ApiError);
-    try {
-      unwrapSuccess({ success: false });
-    } catch (error) {
-      expect((error as ApiError).status).toBe(502);
-    }
+    expect(() => unwrapSuccess({ success: false })).toThrow(
+      expect.objectContaining({ status: 502 }),
+    );
   });
 });
 

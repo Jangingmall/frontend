@@ -1,3 +1,7 @@
+// 인증 배선 목적의 예외 — 클라이언트 fetcher는 모든 인증 요청의 단일 통로라
+// 메모리 access token을 여기서 읽고 401 refresh 결과를 반영해야 한다.
+// (docs/routing-and-auth.md §4.1, docs/architecture.md §8.2 각주). 실제 순환 없음.
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { useAuthStore } from "@/stores/auth";
 
 import { ApiError } from "./api-error";
@@ -14,16 +18,32 @@ import { parseBody, resolveResponse, unwrapSuccess } from "./response";
  * 응답 봉투 해제·`ApiError` 규칙은 서버 fetcher와 `./response`를 공유한다.
  */
 
-/** 상대 경로를 현재 origin 기준 절대 URL로. (Node fetch가 상대 URL을 거부한다) */
+/**
+ * 요청 경로를 현재 origin 기준 절대 URL로 만든다 — 브라우저의 상대 `fetch`와 같은 대상이다.
+ * (Node fetch·MSW-node가 상대 URL을 거부해 절대화가 필요하다.)
+ *
+ * **same-origin `/api`만 허용한다.** 절대·protocol-relative·`/api` 밖 경로는 거부해
+ * `Authorization: Bearer` 토큰이 외부로 나가지 않게 막는다. (docs/data-layer.md §4.2)
+ */
 function toUrl(path: string): string {
+  if (!/^\/api(?=[/?#]|$)/.test(path)) {
+    throw new Error(
+      `clientFetch는 same-origin '/api' 경로만 허용합니다: ${path}`,
+    );
+  }
   const origin =
     typeof window !== "undefined" ? window.location?.origin : undefined;
   return origin ? new URL(path, origin).toString() : path;
 }
 
-interface ClientFetchOptions extends Omit<RequestInit, "body"> {
+interface ClientFetchOptions extends Omit<RequestInit, "body" | "headers"> {
   /** 객체면 `JSON.stringify` + `Content-Type: application/json` 자동. */
   body?: unknown;
+  /**
+   * 추가 헤더. plain 객체만 받는다(`Headers` 인스턴스·튜플 배열은 스프레드에서 유실됨).
+   * `Headers`를 조립해 넘겨야 하면 호출부에서 `Object.fromEntries()`로 변환한다.
+   */
+  headers?: Record<string, string>;
   /** 기본 `true`. `false`면 Bearer 미주입 + 401 자동 refresh를 하지 않는다(public 요청). */
   auth?: boolean;
 }
@@ -101,11 +121,18 @@ export async function clientFetch<T>(
   path: string,
   options: ClientFetchOptions = {},
 ): Promise<T> {
+  const tokenAtRequest = useAuthStore.getState().accessToken;
   const response = await doFetch(path, options);
 
   // public 요청이거나 401이 아니면 그대로 처리한다.
   if (response.status !== 401 || options.auth === false) {
     return resolveResponse<T>(response);
+  }
+
+  // 이 요청이 나간 뒤 다른 요청이 이미 토큰을 갱신했으면(single-flight 윈도우가 닫힌 뒤
+  // 도착한 지연 401) refresh를 다시 돌리지 않고 새 토큰으로 1회 재시도한다.
+  if (useAuthStore.getState().accessToken !== tokenAtRequest) {
+    return resolveResponse<T>(await doFetch(path, options));
   }
 
   // 401 → refresh(single-flight) 후 새 토큰으로 원요청 1회 재시도.

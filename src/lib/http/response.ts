@@ -12,13 +12,23 @@ type ApiSuccess<T> = {
   data: T;
 };
 
-/** JSON 응답만 파싱한다. 본문이 없거나 JSON이 아니면 `undefined`. */
+/**
+ * JSON 응답만 파싱한다. 본문이 없거나·JSON이 아니거나·JSON이 손상됐으면 `undefined`.
+ * 손상된 JSON에서 `SyntaxError`를 던지면 `resolveResponse`가 `response.status`를 잃으므로
+ * (예: 본문이 잘린 500) 삼키고 `undefined`로 넘긴다 — 실패 응답은 원래 status의 `ApiError`,
+ * 성공 응답은 `ApiError(502)`가 된다.
+ */
 export async function parseBody(response: Response): Promise<unknown> {
   if (!response.headers.get("content-type")?.includes("application/json")) {
     return undefined;
   }
   const body = await response.text();
-  return body ? JSON.parse(body) : undefined;
+  if (!body) return undefined;
+  try {
+    return JSON.parse(body);
+  } catch {
+    return undefined;
+  }
 }
 
 /** `{ success, status, data }` 봉투에서 `data`를 꺼낸다. 봉투 형태가 아니면 `ApiError(502)`. */
