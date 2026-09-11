@@ -5,13 +5,12 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": new URL("./src", import.meta.url).pathname,
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
       // `server-only`는 클라이언트 import를 막으려 로드 즉시 throw한다. Vitest는
       // `react-server` 조건을 안 켜므로 그 throw를 그대로 맞는다 → 빈 모듈로 대체.
-      "server-only": new URL(
-        "./node_modules/server-only/empty.js",
-        import.meta.url,
-      ).pathname,
+      "server-only": fileURLToPath(
+        new URL("./node_modules/server-only/empty.js", import.meta.url),
+      ),
     },
   },
   test: {
@@ -24,3 +23,4 @@ export default defineConfig({
     env: { API_BASE_URL: "http://localhost:3000" },
   },
 });
+import { fileURLToPath } from "node:url";

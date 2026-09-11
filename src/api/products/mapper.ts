@@ -1,7 +1,31 @@
 import type { Page } from "@/types/api";
+import type { ProductCategory, ProductMaterial } from "@/types/product-filter";
 
+import type {
+  ProductCategoriesDto,
+  ProductMaterialsDto,
+} from "./filter-validation";
 import type { ProductSummary } from "./model";
 import type { ProductListResponseDto, ProductSummaryDto } from "./validation";
+
+export function mapProductCategories(
+  dto: ProductCategoriesDto,
+): ProductCategory[] {
+  return dto.map((category) => ({
+    id: category.id,
+    name: category.name,
+    description: category.description,
+    parentId: category.parentId,
+    minPrice: category.minPrice,
+    maxPrice: category.maxPrice,
+  }));
+}
+
+export function mapProductMaterials(
+  dto: ProductMaterialsDto,
+): ProductMaterial[] {
+  return dto.map((material) => ({ id: material.id, name: material.name }));
+}
 
 export function mapProductSummary(dto: ProductSummaryDto): ProductSummary {
   return {
@@ -22,6 +46,7 @@ export function mapProductSummary(dto: ProductSummaryDto): ProductSummary {
     reviewCount: dto.reviewCount,
     primaryBadge: dto.primaryBadge,
     isSoldOut: dto.status === "SOLD_OUT",
+    colors: dto.colors?.map((color) => ({ name: color.name, hex: color.hex })),
   };
 }
 

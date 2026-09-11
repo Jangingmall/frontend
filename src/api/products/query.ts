@@ -1,7 +1,7 @@
 import { type ProductListSort, toProductListSortApi } from "@/types/sort";
 
 /**
- * 상품 목록 조회 파라미터. 화면/URL이 넘기는 부분집합이며 필터 축은 이후 작업에서 확장한다.
+ * 상품 목록 조회 파라미터. PL-2에서 사용하는 공개 필터만 담는다.
  * (docs/api-contract.md §5 목록 필터, docs/routing-and-auth.md §3)
  */
 export interface ProductListQuery {
@@ -13,6 +13,11 @@ export interface ProductListQuery {
   sort?: ProductListSort;
   keyword?: string;
   category?: string;
+  materials?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  hasGiftWrap?: boolean;
+  excludeSoldOut?: boolean;
 }
 
 export const DEFAULT_PRODUCT_LIST_SIZE = 20;
@@ -62,5 +67,17 @@ export function toProductListSearchParams(
   params.set("sort", toProductListSortApi(query.sort));
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.category) params.set("category", query.category);
+  for (const material of [...new Set(query.materials)].filter(Boolean).sort()) {
+    params.append("material", material);
+  }
+  for (const key of ["minPrice", "maxPrice"] as const) {
+    const value = query[key];
+    if (value !== undefined && Number.isSafeInteger(value) && value >= 0) {
+      params.set(key, String(value));
+    }
+  }
+  if (query.hasGiftWrap) params.set("hasGiftWrap", "true");
+  // BE 기본값이 true이므로 체크 해제 상태도 명시적으로 보낸다.
+  params.set("excludeSoldOut", String(query.excludeSoldOut ?? false));
   return params;
 }
