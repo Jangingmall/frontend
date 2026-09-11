@@ -10,7 +10,7 @@ import {
 
 /**
  * 상품 도메인 MSW 핸들러. `src/mocks/handlers.ts`에 등록된다.
- * 지금은 레퍼런스로 목록 1개만 — 필터·정렬·상세 stub은 상품 도메인 계약 작업에서 추가.
+ * 목록·필터 선택지의 잠정 계약을 재현한다. 상세·찜은 별도 작업이다.
  */
 export const productHandlers = [
   http.get("*/api/products/categories", () => mockOk(productCategories)),

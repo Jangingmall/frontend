@@ -6,9 +6,9 @@ import { z } from "zod";
  * 페이지네이션 응답 필드(`page`/`size`/`totalPages` 등)는 BE 확정 대기라 명시하지 않고
  * passthrough로 흡수한다. FE는 요청 파라미터에서 페이지 정보를 채운다(mapper).
  *
- * FIXME 필드명·형태(중첩 `artisan`, `{ imageId, variants }` 형태 `thumbnail`)는 BE 공개조회
- * 계약서 원문 미확보 상태의 **잠정값**이다. api-contract.md §5 + IA 카드 명세에서 역산했다.
- * 실제 계약과의 대조·확장은 상품 목록 도메인 계약 작업에서 한다.
+ * FIXME 중첩 artisan·thumbnail은 기존 FE 잠정 계약을 유지한다. BE 공개조회 문서와
+ * 협업 문서의 이미지 형태가 서로 다르므로 실제 응답 확정 후 mapper와 함께 조정한다.
+ * docs/api-contract.md §5의 PL-2 연결 상태를 참고한다.
  */
 
 const imageVariantDto = z

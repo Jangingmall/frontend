@@ -127,6 +127,18 @@ type PagedResponse<T> = {
 - 정렬 API enum: `POPULAR`, `NEWEST`, `WISHLIST_COUNT`, `SALES_COUNT`, `PRICE_ASC`, `PRICE_DESC`. URL 표현 ↔ enum 매핑은 [routing-and-auth.md](routing-and-auth.md) §3.
 - 상세 응답에는 옵션 그룹(`REQUIRED`/`OPTIONAL`/`TEXT`), `detailPageBlocks`(`h2`/`p`/`img`/`video`), `images`(ULID + 3 variant), `artisan` 요약이 포함된다. 전체 필드는 BE `docs/장인몰_API_계약서_공개조회.md`.
 
+### PL-2 연결 상태와 잠정 계약 (2026-09-11)
+
+- 구현 진입점은 `/products?category=kitchen`이다. `kitchen`과 소분류·소재 ID는 개발용 MSW 값이며 운영 ID가 아니다.
+- 공개 목록은 기존 `validation → mapper → fetch` 경계를 유지한다. 최초 서버 조회는 상품 목록 태그와 1시간 재검증을 사용하고, 이후 조회는 공개 `clientFetch`와 TanStack Query로 처리한다.
+- 번호 페이지는 FE의 기존 `page`, `size`, `items`, `totalCount` 계약을 따른다. BE `develop`의 공개조회·협업 계약서는 cursor/limit 방식이므로 실제 연동 전에 번호 페이지 지원 여부를 확정해야 한다.
+- 현재 FE 카드 응답은 중첩 `artisan`, `{ imageId, variants }` 형태 `thumbnail`이다. BE 공개조회 문서의 `thumbnailUrl` 및 협업 문서의 thumbnail 배열과 다르다. 실제 응답 확정 시 검증 스키마와 mapper에서 조정한다.
+- 카테고리·소재 조회 경로는 공개조회 계약에 있지만 응답 모양은 미정이다. 현재 카테고리는 `{ id, name, description, parentId, minPrice, maxPrice }[]`, 소재는 `{ id, name }[]`로 검증한다. 다중 소재는 반복 `material` 파라미터로 전달하며 BE의 단일 소재 계약 확장이 필요하다.
+- 색상 표시는 선택적 `colors: { name, hex }[]` 잠정 필드다. 없으면 표시하지 않는다. `hex`는 6자리 색상 값만 허용하며, BE의 단일 `color` 필드와 옵션 목록 관계를 확인해야 한다.
+- 시안의 기본 품절 체크박스는 해제 상태다. BE의 기본값 `true`에 영향받지 않도록 `excludeSoldOut=false`도 요청에 명시한다.
+- 찜 버튼은 표시와 콜백 경계까지 제공한다. 로그인 후 초기 찜 상태 조회 및 mutation 연결은 미완료이므로 페이지에서는 비활성화한다. 상품 상세 링크는 라우팅 계약을 따르지만 상세 화면 본체는 별도 작업이다.
+- MSW 모드는 140개 상품으로 필터·정렬·번호 페이지·빈 결과를 재현한다. 실제 서버와의 통합 검증 완료를 의미하지 않는다. 헤더·푸터·플로팅 버튼은 이 작업에 포함하지 않는다.
+
 ### 구매자 상호작용 (USER)
 
 | Method        | 경로                              | 용도                     |

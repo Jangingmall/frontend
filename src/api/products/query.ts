@@ -1,7 +1,7 @@
 import { type ProductListSort, toProductListSortApi } from "@/types/sort";
 
 /**
- * 상품 목록 조회 파라미터. 화면/URL이 넘기는 부분집합이며 필터 축은 이후 작업에서 확장한다.
+ * 상품 목록 조회 파라미터. PL-2에서 사용하는 공개 필터만 담는다.
  * (docs/api-contract.md §5 목록 필터, docs/routing-and-auth.md §3)
  */
 export interface ProductListQuery {
