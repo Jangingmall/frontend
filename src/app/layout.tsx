@@ -24,7 +24,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthBootstrap>
             <SiteGnb />
-            <main className="flex-1">{children}</main>
+            <main className="flex flex-1 flex-col">{children}</main>
             <Footer />
           </AuthBootstrap>
         </QueryProvider>
