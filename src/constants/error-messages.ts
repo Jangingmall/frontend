@@ -6,7 +6,7 @@
  * 톤·디자인이 확정되면 PM/디자인 검수 후 문자열 값만 통째로 교체한다. 코드 커버리지(모든
  * 알려진 errorCode·주요 status)는 지금 완결이고, 문구 자체의 톤·워딩은 리뷰 대상이 아니다.
  */
-import type { KnownErrorCode } from "@/types/api";
+import { isKnownErrorCode, type KnownErrorCode } from "@/types/api";
 
 /**
  * errorCode 전용 문구. BE `ErrorCode.java` 14종 + 추가 대기 `MISMATCH`.
@@ -58,8 +58,8 @@ export function resolveErrorMessage(
   code?: string | null,
   status?: number | null,
 ): string {
-  if (code && code in ERROR_MESSAGE_BY_CODE) {
-    return ERROR_MESSAGE_BY_CODE[code as KnownErrorCode];
+  if (code && isKnownErrorCode(code)) {
+    return ERROR_MESSAGE_BY_CODE[code];
   }
   if (status != null && status in ERROR_MESSAGE_BY_STATUS) {
     return ERROR_MESSAGE_BY_STATUS[status];

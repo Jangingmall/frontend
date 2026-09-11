@@ -41,4 +41,20 @@ describe("resolveErrorMessage", () => {
     // UNAUTHORIZED(401)와 다른 status를 같이 줘도 code 문구가 이긴다
     expect(resolveErrorMessage("UNAUTHORIZED", 500)).toBe("로그인이 필요해요.");
   });
+
+  it("Object.prototype 속성 이름이 code로 와도 프로토타입 체인을 안 탄다", () => {
+    // `code in ERROR_MESSAGE_BY_CODE`였다면 "toString" 등이 상속 프로퍼티에 걸려
+    // 함수·객체를 돌려줬다(unknown-safe 계약 위반). isKnownErrorCode는 own-value만
+    // 비교하는 배열 includes라 이 클래스의 문제에서 안전하다.
+    for (const code of [
+      "toString",
+      "constructor",
+      "hasOwnProperty",
+      "__proto__",
+    ]) {
+      const result = resolveErrorMessage(code, 404);
+      expect(typeof result).toBe("string");
+      expect(result).toBe("요청한 정보를 찾을 수 없어요.");
+    }
+  });
 });
