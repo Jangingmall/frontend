@@ -79,7 +79,7 @@ export function ProductResults({
             page={data.page}
             pageCount={data.totalPages}
             onPageChange={onPageChange}
-            className="mt-25 justify-center gap-2"
+            className="mt-25 justify-center gap-1 sm:gap-2 [&_button]:size-8 sm:[&_button]:size-9"
           />
         </>
       )}

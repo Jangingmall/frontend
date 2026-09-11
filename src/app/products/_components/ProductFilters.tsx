@@ -70,7 +70,7 @@ export function ProductFilters({
         </AccordionItem>
         <AccordionItem title="가격대" value="price">
           <ProductPriceFilter
-            key={`${category.id}:${query.minPrice}:${query.maxPrice}`}
+            key={category.id}
             min={category.minPrice}
             max={category.maxPrice}
             minPrice={query.minPrice}

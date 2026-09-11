@@ -52,12 +52,22 @@ test("결과가 없는 조건은 초기화할 수 있다", async ({ page }) => {
 });
 
 test("좁은 화면에서도 가로 스크롤 없이 필터를 쓴다", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+  await page.setViewportSize({ width: 360, height: 800 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
   await page.getByRole("button", { name: "가격대", exact: true }).click();
   const slider = page.getByRole("slider", { name: "최소 가격" });
   await slider.focus();
   await slider.press("ArrowRight");
   await expect(page).toHaveURL(/minPrice=1000/);
+  await expect(slider).toBeFocused();
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/minPrice=2000/);
+  await page.goBack();
+  await expect(slider).toHaveAttribute("aria-valuenow", "1000");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

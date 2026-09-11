@@ -21,7 +21,8 @@ export function ProductPriceFilter({
 }: ProductPriceFilterProps) {
   const lower = Math.max(min, Math.min(max, minPrice ?? min));
   const upper = Math.max(lower, Math.min(max, maxPrice ?? max));
-  const [value, setValue] = useState<[number, number]>([lower, upper]);
+  const [draft, setDraft] = useState<[number, number] | null>(null);
+  const value: [number, number] = draft ?? [lower, upper];
   return (
     <Slider
       size="s"
@@ -34,7 +35,7 @@ export function ProductPriceFilter({
       maxLabel={`${value[1].toLocaleString("ko-KR")}원`}
       getAriaLabel={(index) => (index === 0 ? "최소 가격" : "최대 가격")}
       onValueChange={(next) => {
-        if (Array.isArray(next)) setValue([next[0], next[1]]);
+        if (Array.isArray(next)) setDraft([next[0], next[1]]);
       }}
       onValueCommitted={(next) => {
         if (Array.isArray(next))
@@ -42,6 +43,7 @@ export function ProductPriceFilter({
             minPrice: next[0] === min ? undefined : next[0],
             maxPrice: next[1] === max ? undefined : next[1],
           });
+        setDraft(null);
       }}
     />
   );
