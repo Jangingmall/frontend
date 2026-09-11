@@ -3,7 +3,7 @@ import { isrTags } from "@/lib/isr/tags";
 import type { Page } from "@/types/api";
 
 import { productCategoriesDto } from "./filter-validation";
-import { mapProductListPage } from "./mapper";
+import { mapProductCategories, mapProductListPage } from "./mapper";
 import type { ProductSummary } from "./model";
 import {
   type ProductListQuery,
@@ -20,7 +20,7 @@ export async function fetchProductCategoriesServer() {
     tags: [isrTags.productList()],
     revalidate: PRODUCT_LIST_REVALIDATE,
   });
-  return productCategoriesDto.parse(dto);
+  return mapProductCategories(productCategoriesDto.parse(dto));
 }
 
 /**

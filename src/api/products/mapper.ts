@@ -1,4 +1,20 @@
 import type { Page } from "@/types/api";
+import type { ProductCategory } from "@/types/product-filter";
+
+import type { ProductCategoriesDto } from "./filter-validation";
+
+export function mapProductCategories(
+  dto: ProductCategoriesDto,
+): ProductCategory[] {
+  return dto.map((category) => ({
+    id: category.id,
+    name: category.name,
+    description: category.description,
+    parentId: category.parentId,
+    minPrice: category.minPrice,
+    maxPrice: category.maxPrice,
+  }));
+}
 
 import type { ProductSummary } from "./model";
 import type { ProductListResponseDto, ProductSummaryDto } from "./validation";

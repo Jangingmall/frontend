@@ -17,3 +17,6 @@ export const productCategoriesDto = z.array(
 export const productMaterialsDto = z.array(
   z.object({ id: z.string(), name: z.string() }),
 );
+
+export type ProductCategoriesDto = z.infer<typeof productCategoriesDto>;
+export type ProductMaterialsDto = z.infer<typeof productMaterialsDto>;
