@@ -13,6 +13,11 @@ export interface ProductListQuery {
   sort?: ProductListSort;
   keyword?: string;
   category?: string;
+  materials?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  hasGiftWrap?: boolean;
+  excludeSoldOut?: boolean;
 }
 
 export const DEFAULT_PRODUCT_LIST_SIZE = 20;
@@ -62,5 +67,16 @@ export function toProductListSearchParams(
   params.set("sort", toProductListSortApi(query.sort));
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.category) params.set("category", query.category);
+  for (const material of [...new Set(query.materials)].filter(Boolean).sort()) {
+    params.append("material", material);
+  }
+  for (const key of ["minPrice", "maxPrice"] as const) {
+    const value = query[key];
+    if (value !== undefined && Number.isSafeInteger(value) && value >= 0) {
+      params.set(key, String(value));
+    }
+  }
+  if (query.hasGiftWrap) params.set("hasGiftWrap", "true");
+  if (query.excludeSoldOut) params.set("excludeSoldOut", "true");
   return params;
 }
