@@ -1,3 +1,5 @@
+"use client"; // Base UI 프리미티브 + onClick 클로저를 감싸 Server Component에서 직접 못 씀
+
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
 import type { ReactNode } from "react";

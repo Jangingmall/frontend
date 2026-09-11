@@ -1,4 +1,5 @@
 import { fetchPublicApi } from "@/lib/http/fetcher";
+import { isrTags } from "@/lib/isr/tags";
 import type { Page } from "@/types/api";
 
 import { mapProductListPage } from "./mapper";
@@ -9,12 +10,6 @@ import {
   toProductListSearchParams,
 } from "./query";
 import { productListResponseDto } from "./validation";
-
-/**
- * ISR 컬렉션 태그. 필터·정렬·page 조합을 모두 포괄한다. (docs/isr.md §2·§3)
- * 태그 문자열 팩토리가 정리되면 그쪽으로 옮긴다.
- */
-const PRODUCT_LIST_TAG = "products";
 
 /** 웹훅 유실 대비 안전망(1시간). 이벤트 기반 재검증이 우선이다. (docs/isr.md §2) */
 const PRODUCT_LIST_REVALIDATE = 3600;
@@ -33,7 +28,7 @@ export async function fetchProductList(
   const search = toProductListSearchParams(query);
 
   const dto = await fetchPublicApi<unknown>(`/api/products?${search}`, {
-    tags: [PRODUCT_LIST_TAG],
+    tags: [isrTags.productList()],
     revalidate: PRODUCT_LIST_REVALIDATE,
   });
 
