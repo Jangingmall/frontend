@@ -21,6 +21,7 @@ interface SelectProps extends Omit<
   "children" | "render"
 > {
   placeholder?: ReactNode;
+  ariaLabel?: string;
   /** trigger 에 적용 */
   className?: string;
   /** 팝업에 적용 */
@@ -30,6 +31,7 @@ interface SelectProps extends Omit<
 
 function Select({
   placeholder = "항목을 선택해주세요",
+  ariaLabel,
   className,
   contentClassName,
   children,
@@ -38,6 +40,7 @@ function Select({
   return (
     <SelectPrimitive.Root {...props}>
       <SelectPrimitive.Trigger
+        aria-label={ariaLabel}
         data-slot="select-trigger"
         className={cn(
           "group/select-trigger flex h-9 w-full items-center justify-between gap-2 rounded-xs border border-border-jade-fill bg-bg-default px-2 text-body-s text-font-dark-subtle outline-none select-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill data-disabled:cursor-not-allowed data-disabled:opacity-60",
