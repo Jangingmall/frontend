@@ -71,8 +71,12 @@ export function ProductResults({
             aria-busy={isFetching}
             className="grid grid-cols-2 gap-x-6 gap-y-6 xl:grid-cols-4"
           >
-            {data.items.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {data.items.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                isAboveFold={index < 4}
+              />
             ))}
           </div>
           <Pagination

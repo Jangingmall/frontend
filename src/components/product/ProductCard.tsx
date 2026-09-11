@@ -17,12 +17,14 @@ interface ProductCardProps {
   product: ProductSummary;
   isWishlisted?: boolean;
   onWishlist?: (productId: number) => void;
+  isAboveFold?: boolean;
 }
 
 export function ProductCard({
   product,
   isWishlisted = false,
   onWishlist,
+  isAboveFold = false,
 }: ProductCardProps) {
   const [hasImageError, setHasImageError] = useState(false);
   const thumbnail =
@@ -48,6 +50,7 @@ export function ProductCard({
           }
           alt=""
           fill
+          loading={isAboveFold ? "eager" : "lazy"}
           unoptimized
           className="object-cover"
           onError={() => setHasImageError(true)}
