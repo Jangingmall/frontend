@@ -36,7 +36,7 @@ export function ProductCard({
   return (
     <article className="min-w-0 text-font-dark">
       <Link
-        href={href}
+        href={{ pathname: href }}
         aria-label={product.name}
         className="relative block aspect-square overflow-hidden bg-fill-jade-weak focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill"
       >
@@ -69,7 +69,7 @@ export function ProductCard({
             {product.artisan.name}
           </p>
           <Link
-            href={href}
+            href={{ pathname: href }}
             tabIndex={-1}
             aria-hidden="true"
             className="mt-1 block truncate text-title-m"
