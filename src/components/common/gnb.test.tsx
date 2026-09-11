@@ -12,10 +12,8 @@ describe("Gnb", () => {
   it("Header와 GnbNav를 함께 렌더한다", () => {
     render(<Gnb />);
 
-    // Header — 로고·아이콘
     expect(screen.getByRole("link", { name: "로그인" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "장바구니" })).toBeInTheDocument();
-    // GnbNav — 내비 항목
     expect(screen.getByText("전체 카테고리")).toBeInTheDocument();
     expect(screen.getByText("신상품")).toBeInTheDocument();
   });

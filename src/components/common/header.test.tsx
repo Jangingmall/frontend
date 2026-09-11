@@ -12,8 +12,11 @@ describe("Header", () => {
   });
 
   it("loading이면 스켈레톤을 보여주고 로그인/마이페이지 링크는 없다", () => {
-    render(<Header authStatus="loading" />);
+    const { container } = render(<Header authStatus="loading" />);
 
+    expect(
+      container.querySelector('[data-slot="skeleton"]'),
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("link", { name: "로그인" }),
     ).not.toBeInTheDocument();
