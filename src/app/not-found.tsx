@@ -15,7 +15,7 @@ import { EmptyState } from "@/components/common/empty-state";
  */
 export default function NotFound() {
   return (
-    <main className="flex flex-1 items-center justify-center p-8">
+    <div className="flex flex-1 items-center justify-center p-8">
       <EmptyState
         title="페이지를 찾을 수 없어요"
         description="주소가 잘못됐거나 삭제된 페이지예요."
@@ -28,6 +28,6 @@ export default function NotFound() {
           </Link>
         }
       />
-    </main>
+    </div>
   );
 }

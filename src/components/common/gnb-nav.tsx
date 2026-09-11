@@ -50,7 +50,11 @@ function isGnbNavItemActive(
 const ITEM_CLASS =
   "flex items-center rounded-xs px-6 py-4 text-body-m text-font-white transition-colors";
 
-function GnbNav({ className }: { className?: string }) {
+interface GnbNavProps {
+  className?: string;
+}
+
+function GnbNav({ className }: GnbNavProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -90,4 +94,4 @@ function GnbNav({ className }: { className?: string }) {
 }
 
 export { GnbNav, isGnbNavItemActive };
-export type { GnbNavItem };
+export type { GnbNavItem, GnbNavProps };

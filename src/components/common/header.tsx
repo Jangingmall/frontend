@@ -56,7 +56,11 @@ function HeaderIconButton({ label, children, href }: HeaderIconButtonProps) {
  * `authenticated`: 마이페이지 링크. 로그아웃·판매자 전환 하위 메뉴는 Figma에 아직 디자인이
  * 없어 범위 밖 — `api/member/api.ts`의 `logout()`은 이미 있어 후속 작업에서 바로 연결 가능.
  */
-function AuthArea({ status }: { status: AuthAreaStatus }) {
+interface AuthAreaProps {
+  status: AuthAreaStatus;
+}
+
+function AuthArea({ status }: AuthAreaProps) {
   if (status === "loading") {
     return <Skeleton className="size-8 rounded-full" />;
   }
