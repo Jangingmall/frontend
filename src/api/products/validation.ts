@@ -41,6 +41,15 @@ const productSummaryDto = z
     primaryBadge: z.string().nullable(),
     // 공개 목록 응답에는 ON_SALE / SOLD_OUT 만 나온다. (docs/api-contract.md §5)
     status: z.enum(["ON_SALE", "SOLD_OUT"]),
+    // TODO 색상 옵션 응답 확정 전까지 선택 필드로 수용한다.
+    colors: z
+      .array(
+        z.object({
+          name: z.string(),
+          hex: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+        }),
+      )
+      .optional(),
   })
   .passthrough();
 

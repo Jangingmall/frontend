@@ -105,6 +105,24 @@ export function ProductCard({
           </span>
         )}
       </div>
+      {!!product.colors?.length && (
+        <ul aria-label="상품 색상" className="mt-2 flex flex-wrap gap-1 px-2">
+          {product.colors.map((color) => (
+            <li
+              key={`${color.name}-${color.hex}`}
+              title={color.name}
+              className="size-5 border border-border-neutral-subtle p-0.5"
+            >
+              <span
+                className="block size-full"
+                style={{ backgroundColor: color.hex }}
+              >
+                <span className="sr-only">{color.name}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </article>
   );
 }

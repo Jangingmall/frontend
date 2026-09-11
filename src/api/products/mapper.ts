@@ -22,6 +22,7 @@ export function mapProductSummary(dto: ProductSummaryDto): ProductSummary {
     reviewCount: dto.reviewCount,
     primaryBadge: dto.primaryBadge,
     isSoldOut: dto.status === "SOLD_OUT",
+    colors: dto.colors?.map((color) => ({ name: color.name, hex: color.hex })),
   };
 }
 

@@ -59,6 +59,13 @@ export const productCatalogue = Array.from({ length: 140 }, (_, index) => {
     material: productMaterials[index % productMaterials.length].id,
     hasGiftWrap: index % 2 === 0,
     popularity: 140 - index,
+    colors: [
+      { name: "백색", hex: "#FFFFFF" },
+      { name: "회색", hex: "#CCCCCC" },
+      { name: "연회색", hex: "#EEEEEE" },
+      { name: "진회색", hex: "#999999" },
+      { name: "흑색", hex: "#333333" },
+    ],
     wishlistCount: index % 17,
     salesCount: index % 23,
   };

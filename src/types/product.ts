@@ -14,4 +14,5 @@ export interface ProductSummary {
   reviewCount: number;
   primaryBadge: string | null;
   isSoldOut: boolean;
+  colors?: { name: string; hex: string }[];
 }
