@@ -1,7 +1,12 @@
 import type { Page } from "@/types/api";
-import type { ProductCategory } from "@/types/product-filter";
+import type { ProductCategory, ProductMaterial } from "@/types/product-filter";
 
-import type { ProductCategoriesDto } from "./filter-validation";
+import type {
+  ProductCategoriesDto,
+  ProductMaterialsDto,
+} from "./filter-validation";
+import type { ProductSummary } from "./model";
+import type { ProductListResponseDto, ProductSummaryDto } from "./validation";
 
 export function mapProductCategories(
   dto: ProductCategoriesDto,
@@ -16,8 +21,11 @@ export function mapProductCategories(
   }));
 }
 
-import type { ProductSummary } from "./model";
-import type { ProductListResponseDto, ProductSummaryDto } from "./validation";
+export function mapProductMaterials(
+  dto: ProductMaterialsDto,
+): ProductMaterial[] {
+  return dto.map((material) => ({ id: material.id, name: material.name }));
+}
 
 export function mapProductSummary(dto: ProductSummaryDto): ProductSummary {
   return {

@@ -1,7 +1,11 @@
 import { clientFetch } from "@/lib/http/client";
 
 import { productCategoriesDto, productMaterialsDto } from "./filter-validation";
-import { mapProductListPage } from "./mapper";
+import {
+  mapProductCategories,
+  mapProductListPage,
+  mapProductMaterials,
+} from "./mapper";
 import {
   type ProductListQuery,
   resolveProductListPaging,
@@ -28,7 +32,7 @@ export async function fetchProductCategories(signal?: AbortSignal) {
     auth: false,
     signal,
   });
-  return productCategoriesDto.parse(dto);
+  return mapProductCategories(productCategoriesDto.parse(dto));
 }
 
 export async function fetchProductMaterials(signal?: AbortSignal) {
@@ -36,5 +40,5 @@ export async function fetchProductMaterials(signal?: AbortSignal) {
     auth: false,
     signal,
   });
-  return productMaterialsDto.parse(dto);
+  return mapProductMaterials(productMaterialsDto.parse(dto));
 }
