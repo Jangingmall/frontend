@@ -1,19 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
-import { Header } from "./header";
+import { Gnb } from "./gnb";
 
 const meta = {
-  title: "Common/Header",
-  component: Header,
+  title: "Common/Gnb",
+  component: Gnb,
   parameters: { layout: "fullscreen" },
-  args: { cartCount: 0 },
   argTypes: {
     authStatus: {
       control: "inline-radio",
       options: ["loading", "anonymous", "authenticated"],
     },
   },
-} satisfies Meta<typeof Header>;
+} satisfies Meta<typeof Gnb>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -26,8 +25,4 @@ export const Loading: Story = {
 
 export const Authenticated: Story = {
   args: { authStatus: "authenticated" },
-};
-
-export const WithCartCount: Story = {
-  args: { cartCount: 99 },
 };

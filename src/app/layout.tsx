@@ -3,9 +3,12 @@ import "./globals.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { Footer } from "@/components/common/footer";
+
 import { AuthBootstrap } from "./auth-bootstrap";
 import { pretendard } from "./fonts";
 import { QueryProvider } from "./query-provider";
+import { SiteGnb } from "./site-gnb";
 
 export const metadata: Metadata = {
   title: "장인몰",
@@ -19,7 +22,11 @@ export default function RootLayout({
     <html lang="ko" className={`${pretendard.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <QueryProvider>
-          <AuthBootstrap>{children}</AuthBootstrap>
+          <AuthBootstrap>
+            <SiteGnb />
+            <main className="flex flex-1 flex-col">{children}</main>
+            <Footer />
+          </AuthBootstrap>
         </QueryProvider>
       </body>
     </html>

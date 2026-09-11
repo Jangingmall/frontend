@@ -27,8 +27,8 @@ export default function Error({
   }, [error]);
 
   return (
-    <main className="flex flex-1 items-center justify-center p-8">
+    <div className="flex flex-1 items-center justify-center p-8">
       <ErrorState onRetry={retry} />
-    </main>
+    </div>
   );
 }
