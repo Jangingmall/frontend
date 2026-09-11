@@ -2,6 +2,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { z } from "zod";
 
+import { isrTags } from "./tags";
+
 const MAX_TIMESTAMP_AGE_SECONDS = 5 * 60;
 
 const eventSchema = z.object({
@@ -84,7 +86,7 @@ function tagsFor(event: RevalidationEvent) {
         "Product events require data.productId.",
       );
     }
-    return [`product:${event.data.productId}`, "products"];
+    return [isrTags.product(event.data.productId), isrTags.productList()];
   }
   if (!event.data.artisanId) {
     throw new RevalidationRequestError(
@@ -94,12 +96,16 @@ function tagsFor(event: RevalidationEvent) {
   }
   return event.event === "artisan.updated"
     ? [
-        `artisan:${event.data.artisanId}`,
-        "artisans",
-        "product-artisan",
-        "products",
+        isrTags.artisan(event.data.artisanId),
+        isrTags.artisanList(),
+        isrTags.productArtisan(),
+        isrTags.productList(),
       ]
-    : [`artisan:${event.data.artisanId}`, "artisans", "product-artisan"];
+    : [
+        isrTags.artisan(event.data.artisanId),
+        isrTags.artisanList(),
+        isrTags.productArtisan(),
+      ];
 }
 
 export function verifyAndRevalidate({
