@@ -7,6 +7,19 @@ import { productListPage1 } from "@/api/products/mock/fixtures";
 import { ProductCard } from "./ProductCard";
 
 describe("ProductCard", () => {
+  it("응답에 제공된 색상만 접근 가능한 이름으로 표시한다", () => {
+    render(
+      <ProductCard
+        product={{
+          ...mapProductSummary(productListPage1.items[0]),
+          colors: [{ name: "백색", hex: "#FFFFFF" }],
+        }}
+      />,
+    );
+    expect(screen.getByRole("list", { name: "상품 색상" })).toHaveTextContent(
+      "백색",
+    );
+  });
   it("가격, 장인, 상세 링크를 보여주고 찜은 별도 동작으로 전달한다", () => {
     const onWishlist = vi.fn();
     render(
