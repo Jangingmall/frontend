@@ -16,16 +16,16 @@ describe("mock pipeline", () => {
   it("resolves a public list request through handler → validation → mapper", async () => {
     const page = await fetchProductList();
 
-    expect(page).toMatchObject({ page: 1, pageSize: 20, totalCount: 3 });
-    expect(page.items).toHaveLength(3);
+    expect(page).toMatchObject({ page: 1, pageSize: 20, totalCount: 140 });
+    expect(page.items).toHaveLength(20);
     expect(page.items[0]).toMatchObject({ id: 101, isSoldOut: false });
   });
 
   it("returns an empty page past the seeded boundary", async () => {
-    const page = await fetchProductList({ page: 2 });
+    const page = await fetchProductList({ page: 8 });
 
     expect(page.items).toEqual([]);
-    expect(page).toMatchObject({ page: 2, totalCount: 0, totalPages: 1 });
+    expect(page).toMatchObject({ page: 8, totalCount: 140, totalPages: 7 });
   });
 
   it("surfaces a failure envelope as ApiError with the errorCode preserved", async () => {
