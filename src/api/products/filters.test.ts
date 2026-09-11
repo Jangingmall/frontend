@@ -3,6 +3,9 @@ import { describe, expect, it } from "vitest";
 import { toProductListSearchParams } from "./query";
 
 describe("상품 필터 요청", () => {
+  it("품절 제외 체크 해제를 서버 기본값에 맡기지 않는다", () => {
+    expect(toProductListSearchParams({}).get("excludeSoldOut")).toBe("false");
+  });
   it("소재를 중복 없이 정렬하고 가격과 체크박스를 직렬화한다", () => {
     const params = toProductListSearchParams({
       materials: ["wood", "ceramic", "wood"],

@@ -77,6 +77,7 @@ export function toProductListSearchParams(
     }
   }
   if (query.hasGiftWrap) params.set("hasGiftWrap", "true");
-  if (query.excludeSoldOut) params.set("excludeSoldOut", "true");
+  // BE 기본값이 true이므로 체크 해제 상태도 명시적으로 보낸다.
+  params.set("excludeSoldOut", String(query.excludeSoldOut ?? false));
   return params;
 }
