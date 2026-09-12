@@ -117,8 +117,9 @@ type PagedResponse<T> = {
 | ------ | ------------------------------- | ---------------------------------- |
 | GET    | `/api/products`                 | 목록·검색·필터·정렬 (페이지네이션) |
 | GET    | `/api/products/{productId}`     | 상세                               |
-| GET    | `/api/products/categories/main` | 메인 카테고리 목록                 |
+| GET    | `/api/products/categories/main` | 메인 카테고리(대분류) 목록         |
 | GET    | `/api/products/categories`      | 카테고리 필터 값 (동적)            |
+| GET    | `/api/products/subcategories`   | 종목(소분류) 필터 값 (동적)        |
 | GET    | `/api/products/materials`       | 소재 필터 값 (동적)                |
 
 - 목록 필터: `artisanId`, `category`, `subcategory`, `material`, `giftTheme`, `color`, `minPrice`, `maxPrice`, `hasGiftWrap`, `excludeSoldOut`(기본 `true`), `sort`, `keyword`.
@@ -126,6 +127,10 @@ type PagedResponse<T> = {
 - 상품 상태: `DRAFT`, `ON_SALE`, `SOLD_OUT`, `HIDDEN`. **공개 목록 응답에는 `ON_SALE`/`SOLD_OUT`만** 나온다. `DRAFT`/`HIDDEN` 상세 접근은 `404`.
 - 정렬 API enum: `POPULAR`, `NEWEST`, `WISHLIST_COUNT`, `SALES_COUNT`, `PRICE_ASC`, `PRICE_DESC`. URL 표현 ↔ enum 매핑은 [routing-and-auth.md](routing-and-auth.md) §3.
 - 상세 응답에는 옵션 그룹(`REQUIRED`/`OPTIONAL`/`TEXT`), `detailPageBlocks`(`h2`/`p`/`img`/`video`), `images`(ULID + 3 variant), `artisan` 요약이 포함된다. 전체 필드는 BE `docs/장인몰_API_계약서_공개조회.md`.
+- 카테고리 관련 3개 엔드포인트는 응답 모양이 서로 다르다(BE `장인몰_API_명세_v1.csv` 기준, BE 자체 용어가 "카테고리"/"종목"을 혼용하므로 이 구분을 기준으로 삼는다):
+  - `/categories/main` — 대분류 6종 고정: `{ items: [{ categoryCode, name, artisanCount, productCount, thumbnail }], totalCount }`. 소분류는 **포함되지 않는다.**
+  - `/categories` — 대분류를 `{ code, name, productCount }` 플랫 리스트로 반환(필터 칩용). `category` 쿼리파라미터로 특정 카테고리 맥락 동적 목록도 지원.
+  - `/subcategories` — `category` 쿼리파라미터(필수 아님) 로 필터링된 소분류 `{ code, name }` 리스트.
 
 ### PL-2 연결 상태와 잠정 계약 (2026-09-11)
 
