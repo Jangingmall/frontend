@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils";
  * Figma `[FE] Components / Footer` (1440×364, `--fill-neutral-impact` 배경). 사이트 하단.
  * 콘텐츠(링크 라벨·회사 정보)는 Figma 에 placeholder(○○○) 로만 있어 기본값으로 박아두고
  * `columns` / `description` / `logo` 로 덮어쓸 수 있게 한다. 하단 고지·카피라이트는 고정 문구.
- * 반응형은 미정 — desktop(1440) 기준.
+ * 반응형은 미정 — desktop(1440) 기준. 다만 좁은 화면에서 `shrink-0`/nowrap 자식들이
+ * 페이지 전체에 가로 스크롤을 만들지는 않도록 `flex-wrap`만 추가해 둔다(값 자체는 디자인
+ * 확정 전까지 desktop 그대로) — PL-2 E2E("좁은 화면에서도 가로 스크롤 없이")가 모든 페이지에
+ * 걸리는 이 컴포넌트까지 검사해 처음 드러났다.
  */
 interface FooterColumnItem {
   label: string;
@@ -95,12 +98,12 @@ function Footer({
       )}
       {...props}
     >
-      <div className="flex justify-between gap-12">
+      <div className="flex flex-wrap justify-between gap-12">
         <div className="flex max-w-md flex-col items-start gap-3">
           {logo}
           {description}
         </div>
-        <div className="flex shrink-0 gap-12">
+        <div className="flex flex-wrap gap-12">
           {columns.map((column) => (
             <div key={column.title} className="flex flex-col gap-4">
               <span className="text-body-s-b whitespace-nowrap text-font-white">
@@ -131,7 +134,7 @@ function Footer({
       </div>
 
       <div className="flex flex-col gap-6 border-t border-border-white/10 pt-6">
-        <div className="flex items-start justify-between gap-8 text-body-s text-font-dark-weak">
+        <div className="flex flex-wrap items-start justify-between gap-8 text-body-s text-font-dark-weak">
           <p className="max-w-3xl">
             미담 상품 중 (주)미담이 판매자로 등록된 상품을 제외한 모든 상품은
             개별 입점 판매자가 판매하는 상품입니다. (주)미담은
