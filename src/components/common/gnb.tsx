@@ -27,6 +27,11 @@ import { Header } from "./header";
  * 갖고 `GnbNav`엔 파생 값만 내려준다 — CM-3가 붙을 때 `GnbOpenPanel`에 `"search"`만 추가하면
  * 상호 배타가 공짜로 보장된다(`temp/tasks/T-06-category-mega-panel/design.md` §3.4).
  * `useState` 도입으로 이 컴포넌트가 Client Component가 됐다.
+ *
+ * `sticky top-0` — Figma GNB 섹션 주석("Sticky - TOP, 어떤 화면에서도 스크롤 시 상단에
+ * 고정되어 사라지지 않음", 노드 `1289:50624`) 반영. 스크롤해도 항상 화면 상단에 고정된다.
+ * `z-50`은 `components/ui/select.tsx`의 팝오버와 같은 값 — 스크롤된 페이지 콘텐츠 위에
+ * 항상 보이게 한다.
  */
 type GnbOpenPanel = "category" | null;
 
@@ -42,7 +47,10 @@ function Gnb({ logo, authStatus, cartCount, className }: GnbProps) {
   const [openPanel, setOpenPanel] = useState<GnbOpenPanel>(null);
 
   return (
-    <div data-slot="gnb" className={cn("shadow-nav", className)}>
+    <div
+      data-slot="gnb"
+      className={cn("sticky top-0 z-50 shadow-nav", className)}
+    >
       <Header logo={logo} authStatus={authStatus} cartCount={cartCount} />
       <Suspense
         fallback={
