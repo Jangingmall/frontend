@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import { useState } from "react";
+import { useRef } from "react";
 
 import { GnbNav } from "./gnb-nav";
 
@@ -12,23 +12,37 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** controlled 컴포넌트라 스토리에서도 실제 열림 상태를 들고 있어야 호버가 동작한다. */
+/**
+ * `GnbNav`는 이제 트리거 렌더 + 이벤트 위임만 한다 — 호버로 열리는 실제 패널은
+ * `Gnb.stories.tsx`에서 확인한다. 여기선 정적 상태(닫힘/열림 강조)만 보여준다.
+ */
 export const Default: Story = {
   args: {
     isCategoryPanelOpen: false,
-    onCategoryPanelOpenChange: () => {},
+    categoryTriggerRef: { current: null },
+    onCategoryTriggerMouseEnter: () => {},
+    onCategoryTriggerFocus: () => {},
   },
   render: (args) => {
     function GnbNavDemo() {
-      const [isCategoryPanelOpen, setIsCategoryPanelOpen] = useState(
-        args.isCategoryPanelOpen,
-      );
-      return (
-        <GnbNav
-          isCategoryPanelOpen={isCategoryPanelOpen}
-          onCategoryPanelOpenChange={setIsCategoryPanelOpen}
-        />
-      );
+      const categoryTriggerRef = useRef<HTMLAnchorElement>(null);
+      return <GnbNav {...args} categoryTriggerRef={categoryTriggerRef} />;
+    }
+    return <GnbNavDemo />;
+  },
+};
+
+export const CategoryPanelOpen: Story = {
+  args: {
+    isCategoryPanelOpen: true,
+    categoryTriggerRef: { current: null },
+    onCategoryTriggerMouseEnter: () => {},
+    onCategoryTriggerFocus: () => {},
+  },
+  render: (args) => {
+    function GnbNavDemo() {
+      const categoryTriggerRef = useRef<HTMLAnchorElement>(null);
+      return <GnbNav {...args} categoryTriggerRef={categoryTriggerRef} />;
     }
     return <GnbNavDemo />;
   },

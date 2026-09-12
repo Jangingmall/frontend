@@ -26,7 +26,12 @@ describe("Gnb", () => {
     ).toBeInTheDocument();
   });
 
-  describe("카테고리 패널 열림 상태 소유(§3.4)", () => {
+  /**
+   * `CategoryMegaPanel`의 열림·닫힘·호버·키보드 처리는 전부 `Gnb`가 소유한다(§gnb.tsx
+   * docblock — 패널이 헤더 전체 너비로 펼쳐져야 해서 `GnbNav`의 작은 컨테이너에서 여기로
+   * 끌어올렸다).
+   */
+  describe("카테고리 메가패널", () => {
     beforeEach(() => {
       vi.useFakeTimers();
     });
@@ -35,26 +40,90 @@ describe("Gnb", () => {
       vi.useRealTimers();
     });
 
-    it("GnbNav의 onCategoryPanelOpenChange가 Gnb의 openPanel state를 바꾼다", () => {
-      render(<Gnb />);
+    function renderGnb() {
+      const { container } = render(<Gnb />);
+      const root = container.querySelector('[data-slot="gnb"]')!;
+      const trigger = screen.getByText("전체 카테고리").closest("a")!;
+      return { root, trigger };
+    }
 
-      const container = screen
-        .getByText("전체 카테고리")
-        .closest("a")!.parentElement!;
-      fireEvent.mouseEnter(container);
+    it("트리거에 마우스를 올리면 150ms 후 패널이 열린다", () => {
+      const { trigger } = renderGnb();
+
+      fireEvent.mouseEnter(trigger);
+      expect(
+        screen.queryByRole("link", { name: "다기 · 찻잔" }),
+      ).not.toBeInTheDocument();
+
       act(() => vi.advanceTimersByTime(150));
+      expect(
+        screen.getByRole("link", { name: "다기 · 찻잔" }),
+      ).toBeInTheDocument();
+    });
 
-      // openPanel === "category"로 바뀌었는지는 GnbNav가 받는 isCategoryPanelOpen을 통해
-      // 실제로 패널이 마운트되는지로 검증한다(내부 state를 직접 안 들여다봄).
+    it("GNB 영역 전체를 벗어나면 300ms 후 닫힌다", () => {
+      const { root, trigger } = renderGnb();
+
+      fireEvent.mouseEnter(trigger);
+      act(() => vi.advanceTimersByTime(150));
       expect(
         screen.getByRole("link", { name: "다기 · 찻잔" }),
       ).toBeInTheDocument();
 
-      fireEvent.mouseLeave(container);
+      fireEvent.mouseLeave(root);
       act(() => vi.advanceTimersByTime(300));
       expect(
         screen.queryByRole("link", { name: "다기 · 찻잔" }),
       ).not.toBeInTheDocument();
+    });
+
+    it("패널이 열린 채로 대분류 탭에 마우스를 올리면 그 탭으로 전환된다", () => {
+      const { trigger } = renderGnb();
+
+      fireEvent.mouseEnter(trigger);
+      act(() => vi.advanceTimersByTime(150));
+      fireEvent.mouseEnter(screen.getByRole("link", { name: "홈 · 인테리어" }));
+
+      expect(
+        screen.getByRole("link", { name: "화병 · 꽃" }),
+      ).toBeInTheDocument();
+    });
+
+    it("Escape로 닫히면 포커스가 트리거로 돌아온다", () => {
+      const { trigger } = renderGnb();
+
+      fireEvent.mouseEnter(trigger);
+      act(() => vi.advanceTimersByTime(150));
+      fireEvent.focus(screen.getByRole("link", { name: "다기 · 찻잔" }));
+
+      fireEvent.keyDown(document, { key: "Escape" });
+
+      expect(
+        screen.queryByRole("link", { name: "다기 · 찻잔" }),
+      ).not.toBeInTheDocument();
+      expect(document.activeElement).toBe(trigger);
+    });
+
+    it("GNB 바깥을 클릭하면 즉시 닫힌다", () => {
+      const { trigger } = renderGnb();
+
+      fireEvent.mouseEnter(trigger);
+      act(() => vi.advanceTimersByTime(150));
+
+      fireEvent.mouseDown(document.body);
+      expect(
+        screen.queryByRole("link", { name: "다기 · 찻잔" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("트리거에 포커스를 주면 디바운스 없이 즉시 열린다", () => {
+      const { trigger } = renderGnb();
+
+      fireEvent.focus(trigger);
+
+      expect(
+        screen.getByRole("link", { name: "다기 · 찻잔" }),
+      ).toBeInTheDocument();
     });
   });
 });

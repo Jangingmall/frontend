@@ -9,8 +9,14 @@ import { cn } from "@/lib/utils";
  * IA CM-2 전체 카테고리 메가패널의 본문 — 대분류 탭 + 활성 탭의 소분류 그리드.
  * (`temp/tasks/T-06-category-mega-panel/design.md` §2.2·§3.2)
  *
- * 열림·닫힘 자체는 안 다룬다 — 부모(`GnbNav`)가 조건부 렌더로 마운트/언마운트한다. 순수
+ * 열림·닫힘 자체는 안 다룬다 — 부모(`Gnb`)가 조건부 렌더로 마운트/언마운트한다. 순수
  * 프레젠테이션이라 `api`·`queries`·`stores`를 참조하지 않는다(`docs/architecture.md` §8.2).
+ *
+ * 대분류 탭 바(`aria-label="대분류"`)는 `w-full`로 헤더와 같은 너비까지 펼치고, 그 안쪽 배경은
+ * `--nav-menu-fill`(컴포넌트 전용 nav 토큰, `docs/architecture.md`가 아니라 `globals.css`
+ * "Component 색상" 절 — `bg-(--nav-menu-fill)`처럼 괄호 shorthand로 직접 소비)을 쓴다. 반면
+ * 소분류 그리드가 든 흰 박스는 `w-fit`로 내용 너비만큼만 — Figma에서도 이 박스는 헤더 전체
+ * 너비가 아니라 탭 바와 같은 왼쪽 정렬 좁은 박스다.
  *
  * 치수·색상은 Figma GUI 파일(`ZSESuanQor1IT8mr67JjmI`) `814:27100`(nav-bar-module 인스턴스)
  * 노드의 실측값을 그대로 옮겼다 — 패널(`nav-bar-group3`) 패딩 32/16/32/24, 열 간격 12,
@@ -45,9 +51,9 @@ function CategoryMegaPanel({
   return (
     <div
       data-slot="category-mega-panel"
-      className={cn("absolute top-full left-0 w-fit", className)}
+      className={cn("absolute top-full left-0 w-full", className)}
     >
-      <div aria-label="대분류" className="flex bg-fill-neutral-impact px-8">
+      <div aria-label="대분류" className="flex bg-(--nav-menu-fill) px-8">
         {categories.map((category) => {
           const active = category.name === activeCategory?.name;
           return (
@@ -70,7 +76,7 @@ function CategoryMegaPanel({
         })}
       </div>
       {activeCategory && (
-        <div className="bg-bg-default px-8 pt-4 pb-6 shadow-nav">
+        <div className="w-fit bg-bg-default px-8 pt-4 pb-6 shadow-nav">
           <div
             className="grid grid-flow-col grid-rows-5 gap-x-3 gap-y-0"
             aria-label={`${activeCategory.name} 소분류`}

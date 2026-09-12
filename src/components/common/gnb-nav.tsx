@@ -3,19 +3,22 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import type { RefObject } from "react";
 
-import { GNB_CATEGORIES } from "@/constants/gnb-category";
-import { useHoverIntent } from "@/hooks/use-hover-intent";
 import { cn } from "@/lib/utils";
-
-import { CategoryMegaPanel } from "./category-mega-panel";
 
 /**
  * IA CM-1 2단 — 내비 행. `docs/routing-and-auth.md` §2.1·§3, 팀 IA 시트(`98826581` 탭 CM-1
  * 행) 기준. 항목마다 드롭다운이 달린 이전 `nav-bar.tsx` 셸과 달리 완전히 평평한 링크 목록이다
- * — 「전체 카테고리」만 CM-2 메가패널(`CategoryMegaPanel`)이 붙은 특수 항목이고, CM-3(검색
- * 토글)은 별도 작업(T-07)이 붙인다.
+ * — 「전체 카테고리」만 CM-2 메가패널이 붙은 특수 항목이고, CM-3(검색 토글)은 별도 작업(T-07)이
+ * 붙인다.
+ *
+ * 메가패널(`CategoryMegaPanel`) 자체와 그 열림 상태·호버 로직은 이 컴포넌트가 안 갖는다 —
+ * 패널이 헤더 전체 너비로 펼쳐져야 해서(Figma `nav-bar-group2`) `Gnb`가 소유하고 렌더한다.
+ * `GnbNav`는 트리거 링크만 그리고, 호버·포커스 이벤트를 `Gnb`가 준 콜백에 그대로 위임한다
+ * (`temp/tasks/T-06-category-mega-panel/design.md` §3.3 갱신 — 최초 설계는 패널을 이 컴포넌트
+ * 안의 작은 컨테이너에 뒀으나, 그러면 패널 너비가 트리거 텍스트 너비로 제한돼 Figma와
+ * 어긋났다).
  *
  * 「장인관」·「기획전」은 목적지 라우트가 없어 `disabled` — 다른 항목과 같은 텍스트 스타일을
  * 유지하고 hover 배경 변화만 뺀다(흐리게 처리하지 않음, 사용자 결정).
@@ -59,54 +62,24 @@ const ITEM_CLASS =
 
 interface GnbNavProps {
   className?: string;
-  /** 카테고리 메가패널 열림 여부. `Gnb`가 소유한다(§3.4, CM-3와의 상호 배타 대비). */
+  /** 카테고리 메가패널 열림 여부. `Gnb`가 소유(§3.4) — 트리거 강조 스타일에만 쓴다. */
   isCategoryPanelOpen: boolean;
-  onCategoryPanelOpenChange: (open: boolean) => void;
+  categoryTriggerRef: RefObject<HTMLAnchorElement | null>;
+  /** 디바운스된 열기 예약(`useHoverIntent.scheduleOpen`). */
+  onCategoryTriggerMouseEnter: () => void;
+  /** 디바운스 없는 즉시 열기(`useHoverIntent.open`) — 키보드 포커스용. */
+  onCategoryTriggerFocus: () => void;
 }
 
 function GnbNav({
   className,
   isCategoryPanelOpen,
-  onCategoryPanelOpenChange,
+  categoryTriggerRef,
+  onCategoryTriggerMouseEnter,
+  onCategoryTriggerFocus,
 }: GnbNavProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [activeCategoryName, setActiveCategoryName] = useState(
-    GNB_CATEGORIES[0].name,
-  );
-  const containerRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLAnchorElement>(null);
-
-  const { open, scheduleOpen, scheduleClose, cancelScheduledClose, close } =
-    useHoverIntent({
-      isOpen: isCategoryPanelOpen,
-      onOpenChange: onCategoryPanelOpenChange,
-    });
-
-  // ESC — 열려 있을 때만 등록. 패널이 언마운트되면서 포커스가 사라지지 않도록 트리거로
-  // 되돌린다(리뷰 F1) — 바깥 클릭·컨테이너 이탈 blur는 사용자가 이미 다른 곳으로 포커스를
-  // 옮기는 중이라 그대로 두고, ESC만 "제자리로 복귀"로 다룬다.
-  useEffect(() => {
-    if (!isCategoryPanelOpen) return;
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        close();
-        triggerRef.current?.focus();
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isCategoryPanelOpen, close]);
-
-  // 바깥 클릭 — 컨테이너 밖을 누르면 닫는다.
-  useEffect(() => {
-    if (!isCategoryPanelOpen) return;
-    function handleMouseDown(event: MouseEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) close();
-    }
-    document.addEventListener("mousedown", handleMouseDown);
-    return () => document.removeEventListener("mousedown", handleMouseDown);
-  }, [isCategoryPanelOpen, close]);
 
   const categoryActive = isGnbNavItemActive(
     CATEGORY_TRIGGER_HREF,
@@ -119,44 +92,22 @@ function GnbNav({
       aria-label="글로벌 내비게이션"
       className={cn("flex bg-fill-neutral-impact px-8", className)}
     >
-      <div
-        ref={containerRef}
-        className="relative"
-        onMouseEnter={scheduleOpen}
-        onMouseLeave={scheduleClose}
-        onBlur={(event) => {
-          if (!containerRef.current?.contains(event.relatedTarget as Node)) {
-            close();
-          }
-        }}
-      >
-        <Link
-          ref={triggerRef}
-          href={CATEGORY_TRIGGER_HREF}
-          onFocus={open}
-          aria-current={categoryActive ? "page" : undefined}
-          className={cn(
-            ITEM_CLASS,
-            isCategoryPanelOpen
-              ? "bg-fill-jade text-font-dark"
-              : "hover:bg-states-hover-25",
-            categoryActive && "font-bold",
-          )}
-        >
-          전체 카테고리
-        </Link>
-        {isCategoryPanelOpen && (
-          <CategoryMegaPanel
-            categories={GNB_CATEGORIES}
-            activeCategoryName={activeCategoryName}
-            onActiveCategoryChange={(name) => {
-              setActiveCategoryName(name);
-              open();
-              cancelScheduledClose();
-            }}
-          />
+      <Link
+        ref={categoryTriggerRef}
+        href={CATEGORY_TRIGGER_HREF}
+        onMouseEnter={onCategoryTriggerMouseEnter}
+        onFocus={onCategoryTriggerFocus}
+        aria-current={categoryActive ? "page" : undefined}
+        className={cn(
+          ITEM_CLASS,
+          isCategoryPanelOpen
+            ? "bg-(--nav-jade) text-font-dark"
+            : "hover:bg-states-hover-25",
+          categoryActive && "font-bold",
         )}
-      </div>
+      >
+        전체 카테고리
+      </Link>
       {GNB_NAV_ITEMS.map((item) => {
         if (item.disabled || !item.href) {
           return (
