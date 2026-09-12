@@ -47,7 +47,7 @@ describe("Gnb", () => {
       return { root, trigger };
     }
 
-    it("트리거에 마우스를 올리면 150ms 후 패널이 열린다", () => {
+    it("트리거에 마우스를 올리면 80ms 후 패널이 열린다", () => {
       const { trigger } = renderGnb();
 
       fireEvent.mouseEnter(trigger);
@@ -55,23 +55,23 @@ describe("Gnb", () => {
         screen.queryByRole("link", { name: "다기 · 찻잔" }),
       ).not.toBeInTheDocument();
 
-      act(() => vi.advanceTimersByTime(150));
+      act(() => vi.advanceTimersByTime(80));
       expect(
         screen.getByRole("link", { name: "다기 · 찻잔" }),
       ).toBeInTheDocument();
     });
 
-    it("GNB 영역 전체를 벗어나면 300ms 후 닫힌다", () => {
+    it("GNB 영역 전체를 벗어나면 150ms 후 닫힌다", () => {
       const { root, trigger } = renderGnb();
 
       fireEvent.mouseEnter(trigger);
-      act(() => vi.advanceTimersByTime(150));
+      act(() => vi.advanceTimersByTime(80));
       expect(
         screen.getByRole("link", { name: "다기 · 찻잔" }),
       ).toBeInTheDocument();
 
       fireEvent.mouseLeave(root);
-      act(() => vi.advanceTimersByTime(300));
+      act(() => vi.advanceTimersByTime(150));
       expect(
         screen.queryByRole("link", { name: "다기 · 찻잔" }),
       ).not.toBeInTheDocument();
@@ -81,7 +81,7 @@ describe("Gnb", () => {
       const { trigger } = renderGnb();
 
       fireEvent.mouseEnter(trigger);
-      act(() => vi.advanceTimersByTime(150));
+      act(() => vi.advanceTimersByTime(80));
       fireEvent.mouseEnter(screen.getByRole("link", { name: "홈 · 인테리어" }));
 
       expect(
@@ -89,11 +89,37 @@ describe("Gnb", () => {
       ).toBeInTheDocument();
     });
 
+    it("닫혔다 다시 열리면 활성 탭이 첫 대분류로 초기화된다", () => {
+      const { root, trigger } = renderGnb();
+
+      fireEvent.mouseEnter(trigger);
+      act(() => vi.advanceTimersByTime(80));
+      fireEvent.mouseEnter(screen.getByRole("link", { name: "홈 · 인테리어" }));
+      expect(
+        screen.getByRole("link", { name: "화병 · 꽃" }),
+      ).toBeInTheDocument();
+
+      fireEvent.mouseLeave(root);
+      act(() => vi.advanceTimersByTime(150));
+      expect(
+        screen.queryByRole("link", { name: "화병 · 꽃" }),
+      ).not.toBeInTheDocument();
+
+      fireEvent.mouseEnter(trigger);
+      act(() => vi.advanceTimersByTime(80));
+      expect(
+        screen.getByRole("link", { name: "다기 · 찻잔" }),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: "화병 · 꽃" }),
+      ).not.toBeInTheDocument();
+    });
+
     it("Escape로 닫히면 포커스가 트리거로 돌아온다", () => {
       const { trigger } = renderGnb();
 
       fireEvent.mouseEnter(trigger);
-      act(() => vi.advanceTimersByTime(150));
+      act(() => vi.advanceTimersByTime(80));
       fireEvent.focus(screen.getByRole("link", { name: "다기 · 찻잔" }));
 
       fireEvent.keyDown(document, { key: "Escape" });
@@ -108,7 +134,7 @@ describe("Gnb", () => {
       const { trigger } = renderGnb();
 
       fireEvent.mouseEnter(trigger);
-      act(() => vi.advanceTimersByTime(150));
+      act(() => vi.advanceTimersByTime(80));
 
       fireEvent.mouseDown(document.body);
       expect(

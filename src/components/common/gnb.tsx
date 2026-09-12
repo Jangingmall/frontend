@@ -46,6 +46,11 @@ import { Header } from "./header";
  * 고정되어 사라지지 않음", 노드 `1289:50624`) 반영. 스크롤해도 항상 화면 상단에 고정된다.
  * `z-50`은 `components/ui/select.tsx`의 팝오버와 같은 값 — 스크롤된 페이지 콘텐츠 위에
  * 항상 보이게 한다.
+ *
+ * 호버 열기·닫기 디바운스는 80ms·150ms(`useHoverIntent` 기본값) — 초안 150ms·300ms는 실제
+ * 조작해보니 체감상 느렸다. `activeCategoryName`도 패널이 닫힐 때마다 첫 대분류로 리셋한다
+ * (아래 `useEffect`) — 안 그러면 마지막으로 보던 탭이 다음 열림에도 남아 매번 다른 시작
+ * 상태가 된다(`temp/tasks/T-06-category-mega-panel/design.md` §6).
  */
 type GnbOpenPanel = "category" | null;
 
@@ -69,7 +74,16 @@ function Gnb({ logo, authStatus, cartCount, className }: GnbProps) {
   const { open, scheduleOpen, scheduleClose, cancelScheduledClose, close } =
     useHoverIntent({
       isOpen: isCategoryPanelOpen,
-      onOpenChange: (nextOpen) => setOpenPanel(nextOpen ? "category" : null),
+      // 닫힐 때(nextOpen === false) 활성 탭도 같이 첫 대분류로 되돌린다 —
+      // `activeCategoryName`이 `CategoryMegaPanel`(언마운트됨)이 아니라 `Gnb`에 있어서, 안
+      // 돌려놓으면 마지막으로 보던 탭이 다음 열림에도 그대로 남는다. "다시 열면 항상 처음
+      // 탭부터"가 더 예측 가능해서 이걸 기본으로 삼는다. 열림·닫힘을 알리는 이 콜백 안에서
+      // 바로 처리해 `useEffect` + setState의 캐스케이딩 렌더(`react-hooks/set-state-in-effect`)
+      // 를 피한다.
+      onOpenChange: (nextOpen) => {
+        setOpenPanel(nextOpen ? "category" : null);
+        if (!nextOpen) setActiveCategoryName(GNB_CATEGORIES[0].name);
+      },
     });
 
   // ESC — 열려 있을 때만 등록. 패널이 언마운트되면서 포커스가 사라지지 않도록 트리거로

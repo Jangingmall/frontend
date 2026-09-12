@@ -14,9 +14,9 @@ interface UseHoverIntentOptions {
   /** 현재 열림 상태. 렌더링엔 안 쓰고, 중복 호출을 막는 가드로만 쓴다. */
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  /** 기본 150ms. */
+  /** 기본 80ms. */
   openDelayMs?: number;
-  /** 기본 300ms. */
+  /** 기본 150ms. */
   closeDelayMs?: number;
 }
 
@@ -36,8 +36,8 @@ interface UseHoverIntentResult {
 export function useHoverIntent({
   isOpen,
   onOpenChange,
-  openDelayMs = 150,
-  closeDelayMs = 300,
+  openDelayMs = 80,
+  closeDelayMs = 150,
 }: UseHoverIntentOptions): UseHoverIntentResult {
   const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);

@@ -21,7 +21,7 @@ describe("useHoverIntent", () => {
     act(() => result.current.scheduleOpen());
     expect(onOpenChange).not.toHaveBeenCalled();
 
-    act(() => vi.advanceTimersByTime(149));
+    act(() => vi.advanceTimersByTime(79));
     expect(onOpenChange).not.toHaveBeenCalled();
 
     act(() => vi.advanceTimersByTime(1));
@@ -35,7 +35,7 @@ describe("useHoverIntent", () => {
     );
 
     act(() => result.current.scheduleClose());
-    act(() => vi.advanceTimersByTime(299));
+    act(() => vi.advanceTimersByTime(149));
     expect(onOpenChange).not.toHaveBeenCalled();
 
     act(() => vi.advanceTimersByTime(1));
@@ -84,7 +84,7 @@ describe("useHoverIntent", () => {
     );
 
     act(() => result.current.scheduleOpen());
-    act(() => vi.advanceTimersByTime(150));
+    act(() => vi.advanceTimersByTime(80));
 
     expect(onOpenChange).not.toHaveBeenCalled();
   });
@@ -96,7 +96,7 @@ describe("useHoverIntent", () => {
     );
 
     act(() => result.current.scheduleClose());
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.advanceTimersByTime(150));
 
     expect(onOpenChange).not.toHaveBeenCalled();
   });
@@ -109,7 +109,7 @@ describe("useHoverIntent", () => {
 
     act(() => result.current.scheduleClose());
     act(() => result.current.open());
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.advanceTimersByTime(150));
 
     expect(onOpenChange).not.toHaveBeenCalled();
   });
