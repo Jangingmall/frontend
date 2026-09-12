@@ -15,7 +15,10 @@ import { cn } from "@/lib/utils";
  * 치수·색상은 Figma GUI 파일(`ZSESuanQor1IT8mr67JjmI`) `814:27100`(nav-bar-module 인스턴스)
  * 노드의 실측값을 그대로 옮겼다 — 패널(`nav-bar-group3`) 패딩 32/16/32/24, 열 간격 12,
  * 그림자 `0 4px 12px rgba(0,0,0,.08)`(= `--shadow-nav`), 각 항목 버튼 패딩 24/12·radius 2,
- * 행 간격은 버튼 자체 패딩으로 만들어져 별도 gap이 없다.
+ * 행 간격은 버튼 자체 패딩으로 만들어져 별도 gap이 없다. 활성 대분류 탭의 배경은 흰색 블록이
+ * 아니라 `jade-blue-400`을 낮은 투명도(Stateslayer fill 0.25 × layer opacity 0.3 ≈ 7.5%)로
+ * 얹은 옅은 틴트다 — 우리 토큰 중 같은 원색(`jade-blue-400`) 기반인 `--states-hover-25`가
+ * 제일 가깝다(정확한 7.5%에 대응하는 토큰은 없음).
  */
 interface CategoryMegaPanelProps {
   categories: GnbCategory[];
@@ -53,10 +56,8 @@ function CategoryMegaPanel({
               onMouseEnter={() => onActiveCategoryChange(category.name)}
               onFocus={() => onActiveCategoryChange(category.name)}
               className={cn(
-                "flex shrink-0 items-center gap-1 px-6 py-3 text-body-m whitespace-nowrap text-font-white transition-colors",
-                active
-                  ? "bg-fill-jade-weak text-font-dark"
-                  : "hover:bg-states-hover-25",
+                "flex shrink-0 items-center gap-1 px-6 py-3 text-body-m whitespace-nowrap text-font-white transition-colors [&_path]:fill-current",
+                active ? "bg-states-hover-25" : "hover:bg-states-hover-25",
               )}
             >
               {category.name}

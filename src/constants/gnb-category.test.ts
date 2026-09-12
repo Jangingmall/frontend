@@ -45,4 +45,36 @@ describe("GNB_CATEGORIES", () => {
       expect(category.subcategories.length).toBeGreaterThan(0);
     }
   });
+
+  /**
+   * Figma 원문(design.md §2.1 출처 표기) 기준 소분류 개수를 고정한다 — API가 아니라 정적
+   * 상수가 유일한 데이터 원천이라, 항목이 실수로 빠지거나 중복돼도 다른 테스트는 못 잡는다
+   * (리뷰 F2). 카테고리별 개수까지 고정해 어느 카테고리가 틀어졌는지 바로 알 수 있게 한다.
+   */
+  it("카테고리별 소분류 개수가 Figma 원문과 일치한다", () => {
+    const counts = Object.fromEntries(
+      GNB_CATEGORIES.map((category) => [
+        category.name,
+        category.subcategories.length,
+      ]),
+    );
+
+    expect(counts).toEqual({
+      "키친 · 다이닝": 9,
+      "홈 · 인테리어": 7,
+      "패션 · 액세서리": 12,
+      "데스크 · 문구": 5,
+      "패브릭 · 생활": 8,
+      "아트 · 컬렉션": 9,
+      "식품 · 전통주": 6,
+    });
+  });
+
+  it("소분류 총 개수가 56개다", () => {
+    const total = GNB_CATEGORIES.reduce(
+      (sum, category) => sum + category.subcategories.length,
+      0,
+    );
+    expect(total).toBe(56);
+  });
 });

@@ -189,6 +189,19 @@ describe("GnbNav", () => {
       ).not.toBeInTheDocument();
     });
 
+    it("Escape로 닫히면 포커스가 트리거로 돌아온다(리뷰 F1)", () => {
+      render(<ControlledGnbNav />);
+
+      const trigger = screen.getByText("전체 카테고리").closest("a")!;
+      fireEvent.focus(trigger);
+      const subcategoryLink = screen.getByRole("link", { name: "다기 · 찻잔" });
+      fireEvent.focus(subcategoryLink);
+
+      fireEvent.keyDown(document, { key: "Escape" });
+
+      expect(document.activeElement).toBe(trigger);
+    });
+
     it("바깥 클릭으로 즉시 닫힌다", () => {
       render(<ControlledGnbNav />);
 

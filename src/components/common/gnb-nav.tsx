@@ -75,6 +75,7 @@ function GnbNav({
     GNB_CATEGORIES[0].name,
   );
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLAnchorElement>(null);
 
   const { open, scheduleOpen, scheduleClose, cancelScheduledClose, close } =
     useHoverIntent({
@@ -82,11 +83,16 @@ function GnbNav({
       onOpenChange: onCategoryPanelOpenChange,
     });
 
-  // ESC — 열려 있을 때만 등록.
+  // ESC — 열려 있을 때만 등록. 패널이 언마운트되면서 포커스가 사라지지 않도록 트리거로
+  // 되돌린다(리뷰 F1) — 바깥 클릭·컨테이너 이탈 blur는 사용자가 이미 다른 곳으로 포커스를
+  // 옮기는 중이라 그대로 두고, ESC만 "제자리로 복귀"로 다룬다.
   useEffect(() => {
     if (!isCategoryPanelOpen) return;
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") close();
+      if (event.key === "Escape") {
+        close();
+        triggerRef.current?.focus();
+      }
     }
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
@@ -125,12 +131,15 @@ function GnbNav({
         }}
       >
         <Link
+          ref={triggerRef}
           href={CATEGORY_TRIGGER_HREF}
           onFocus={open}
           aria-current={categoryActive ? "page" : undefined}
           className={cn(
             ITEM_CLASS,
-            "hover:bg-states-hover-25",
+            isCategoryPanelOpen
+              ? "bg-fill-jade text-font-dark"
+              : "hover:bg-states-hover-25",
             categoryActive && "font-bold",
           )}
         >
