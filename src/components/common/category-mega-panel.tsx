@@ -25,9 +25,13 @@ import { cn } from "@/lib/utils";
  *
  * 치수·색상은 Figma GUI 파일(`ZSESuanQor1IT8mr67JjmI`) `814:27100`(nav-bar-module 인스턴스)
  * 노드의 실측값을 그대로 옮겼다 — 패널(`nav-bar-group3`) 패딩 32/16/32/24, 열 간격 12,
- * 그림자 `0 4px 12px rgba(0,0,0,.08)`(= `--shadow-nav`), 각 항목 버튼 패딩 24/12·radius 2,
- * 행 간격은 버튼 자체 패딩으로 만들어져 별도 gap이 없다. 활성 대분류 탭의 배경은
- * `jade-blue-400`을 아주 낮은 투명도(Stateslayer fill 0.25 × layer opacity 0.3 = 7.5%)로
+ * 그림자 `0 4px 12px rgba(0,0,0,.08)`(= `--shadow-nav`), 각 항목 버튼은 **고정 너비 132px**
+ * (padding 24/24·12/12 포함, radius 2) — 텍스트 길이에 맞춰 칸마다 너비가 달라지면 안 되고
+ * 전부 같은 너비라야 열 사이 12px 간격이 시각적으로도 일정하게 보인다(`w-33` = 33×4px =
+ * 132px). 긴 라벨("컵 · 술병 · 술잔" 등)은 Figma 원본에서도 이 132px 박스보다 넓어 살짝
+ * 넘치는데, 마침 다음 칸의 좌측 패딩(24px) 안으로 들어가서 옆 칸 텍스트와는 안 겹친다 —
+ * 그대로 재현. 행 간격은 버튼 자체 패딩으로 만들어져 별도 gap이 없다. 활성 대분류 탭의
+ * 배경은 `jade-blue-400`을 아주 낮은 투명도(Stateslayer fill 0.25 × layer opacity 0.3 = 7.5%)로
  * 얹은 옅은 틴트다 — 정확한 7.5%에 대응하는 semantic token이 없어(`docs/ui-system.md` §3.2)
  * 원시 토큰(`--jade-blue-400`)에 직접 불투명도를 실측값 그대로 지정한다.
  */
@@ -43,7 +47,7 @@ function toProductsHref(name: string): Route {
 }
 
 const SUBCATEGORY_ITEM_CLASS =
-  "rounded-xs px-6 py-3 text-body-m whitespace-nowrap text-font-dark transition-colors hover:bg-fill-neutral-weak";
+  "w-33 rounded-xs px-6 py-3 text-body-m whitespace-nowrap text-font-dark transition-colors hover:bg-fill-neutral-weak";
 
 function CategoryMegaPanel({
   categories,
