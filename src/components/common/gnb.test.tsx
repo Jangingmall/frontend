@@ -3,9 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Gnb } from "./gnb";
 
+const push = vi.fn();
+
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
+  useRouter: () => ({ push }),
 }));
 
 describe("Gnb", () => {
@@ -150,6 +153,106 @@ describe("Gnb", () => {
       expect(
         screen.getByRole("link", { name: "다기 · 찻잔" }),
       ).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * CM-3 검색 패널 — 카테고리와 같은 슬롯을 공유하며 상호 배타로 동작한다
+   * (`temp/tasks/T-07-search-panel/design.md` §3.3). 카테고리와 달리 호버가 아니라 클릭
+   * 토글이라 `vi.useFakeTimers()`가 필요 없다(회귀 테스트 제외).
+   */
+  describe("검색 패널", () => {
+    function renderGnb() {
+      const { container } = render(<Gnb />);
+      const root = container.querySelector('[data-slot="gnb"]')!;
+      const searchTrigger = screen.getByRole("button", { name: "검색" });
+      return { root, searchTrigger };
+    }
+
+    it("검색 아이콘을 클릭하면 패널이 열리고 입력창에 자동 포커스된다", () => {
+      const { searchTrigger } = renderGnb();
+
+      fireEvent.click(searchTrigger);
+
+      const input = screen.getByPlaceholderText("검색어를 입력해주세요.");
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveFocus();
+      expect(searchTrigger).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("검색 아이콘을 재클릭하면 닫힌다", () => {
+      const { searchTrigger } = renderGnb();
+
+      fireEvent.click(searchTrigger);
+      fireEvent.click(searchTrigger);
+
+      expect(
+        screen.queryByPlaceholderText("검색어를 입력해주세요."),
+      ).not.toBeInTheDocument();
+      expect(searchTrigger).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("카테고리 패널이 열린 상태에서 검색 아이콘을 클릭하면 배타적으로 전환된다", () => {
+      vi.useFakeTimers();
+      const { searchTrigger } = renderGnb();
+      const categoryTrigger = screen.getByText("전체 카테고리").closest("a")!;
+
+      fireEvent.mouseEnter(categoryTrigger);
+      act(() => vi.advanceTimersByTime(80));
+      expect(
+        screen.getByRole("link", { name: "다기 · 찻잔" }),
+      ).toBeInTheDocument();
+
+      fireEvent.click(searchTrigger);
+
+      expect(
+        screen.queryByRole("link", { name: "다기 · 찻잔" }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText("검색어를 입력해주세요."),
+      ).toBeInTheDocument();
+      vi.useRealTimers();
+    });
+
+    it("ESC로 닫히면 포커스가 검색 트리거로 돌아온다", () => {
+      const { searchTrigger } = renderGnb();
+
+      fireEvent.click(searchTrigger);
+      fireEvent.keyDown(document, { key: "Escape" });
+
+      expect(
+        screen.queryByPlaceholderText("검색어를 입력해주세요."),
+      ).not.toBeInTheDocument();
+      expect(document.activeElement).toBe(searchTrigger);
+    });
+
+    it("GNB 바깥을 클릭하면 즉시 닫힌다", () => {
+      const { searchTrigger } = renderGnb();
+
+      fireEvent.click(searchTrigger);
+      fireEvent.mouseDown(document.body);
+
+      expect(
+        screen.queryByPlaceholderText("검색어를 입력해주세요."),
+      ).not.toBeInTheDocument();
+    });
+
+    /**
+     * 회귀 테스트 — 가드(§gnb.tsx docblock)가 없으면 카테고리용 `scheduleClose` 타이머가
+     * 검색 패널까지 닫혀 버린다(`temp/tasks/T-07-search-panel/design.md` §5-5).
+     */
+    it("검색 패널이 열린 동안 마우스가 GNB 밖으로 나가도 닫히지 않는다", () => {
+      vi.useFakeTimers();
+      const { root, searchTrigger } = renderGnb();
+
+      fireEvent.click(searchTrigger);
+      fireEvent.mouseLeave(root);
+      act(() => vi.advanceTimersByTime(150));
+
+      expect(
+        screen.getByPlaceholderText("검색어를 입력해주세요."),
+      ).toBeInTheDocument();
+      vi.useRealTimers();
     });
   });
 });
