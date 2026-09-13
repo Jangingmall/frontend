@@ -70,10 +70,10 @@ export function ProductOrder({
         </div>
       </div>
       {note && (
-        <p className="mt-2 flex flex-wrap gap-2 text-body-s text-font-dark-subtle">
-          <span className="font-bold text-font-dark">주문 유의사항</span>
+        <div className="mt-2 flex flex-wrap gap-x-10 gap-y-1 bg-bg-subtle p-2 text-caption text-font-dark-subtle">
+          <span className="shrink-0 text-caption-b">주문 유의사항</span>
           {note}
-        </p>
+        </div>
       )}
     </div>
   );
