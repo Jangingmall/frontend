@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 
 import { mapProductSummary } from "@/api/products/mapper";
-import { productCatalogue } from "@/api/products/mock/catalogue";
+import { productListPage1 } from "@/api/products/mock/fixtures";
 
 import { ProductOrder } from "./ProductOrder";
 
-const thumbnail = mapProductSummary(productCatalogue[0]).thumbnail;
+const thumbnail = mapProductSummary(productListPage1.items[0]).thumbnail;
 
 const meta = {
   title: "Product/ProductOrder",

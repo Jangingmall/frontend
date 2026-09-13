@@ -1,12 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { mapProductSummary } from "@/api/products/mapper";
-import { productCatalogue } from "@/api/products/mock/catalogue";
+import { productListPage1 } from "@/api/products/mock/fixtures";
 
 import { ProductOrder } from "./ProductOrder";
 
-const thumbnail = mapProductSummary(productCatalogue[0]).thumbnail;
+const thumbnail = mapProductSummary(productListPage1.items[0]).thumbnail;
 
 describe("ProductOrder", () => {
   it("상품명·옵션·수량/가격을 표시한다", () => {
@@ -65,5 +65,19 @@ describe("ProductOrder", () => {
         "주문제작 작품 포함 · 약 6주 후 전체 작품이 함께 배송됩니다.",
       ),
     ).toBeInTheDocument();
+  });
+
+  it("이미지 로드에 실패하면 placeholder로 전환한다", () => {
+    const { container } = render(
+      <ProductOrder
+        thumbnail={thumbnail}
+        productName="백자 달항아리"
+        quantity={1}
+        price={320000}
+      />,
+    );
+    const image = container.querySelector("img")!;
+    fireEvent.error(image);
+    expect(image).toHaveAttribute("src", "/images/product-placeholder.png");
   });
 });

@@ -51,4 +51,12 @@ describe("ProductCard", () => {
     expect(screen.getByText("품절")).toBeInTheDocument();
     expect(screen.queryByLabelText(/평점/)).not.toBeInTheDocument();
   });
+  it("이미지 로드에 실패하면 placeholder로 전환한다", () => {
+    const { container } = render(
+      <ProductCard product={mapProductSummary(productListPage1.items[0])} />,
+    );
+    const image = container.querySelector("img")!;
+    fireEvent.error(image);
+    expect(image).toHaveAttribute("src", "/images/product-placeholder.png");
+  });
 });
