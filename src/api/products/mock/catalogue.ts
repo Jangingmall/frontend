@@ -1,3 +1,4 @@
+import { GIFT_THEMES, toGiftThemeApi } from "@/types/gift-theme";
 import type { ProductCategory, ProductMaterial } from "@/types/product-filter";
 
 import { productListPage1 } from "./fixtures";
@@ -57,6 +58,9 @@ export const productCatalogue = Array.from({ length: 140 }, (_, index) => {
     },
     category: `kitchen-${(index % 9) + 1}`,
     material: productMaterials[index % productMaterials.length].id,
+    // 실제 BE 필드를 흉내낸다 — 요청 쿼리도 같은 API 코드로 보내니(toGiftThemeApi) 핸들러가
+    // 값을 변환하지 않고 그대로 비교할 수 있다.
+    giftTheme: toGiftThemeApi(GIFT_THEMES[index % GIFT_THEMES.length].id),
     hasGiftWrap: index % 2 === 0,
     popularity: 140 - index,
     colors: [

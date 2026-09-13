@@ -22,12 +22,14 @@ export const productHandlers = [
     const size = Math.min(100, Math.max(1, Number(params.get("size")) || 20));
     const category = params.get("category");
     const materials = params.getAll("material");
+    const giftTheme = params.get("giftTheme");
     const items = productCatalogue.filter(
       (product) =>
         (!category ||
           category === "kitchen" ||
           product.category === category) &&
         (!materials.length || materials.includes(product.material)) &&
+        (!giftTheme || product.giftTheme === giftTheme) &&
         (!params.has("minPrice") ||
           product.price >= Number(params.get("minPrice"))) &&
         (!params.has("maxPrice") ||

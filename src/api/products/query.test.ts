@@ -77,4 +77,14 @@ describe("toProductListSearchParams", () => {
     expect(params.get("keyword")).toBe("다기");
     expect(params.get("category")).toBe("키친-다이닝");
   });
+
+  it("giftTheme은 FE id를 API 코드로 바꿔 싣는다", () => {
+    const params = toProductListSearchParams({ giftTheme: "housewarming" });
+    expect(params.get("giftTheme")).toBe("HOUSEWARMING");
+  });
+
+  it("giftTheme이 없으면 싣지 않는다", () => {
+    const params = toProductListSearchParams({});
+    expect(params.has("giftTheme")).toBe(false);
+  });
 });
