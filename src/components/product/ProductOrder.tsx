@@ -48,15 +48,15 @@ export function ProductOrder({
             onError={() => setHasImageError(true)}
           />
         </div>
-        <div className="flex min-w-0 flex-1 items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-1 items-end justify-between gap-4">
           <div className="min-w-0">
-            <p className="truncate text-title-m">{productName}</p>
+            <p className="truncate text-body-s-b">{productName}</p>
             {!!options?.length && (
               <ul className="mt-2 flex flex-col gap-1">
                 {options.map((option) => (
                   <li
                     key={option}
-                    className="truncate text-body-m text-font-dark-subtle"
+                    className="truncate text-caption text-font-dark-subtle"
                   >
                     − {option}
                   </li>
@@ -64,13 +64,13 @@ export function ProductOrder({
               </ul>
             )}
           </div>
-          <p className="shrink-0 text-body-m">
+          <p className="shrink-0 text-body-s">
             {quantity}개 / {price.toLocaleString("ko-KR")}원
           </p>
         </div>
       </div>
       {note && (
-        <p className="mt-3 flex flex-wrap gap-2 text-body-s text-font-dark-subtle">
+        <p className="mt-2 flex flex-wrap gap-2 text-body-s text-font-dark-subtle">
           <span className="font-bold text-font-dark">주문 유의사항</span>
           {note}
         </p>
