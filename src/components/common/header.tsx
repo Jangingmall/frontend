@@ -1,6 +1,6 @@
 import type { Route } from "next";
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps, ReactNode, Ref } from "react";
 
 import { ProfileIcon, SearchIcon } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,11 +27,22 @@ type AuthAreaStatus = "loading" | "anonymous" | "authenticated";
 interface HeaderIconButtonProps {
   label: string;
   children: ReactNode;
-  /** 주어지면 `next/link`로 이동, 없으면 정적 `<button>`(예: 아직 안 붙은 검색 토글). */
+  /** 주어지면 `next/link`로 이동, 없으면 `<button>`(예: 검색 토글 — `onClick`으로 동작 연결). */
   href?: Route;
+  /** `href` 없는 버튼 전용 — 검색 토글처럼 클릭 핸들러가 필요한 경우. */
+  onClick?: () => void;
+  ref?: Ref<HTMLButtonElement>;
+  "aria-expanded"?: boolean;
 }
 
-function HeaderIconButton({ label, children, href }: HeaderIconButtonProps) {
+function HeaderIconButton({
+  label,
+  children,
+  href,
+  onClick,
+  ref,
+  "aria-expanded": ariaExpanded,
+}: HeaderIconButtonProps) {
   const className =
     "inline-flex size-8 shrink-0 items-center justify-center text-font-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill [&_path]:fill-current";
 
@@ -44,7 +55,14 @@ function HeaderIconButton({ label, children, href }: HeaderIconButtonProps) {
   }
 
   return (
-    <button type="button" aria-label={label} className={className}>
+    <button
+      ref={ref}
+      type="button"
+      aria-label={label}
+      aria-expanded={ariaExpanded}
+      onClick={onClick}
+      className={className}
+    >
       {children}
     </button>
   );
@@ -81,12 +99,21 @@ interface HeaderProps extends ComponentProps<"header"> {
   /** 기본값 "anonymous" — 단독 렌더·Storybook에서 항상 뭔가는 보이도록. */
   authStatus?: AuthAreaStatus;
   cartCount?: number;
+  /** CM-3 검색 패널 열림 여부. `Gnb`가 소유(§`gnb.tsx`) — 검색 토글의 `aria-expanded`에만 쓴다.
+   * 기본값 `false` — 단독 렌더·Storybook에서 검색 기능 없이도 정적 버튼으로 보이게. */
+  isSearchPanelOpen?: boolean;
+  /** 검색 토글 클릭 핸들러. 안 주면 아무 동작 없는 정적 버튼(하위 호환). */
+  onSearchTriggerClick?: () => void;
+  searchTriggerRef?: Ref<HTMLButtonElement>;
 }
 
 function Header({
   logo = LOGO_PLACEHOLDER,
   authStatus = "anonymous",
   cartCount = 0,
+  isSearchPanelOpen = false,
+  onSearchTriggerClick,
+  searchTriggerRef,
   className,
   ...props
 }: HeaderProps) {
@@ -103,7 +130,12 @@ function Header({
       <div className="justify-self-center">{logo}</div>
       <div className="flex items-center gap-3 justify-self-end">
         <AuthArea status={authStatus} />
-        <HeaderIconButton label="검색">
+        <HeaderIconButton
+          ref={searchTriggerRef}
+          label="검색"
+          onClick={onSearchTriggerClick}
+          aria-expanded={isSearchPanelOpen}
+        >
           <SearchIcon className="size-6" />
         </HeaderIconButton>
         <Cart href={"/cart" as Route} count={cartCount} />
