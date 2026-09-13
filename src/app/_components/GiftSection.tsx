@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 
 import { ProductCard } from "@/components/product/ProductCard";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 import { startMockWorker } from "@/mocks/start-browser";
 import { useProductList } from "@/queries/products/queries";
 import type { Page } from "@/types/api";
@@ -30,6 +30,12 @@ interface GiftSectionProps {
  *
  * 최초 테마 결과는 `page.tsx`가 서버에서 미리 조회해 `initialData`로 넘겨 첫 페인트를
  * 채운다(`ProductListPage`와 같은 서버 fetch → client `initialData` 패턴).
+ *
+ * 테마 버튼은 `components/ui/button`의 실제 `Button`(`variant="solid"`/`"ghost"`,
+ * `size="s"`)을 쓴다 — Figma 인스턴스 속성을 보니 선택 상태는 `fills` 있음(진한 배경,
+ * `solid`), 비선택은 `fills: []`(완전 투명, `ghost`)라 직접 그린 배경·테두리보다 이 매핑이
+ * 맞다. 그리드는 `self-start`로 고정해 옆 카드 열이 로딩→실제 카드로 바뀌며 키가 늘어나도
+ * (첫 구현의 버그) 버튼 그리드가 같이 늘어나 보이지 않게 한다.
  */
 export function GiftSection({ initialTheme, initialData }: GiftSectionProps) {
   const [theme, setTheme] = useState<GiftThemeId>(initialTheme);
@@ -68,24 +74,20 @@ export function GiftSection({ initialTheme, initialData }: GiftSectionProps) {
           <div
             role="tablist"
             aria-label="선물 테마"
-            className="grid shrink-0 grid-cols-2 gap-px bg-border-neutral-subtle sm:grid-cols-4 lg:w-72.5 lg:grid-cols-2 lg:grid-rows-4"
+            className="grid shrink-0 grid-cols-2 self-start sm:grid-cols-4 lg:w-72.5 lg:grid-cols-2 lg:grid-rows-4"
           >
             {GIFT_THEMES.map((option) => (
-              <button
+              <Button
                 key={option.id}
                 type="button"
                 role="tab"
                 aria-selected={option.id === theme}
                 onClick={() => setTheme(option.id)}
-                className={cn(
-                  "px-6 py-3 text-body-s transition-colors",
-                  option.id === theme
-                    ? "bg-fill-neutral-impact text-font-white"
-                    : "bg-bg-default text-font-dark hover:bg-states-hover",
-                )}
+                variant={option.id === theme ? "solid" : "ghost"}
+                size="s"
               >
                 {option.label}
-              </button>
+              </Button>
             ))}
           </div>
           <div className="grid flex-1 grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3">

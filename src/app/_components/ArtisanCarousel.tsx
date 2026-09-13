@@ -78,7 +78,7 @@ export function ArtisanCarousel() {
           </div>
           <span
             aria-disabled="true"
-            className="inline-flex h-14 w-fit items-center justify-center rounded-xs bg-(--button-black) px-6 text-button-l text-font-white"
+            className="inline-flex h-14 w-fit items-center justify-center rounded-xs bg-(--button-black) px-6 text-button-xl text-font-white"
           >
             장인관 둘러보기
           </span>

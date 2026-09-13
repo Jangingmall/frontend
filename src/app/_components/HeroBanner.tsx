@@ -5,6 +5,11 @@ import Link from "next/link";
  * 타이포·CTA 색은 Figma 실측값 그대로: 헤드라인 48px/600(`display-l`), 본문 16px(`body-l`),
  * CTA 1 = `button` 컴포넌트 `l-jade` variant, CTA 2 = `l-black` variant.
  *
+ * 배경은 Figma에선 실제 사진(`Background image`)인데 자산이 없어 다른 "이미지 없음" 자리와
+ * 같은 플레이스홀더(`bg-skeleton`)를 쓴다. 전역 헤더와 같은 어두운 색(`fill-neutral-impact`)
+ * 을 썼던 첫 시도는 헤더와 히어로 경계가 안 보여 "헤더가 히어로를 가린 것처럼" 보이는
+ * 문제가 있었다 — 텍스트도 그에 맞춰 밝은색(흰) 대신 어두운색으로 바꿨다.
+ *
  * CTA 2 「장인관 둘러보기」는 원래 `AL-1`(`/artisans`)로 이동하지만, `artisan` 도메인을
  * 만들지 않기로 한 로드맵 결정 때문에 실제 이동은 없앤다(design.md §1-1). GNB가 같은 상황을
  * 처리한 전례(`components/common/gnb-nav.tsx`)를 그대로 따라 `<a>` 대신 `aria-disabled`
@@ -19,7 +24,7 @@ export function HeroBanner() {
   return (
     <section
       aria-label="히어로"
-      className="flex flex-col items-start gap-6 bg-fill-neutral-impact px-4 py-24 text-font-white sm:px-8 lg:px-12"
+      className="bg-skeleton flex flex-col items-start gap-6 px-4 py-24 text-font-dark sm:px-8 lg:px-12"
     >
       <div className="mx-auto flex w-full max-w-desktop flex-col items-start gap-6">
         <div className="flex flex-col gap-2">
