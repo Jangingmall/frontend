@@ -13,6 +13,8 @@ import {
 import { productBadgeLabel } from "@/constants/badge";
 import type { ProductSummary } from "@/types/product";
 
+import { pickThumbnailVariant } from "./product-thumbnail";
+
 interface ProductCardProps {
   product: ProductSummary;
   isWishlisted?: boolean;
@@ -27,9 +29,7 @@ export function ProductCard({
   isAboveFold = false,
 }: ProductCardProps) {
   const [hasImageError, setHasImageError] = useState(false);
-  const thumbnail =
-    product.thumbnail.variants.find((image) => image.width === 640) ??
-    product.thumbnail.variants[0];
+  const thumbnail = pickThumbnailVariant(product.thumbnail, 640);
   const href = `/products/${encodeURIComponent(product.name.trim().replace(/\s+/g, "-"))}-${product.id}`;
   const badge = product.primaryBadge
     ? productBadgeLabel(product.primaryBadge)
