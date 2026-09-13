@@ -74,7 +74,11 @@ function SearchPanel({ onClose, className }: SearchPanelProps) {
       >
         <span aria-hidden="true" />
         <div className="flex items-center">
-          <div className="flex h-9.5 w-200 items-center gap-2">
+          {/* Figma 실측(리뷰 반영, 2026-09-13): `textfield` 프레임의
+           * `individualStrokeWeights`가 `{top:0, right:0, bottom:1, left:0}` — 아래쪽에만
+           * 1px 밑줄이 있고 색은 정확히 `#8E9A9C`(`--jade-blue-700` = `--border-jade-fill`).
+           * design.md 최초안엔 테두리 자체를 안 다뤘던 걸 놓친 부분이라 여기서 보정한다. */}
+          <div className="flex h-9.5 w-200 items-center gap-2 border-b border-border-jade-fill">
             <input
               ref={inputRef}
               type="text"
