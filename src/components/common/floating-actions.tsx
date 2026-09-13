@@ -23,10 +23,17 @@ import { AiChatIcon, TopIcon } from "@/components/ui/icons";
  *
  * 아이콘(`TopIcon`/`AiChatIcon`)은 `fill`이 SVG `path`에 고정돼 있어 `text-*`만으론 색이
  * 안 바뀐다 — `header.tsx`가 이미 쓰는 `[&_path]:fill-current` 패턴으로 우회한다.
+ *
+ * 위치·모양은 Figma 절대좌표로 다시 맞췄다: 프레임(`987:25006`, 1440×923) 우측 끝에서
+ * 정확히 0px(화면 오른쪽 끝에 딱 붙음), 하단에서 64px. `rectangleCornerRadii`가 왼쪽
+ * 위/아래 모서리에만 바인딩돼 있어(오른쪽은 없음) — 화면 끝에 붙는 모양이라 오른쪽은
+ * 각지고 왼쪽만 둥글다(`rounded-xl`로 네 모서리를 다 둥글렸던 게 틀림). 정확한 radius
+ * px 값은 Figma 변수 API가 막혀 있어(`temp/figma-token.md`) 못 읽었고, 캡슐 형태에
+ * 맞는 값으로 근사했다.
  */
 export function FloatingActions() {
   return (
-    <div className="fixed right-6 bottom-6 z-40 flex w-13 flex-col overflow-hidden rounded-xl bg-fill-neutral-impact text-font-white [&_path]:fill-current">
+    <div className="fixed right-0 bottom-16 z-40 flex w-13 flex-col overflow-hidden rounded-l-2xl bg-fill-neutral-impact text-font-white [&_path]:fill-current">
       <button
         type="button"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
