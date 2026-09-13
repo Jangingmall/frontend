@@ -61,7 +61,10 @@ function SearchPanel({ onClose, className }: SearchPanelProps) {
   return (
     <div
       data-slot="search-panel"
-      className={cn("w-full bg-bg-default shadow-nav", className)}
+      className={cn(
+        "absolute top-full left-0 w-full bg-bg-default shadow-nav",
+        className,
+      )}
     >
       <form
         role="search"

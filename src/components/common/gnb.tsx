@@ -98,15 +98,21 @@ function Gnb({ logo, authStatus, cartCount, className }: GnbProps) {
       },
     });
 
-  // 검색 토글 클릭 — 호버 디바운스 없이 즉시 전환(IA CM-3는 클릭 토글). 카테고리가 열려
-  // 있었다면 `close()`로 정식으로 닫아 `activeCategoryName`도 리셋하고(위 `onOpenChange`),
-  // 바로 다음 줄의 `setOpenPanel("search")`가 그 결과를 덮어써 최종적으로 검색만 열린다.
+  // 검색 토글 클릭 — 호버 디바운스 없이 즉시 전환(IA CM-3는 클릭 토글). `close()`를
+  // `isCategoryPanelOpen` 여부와 무관하게 항상 먼저 호출한다 — 카테고리가 실제로 열려
+  // 있었다면 정식으로 닫아 `activeCategoryName`도 리셋하고(위 `onOpenChange`), 카테고리가
+  // 아직 안 열렸어도(호버 직후 `scheduleOpen`이 건 80ms 타이머가 남아 있는 상태) 그 예약을
+  // 지운다 — 안 지우면 타이머가 만료될 때 `onOpenChange(true)`가 현재 상태를 안 보고 그냥
+  // `openPanel`을 `"category"`로 덮어써, 방금 연 검색 패널이 사라지고 카테고리가 열려버린다
+  // (코드 리뷰 F2). `close()`는 열려 있지 않으면 `onOpenChange`를 안 부르고 타이머만
+  // 정리하므로 평범한 경우엔 부작용이 없다. 바로 다음 줄의 `setOpenPanel("search")`가
+  // `close()`의 결과(둘 다 `null`을 향함)를 덮어써 최종적으로 검색만 열린다.
   function handleSearchTriggerClick() {
     if (isSearchPanelOpen) {
       setOpenPanel(null);
       return;
     }
-    if (isCategoryPanelOpen) close();
+    close();
     setOpenPanel("search");
   }
 

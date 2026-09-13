@@ -214,6 +214,30 @@ describe("Gnb", () => {
       vi.useRealTimers();
     });
 
+    /**
+     * 회귀 테스트 — 코드 리뷰 F2(`temp/tasks/T-07-search-panel/review.md`). 카테고리 호버
+     * 타이머가 아직 발화하지 않은 "예약만 된" 상태에서 검색을 열면, 그 타이머가 나중에
+     * 발화하면서 `openPanel`을 다시 `"category"`로 덮어써 방금 연 검색 패널이 사라지는
+     * 버그가 있었다.
+     */
+    it("카테고리 호버 타이머가 대기 중일 때 검색을 열어도 타이머가 검색 패널을 덮어쓰지 않는다", () => {
+      vi.useFakeTimers();
+      const { searchTrigger } = renderGnb();
+      const categoryTrigger = screen.getByText("전체 카테고리").closest("a")!;
+
+      fireEvent.mouseEnter(categoryTrigger); // 80ms 카테고리 열기 타이머 예약
+      fireEvent.click(searchTrigger); // 80ms 지나기 전에 검색으로 전환
+      act(() => vi.advanceTimersByTime(80)); // 예약됐던 타이머가 발화할 시점
+
+      expect(
+        screen.getByPlaceholderText("검색어를 입력해주세요."),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByRole("link", { name: "다기 · 찻잔" }),
+      ).not.toBeInTheDocument();
+      vi.useRealTimers();
+    });
+
     it("ESC로 닫히면 포커스가 검색 트리거로 돌아온다", () => {
       const { searchTrigger } = renderGnb();
 
