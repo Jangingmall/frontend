@@ -36,7 +36,7 @@ export function ProductCard({
     : null;
 
   return (
-    <article className="min-w-0 text-font-dark">
+    <article className="min-w-0 pb-2 text-font-dark">
       <Link
         href={{ pathname: href }}
         aria-label={product.name}
@@ -66,19 +66,17 @@ export function ProductCard({
           </span>
         )}
       </Link>
-      <div className="flex items-start justify-between gap-2 pt-3 pl-2">
+      <div className="flex items-start justify-between gap-2 pt-2 pl-2">
         <div className="min-w-0">
-          <p className="truncate text-body-m text-font-dark-subtle">
-            {product.artisan.name}
-          </p>
           <Link
             href={{ pathname: href }}
             tabIndex={-1}
             aria-hidden="true"
-            className="mt-1 block truncate text-title-m"
+            className="block truncate text-title-m"
           >
             {product.name}
           </Link>
+          <p className="mt-1 truncate text-body-m">{product.artisan.name}</p>
         </div>
         <button
           type="button"
