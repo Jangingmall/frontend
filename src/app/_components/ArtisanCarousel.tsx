@@ -89,7 +89,7 @@ export function ArtisanCarousel() {
           type="button"
           aria-label="이전 장인"
           onClick={() => setIndex((current) => (current - 1 + total) % total)}
-          className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-bg-default p-2 hover:bg-states-hover"
+          className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full p-2 hover:bg-states-hover"
         >
           <ChevronLeftIcon className="size-10" />
         </button>
@@ -97,7 +97,7 @@ export function ArtisanCarousel() {
           type="button"
           aria-label="다음 장인"
           onClick={() => setIndex((current) => (current + 1) % total)}
-          className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-bg-default p-2 hover:bg-states-hover"
+          className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 hover:bg-states-hover"
         >
           <ChevronRightIcon className="size-10" />
         </button>
