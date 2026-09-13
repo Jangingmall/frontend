@@ -49,7 +49,7 @@ export function ArtisanCarousel() {
         description="한 사람의 작업을 처음부터 끝까지 들여다봅니다"
         viewAll={{ disabled: true }}
       />
-      <div className="bg-subtle relative mt-6 flex flex-col items-center gap-9.5 lg:flex-row">
+      <div className="relative mt-6 flex flex-col items-center gap-9.5 bg-bg-subtle lg:flex-row">
         <div className="aspect-[774/520] w-full shrink-0 p-2 lg:w-[774px]">
           <ImagePlaceholder className="h-full w-full" />
         </div>
@@ -89,17 +89,17 @@ export function ArtisanCarousel() {
           type="button"
           aria-label="이전 장인"
           onClick={() => setIndex((current) => (current - 1 + total) % total)}
-          className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full p-2 hover:bg-states-hover"
+          className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-bg-default p-2 hover:bg-states-hover"
         >
-          <ChevronLeftIcon />
+          <ChevronLeftIcon className="size-10" />
         </button>
         <button
           type="button"
           aria-label="다음 장인"
           onClick={() => setIndex((current) => (current + 1) % total)}
-          className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full p-2 hover:bg-states-hover"
+          className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-bg-default p-2 hover:bg-states-hover"
         >
-          <ChevronRightIcon />
+          <ChevronRightIcon className="size-10" />
         </button>
         <p
           role="status"

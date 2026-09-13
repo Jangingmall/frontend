@@ -11,6 +11,6 @@ describe("ImagePlaceholder", () => {
     const el = container.firstElementChild!;
     expect(el).toHaveAttribute("aria-hidden", "true");
     expect(el).toHaveClass("aspect-square");
-    expect(el).toHaveClass("bg-skeleton");
+    expect(el).toHaveClass("bg-bg-skeleton");
   });
 });

@@ -22,12 +22,15 @@ import { ImagePlaceholder } from "./ImagePlaceholder";
  * `<Button render={<Link/>}>`로 합성하지 않는 이유는 `app/not-found.tsx` 상단 주석 참고
  * (Base UI가 `role="button"`을 강제해 네이티브 링크 시맨틱이 깨짐) — 여기서도 같은 이유로
  * 버튼 시각 스타일만 손으로 옮긴다.
+ *
+ * 높이는 Figma 실측(`Background image` 923px, `843:36940`)에 맞춰 `lg:min-h-[923px]` —
+ * `py-24` 패딩만으로는 히어로치고 훨씬 낮아 보인다는 피드백으로 추가.
  */
 export function HeroBanner() {
   return (
     <section
       aria-label="히어로"
-      className="relative flex flex-col items-start gap-6 px-4 py-24 text-font-dark sm:px-8 lg:px-12"
+      className="relative flex min-h-125 flex-col items-center justify-center gap-6 px-4 py-24 text-font-dark sm:px-8 lg:min-h-[923px] lg:px-12"
     >
       <ImagePlaceholder className="absolute inset-0 -z-10" />
       <div className="mx-auto flex w-full max-w-desktop flex-col items-start gap-6">

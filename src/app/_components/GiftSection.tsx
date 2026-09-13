@@ -25,7 +25,7 @@ interface GiftSectionProps {
  * 선택에 반응하는 상품 추천 3개, 나란히 배치. 초기 설계는 이 8개를 "이미지 타일→링크"로,
  * 배치도 세로로 쌓인 형태로 가정했는데 Figma 실측(`987:25006`, `Gift products container`)
  * 확인 결과 둘 다 틀렸다 — 실제로는 좌우 2단 구성이고 테마는 클라이언트에서 실시간으로
- * 카드를 바꾼다. 섹션 전체 배경도 다른 섹션과 달리 옅은 배경(`bg-subtle`)이 풀블리드로
+ * 카드를 바꾼다. 섹션 전체 배경도 다른 섹션과 달리 옅은 배경(`bg-bg-subtle`)이 풀블리드로
  * 깔린다.
  *
  * 최초 테마 결과는 `page.tsx`가 서버에서 미리 조회해 `initialData`로 넘겨 첫 페인트를
@@ -61,7 +61,7 @@ export function GiftSection({ initialTheme, initialData }: GiftSectionProps) {
   );
 
   return (
-    <section aria-label="선물" className="bg-subtle">
+    <section aria-label="선물" className="bg-bg-subtle">
       <div className="mx-auto w-full max-w-desktop px-4 py-13 sm:px-8 lg:px-12">
         <SectionHeader
           title="선물"
