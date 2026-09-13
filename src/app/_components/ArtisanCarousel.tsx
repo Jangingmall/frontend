@@ -17,7 +17,9 @@ import { SectionHeader } from "./SectionHeader";
  * 2차 피드백(직접 Figma 재대조) 반영:
  * - 박스 자체엔 Figma상 패딩이 없다(`Exhibition main container` 1344×520, 컨테이너 레벨
  *   패딩 0) — 첫 구현의 `p-6`은 이 컨테이너에 없는 여백을 만들어 "좌우 margin이 다르다"는
- *   지적을 낳았다. 이미지에만 8px 매트가 있다(`Exhibition image` 자체 padding 8).
+ *   지적을 낳았다. 이미지도 박스에 8px 매트를 두고 있었는데(`Exhibition image` 자체
+ *   padding 8을 그대로 옮김), 박스와 이미지 사이 여백 자체가 없어야 한다는 3차 지적으로
+ *   완전히 제거 — 이미지가 박스 왼쪽에 꽉 차게 붙는다.
  * - 페이지네이션(`N / 6`)은 박스 밖 별도 줄이 아니라 박스 **안**에 있어야 한다(어노테이션
  *   `814:35609` 원문에도 박스 안 우하단 쪽 좌표) — 박스 우하단에 오버레이.
  * - 화살표 아이콘은 Arrow가 아니라 Chevron 계열.
@@ -50,9 +52,7 @@ export function ArtisanCarousel() {
         viewAll={{ disabled: true }}
       />
       <div className="relative mt-6 flex flex-col items-center gap-9.5 bg-bg-subtle lg:flex-row">
-        <div className="aspect-[774/520] w-full shrink-0 p-2 lg:w-[774px]">
-          <ImagePlaceholder className="h-full w-full" />
-        </div>
+        <ImagePlaceholder className="aspect-[774/520] w-full shrink-0 lg:w-[774px]" />
         <div className="flex flex-col gap-7 px-6 pb-16 lg:w-105.5 lg:shrink-0 lg:px-0 lg:pr-9.5 lg:pb-0">
           <div className="flex gap-2">
             <Badge variant="jade">국가무형유산</Badge>
