@@ -13,6 +13,8 @@ import {
 import { productBadgeLabel } from "@/constants/badge";
 import type { ProductSummary } from "@/types/product";
 
+import { pickThumbnailVariant } from "./product-thumbnail";
+
 interface ProductCardProps {
   product: ProductSummary;
   isWishlisted?: boolean;
@@ -27,16 +29,14 @@ export function ProductCard({
   isAboveFold = false,
 }: ProductCardProps) {
   const [hasImageError, setHasImageError] = useState(false);
-  const thumbnail =
-    product.thumbnail.variants.find((image) => image.width === 640) ??
-    product.thumbnail.variants[0];
+  const thumbnail = pickThumbnailVariant(product.thumbnail, 640);
   const href = `/products/${encodeURIComponent(product.name.trim().replace(/\s+/g, "-"))}-${product.id}`;
   const badge = product.primaryBadge
     ? productBadgeLabel(product.primaryBadge)
     : null;
 
   return (
-    <article className="min-w-0 text-font-dark">
+    <article className="min-w-0 pb-2 text-font-dark">
       <Link
         href={{ pathname: href }}
         aria-label={product.name}
@@ -66,19 +66,17 @@ export function ProductCard({
           </span>
         )}
       </Link>
-      <div className="flex items-start justify-between gap-2 pt-3 pl-2">
+      <div className="flex items-start justify-between gap-2 pt-2 pl-2">
         <div className="min-w-0">
-          <p className="truncate text-body-m text-font-dark-subtle">
-            {product.artisan.name}
-          </p>
           <Link
             href={{ pathname: href }}
             tabIndex={-1}
             aria-hidden="true"
-            className="mt-1 block truncate text-title-m"
+            className="block truncate text-title-m"
           >
             {product.name}
           </Link>
+          <p className="mt-1 truncate text-body-m">{product.artisan.name}</p>
         </div>
         <button
           type="button"
@@ -109,19 +107,15 @@ export function ProductCard({
         )}
       </div>
       {!!product.colors?.length && (
-        <ul aria-label="상품 색상" className="mt-2 flex flex-wrap gap-1 px-2">
+        <ul aria-label="상품 색상" className="mt-2 flex flex-wrap gap-0.5 px-2">
           {product.colors.map((color) => (
             <li
               key={`${color.name}-${color.hex}`}
               title={color.name}
-              className="size-5 border border-border-neutral-subtle p-0.5"
+              className="size-4 border border-border-neutral-subtle"
+              style={{ backgroundColor: color.hex }}
             >
-              <span
-                className="block size-full"
-                style={{ backgroundColor: color.hex }}
-              >
-                <span className="sr-only">{color.name}</span>
-              </span>
+              <span className="sr-only">{color.name}</span>
             </li>
           ))}
         </ul>

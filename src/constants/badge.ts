@@ -7,7 +7,7 @@
  */
 
 /**
- * 상품 대표 배지(`primaryBadge`). 서버가 한정수량 > 신작 > 인기 우선순위로 하나만 계산한다.
+ * 상품 대표 배지(`primaryBadge`). 서버가 한정 판매 > 신상품 > 인기 우선순위로 하나만 계산한다.
  * BE enum 문자열값이 미확정이라 아래는 가정이다. 확정 시 키만 교체하면 되고,
  * {@link productBadgeLabel}이 unknown-safe라 그 사이에도 화면은 깨지지 않는다.
  */
@@ -20,8 +20,8 @@ export const PRODUCT_BADGE = {
 export type ProductBadge = (typeof PRODUCT_BADGE)[keyof typeof PRODUCT_BADGE];
 
 const PRODUCT_BADGE_LABEL: Record<ProductBadge, string> = {
-  LIMITED: "한정수량",
-  NEW: "신작",
+  LIMITED: "한정 판매",
+  NEW: "신상품",
   POPULAR: "인기",
 };
 

@@ -72,8 +72,8 @@ describe("상품 정렬 매핑", () => {
 
 describe("productBadgeLabel", () => {
   it("알려진 값은 한글 라벨로, 모르는 값·null은 undefined로", () => {
-    expect(productBadgeLabel("LIMITED")).toBe("한정수량");
-    expect(productBadgeLabel("NEW")).toBe("신작");
+    expect(productBadgeLabel("LIMITED")).toBe("한정 판매");
+    expect(productBadgeLabel("NEW")).toBe("신상품");
     expect(productBadgeLabel("POPULAR")).toBe("인기");
     expect(productBadgeLabel("SOMETHING_NEW")).toBeUndefined();
     expect(productBadgeLabel(null)).toBeUndefined();

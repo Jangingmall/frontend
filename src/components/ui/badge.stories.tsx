@@ -28,7 +28,7 @@ export const Variants: Story = {
         ))}
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        {["한정판매", "신상품", "인기상품"].map((t) => (
+        {["한정 판매", "신상품", "인기"].map((t) => (
           <Badge key={t} variant="solid">
             {t}
           </Badge>
