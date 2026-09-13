@@ -26,11 +26,22 @@ function placeholderImageRef(seq: number): ImageRef {
   };
 }
 
+/** 다른 목업 카탈로그(`api/products/mock/catalogue.ts`)와 같은 색상 팔레트. */
+const SWATCH_COLORS = [
+  { name: "백색", hex: "#FFFFFF" },
+  { name: "회색", hex: "#CCCCCC" },
+  { name: "연회색", hex: "#EEEEEE" },
+  { name: "진회색", hex: "#999999" },
+  { name: "흑색", hex: "#333333" },
+];
+
 /**
  * 홈 "기획전" 섹션 더미 상품 4건. IA 명시대로 실제 API 연동 없이 노출만 한다
  * (design.md §0.2 "기획전"). `ProductSummary` 형태를 그대로 채워 `ProductCard`를
  * 그대로 재사용할 수 있게 한다 — 카드·전체보기 클릭 비활성은 `PromotionSection`이
- * `inert`로 처리한다(§3 "구현 후 재검증" 참고).
+ * `inert`로 처리한다(§3 "구현 후 재검증" 참고). 별점·색상도 다른 상품카드처럼
+ * 실제로 채워서 넣는다 — 비워두면 `ProductCard`가 그 영역 자체를 렌더링하지 않아
+ * 다른 섹션 카드와 다르게 보인다.
  */
 export const PROMOTION_PRODUCTS: readonly ProductSummary[] = [
   {
@@ -40,10 +51,11 @@ export const PROMOTION_PRODUCTS: readonly ProductSummary[] = [
     thumbnail: placeholderImageRef(9001),
     artisan: { id: -1, name: "정직조" },
     craftCategory: null,
-    rating: null,
-    reviewCount: 0,
+    rating: 4.6,
+    reviewCount: 12,
     primaryBadge: null,
     isSoldOut: false,
+    colors: SWATCH_COLORS,
   },
   {
     id: -2,
@@ -52,10 +64,11 @@ export const PROMOTION_PRODUCTS: readonly ProductSummary[] = [
     thumbnail: placeholderImageRef(9002),
     artisan: { id: -2, name: "박죽공" },
     craftCategory: null,
-    rating: null,
-    reviewCount: 0,
+    rating: 4.8,
+    reviewCount: 34,
     primaryBadge: null,
     isSoldOut: false,
+    colors: SWATCH_COLORS,
   },
   {
     id: -3,
@@ -64,10 +77,11 @@ export const PROMOTION_PRODUCTS: readonly ProductSummary[] = [
     thumbnail: placeholderImageRef(9003),
     artisan: { id: -3, name: "김옹기" },
     craftCategory: null,
-    rating: null,
-    reviewCount: 0,
+    rating: 4.5,
+    reviewCount: 7,
     primaryBadge: null,
     isSoldOut: false,
+    colors: SWATCH_COLORS,
   },
   {
     id: -4,
@@ -76,9 +90,10 @@ export const PROMOTION_PRODUCTS: readonly ProductSummary[] = [
     thumbnail: placeholderImageRef(9004),
     artisan: { id: -4, name: "이방직" },
     craftCategory: null,
-    rating: null,
-    reviewCount: 0,
+    rating: 4.9,
+    reviewCount: 21,
     primaryBadge: null,
     isSoldOut: false,
+    colors: SWATCH_COLORS,
   },
 ];
