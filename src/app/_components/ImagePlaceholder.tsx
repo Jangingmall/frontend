@@ -3,11 +3,15 @@ import type { ComponentProps } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * 실제 이미지 자산이 없는 자리를 표시하는 체크보드 패턴(투명도 표시에 흔히 쓰는 바로 그
- * 패턴). 평범한 단색 블록(`bg-bg-skeleton`)보다 "여긴 자산 대기 중"이라는 신호가 훨씬
- * 분명해서, 자산이 없는 히어로 배경·장인관 이미지에 쓴다(design.md §4-4 결정 — 플레이스홀더
- * 티가 나게 둔다). `bg-bg-skeleton`(Tailwind 유틸리티만으로 표현 불가한 다중 그라디언트라
- * 인라인 style로 그린다.
+ * 실제 이미지 자산이 없는 자리를 표시하는 체크보드 패턴.
+ *
+ * `ProductCard`가 이미지 로드 실패 시 쓰는 `/images/product-placeholder.png`를 그대로
+ * 배경 이미지로 쓴다 — 직접 그린 CSS 그라디언트(1차 시도)는 색이 이 파일과 달랐고
+ * (`#fafafa`/`#ebebeb` 체크가 아니라 임의로 고른 흰색 반투명 위 `bg-skeleton`), 체크 크기도
+ * 24px로 고정이라 박스 폭이 달라져도 그대로였다. `background-size: cover`로 바꾸면
+ * 256×256 원본(16px 체크 16×16개)이 박스 폭에 맞춰 통째로 늘어나 체크 크기도 함께
+ * 커진다 — `ProductCard`용 파일이라 정사각형 기준으로 만들어졌지만, `cover`는 종횡비를
+ * 유지해 늘어놓든(히어로처럼 가로로 넓은 박스) 정사각형이든 체크가 찌그러지지 않는다.
  */
 export function ImagePlaceholder({
   className,
@@ -18,14 +22,9 @@ export function ImagePlaceholder({
       aria-hidden="true"
       className={cn("bg-bg-skeleton", className)}
       style={{
-        backgroundImage: [
-          "linear-gradient(45deg, rgba(255,255,255,0.5) 25%, transparent 25%)",
-          "linear-gradient(-45deg, rgba(255,255,255,0.5) 25%, transparent 25%)",
-          "linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.5) 75%)",
-          "linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.5) 75%)",
-        ].join(", "),
-        backgroundSize: "24px 24px",
-        backgroundPosition: "0 0, 0 12px, 12px -12px, -12px 0",
+        backgroundImage: "url(/images/product-placeholder.png)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
       {...props}
     />
