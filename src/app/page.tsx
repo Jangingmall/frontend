@@ -1,4 +1,5 @@
 import { fetchProductList } from "@/api/products/api";
+import { FloatingActions } from "@/components/common/floating-actions";
 import { GIFT_THEMES } from "@/types/gift-theme";
 
 import { ArtisanCarousel } from "./_components/ArtisanCarousel";
@@ -16,6 +17,10 @@ const INITIAL_GIFT_THEME = GIFT_THEMES[0].id;
  * 베스트·신상품·선물(초기 테마)은 서버에서 미리 조회해 첫 페인트를 채운다. 실패는
  * `.catch(() => undefined)`로 흡수하고 해당 섹션은 렌더링하지 않는다 — 홈은 비핵심
  * 마케팅 화면이라 ErrorState로 막지 않는다(design.md §2).
+ *
+ * `FloatingActions`(CM-5 맨 위로·AI 챗봇)는 IA상 이 화면에만 있는 게 아니라 PL-1·
+ * PL-2·PL-3에도 떠야 해서 `components/common/`에 공용으로 두고 여기서 개별 연결한다
+ * (그 화면들은 아직 미착수 — 착수 시 같은 import만 추가하면 됨).
  */
 export default async function HomePage() {
   const [bestProducts, newProducts, giftProducts] = await Promise.all([
@@ -49,6 +54,7 @@ export default async function HomePage() {
         data={newProducts}
       />
       <PromotionSection />
+      <FloatingActions />
     </>
   );
 }
