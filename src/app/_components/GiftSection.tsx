@@ -28,8 +28,11 @@ interface GiftSectionProps {
  * 카드를 바꾼다. 섹션 전체 배경도 다른 섹션과 달리 옅은 배경(`bg-bg-subtle`)이 풀블리드로
  * 깔린다.
  *
- * 최초 테마 결과는 `page.tsx`가 서버에서 미리 조회해 `initialData`로 넘겨 첫 페인트를
- * 채운다(`ProductListPage`와 같은 서버 fetch → client `initialData` 패턴).
+ * 최초 테마 결과는 `page.tsx`가 `queryClient.prefetchQuery()` + `dehydrate()` +
+ * `HydrationBoundary`로 미리 채워 넘긴다(`lib/query/server.ts`) — `useProductList`가 계산하는
+ * `productKeys.list(...)` 캐시 키와 정확히 같은 키로 채우기 때문에 이 컴포넌트는 "지금 테마가
+ * 초기 테마와 같은지" 따로 신경 쓸 필요가 없다. `initialData` prop은 그 배선이 없는 환경
+ * (Storybook 등 MSW가 안 붙은 프리뷰)에서만 쓰는 대체 경로로 남겨둔다.
  *
  * 테마 버튼은 `components/ui/button`의 실제 `Button`(`variant="solid"`/`"ghost"`,
  * `size="s"`)을 쓴다 — Figma 인스턴스 속성을 보니 선택 상태는 `fills` 있음(진한 배경,
