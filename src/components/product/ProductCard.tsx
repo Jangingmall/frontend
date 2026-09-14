@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/icons";
 import { productBadgeLabel } from "@/constants/badge";
 import type { ProductSummary } from "@/types/product";
+import { getProductPath } from "@/utils/product-url";
 
 import { pickThumbnailVariant } from "./product-thumbnail";
 
@@ -30,7 +31,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const [hasImageError, setHasImageError] = useState(false);
   const thumbnail = pickThumbnailVariant(product.thumbnail, 640);
-  const href = `/products/${encodeURIComponent(product.name.trim().replace(/\s+/g, "-"))}-${product.id}`;
+  const href = getProductPath(product);
   const badge = product.primaryBadge
     ? productBadgeLabel(product.primaryBadge)
     : null;
