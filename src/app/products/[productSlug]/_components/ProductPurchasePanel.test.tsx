@@ -4,7 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { http } from "msw";
 import { beforeEach, expect, it, vi } from "vitest";
 
-import { productDetailActionHandlers } from "@/api/products/mock/detail-action-handlers";
+import {
+  productDetailActionHandlers,
+  resetProductDetailActionState,
+} from "@/api/products/mock/detail-action-handlers";
 import { getProductDetailMock } from "@/api/products/mock/detail-fixtures";
 import { mockError } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
@@ -15,17 +18,19 @@ import { ProductPurchasePanel } from "./ProductPurchasePanel";
 
 vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
-beforeEach(() => useAuthStore.getState().clear());
+beforeEach(() => {
+  useAuthStore.getState().clear();
+  resetProductDetailActionState();
+});
 
 function setup(id: number, overrides: Partial<ProductDetail> = {}) {
   const onNotify = vi.fn();
   const onRequireLogin = vi.fn();
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
   render(
-    <QueryClientProvider
-      client={
-        new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      }
-    >
+    <QueryClientProvider client={client}>
       <ProductPurchasePanel
         product={{ ...getProductDetailMock(id)!, ...overrides }}
         onNotify={onNotify}
@@ -33,23 +38,73 @@ function setup(id: number, overrides: Partial<ProductDetail> = {}) {
       />
     </QueryClientProvider>,
   );
-  return { onNotify, onRequireLogin };
+  return { onNotify, onRequireLogin, client };
 }
 
-it("blocks missing required options and focuses the first select", () => {
-  const { onNotify, onRequireLogin } = setup(101);
-  fireEvent.click(screen.getByRole("button", { name: "장바구니" }));
-  expect(onNotify).toHaveBeenCalledWith("필수 옵션을 선택해 주세요.");
-  expect(screen.getAllByRole("combobox")[0]).toHaveFocus();
-  expect(onRequireLogin).not.toHaveBeenCalled();
-});
+it.each([true, false])(
+  "blocks missing required options for isMock=%s and focuses the first select",
+  (isMock) => {
+    const { onNotify, onRequireLogin } = setup(101, { isMock });
+    fireEvent.click(screen.getByRole("button", { name: "장바구니" }));
+    expect(onNotify).toHaveBeenCalledWith("필수 옵션을 선택해 주세요.");
+    expect(screen.getAllByRole("combobox")[0]).toHaveFocus();
+    expect(onRequireLogin).not.toHaveBeenCalled();
+  },
+);
 
-it("requires login for an optionless cart and wishlist", () => {
-  const { onRequireLogin } = setup(102);
-  fireEvent.click(screen.getByRole("button", { name: "장바구니" }));
-  fireEvent.click(screen.getByRole("button", { name: "찜하기" }));
-  expect(onRequireLogin).toHaveBeenCalledTimes(2);
-});
+it.each([true, false])(
+  "requires login for an optionless cart and wishlist with isMock=%s",
+  (isMock) => {
+    const { onRequireLogin, onNotify, client } = setup(102, { isMock });
+    fireEvent.click(screen.getByRole("button", { name: "장바구니" }));
+    fireEvent.click(screen.getByRole("button", { name: "찜하기" }));
+    expect(onRequireLogin).toHaveBeenCalledTimes(2);
+    expect(onNotify).not.toHaveBeenCalled();
+    expect(client.getMutationCache().getAll()).toHaveLength(0);
+  },
+);
+
+it.each([
+  [102, "장바구니", "장바구니 기능은 준비 중입니다."],
+  [103, "재입고 알림", "재입고 알림 기능은 준비 중입니다."],
+] as const)(
+  "does not start a mutation for non-mock product %s (%s)",
+  async (id, button, message) => {
+    useAuthStore.getState().setSession("mock-access-token", {
+      id: 1,
+      name: "테스트",
+      roles: ["USER"],
+    });
+    const { onNotify, onRequireLogin, client } = setup(id, { isMock: false });
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: button }));
+
+    expect(client.getMutationCache().getAll()).toHaveLength(0);
+    expect(onNotify).toHaveBeenCalledWith(message);
+    expect(onRequireLogin).not.toHaveBeenCalled();
+  },
+);
+
+it.each([
+  [102, "장바구니", "장바구니에 작품을 담았습니다."],
+  [103, "재입고 알림", "재입고 알림을 신청했습니다."],
+] as const)(
+  "preserves the mutation for mock product %s (%s)",
+  async (id, button, message) => {
+    useAuthStore.getState().setSession("mock-access-token", {
+      id: 1,
+      name: "테스트",
+      roles: ["USER"],
+    });
+    const { onNotify, client } = setup(id);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: button }));
+
+    await waitFor(() => expect(onNotify.mock.calls[0]?.[0]).toBe(message));
+    expect(client.getMutationCache().getAll()).toHaveLength(1);
+    expect(client.getMutationCache().getAll()[0].state.status).toBe("success");
+  },
+);
 
 it("allows purchase without choosing an optional gift-only group", async () => {
   const user = userEvent.setup();
@@ -110,13 +165,23 @@ it("disables purchase for unknown stock", () => {
   expect(screen.getByText("재고를 확인 중입니다.")).toBeInTheDocument();
 });
 
-it.each([0, null])("allows restock for sold-out stock %s", (stock) => {
-  const { onRequireLogin } = setup(103, { stock });
-  expect(screen.getByRole("button", { name: "품절" })).toBeDisabled();
-  expect(screen.getByRole("button", { name: "재입고 알림" })).toBeEnabled();
-  fireEvent.click(screen.getByRole("button", { name: "재입고 알림" }));
-  expect(onRequireLogin).toHaveBeenCalledOnce();
-});
+it.each([
+  [0, true],
+  [null, true],
+  [0, false],
+  [null, false],
+] as const)(
+  "allows restock for sold-out stock %s with isMock=%s",
+  (stock, isMock) => {
+    const { onRequireLogin, onNotify, client } = setup(103, { stock, isMock });
+    expect(screen.getByRole("button", { name: "품절" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "재입고 알림" })).toBeEnabled();
+    fireEvent.click(screen.getByRole("button", { name: "재입고 알림" }));
+    expect(onRequireLogin).toHaveBeenCalledOnce();
+    expect(onNotify).not.toHaveBeenCalled();
+    expect(client.getMutationCache().getAll()).toHaveLength(0);
+  },
+);
 
 it("opens the next option, adds a card and applies gift wrapping without adding a second product", async () => {
   const user = userEvent.setup();

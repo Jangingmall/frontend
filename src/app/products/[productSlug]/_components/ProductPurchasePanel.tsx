@@ -152,6 +152,10 @@ export function ProductPurchasePanel({
 
   function handleCart() {
     if (!validatePurchase() || busy) return;
+    if (!product.isMock) {
+      onNotify("장바구니 기능은 준비 중입니다.");
+      return;
+    }
     actions.cart.mutate(
       lines.map(({ choices, quantity }) => ({ choices, quantity })),
       {
@@ -166,11 +170,7 @@ export function ProductPurchasePanel({
             },
           ),
         onError: () =>
-          onNotify(
-            product.isMock
-              ? "장바구니에 담지 못했습니다. 옵션과 재고를 확인해 주세요."
-              : "장바구니 기능은 준비 중입니다.",
-          ),
+          onNotify("장바구니에 담지 못했습니다. 옵션과 재고를 확인해 주세요."),
       },
     );
   }
@@ -198,6 +198,10 @@ export function ProductPurchasePanel({
       onRequireLogin();
       return;
     }
+    if (!product.isMock) {
+      onNotify("재입고 알림 기능은 준비 중입니다.");
+      return;
+    }
     actions.restock.mutate(undefined, {
       onSuccess: ({ duplicate }) =>
         onNotify(
@@ -206,11 +210,7 @@ export function ProductPurchasePanel({
             : "재입고 알림을 신청했습니다.",
         ),
       onError: () =>
-        onNotify(
-          product.isMock
-            ? "재입고 알림을 신청하지 못했습니다. 다시 시도해 주세요."
-            : "재입고 알림 기능은 준비 중입니다.",
-        ),
+        onNotify("재입고 알림을 신청하지 못했습니다. 다시 시도해 주세요."),
     });
   }
 
