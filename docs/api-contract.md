@@ -126,7 +126,9 @@ type PagedResponse<T> = {
 - `isLimited`, `isCustomOrder`는 **필터가 아니라 응답 배지 속성**. `primaryBadge`는 서버가 한정수량 → 신작 → 인기 우선순위로 하나만 계산.
 - 상품 상태: `DRAFT`, `ON_SALE`, `SOLD_OUT`, `HIDDEN`. **공개 목록 응답에는 `ON_SALE`/`SOLD_OUT`만** 나온다. `DRAFT`/`HIDDEN` 상세 접근은 `404`.
 - 정렬 API enum: `POPULAR`, `NEWEST`, `WISHLIST_COUNT`, `SALES_COUNT`, `PRICE_ASC`, `PRICE_DESC`. URL 표현 ↔ enum 매핑은 [routing-and-auth.md](routing-and-auth.md) §3.
-- 상세 응답에는 옵션 그룹(`REQUIRED`/`OPTIONAL`/`TEXT`), `detailPageBlocks`(`h2`/`p`/`img`/`video`), `images`(ULID + 3 variant), `artisan` 요약이 포함된다. 전체 필드는 BE `docs/장인몰_API_계약서_공개조회.md`.
+- 현재 PD-1의 실제 상세 조회 어댑터는 `src/api/products/detail-validation.ts`의 `productDetailDto`를 기준으로 `productId`, `artisanId`, `title`, `description`, `price`, `stock`, `thumbnailUrl`, `status`를 검증한다. `description`, `stock`, `thumbnailUrl`은 null·누락을 허용한다.
+- BE 공개조회 계약서의 옵션 그룹(`REQUIRED`/`OPTIONAL`/`TEXT`), `detailPageBlocks`(`h2`/`p`/`img`/`video`), `images`(ULID + 3 variant), `artisan` 요약은 **후속 BE 연동 계약**으로 구분한다. 현재 실제 조회 어댑터에서 해당 필드를 읽어 표시하는 단계는 아니며, 연동 시 BE `docs/장인몰_API_계약서_공개조회.md`와 실제 응답의 일치 여부를 확인해야 한다.
+- PD-1 시연의 다중 이미지·옵션·장인·상세 본문은 **MSW 전용** `productDetailMockDto.detail` 확장이다. 이때의 `optionGroups`(`STANDARD`/`GIFT`)와 `content`(`heading`/`paragraph`/`image`)는 위 BE 계약의 필드·enum과 동일하지 않다. 실제 응답과 혼합하지 않으며, 자세한 경계는 [상품 상세 PD-1 구현 안내](product-detail.md)를 따른다.
 - 카테고리 관련 3개 엔드포인트는 응답 모양이 서로 다르다(BE `장인몰_API_명세_v1.csv` 기준, BE 자체 용어가 "카테고리"/"종목"을 혼용하므로 이 구분을 기준으로 삼는다):
   - `/categories/main` — 대분류 6종 고정: `{ items: [{ categoryCode, name, artisanCount, productCount, thumbnail }], totalCount }`. 소분류는 **포함되지 않는다.**
   - `/categories` — 대분류를 `{ code, name, productCount }` 플랫 리스트로 반환(필터 칩용). `category` 쿼리파라미터로 특정 카테고리 맥락 동적 목록도 지원.
