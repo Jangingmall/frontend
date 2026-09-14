@@ -7,6 +7,15 @@ import {
 } from "./product-url";
 
 describe("상품 상세 URL", () => {
+  it("슬래시가 포함된 상품명의 인코딩·디코딩 주소에서 같은 ID를 읽는다", () => {
+    const product = { id: 101, name: "A/B" };
+    expect(getProductPath(product)).toBe("/products/A%2FB-101");
+    expect(parseProductId("A%2FB-101")).toBe(101);
+    expect(parseProductId("A/B-101")).toBe(101);
+    expect(isCanonicalProductSlug(product, "A%2FB-101")).toBe(true);
+    expect(isCanonicalProductSlug(product, "A/B-101")).toBe(true);
+  });
+
   it("한글·공백·하이픈을 유지하고 카드와 상세가 같은 주소를 사용한다", () => {
     expect(getProductPath({ id: 101, name: "  백자 - 달항아리  " })).toBe(
       "/products/%EB%B0%B1%EC%9E%90---%EB%8B%AC%ED%95%AD%EC%95%84%EB%A6%AC-101",

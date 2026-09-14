@@ -5,7 +5,7 @@ export function getProductPath(product: { id: number; name: string }) {
 }
 
 export function parseProductId(segment: string): number | null {
-  const match = /^([^/]+)-([1-9]\d*)$/.exec(segment);
+  const match = /^(.+)-([1-9]\d*)$/.exec(segment);
   if (!match || !match[1].replace(/-/g, "").trim()) return null;
   const id = Number(match[2]);
   return Number.isSafeInteger(id) ? id : null;
