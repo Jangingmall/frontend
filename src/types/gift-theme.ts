@@ -2,9 +2,11 @@
  * 선물 테마 8종. (docs/api-contract.md §5 `giftTheme` 필터)
  * URL·화면·쿼리가 함께 쓰는 공유 타입이라 `types/sort.ts`와 같은 자리에 둔다.
  *
- * API 코드값은 BE·PM이 아직 확정하지 않았다(docs/api-contract.md §9 "PM 확정" 대기,
- * 예시 `HOUSEWARMING`). 아래는 그 사이 쓰는 임시값 — 확정되면 {@link GIFT_THEME_API}만
- * 고치면 되고, FE id·라벨·나머지 코드는 그대로 둔다.
+ * API 코드값은 BE·PM이 아직 확정하지 않았다(docs/api-contract.md §9 "PM 확정" 대기).
+ * 그래도 BE 레포 `docs/장인몰_API_계약서_공개조회.md`(giftTheme enum)에 지금 실제로 구현된
+ * 임시값과는 맞춰둔다 — FE가 따로 지어낸 값(`MILESTONE_BIRTHDAY`, `BUSINESS`)이 BE의
+ * `BIRTHDAY_60TH`, `BOSS`와 어긋나 있던 걸 CodeRabbit 리뷰로 발견해 바로잡았다. PM이 최종
+ * 확정하면 {@link GIFT_THEME_API}만 다시 고치면 되고, FE id·라벨은 그대로 둔다.
  */
 
 export type GiftThemeId =
@@ -19,9 +21,9 @@ export type GiftThemeId =
 
 export type GiftThemeApi =
   | "HOUSEWARMING"
-  | "MILESTONE_BIRTHDAY"
+  | "BIRTHDAY_60TH"
   | "WEDDING"
-  | "BUSINESS"
+  | "BOSS"
   | "PARENTS"
   | "FRIEND"
   | "PROMOTION"
@@ -46,9 +48,9 @@ export const GIFT_THEMES: readonly GiftThemeOption[] = [
 
 const GIFT_THEME_API: Record<GiftThemeId, GiftThemeApi> = {
   housewarming: "HOUSEWARMING",
-  "milestone-birthday": "MILESTONE_BIRTHDAY",
+  "milestone-birthday": "BIRTHDAY_60TH",
   wedding: "WEDDING",
-  business: "BUSINESS",
+  business: "BOSS",
   parents: "PARENTS",
   friend: "FRIEND",
   promotion: "PROMOTION",
