@@ -110,9 +110,10 @@ it("disables purchase for unknown stock", () => {
   expect(screen.getByText("재고를 확인 중입니다.")).toBeInTheDocument();
 });
 
-it("shows restock action and disabled sold-out purchase", () => {
-  const { onRequireLogin } = setup(103);
+it.each([0, null])("allows restock for sold-out stock %s", (stock) => {
+  const { onRequireLogin } = setup(103, { stock });
   expect(screen.getByRole("button", { name: "품절" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "재입고 알림" })).toBeEnabled();
   fireEvent.click(screen.getByRole("button", { name: "재입고 알림" }));
   expect(onRequireLogin).toHaveBeenCalledOnce();
 });

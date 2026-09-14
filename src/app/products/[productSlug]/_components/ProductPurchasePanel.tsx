@@ -505,7 +505,7 @@ export function ProductPurchasePanel({
             variant="outline"
             size="xl"
             className="w-2/5 min-w-0 px-3 text-body-l xl:w-50"
-            disabled={unknownStock}
+            disabled={unknownStock && !soldOut}
             loading={busy}
             onClick={soldOut ? handleRestock : handleCart}
           >
