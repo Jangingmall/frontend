@@ -19,7 +19,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const id = parseProductId((await params).productSlug);
-  const product = id ? await fetchProductDetail(id).catch(() => null) : null;
+  const product = id ? await fetchProductDetail(id) : null;
   if (!product)
     return {
       title: "상품을 찾을 수 없습니다 | 장인몰",
