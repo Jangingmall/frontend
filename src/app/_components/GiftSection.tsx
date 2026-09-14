@@ -48,9 +48,13 @@ export function GiftSection({ initialTheme, initialData }: GiftSectionProps) {
     let isActive = true;
     // ProductListPage와 동일한 목업 워커 기동 대기. 실패해도(로컬 목업 모드 한정) 조회
     // 자체는 시도하게 둔다 — 홈은 비핵심 마케팅 화면이라 별도 에러 경계를 두지 않는다.
-    startMockWorker().finally(() => {
-      if (isActive) setIsReady(true);
-    });
+    // `.catch()`로 먼저 reject를 소비해야 한다 — `finally()`만 쓰면 원래 reject가 그대로
+    // 전파돼 unhandled promise rejection이 된다.
+    startMockWorker()
+      .catch(() => undefined)
+      .finally(() => {
+        if (isActive) setIsReady(true);
+      });
     return () => {
       isActive = false;
     };
