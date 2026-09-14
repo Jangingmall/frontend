@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useSyncExternalStore } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -11,8 +11,24 @@ const SECTIONS = [
   { id: "product-reviews", label: "리뷰·문의" },
 ];
 
+function subscribeToHash(onChange: () => void) {
+  window.addEventListener("hashchange", onChange);
+  return () => window.removeEventListener("hashchange", onChange);
+}
+
+function getActiveSection() {
+  const id = window.location.hash.slice(1);
+  return SECTIONS.some((section) => section.id === id)
+    ? id
+    : "product-information";
+}
+
 export function ProductSectionNav() {
-  const [activeSection, setActiveSection] = useState("product-information");
+  const activeSection = useSyncExternalStore(
+    subscribeToHash,
+    getActiveSection,
+    () => "product-information",
+  );
   return (
     <nav
       aria-label="상품 상세 메뉴"
@@ -22,7 +38,6 @@ export function ProductSectionNav() {
         <a
           key={id}
           href={`#${id}`}
-          onClick={() => setActiveSection(id)}
           aria-current={activeSection === id ? "location" : undefined}
           className={cn(
             "flex min-w-0 flex-1 items-center justify-center px-2 py-3 text-body-m outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-border-white sm:min-w-18 sm:flex-none sm:px-6",

@@ -54,6 +54,21 @@ test("한글 URL 직접 접속·새로고침·이전 제목 정규화", async ({
   );
 });
 
+test("섹션 링크 직접 진입과 뒤로가기가 메뉴에 반영된다", async ({ page }) => {
+  await openDetail(page, `${detailPath}#product-reviews`);
+  const nav = page.getByRole("navigation", { name: "상품 상세 메뉴" });
+  const reviews = nav.getByRole("link", { name: "리뷰·문의" });
+  const shipping = nav.getByRole("link", { name: "배송안내" });
+  await expect(reviews).toHaveAttribute("aria-current", "location");
+  await shipping.click();
+  await expect(page).toHaveURL(/#product-shipping$/);
+  await expect(shipping).toHaveAttribute("aria-current", "location");
+  await page.goBack();
+  await expect(page).toHaveURL(/#product-reviews$/);
+  await expect(reviews).toHaveAttribute("aria-current", "location");
+  await expect(shipping).not.toHaveAttribute("aria-current");
+});
+
 test("갤러리 전환과 라이트박스 키보드·경계·포커스 복귀", async ({ page }) => {
   await openDetail(page);
   await page
