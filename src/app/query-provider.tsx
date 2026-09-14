@@ -1,11 +1,9 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { type PropsWithChildren, useState } from "react";
 
-export function createQueryClient() {
-  return new QueryClient({ defaultOptions: { queries: { retry: 1 } } });
-}
+import { createQueryClient } from "@/lib/query/client";
 
 export function QueryProvider({ children }: PropsWithChildren) {
   const [queryClient] = useState(createQueryClient);

@@ -1,7 +1,8 @@
+import { type GiftThemeId, toGiftThemeApi } from "@/types/gift-theme";
 import { type ProductListSort, toProductListSortApi } from "@/types/sort";
 
 /**
- * 상품 목록 조회 파라미터. PL-2에서 사용하는 공개 필터만 담는다.
+ * 상품 목록 조회 파라미터. PL-2·홈 선물 섹션에서 쓰는 공개 필터만 담는다.
  * (docs/api-contract.md §5 목록 필터, docs/routing-and-auth.md §3)
  */
 export interface ProductListQuery {
@@ -18,6 +19,8 @@ export interface ProductListQuery {
   maxPrice?: number;
   hasGiftWrap?: boolean;
   excludeSoldOut?: boolean;
+  /** 홈 선물 섹션 테마 필터. API 코드값은 아직 placeholder(`types/gift-theme.ts`). */
+  giftTheme?: GiftThemeId;
 }
 
 export const DEFAULT_PRODUCT_LIST_SIZE = 20;
@@ -76,6 +79,7 @@ export function toProductListSearchParams(
       params.set(key, String(value));
     }
   }
+  if (query.giftTheme) params.set("giftTheme", toGiftThemeApi(query.giftTheme));
   if (query.hasGiftWrap) params.set("hasGiftWrap", "true");
   // BE 기본값이 true이므로 체크 해제 상태도 명시적으로 보낸다.
   params.set("excludeSoldOut", String(query.excludeSoldOut ?? false));
