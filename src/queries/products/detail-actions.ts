@@ -14,13 +14,15 @@ import type {
 } from "@/api/products/detail-actions-validation";
 import { publicEnv } from "@/lib/env";
 
+import { productKeys } from "./keys";
+
 export function useProductActions(
   productId: number,
   userId: number | null,
   enabled: boolean,
 ) {
   const client = useQueryClient();
-  const queryKey = ["product-detail-actions", userId, productId] as const;
+  const queryKey = productKeys.actionState(userId, productId);
   const state = useQuery({
     queryKey,
     queryFn: () => fetchProductActionState(productId),
