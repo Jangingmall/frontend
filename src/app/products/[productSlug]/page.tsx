@@ -25,13 +25,14 @@ export async function generateMetadata({
       title: "상품을 찾을 수 없습니다 | 장인몰",
       robots: { index: false, follow: true },
     };
+  const description = (product.description ?? product.name).slice(0, 160);
   return {
     title: `${product.name} | 장인몰`,
-    description: product.description.slice(0, 160),
+    description,
     alternates: { canonical: getProductPath(product) },
     openGraph: {
       title: product.name,
-      description: product.description.slice(0, 160),
+      description,
     },
   };
 }

@@ -11,7 +11,7 @@ export function mapProductDetail(dto: ProductDetailDto): ProductDetail | null {
   return {
     id: dto.productId,
     name: dto.title,
-    description: dto.description ?? "",
+    description: dto.description,
     price: dto.price,
     stock: dto.stock ?? null,
     status: dto.status,

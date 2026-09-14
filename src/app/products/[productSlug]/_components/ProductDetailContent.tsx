@@ -4,7 +4,7 @@ import { ProductDetailImage } from "./ProductDetailImage";
 
 interface ProductDetailContentProps {
   content: ProductContentBlock[];
-  description: string;
+  description: string | null | undefined;
 }
 
 export function ProductDetailContent({

@@ -15,6 +15,16 @@ const base = {
 };
 
 describe("상품 상세 응답 경계", () => {
+  it.each([null, undefined, ""])(
+    "상품 설명의 원래 값을 보존한다: %s",
+    (description) => {
+      expect(
+        mapProductDetail(productDetailDto.parse({ ...base, description }))
+          ?.description,
+      ).toBe(description);
+    },
+  );
+
   it("현재 BE 응답에 없는 장인·옵션·후기를 만들어내지 않는다", () => {
     const result = mapProductDetail(productDetailDto.parse(base));
     expect(result).toMatchObject({

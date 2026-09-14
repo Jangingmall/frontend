@@ -53,7 +53,7 @@ export interface ProductInformationRow {
 export interface ProductDetail {
   id: number;
   name: string;
-  description: string;
+  description: string | null | undefined;
   price: number;
   stock: number | null;
   status: "ON_SALE" | "SOLD_OUT";
