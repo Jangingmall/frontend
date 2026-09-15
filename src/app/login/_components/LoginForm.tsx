@@ -22,8 +22,21 @@ import { NaverLoginButton } from "./NaverLoginButton";
 
 /**
  * 화면 레이아웃 출처: Figma `[삼성가고싶어요] GUI` 파일, 로그인 프레임 `889:61144`
- * (2026-09-15 확인). 컨테이너 432px 폭·64px 섹션 간격·타이포 크기는 그 프레임의 auto-layout
- * 값을 그대로 옮겼다 — temp/tasks/T-17-login/figma/login-frame.png 참고.
+ * (Figma MCP `get_design_context`로 2026-09-15 최종 확인). 실제 트리 중첩은:
+ *
+ *   Login Container (gap 64)
+ *     "로그인"
+ *     Social Login Buttons (gap 24)         ← 소셜 라벨+아이콘, 구분선, 입력 폼이 전부 여기 안
+ *       Naver Login Button (gap 24) — "소셜 로그인" 라벨 + 아이콘 행(gap 64)
+ *       Divider Container — "또는"
+ *       Input Container → Input Field Container (gap 12)
+ *         Input Fields (gap 0) — email·password·checkbox
+ *         Options Container (justify-between)
+ *     "로그인" 버튼
+ *
+ * 즉 64px 간격은 [제목 ↔ 아래 전체 블록]과 [전체 블록 ↔ 버튼] 딱 둘뿐이고, 그 블록 **안**은
+ * 24px 리듬이다 — 이전엔 전부 64로 잘못 옮겨서 소셜~구분선~입력 폼 사이가 실제보다 훨씬
+ * 벌어져 있었다.
  */
 
 /**
@@ -35,19 +48,15 @@ import { NaverLoginButton } from "./NaverLoginButton";
 const REMEMBER_ID_KEY = "midam:rememberedEmail";
 
 /**
- * `useSyncExternalStore`로 localStorage를 읽는다 — SSR에선 `getServerSnapshot`(null)로
- * 서버·최초 hydration 렌더를 맞추고, hydration 이후에만 실제 값으로 다시 그린다. `useEffect`
- * 안에서 `useState` setter를 직접 부르는 것보다(react-hooks/set-state-in-effect가 지적하는
- * cascading render) 이 쪽이 React가 권장하는, 외부 소스를 읽는 정석 경로다.
+ * `InputField`의 라벨·헬퍼 슬롯을 Figma와 똑같이 "opacity-0로 안 보이지만 자리는 차지"하게
+ * 만든다. Figma의 `label 1`/`label 2`가 정확히 이 방식이다(`opacity: 0`, 레이아웃엔 그대로
+ * 반영) — 시각 라벨이 안 보이는 건 맞지만 그 22px 자리는 실제로 비워 두는 게 디자인 의도였다.
+ * `opacity-0`는 (`display:none`과 달리) 스크린리더 접근성 트리에서 제거되지 않으므로, 이
+ * 텍스트가 `Field.Label`의 기본 `aria`/`for` 연결을 통해 그대로 접근성 이름 역할도 한다 —
+ * 별도 `aria-label`이 필요 없다.
  */
-function subscribeNever() {
-  return () => {};
-}
-function getRememberedEmail() {
-  return localStorage.getItem(REMEMBER_ID_KEY);
-}
-function getServerRememberedEmail() {
-  return null;
+function invisibleLabel(text: string) {
+  return <span className="opacity-0">{text}</span>;
 }
 
 const loginSchema = z.object({
@@ -79,6 +88,22 @@ function mapLoginError(error: unknown): string {
     return resolveErrorMessage(error.code, error.status);
   }
   return resolveErrorMessage();
+}
+
+/**
+ * `useSyncExternalStore`로 localStorage를 읽는다 — SSR에선 `getServerSnapshot`(null)로
+ * 서버·최초 hydration 렌더를 맞추고, hydration 이후에만 실제 값으로 다시 그린다. `useEffect`
+ * 안에서 `useState` setter를 직접 부르는 것보다(react-hooks/set-state-in-effect가 지적하는
+ * cascading render) 이 쪽이 React가 권장하는, 외부 소스를 읽는 정석 경로다.
+ */
+function subscribeNever() {
+  return () => {};
+}
+function getRememberedEmail() {
+  return localStorage.getItem(REMEMBER_ID_KEY);
+}
+function getServerRememberedEmail() {
+  return null;
 }
 
 export function LoginForm({ returnUrl }: LoginFormProps) {
@@ -131,87 +156,94 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
     <div className="mx-auto flex w-full max-w-[27rem] flex-col items-center gap-16 px-4 py-16">
       <h1 className="text-center text-title-xl text-font-dark">로그인</h1>
 
-      <div className="flex w-full flex-col items-center gap-6">
-        <p className="text-center text-body-s-b text-font-dark-secondary">
-          소셜 로그인
-        </p>
-        <div className="flex gap-16">
-          <NaverLoginButton />
-          <KakaoLoginButton />
-        </div>
-      </div>
-
-      <div className="flex w-full items-center gap-1">
-        <hr className="h-px flex-1 border-0 bg-border-jade-weak" />
-        <span className="text-caption-b text-font-dark-secondary">또는</span>
-        <hr className="h-px flex-1 border-0 bg-border-jade-weak" />
-      </div>
-
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="flex w-full flex-col gap-16"
+        className="flex w-full flex-col items-center gap-16"
       >
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-col">
-            <InputField
-              aria-label="이메일"
-              type="email"
-              placeholder="이메일을 입력해주세요."
-              error={errors.email?.message}
-              clearable
-              className="rounded-none border-0 border-b border-(--textfield-border)"
-              {...register("email")}
-            />
-            <InputField
-              aria-label="비밀번호"
-              type="password"
-              placeholder="비밀번호를 입력해주세요."
-              error={errors.password?.message}
-              clearable
-              className="rounded-none border-0 border-b border-(--textfield-border)"
-              {...register("password")}
-            />
-            <div className="px-2 py-0.5">
-              <Checkbox
-                checked={rememberId}
-                onCheckedChange={setRememberIdOverride}
-              >
-                아이디 저장
-              </Checkbox>
+        {/* Social Login Buttons — 소셜 라벨·아이콘·구분선·입력 폼을 전부 담는 24px 리듬 블록 */}
+        <div className="flex w-full flex-col items-center gap-6">
+          <div className="flex w-full flex-col items-center gap-6">
+            <p className="text-center text-body-s-b text-font-dark-secondary">
+              소셜 로그인
+            </p>
+            <div className="flex gap-16">
+              <NaverLoginButton />
+              <KakaoLoginButton />
             </div>
           </div>
 
-          {formError != null && (
-            <p role="alert" className="text-body-s text-red-font">
-              {formError}
-            </p>
-          )}
+          <div className="flex w-full items-center gap-1">
+            <hr className="h-px flex-1 border-0 bg-border-jade-weak" />
+            <span className="text-caption-b text-font-dark-secondary">
+              또는
+            </span>
+            <hr className="h-px flex-1 border-0 bg-border-jade-weak" />
+          </div>
 
-          {/* /find·/signup은 아직 라우트가 없다(LI-2·SU-1 — 로드맵 미편성·T-18). typedRoutes가
-              모르는 경로라 (protected)/layout.tsx와 같은 방식으로 캐스팅한다. */}
-          <div className="flex items-center justify-between">
-            <div className="flex">
+          <div className="flex w-full flex-col gap-3">
+            <div className="flex flex-col">
+              <InputField
+                label={invisibleLabel("이메일")}
+                helperText={errors.email ? undefined : invisibleLabel("-")}
+                type="email"
+                placeholder="이메일을 입력해주세요."
+                error={errors.email?.message}
+                clearable
+                className="rounded-none border-0 border-b border-(--textfield-border)"
+                {...register("email")}
+              />
+              <InputField
+                label={invisibleLabel("비밀번호")}
+                helperText={errors.password ? undefined : invisibleLabel("-")}
+                type="password"
+                placeholder="비밀번호를 입력해주세요."
+                error={errors.password?.message}
+                clearable
+                className="rounded-none border-0 border-b border-(--textfield-border)"
+                {...register("password")}
+              />
+              <div className="px-2 py-0.5">
+                <Checkbox
+                  checked={rememberId}
+                  onCheckedChange={setRememberIdOverride}
+                >
+                  아이디 저장
+                </Checkbox>
+              </div>
+            </div>
+
+            {formError != null && (
+              <p role="alert" className="text-body-s text-red-font">
+                {formError}
+              </p>
+            )}
+
+            {/* /find·/signup은 아직 라우트가 없다(LI-2·SU-1 — 로드맵 미편성·T-18). typedRoutes가
+                모르는 경로라 (protected)/layout.tsx와 같은 방식으로 캐스팅한다. */}
+            <div className="flex items-center justify-between">
+              <div className="flex">
+                <Link
+                  href={"/find" as Route}
+                  className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s text-font-dark"
+                >
+                  아이디 찾기
+                </Link>
+                <Link
+                  href={"/find" as Route}
+                  className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s text-font-dark"
+                >
+                  비밀번호 찾기
+                </Link>
+              </div>
+              {/* Figma: 회원가입만 Bold, 나머지 둘은 Regular */}
               <Link
-                href={"/find" as Route}
-                className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s text-font-dark"
+                href={"/signup" as Route}
+                className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s-b text-font-dark"
               >
-                아이디 찾기
-              </Link>
-              <Link
-                href={"/find" as Route}
-                className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s text-font-dark"
-              >
-                비밀번호 찾기
+                회원가입
               </Link>
             </div>
-            {/* Figma: 회원가입만 Bold, 나머지 둘은 Regular */}
-            <Link
-              href={"/signup" as Route}
-              className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s-b text-font-dark"
-            >
-              회원가입
-            </Link>
           </div>
         </div>
 
