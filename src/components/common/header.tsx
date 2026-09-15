@@ -13,7 +13,9 @@ import { Cart } from "./cart";
  * 배경) + IA CM-1 인증 영역. 사이트 상단 바 — `[로고][사람 아이콘][검색 아이콘][Cart]`.
  * Figma 의 좌측 utility 프레임은 `opacity: 0` 인 죽은 placeholder 라 렌더하지 않고, 로고를
  * 중앙에 두기 위한 3분할 레이아웃만 남긴다.
- * 로고는 아직 미확정 — placeholder 박스.
+ * 로고는 아직 미확정 — placeholder 박스. 다만 "로고 클릭 → 홈" 은 디자인 확정과 무관한
+ * 표준 내비게이션 동작이라 미리 `/`로 링크해 둔다(`logo` prop 을 커스텀으로 넘겨도 동일하게
+ * 적용 — 실제 로고 이미지로 교체될 때도 이 동작은 그대로 유지된다).
  * 반응형은 미정 — desktop(1440) 기준.
  */
 const LOGO_PLACEHOLDER = (
@@ -127,7 +129,9 @@ function Header({
       {...props}
     >
       <span aria-hidden="true" />
-      <div className="justify-self-center">{logo}</div>
+      <Link href="/" aria-label="홈으로 이동" className="justify-self-center">
+        {logo}
+      </Link>
       <div className="flex items-center gap-3 justify-self-end">
         <AuthArea status={authStatus} />
         <HeaderIconButton
