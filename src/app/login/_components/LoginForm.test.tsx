@@ -1,12 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http } from "msw";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { login } from "@/api/member/api";
 import { SEED_LOGIN } from "@/api/member/mock/fixtures";
 import { __resetLoginRateLimit } from "@/api/member/mock/handlers";
+import { mockError } from "@/mocks/envelope";
+import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
 import { LoginForm } from "./LoginForm";
@@ -136,6 +139,39 @@ describe("LoginForm", () => {
     expect(
       await screen.findByText("요청이 많아요. 잠시 후 다시 시도해 주세요."),
     ).toBeInTheDocument();
+  });
+
+  it("서버가 INVALID_INPUT을 반환하면 폼 상단 에러로만 보여준다(필드 매핑 없음)", async () => {
+    // `docs/data-layer.md` §8 — "서버 INVALID_INPUT은 폼 상단 레벨 에러로만 표시. 필드
+    // 매핑은 하지 않는다." 클라이언트 Zod를 통과한(= 유효해 보이는) 제출인데도 서버가
+    // INVALID_INPUT을 낼 수 있는 경우를 가정 — mapLoginError는 UNAUTHORIZED 외엔 전부
+    // 같은 fallback 분기를 타지만, 이 계약 자체(role="alert" 단일 표시·필드 에러 없음)는
+    // 429 테스트가 문구만 볼 뿐 명시적으로 검증하지 않아 별도로 확인한다(CodeRabbit 리뷰).
+    // `resolveErrorMessage`는 서버 `message`를 읽지 않고 errorCode 고정 문구만 쓴다
+    // (`constants/error-messages.ts`) — mock에 넘긴 message는 그래서 단언에 안 쓴다.
+    server.use(
+      http.post("*/api/member/login", () =>
+        mockError(400, "INVALID_INPUT", "서버가 준 메시지(FE는 안 씀)"),
+      ),
+    );
+    const user = userEvent.setup();
+    renderLoginForm();
+
+    await user.type(
+      screen.getByPlaceholderText("이메일을 입력해주세요."),
+      SEED_LOGIN.email,
+    );
+    await user.type(
+      screen.getByPlaceholderText("비밀번호를 입력해주세요."),
+      SEED_LOGIN.password,
+    );
+    await user.click(screen.getByRole("button", { name: "로그인" }));
+
+    // `findByRole`은 매치가 둘 이상이면 throw한다 — 필드별 에러가 따로 role="alert"로
+    // 떴다면 여기서 실패했을 것이다. 즉 이 한 줄이 "폼 상단에만 단일 에러"까지 같이 검증한다.
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("입력한 내용을 다시 확인해 주세요.");
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it("「아이디 저장」 체크 시 localStorage에 저장하고 리마운트 시 prefill한다", async () => {
