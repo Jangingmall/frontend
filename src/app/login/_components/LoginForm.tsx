@@ -160,7 +160,7 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
               placeholder="이메일을 입력해주세요."
               error={errors.email?.message}
               clearable
-              className="rounded-none border-0 border-b border-font-dark"
+              className="rounded-none border-0 border-b border-(--textfield-border)"
               {...register("email")}
             />
             <InputField
@@ -169,15 +169,17 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
               placeholder="비밀번호를 입력해주세요."
               error={errors.password?.message}
               clearable
-              className="rounded-none border-0 border-b border-font-dark"
+              className="rounded-none border-0 border-b border-(--textfield-border)"
               {...register("password")}
             />
-            <Checkbox
-              checked={rememberId}
-              onCheckedChange={setRememberIdOverride}
-            >
-              아이디 저장
-            </Checkbox>
+            <div className="px-2 py-0.5">
+              <Checkbox
+                checked={rememberId}
+                onCheckedChange={setRememberIdOverride}
+              >
+                아이디 저장
+              </Checkbox>
+            </div>
           </div>
 
           {formError != null && (
@@ -192,20 +194,21 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
             <div className="flex">
               <Link
                 href={"/find" as Route}
-                className="px-2 py-1 text-body-s text-font-dark"
+                className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s text-font-dark"
               >
                 아이디 찾기
               </Link>
               <Link
                 href={"/find" as Route}
-                className="px-2 py-1 text-body-s text-font-dark"
+                className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s text-font-dark"
               >
                 비밀번호 찾기
               </Link>
             </div>
+            {/* Figma: 회원가입만 Bold, 나머지 둘은 Regular */}
             <Link
               href={"/signup" as Route}
-              className="px-2 py-1 text-body-s text-font-dark"
+              className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s-b text-font-dark"
             >
               회원가입
             </Link>
