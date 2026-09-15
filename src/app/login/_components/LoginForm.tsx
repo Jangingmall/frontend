@@ -152,26 +152,26 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
         noValidate
         className="flex w-full flex-col gap-16"
       >
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col">
-              <InputField
-                label="이메일"
-                type="email"
-                placeholder="이메일을 입력해주세요."
-                error={errors.email?.message}
-                clearable
-                {...register("email")}
-              />
-              <InputField
-                label="비밀번호"
-                type="password"
-                placeholder="비밀번호를 입력해주세요."
-                error={errors.password?.message}
-                clearable
-                {...register("password")}
-              />
-            </div>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col">
+            <InputField
+              aria-label="이메일"
+              type="email"
+              placeholder="이메일을 입력해주세요."
+              error={errors.email?.message}
+              clearable
+              className="rounded-none border-0 border-b border-font-dark"
+              {...register("email")}
+            />
+            <InputField
+              aria-label="비밀번호"
+              type="password"
+              placeholder="비밀번호를 입력해주세요."
+              error={errors.password?.message}
+              clearable
+              className="rounded-none border-0 border-b border-font-dark"
+              {...register("password")}
+            />
             <Checkbox
               checked={rememberId}
               onCheckedChange={setRememberIdOverride}
