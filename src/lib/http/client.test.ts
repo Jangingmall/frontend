@@ -95,7 +95,7 @@ describe("clientFetch — 401 refresh", () => {
     useAuthStore.setState({ accessToken: "stale" });
 
     await expect(clientFetch("/api/member/me")).resolves.toMatchObject({
-      id: 1,
+      memberId: 1,
     });
     expect(useAuthStore.getState().accessToken).toBe(REFRESHED);
   });
@@ -118,7 +118,7 @@ describe("clientFetch — 401 refresh", () => {
     ]);
 
     expect(refreshCalls).toBe(1);
-    for (const result of results) expect(result).toMatchObject({ id: 1 });
+    for (const result of results) expect(result).toMatchObject({ memberId: 1 });
   });
 
   it("refresh 실패 → store.clear() + ApiError 전파", async () => {
@@ -130,7 +130,7 @@ describe("clientFetch — 401 refresh", () => {
     useAuthStore.setState({
       status: "authenticated",
       accessToken: "stale",
-      user: { id: 1, name: "n", roles: ["USER"] },
+      user: { id: 1, name: "n", role: "USER" },
     });
 
     await expect(clientFetch("/api/member/me")).rejects.toMatchObject({
@@ -165,7 +165,7 @@ describe("clientFetch — 401 refresh", () => {
             await delay(50); // 그 사이 store 토큰이 교체된다
             return mockError(401, "TOKEN_EXPIRED");
           }
-          return mockOk({ id: 1, name: "김미담", roles: ["USER"] });
+          return mockOk({ id: 1, name: "김미담", role: "USER" });
         },
       ),
     );
@@ -189,7 +189,7 @@ describe("clientFetch — 401 refresh", () => {
     useAuthStore.setState({
       status: "authenticated",
       accessToken: "stale",
-      user: { id: 1, name: "n", roles: ["USER"] },
+      user: { id: 1, name: "n", role: "USER" },
     });
 
     await expect(clientFetch("/api/member/me")).rejects.toMatchObject({

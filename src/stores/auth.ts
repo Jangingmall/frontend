@@ -40,10 +40,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 /**
  * 판매자 분기 자리. `(seller)` 가드·헤더의 판매자 메뉴가 이후 소비한다.
- * 판매자 계정은 `roles: ["USER", "ARTISAN"]`. (docs/api-contract.md §3)
+ * 판매자 계정은 `role: "ARTISAN"` 단일 값이다. (docs/api-contract.md §3)
  */
 export const selectIsArtisan = (state: AuthState): boolean =>
-  state.user?.roles.includes("ARTISAN") ?? false;
+  state.user?.role === "ARTISAN";
 
 export const selectIsAuthenticated = (state: AuthState): boolean =>
   state.status === "authenticated";

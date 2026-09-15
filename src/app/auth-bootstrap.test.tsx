@@ -28,7 +28,7 @@ describe("AuthBootstrap", () => {
     );
     expect(useAuthStore.getState().user).toMatchObject({
       id: 1,
-      roles: ["USER"],
+      role: "USER",
     });
   });
 

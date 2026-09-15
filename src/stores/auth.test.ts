@@ -4,7 +4,7 @@ import type { AuthUser } from "@/types/auth";
 
 import { selectIsArtisan, selectIsAuthenticated, useAuthStore } from "./auth";
 
-const user: AuthUser = { id: 1, name: "김미담", roles: ["USER"] };
+const user: AuthUser = { id: 1, name: "김미담", role: "USER" };
 
 beforeEach(() => {
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
@@ -25,7 +25,7 @@ describe("useAuthStore", () => {
     expect(useAuthStore.getState()).toMatchObject({
       status: "authenticated",
       accessToken: "t1",
-      user: { id: 1, name: "김미담", roles: ["USER"] },
+      user: { id: 1, name: "김미담", role: "USER" },
     });
   });
 
@@ -51,13 +51,13 @@ describe("useAuthStore", () => {
     });
   });
 
-  it("selectIsArtisan은 roles에 ARTISAN이 있을 때만 true", () => {
+  it("selectIsArtisan은 role이 ARTISAN일 때만 true", () => {
     expect(selectIsArtisan(useAuthStore.getState())).toBe(false);
 
     useAuthStore.getState().setSession("t", {
       id: 2,
       name: "이공방",
-      roles: ["USER", "ARTISAN"],
+      role: "ARTISAN",
     });
 
     expect(selectIsArtisan(useAuthStore.getState())).toBe(true);

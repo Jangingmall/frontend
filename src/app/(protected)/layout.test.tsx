@@ -39,7 +39,7 @@ describe("ProtectedLayout", () => {
     useAuthStore.setState({
       status: "authenticated",
       accessToken: "t",
-      user: { id: 1, name: "김미담", roles: ["USER"] },
+      user: { id: 1, name: "김미담", role: "USER" },
     });
 
     render(<ProtectedLayout>보호된 화면</ProtectedLayout>);

@@ -5,13 +5,16 @@ import { useAuthStore } from "@/stores/auth";
 
 import { SiteGnb } from "./site-gnb";
 
+const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }));
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
+  usePathname,
   useSearchParams: () => new URLSearchParams(),
 }));
 
 beforeEach(() => {
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
+  usePathname.mockReturnValue("/");
 });
 
 describe("SiteGnb", () => {
@@ -40,7 +43,7 @@ describe("SiteGnb", () => {
     useAuthStore.setState({
       status: "authenticated",
       accessToken: "t",
-      user: { id: 1, name: "김미담", roles: ["USER"] },
+      user: { id: 1, name: "김미담", role: "USER" },
     });
     render(<SiteGnb />);
 
@@ -48,5 +51,12 @@ describe("SiteGnb", () => {
       "href",
       "/mypage",
     );
+  });
+
+  it("/login 에서는 Gnb를 렌더하지 않는다 (routing-and-auth.md §1 — LI-1은 GNB 없음)", () => {
+    usePathname.mockReturnValue("/login");
+    render(<SiteGnb />);
+
+    expect(screen.queryByRole("banner")).not.toBeInTheDocument();
   });
 });

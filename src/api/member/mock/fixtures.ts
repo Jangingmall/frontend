@@ -1,7 +1,7 @@
-import type { MemberMeResponseDto } from "@/api/member/validation";
+import type { MemberProfileResponseDto } from "@/api/member/validation";
 
 /**
- * 회원·인증 mock 데이터. 실제 검증 스키마(`memberMeResponseDto`)로 테스트에서 검증해
+ * 회원·인증 mock 데이터. 실제 검증 스키마(`memberProfileResponseDto`)로 테스트에서 검증해
  * mock ↔ 계약 일치를 보장한다. (docs/data-layer.md §4.3)
  *
  * 결정적 값 — 랜덤·시간에 의존하지 않는다(`src/mocks/seed.ts` 스타일).
@@ -21,15 +21,21 @@ export const SEED_LOGIN = {
   password: "midam1234",
 };
 
-export const memberMeUser: MemberMeResponseDto = {
-  id: 1,
+export const memberMeUser: MemberProfileResponseDto = {
+  memberId: 1,
+  email: SEED_LOGIN.email,
   name: "김미담",
-  roles: ["USER"],
+  nickname: "미담이",
+  role: "USER",
+  profileImageUrl: null,
 };
 
 /** 판매자 변형 — 기본 핸들러엔 안 물리고, 테스트가 `server.use`로 교체해 role 분기를 본다. */
-export const memberMeArtisan: MemberMeResponseDto = {
-  id: 2,
+export const memberMeArtisan: MemberProfileResponseDto = {
+  memberId: 2,
+  email: "artisan@midam.test",
   name: "이공방",
-  roles: ["USER", "ARTISAN"],
+  nickname: "이공방",
+  role: "ARTISAN",
+  profileImageUrl: null,
 };

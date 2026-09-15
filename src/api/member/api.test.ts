@@ -9,16 +9,19 @@ import {
   SEED_ACCESS_TOKEN_REFRESHED,
   SEED_LOGIN,
 } from "./mock/fixtures";
+import { __resetLoginRateLimit } from "./mock/handlers";
 
 beforeEach(() => {
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
   __resetRefreshState();
+  __resetLoginRateLimit();
 });
 
 describe("member api", () => {
-  it("login: 유효 자격 → accessToken", async () => {
-    await expect(login(SEED_LOGIN)).resolves.toMatchObject({
+  it("login: 유효 자격 → accessToken + user", async () => {
+    await expect(login(SEED_LOGIN)).resolves.toEqual({
       accessToken: SEED_ACCESS_TOKEN,
+      user: { id: 1, name: "김미담", role: "USER" },
     });
   });
 
@@ -35,12 +38,22 @@ describe("member api", () => {
     });
   });
 
+  it("login: 요청 한도(10회/60초) 초과 → ApiError 429", async () => {
+    for (let i = 0; i < 10; i += 1) {
+      await login(SEED_LOGIN);
+    }
+    await expect(login(SEED_LOGIN)).rejects.toMatchObject({
+      name: "ApiError",
+      status: 429,
+    });
+  });
+
   it("fetchMe: 유효 토큰이면 사용자", async () => {
     useAuthStore.setState({ accessToken: SEED_ACCESS_TOKEN });
     await expect(fetchMe()).resolves.toEqual({
       id: 1,
       name: "김미담",
-      roles: ["USER"],
+      role: "USER",
     });
   });
 
