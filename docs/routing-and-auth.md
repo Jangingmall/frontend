@@ -105,7 +105,7 @@ type Role = "USER" | "ARTISAN" | "ADMIN";
 interface AuthState {
   status: "loading" | "authenticated" | "anonymous";
   accessToken: string | null;
-  user: { id: number; roles: Role[]; name: string } | null;
+  user: { id: number; role: Role; name: string } | null;
   setSession: (token: string, user: AuthState["user"]) => void;
   clear: () => void;
 }
@@ -113,13 +113,13 @@ interface AuthState {
 
 - `lib/http/client.ts`가 `useAuthStore.getState().accessToken`을 동기로 읽어 헤더에 주입한다. 401 refresh 성공 → `setSession`, 실패 → `clear`.
 - 세부 fetcher 동작은 [data-layer.md](data-layer.md) §4.2.
+- `role`은 배열이 아니라 단일 값이다. BE `MemberProfileResponse.role`이 `MemberRole` 단일 enum이라(판매자는 `"ARTISAN"` 하나) — 2026-09-15 BE 레포(`Jangingmall/backend`) 직접 대조로 확인.
 
-**user 정보 출처** — BE `member` 모듈 미구현. **경우 B(토큰만)로 가정하고 구현한다.**
+**user 정보 출처 — 확정: 경우 A.** 2026-09-15 BE 레포(`Jangingmall/backend`, `develop`) `MemberLoginResponse`를 직접 대조해 확인.
 
-- `POST /api/member/login` → `{ accessToken }` → 이어서 `GET /api/member/me`로 user를 채운다.
-- 부팅 silent refresh도 `refresh()` → `GET /api/member/me` 2단계.
+- `POST /api/member/login` → `{ accessToken, member }`로 한 번에 온다. `GET /api/member/me` 후속 호출이 필요 없다.
+- 부팅 silent refresh는 다르다 — `POST /api/member/token/refresh` 응답엔 `member`가 없다(`{ accessToken, expiresIn }`뿐). 그래서 이쪽은 여전히 `refresh()` → `GET /api/member/me` 2단계를 유지한다.
 - `status`는 토큰 + user가 모두 확보돼야 `authenticated`로 전환한다(중간엔 `loading` 유지). 401 자동 refresh 후에는 토큰만 갱신되므로 `GET /api/member/me`를 다시 호출하지 않는다.
-- BE가 login/refresh 응답에 `user`를 포함해 주면(경우 A) `GET /api/member/me` 호출을 제거하고 `setSession(token, user)` 한 스텝으로 단순화한다.
 
 ### 4.2 부팅 silent refresh — 하이브리드
 
@@ -232,7 +232,7 @@ export function safeReturnUrl(
 Next.js 16부터 Middleware는 **Proxy**로 이름이 바뀌었고 루트(또는 `src/`)의 `proxy.ts`에 둔다. 라우팅 목적으로만 사용한다.
 
 - 담당: trailing slash 정규화, slug canonical redirect, 색인 제어 헤더.
-- **`/api/*` → 백엔드 rewrite.** same-origin을 만들기 위한 플랫폼 rewrite(`vercel.json` 또는 `next.config`)다. 코드로 된 BFF가 아니라 투명한 passthrough이므로 "일반 REST proxy/BFF는 만들지 않는다"(§8) 원칙과 무관하다.
+- **`/api/*`·`/oauth2/*` → 백엔드 rewrite.** same-origin을 만들기 위한 플랫폼 rewrite. `next.config.ts`의 `rewrites()`로 선반영돼 있다(`API_BASE_URL` 기준). `/oauth2/*`도 넘기는 이유: Spring Security의 OAuth2 로그인 시작 경로(`/oauth2/authorization/{provider}`)가 `/api` 밖에 있어, 이것마저 넘기지 않으면 same-origin 구조에서 소셜 로그인 리다이렉트가 프론트 자체 라우팅으로 떨어져 404가 난다. 코드로 된 BFF가 아니라 투명한 passthrough이므로 "일반 REST proxy/BFF는 만들지 않는다"(§8) 원칙과 무관하다.
 - **인증 로직을 넣지 않는다.** access token이 메모리에 있어 proxy가 읽을 수 없다. same-origin이라 proxy(Node 런타임)가 HttpOnly refresh 쿠키를 읽는 것 자체는 가능하지만, 존재 여부만으로 유효성·role을 판단할 수 없으므로 접근 제어는 클라이언트 가드(§5)가 담당한다.
 - `fetch`의 `cache`/`next.revalidate`/`next.tags`는 proxy에서 무효다. 느린 데이터 조회를 하지 않는다.
 - (후속) 보호 페이지 로딩 깜빡임이 실측상 문제가 되면, refresh 쿠키 존재 여부만 보는 optimistic pre-filter를 `(protected)` 대상으로 추가할 수 있다. BE `Set-Cookie` 쿠키 이름 확정이 필요하고, role 검사는 여전히 클라이언트가 한다.
@@ -252,8 +252,7 @@ Next.js 16부터 Middleware는 **Proxy**로 이름이 바뀌었고 루트(또는
 
 | 항목                              | 내용                                                                                                                                                                                                            | 해소 조건                 |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| login·refresh 응답의 user 포함    | 현재 경우 B(토큰만 + `GET /api/member/me`)로 구현. BE가 응답에 `user { id, roles: Role[], name }`를 포함하면 경우 A로 단순화. roles 배열 형식도 확인                                                            | BE member 모듈 구현       |
-| same-origin rewrite 대상          | `vercel.json`/`next.config`의 `/api/*` rewrite 대상 백엔드 origin                                                                                                                                               | 인프라 도메인 확정        |
+| same-origin rewrite 대상          | `next.config.ts`의 `rewrites()`는 `/api/*`·`/oauth2/*`를 `API_BASE_URL`로 넘기도록 선반영됨(2026-09-15). 실제 백엔드 도메인만 없는 상태 — `.env.local`의 `API_BASE_URL`은 목업 모드용 더미 값(자기 자신)        | 인프라 도메인 확정        |
 | `?page=N` SEO                     | shallow index 허용 vs page 1로 canonical                                                                                                                                                                        | 결정 필요                 |
 | 보호 페이지 optimistic pre-filter | 깜빡임이 실측상 문제면 proxy에 refresh 쿠키 존재 체크 추가                                                                                                                                                      | 관찰 후                   |
 | 활동 중지 장인 상세 공개          | 현재 FE는 `404`. PM이 개념 도입 → BE 필드 → FE 분기                                                                                                                                                             | PM 확정 (routing.md R-13) |

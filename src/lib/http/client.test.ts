@@ -1,6 +1,7 @@
 import { type DefaultBodyType, delay, http, type PathParams } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { setMockIdentity } from "@/api/member/mock/mock-identity";
 import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
@@ -16,6 +17,10 @@ type Envelope = ApiResponse<unknown> | ApiErrorResponse;
 beforeEach(() => {
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
   __resetRefreshState();
+  // 이 파일의 테스트는 전부 "이미 로그인 이력이 있다" 전제 — `/token/refresh`가 성공하는
+  // 케이스를 기본으로 둔다(§`api/member/mock/mock-identity.ts`). 실패 시나리오는 각 테스트가
+  // `server.use`로 핸들러 자체를 덮어써 이 기본값과 무관하게 동작한다.
+  setMockIdentity("USER");
 });
 
 describe("clientFetch — 인증 헤더", () => {
@@ -95,7 +100,7 @@ describe("clientFetch — 401 refresh", () => {
     useAuthStore.setState({ accessToken: "stale" });
 
     await expect(clientFetch("/api/member/me")).resolves.toMatchObject({
-      id: 1,
+      memberId: 1,
     });
     expect(useAuthStore.getState().accessToken).toBe(REFRESHED);
   });
@@ -118,7 +123,7 @@ describe("clientFetch — 401 refresh", () => {
     ]);
 
     expect(refreshCalls).toBe(1);
-    for (const result of results) expect(result).toMatchObject({ id: 1 });
+    for (const result of results) expect(result).toMatchObject({ memberId: 1 });
   });
 
   it("refresh 실패 → store.clear() + ApiError 전파", async () => {
@@ -130,7 +135,7 @@ describe("clientFetch — 401 refresh", () => {
     useAuthStore.setState({
       status: "authenticated",
       accessToken: "stale",
-      user: { id: 1, name: "n", roles: ["USER"] },
+      user: { id: 1, name: "n", role: "USER" },
     });
 
     await expect(clientFetch("/api/member/me")).rejects.toMatchObject({
@@ -165,7 +170,7 @@ describe("clientFetch — 401 refresh", () => {
             await delay(50); // 그 사이 store 토큰이 교체된다
             return mockError(401, "TOKEN_EXPIRED");
           }
-          return mockOk({ id: 1, name: "김미담", roles: ["USER"] });
+          return mockOk({ id: 1, name: "김미담", role: "USER" });
         },
       ),
     );
@@ -189,7 +194,7 @@ describe("clientFetch — 401 refresh", () => {
     useAuthStore.setState({
       status: "authenticated",
       accessToken: "stale",
-      user: { id: 1, name: "n", roles: ["USER"] },
+      user: { id: 1, name: "n", role: "USER" },
     });
 
     await expect(clientFetch("/api/member/me")).rejects.toMatchObject({

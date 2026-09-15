@@ -1,14 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import { useAuthStore } from "@/stores/auth";
 
 import { SiteGnb } from "./site-gnb";
-
-vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
-  useSearchParams: () => new URLSearchParams(),
-}));
 
 beforeEach(() => {
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
@@ -40,7 +35,7 @@ describe("SiteGnb", () => {
     useAuthStore.setState({
       status: "authenticated",
       accessToken: "t",
-      user: { id: 1, name: "김미담", roles: ["USER"] },
+      user: { id: 1, name: "김미담", role: "USER" },
     });
     render(<SiteGnb />);
 

@@ -98,7 +98,7 @@ type PagedResponse<T> = {
 | `ARTISAN`      | 판매자   | `USER` + 상품·콘텐츠·장인 프로필 관리                    |
 | `ADMIN`        | 운영자   | 장인 가입 승인·반려                                      |
 
-- FE는 `user.roles: Role[]` 배열로 판단한다(판매자는 `["USER","ARTISAN"]`). 라우트 가드는 [routing-and-auth.md](routing-and-auth.md) §5.
+- FE는 `user.role: Role` **단일 값**으로 판단한다(판매자는 `"ARTISAN"` 하나 — 배열 아님). BE `MemberProfileResponse.role`이 `MemberRole` 단일 enum이라는 걸 2026-09-15 BE 레포(`Jangingmall/backend`) 직접 대조로 확인했다. `MemberRole.authorities`(`ARTISAN` → `["ROLE_USER","ROLE_ARTISAN"]`)는 Spring Security 내부 권한 문자열일 뿐 응답 DTO 필드로 노출되지 않는다. 라우트 가드는 [routing-and-auth.md](routing-and-auth.md) §5.
 - API별 인증 수준(`Public` / `Public(게스트)` / `Authenticated` / `USER` / `ARTISAN` / `ADMIN`)은 BE `PHASE2-2` §5 표 기준.
 
 ## 4. 호출 계층
@@ -225,7 +225,7 @@ type PagedResponse<T> = {
 | 회원 | `GET\|PATCH\|DELETE /api/member/me`, `PATCH /api/member/me/password`, `GET\|POST /api/member/me/addresses`, `PATCH\|DELETE /api/member/me/addresses/{addressId}`, `GET /api/member/me/orders`, `GET /api/member/me/orders/{orderId}`, `GET\|POST\|DELETE /api/member/recent-views`, `POST /api/member/recent-views/merge`, `GET\|PATCH /api/member/settings` |
 
 - 인증 라이프사이클(토큰 저장·refresh·로그아웃)은 [routing-and-auth.md](routing-and-auth.md) §4.
-- login·refresh 응답에 user 정보가 포함되는지는 미확정(§9).
+- **로그인 응답엔 `{ accessToken, member }`가 함께 온다**(2026-09-15 BE 레포 직접 대조로 확정). `POST /token/refresh`는 `member` 없이 `{ accessToken, expiresIn }`뿐이다.
 
 ### 장바구니 · 주문 · 결제
 
@@ -251,7 +251,6 @@ type PagedResponse<T> = {
 | errorCode 목록 정합          | `ErrorCode.java` ↔ `장인몰_API_계약서_공개조회.md`(§0-4) ↔ `PHASE2-1` 간 불일치 (`EXPIRED` vs `RESOURCE_EXPIRED`, `MISMATCH` 미반영, `TOKEN_*`). BE 단일화. FE는 `code: string` unknown-safe로 흡수 중 |
 | 페이지네이션 파라미터·응답   | `page`/`offset` 추가 요청 발신. 최종 파라미터·응답 형태 (§2.4)                                                                                                                                         |
 | 게스트 장바구니 저장 방식    | PHASE2-2(쿠키 기반) vs PHASE2-1 §5-8(localStorage + `guestCartItems`) 불일치. FE는 PHASE2-1 상세 계약 기준 localStorage 채택. BE 확정 필요                                                             |
-| login·refresh 응답 user 포함 | 응답 `data`에 `{ accessToken, user }` 포함 여부. 현재 FE는 `GET /api/member/me` 추가 호출 가정                                                                                                         |
 | `giftTheme` 영문 코드값      | `HOUSEWARMING` 등 BE 임의 지정 — PM 확정                                                                                                                                                               |
 | `color` 전체 목록            | PM 자료 "등" 표기 — 확정 목록 재확인                                                                                                                                                                   |
 | `initial`(초성 필터)         | 최종 채택 여부                                                                                                                                                                                         |

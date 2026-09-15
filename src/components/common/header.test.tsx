@@ -63,6 +63,15 @@ describe("Header", () => {
     expect(onSearchTriggerClick).toHaveBeenCalledTimes(1);
   });
 
+  it("로고는 /로 가는 링크다", () => {
+    render(<Header />);
+
+    expect(screen.getByRole("link", { name: "홈으로 이동" })).toHaveAttribute(
+      "href",
+      "/",
+    );
+  });
+
   it("장바구니는 /cart로 가는 링크다", () => {
     render(<Header />);
 
