@@ -158,7 +158,10 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
       useAuthStore.getState().setSession(accessToken, user);
       if (rememberId) localStorage.setItem(REMEMBER_ID_KEY, values.email);
       else localStorage.removeItem(REMEMBER_ID_KEY);
-      router.replace(safeReturnUrl(returnUrl) as Route);
+      // fallback을 "/"로 명시한다 — 문서 기본값 "/mypage"는 아직 라우트가 없다(T-20+
+      // 미착수). §5.6의 "이미 인증된 사용자" 가드에선 이미 이렇게 고쳤는데 정작 로그인
+      // 성공 경로 자체는 빠뜨렸었다(Codex 리뷰 F1, review.md).
+      router.replace(safeReturnUrl(returnUrl, "/") as Route);
     } catch (error) {
       setFormError(mapLoginError(error));
     }

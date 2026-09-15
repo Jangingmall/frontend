@@ -75,6 +75,25 @@ describe("LoginForm", () => {
     expect(replace).toHaveBeenCalledWith("/products");
   });
 
+  it("returnUrl 없이 로그인하면 /mypage가 아니라 /로 이동한다", async () => {
+    // /mypage가 아직 라우트가 없어(T-20+ 미착수) 문서 기본값("/mypage")을 그대로 쓰면 404다
+    // (Codex 리뷰 F1, review.md).
+    const user = userEvent.setup();
+    renderLoginForm(null);
+
+    await user.type(
+      screen.getByPlaceholderText("이메일을 입력해주세요."),
+      SEED_LOGIN.email,
+    );
+    await user.type(
+      screen.getByPlaceholderText("비밀번호를 입력해주세요."),
+      SEED_LOGIN.password,
+    );
+    await user.click(screen.getByRole("button", { name: "로그인" }));
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+  });
+
   it("잘못된 자격이면 IA 확정 카피를 보여준다", async () => {
     const user = userEvent.setup();
     renderLoginForm();
