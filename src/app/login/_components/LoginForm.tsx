@@ -153,7 +153,10 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[27rem] flex-col items-center gap-16 px-4 py-16">
+    // 상하 비대칭: 위(GNB↔제목)는 Figma 주석대로 64px(pt-16)이지만, 아래(버튼↔Footer)는
+    // Login Container 내부 리듬(64)과 무관하게 프레임에 별도로 「여백 200px」이 명시돼 있다
+    // (pb-50 = 50 × 0.25rem = 12.5rem = 200px, Tailwind v4 동적 spacing 스케일).
+    <div className="mx-auto flex w-full max-w-[27rem] flex-col items-center gap-16 px-4 pt-16 pb-50">
       <h1 className="text-center text-title-xl text-font-dark">로그인</h1>
 
       <form
