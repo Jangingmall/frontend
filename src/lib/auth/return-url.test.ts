@@ -46,6 +46,12 @@ describe("safeReturnUrl", () => {
     expect(safeReturnUrl("/javascript:alert(1)")).toBe("/mypage");
   });
 
+  it("인코딩된 제어문자(CR·LF·NUL)가 섞여 있으면 fallback", () => {
+    expect(safeReturnUrl("/products%0d%0aSet-Cookie:%20evil")).toBe("/mypage");
+    expect(safeReturnUrl("/products%0anewline")).toBe("/mypage");
+    expect(safeReturnUrl("/products%00null")).toBe("/mypage");
+  });
+
   it("커스텀 fallback을 지정할 수 있다", () => {
     expect(safeReturnUrl(null, "/")).toBe("/");
     expect(safeReturnUrl("//evil.com", "/")).toBe("/");

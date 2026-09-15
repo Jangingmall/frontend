@@ -207,6 +207,37 @@ describe("LoginForm", () => {
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
   });
 
+  it("returnUrl이 /login을 가리키면(자기참조) /로 보낸다 — 이미 인증된 상태", async () => {
+    // `safeReturnUrl`은 "/login"도 내부 경로라 그대로 통과시킨다 — `resolveLoginRedirectTarget`가
+    // 이 경우만 "/"로 덮어써서 로그인 화면으로 되돌아가는 무의미한 리다이렉트를 막는다.
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "token",
+      user: { id: 1, name: "김미담", role: "USER" },
+    });
+
+    renderLoginForm("/login?returnUrl=%2Fproducts");
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+  });
+
+  it("returnUrl이 /login을 가리키면(자기참조) /로 보낸다 — 로그인 성공", async () => {
+    const user = userEvent.setup();
+    renderLoginForm("/login");
+
+    await user.type(
+      screen.getByPlaceholderText("이메일을 입력해주세요."),
+      SEED_LOGIN.email,
+    );
+    await user.type(
+      screen.getByPlaceholderText("비밀번호를 입력해주세요."),
+      SEED_LOGIN.password,
+    );
+    await user.click(screen.getByRole("button", { name: "로그인" }));
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+  });
+
   it("status가 loading이면 폼 대신 로딩을 보여준다", () => {
     useAuthStore.setState({ status: "loading", accessToken: null, user: null });
 
