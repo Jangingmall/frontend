@@ -9,9 +9,7 @@ import { expect, test } from "@playwright/test";
 test("유효한 자격으로 로그인하면 returnUrl로 이동한다", async ({ page }) => {
   await page.goto("/login?returnUrl=%2Fproducts");
 
-  await page
-    .getByPlaceholder("아이디(이메일)를 입력해주세요.")
-    .fill("user@midam.test");
+  await page.getByPlaceholder("이메일을 입력해주세요.").fill("user@midam.test");
   await page.getByPlaceholder("비밀번호를 입력해주세요.").fill("midam1234");
   await page.getByRole("button", { name: "로그인", exact: true }).click();
 
@@ -24,7 +22,7 @@ test("잘못된 자격이면 인라인 에러를 보여주고 이동하지 않�
   await page.goto("/login");
 
   await page
-    .getByPlaceholder("아이디(이메일)를 입력해주세요.")
+    .getByPlaceholder("이메일을 입력해주세요.")
     .fill("wrong@midam.test");
   await page.getByPlaceholder("비밀번호를 입력해주세요.").fill("wrongpass");
   await page.getByRole("button", { name: "로그인", exact: true }).click();

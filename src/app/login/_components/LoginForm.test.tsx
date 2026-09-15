@@ -44,7 +44,7 @@ describe("LoginForm", () => {
     await user.click(screen.getByRole("button", { name: "로그인" }));
 
     expect(
-      await screen.findByText("아이디(이메일)를 입력해주세요."),
+      await screen.findByText("이메일을 입력해주세요."),
     ).toBeInTheDocument();
     expect(screen.getByText("비밀번호를 입력해주세요.")).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
@@ -55,7 +55,7 @@ describe("LoginForm", () => {
     renderLoginForm("/products");
 
     await user.type(
-      screen.getByPlaceholderText("아이디(이메일)를 입력해주세요."),
+      screen.getByPlaceholderText("이메일을 입력해주세요."),
       SEED_LOGIN.email,
     );
     await user.type(
@@ -80,7 +80,7 @@ describe("LoginForm", () => {
     renderLoginForm();
 
     await user.type(
-      screen.getByPlaceholderText("아이디(이메일)를 입력해주세요."),
+      screen.getByPlaceholderText("이메일을 입력해주세요."),
       "wrong@midam.test",
     );
     await user.type(
@@ -105,7 +105,7 @@ describe("LoginForm", () => {
     renderLoginForm();
 
     await user.type(
-      screen.getByPlaceholderText("아이디(이메일)를 입력해주세요."),
+      screen.getByPlaceholderText("이메일을 입력해주세요."),
       SEED_LOGIN.email,
     );
     await user.type(
@@ -124,7 +124,7 @@ describe("LoginForm", () => {
     const { unmount } = renderLoginForm();
 
     await user.type(
-      screen.getByPlaceholderText("아이디(이메일)를 입력해주세요."),
+      screen.getByPlaceholderText("이메일을 입력해주세요."),
       SEED_LOGIN.email,
     );
     await user.type(
@@ -144,9 +144,8 @@ describe("LoginForm", () => {
     renderLoginForm();
 
     expect(
-      screen.getByPlaceholderText<HTMLInputElement>(
-        "아이디(이메일)를 입력해주세요.",
-      ).value,
+      screen.getByPlaceholderText<HTMLInputElement>("이메일을 입력해주세요.")
+        .value,
     ).toBe(SEED_LOGIN.email);
     expect(screen.getByRole("checkbox", { name: "아이디 저장" })).toBeChecked();
   });

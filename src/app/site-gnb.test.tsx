@@ -1,20 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import { useAuthStore } from "@/stores/auth";
 
 import { SiteGnb } from "./site-gnb";
 
-const { usePathname } = vi.hoisted(() => ({ usePathname: vi.fn() }));
-
-vi.mock("next/navigation", () => ({
-  usePathname,
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 beforeEach(() => {
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
-  usePathname.mockReturnValue("/");
 });
 
 describe("SiteGnb", () => {
@@ -51,12 +43,5 @@ describe("SiteGnb", () => {
       "href",
       "/mypage",
     );
-  });
-
-  it("/login 에서는 Gnb를 렌더하지 않는다 (routing-and-auth.md §1 — LI-1은 GNB 없음)", () => {
-    usePathname.mockReturnValue("/login");
-    render(<SiteGnb />);
-
-    expect(screen.queryByRole("banner")).not.toBeInTheDocument();
   });
 });

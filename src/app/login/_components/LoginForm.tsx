@@ -21,10 +21,16 @@ import { KakaoLoginButton } from "./KakaoLoginButton";
 import { NaverLoginButton } from "./NaverLoginButton";
 
 /**
+ * 화면 레이아웃 출처: Figma `[삼성가고싶어요] GUI` 파일, 로그인 프레임 `889:61144`
+ * (2026-09-15 확인). 컨테이너 432px 폭·64px 섹션 간격·타이포 크기는 그 프레임의 auto-layout
+ * 값을 그대로 옮겼다 — temp/tasks/T-17-login/figma/login-frame.png 참고.
+ */
+
+/**
  * 「아이디 저장」 체크 시 이메일을 담아두는 localStorage 키. 순수 FE 로컬 기능이다 —
  * "로그인 유지"(리프레시 토큰 장기 보관)와는 다르다. BE `MemberLoginRequest`엔 그런 플래그가
  * 없고 refresh token TTL도 요청과 무관하게 고정 1주일이라(§4-5 인증 정책 계약서) "로그인
- * 유지" 체크박스는 이번 PR에서 만들지 않는다(디자인에도 없음).
+ * 유지" 체크박스는 이번 PR에서 만들지 않는다(Figma에도 이 체크박스는 없음).
  */
 const REMEMBER_ID_KEY = "midam:rememberedEmail";
 
@@ -47,7 +53,7 @@ function getServerRememberedEmail() {
 const loginSchema = z.object({
   email: z
     .string()
-    .min(1, "아이디(이메일)를 입력해주세요.")
+    .min(1, "이메일을 입력해주세요.")
     .email("이메일 형식이 올바르지 않아요."),
   password: z.string().min(1, "비밀번호를 입력해주세요."),
 });
@@ -122,40 +128,89 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-8 px-4 py-16">
-      <h1 className="text-center text-title-l text-font-dark">로그인</h1>
+    <div className="mx-auto flex w-full max-w-[27rem] flex-col items-center gap-16 px-4 py-16">
+      <h1 className="text-center text-title-xl text-font-dark">로그인</h1>
+
+      <div className="flex w-full flex-col items-center gap-6">
+        <p className="text-center text-body-s-b text-font-dark-secondary">
+          소셜 로그인
+        </p>
+        <div className="flex gap-16">
+          <NaverLoginButton />
+          <KakaoLoginButton />
+        </div>
+      </div>
+
+      <div className="flex w-full items-center gap-1">
+        <hr className="h-px flex-1 border-0 bg-border-jade-weak" />
+        <span className="text-caption-b text-font-dark-secondary">또는</span>
+        <hr className="h-px flex-1 border-0 bg-border-jade-weak" />
+      </div>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className="flex flex-col gap-4"
+        className="flex w-full flex-col gap-16"
       >
-        <InputField
-          label="아이디"
-          type="email"
-          placeholder="아이디(이메일)를 입력해주세요."
-          error={errors.email?.message}
-          clearable
-          {...register("email")}
-        />
-        <InputField
-          label="비밀번호"
-          type="password"
-          placeholder="비밀번호를 입력해주세요."
-          error={errors.password?.message}
-          clearable
-          {...register("password")}
-        />
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col">
+            <InputField
+              aria-label="이메일"
+              type="email"
+              placeholder="이메일을 입력해주세요."
+              error={errors.email?.message}
+              clearable
+              {...register("email")}
+            />
+            <InputField
+              aria-label="비밀번호"
+              type="password"
+              placeholder="비밀번호를 입력해주세요."
+              error={errors.password?.message}
+              clearable
+              {...register("password")}
+            />
+            <div className="px-2 py-3">
+              <Checkbox
+                checked={rememberId}
+                onCheckedChange={setRememberIdOverride}
+              >
+                아이디 저장
+              </Checkbox>
+            </div>
+          </div>
 
-        {formError != null && (
-          <p role="alert" className="text-body-s text-red-font">
-            {formError}
-          </p>
-        )}
+          {formError != null && (
+            <p role="alert" className="text-body-s text-red-font">
+              {formError}
+            </p>
+          )}
 
-        <Checkbox checked={rememberId} onCheckedChange={setRememberIdOverride}>
-          아이디 저장
-        </Checkbox>
+          {/* /find·/signup은 아직 라우트가 없다(LI-2·SU-1 — 로드맵 미편성·T-18). typedRoutes가
+              모르는 경로라 (protected)/layout.tsx와 같은 방식으로 캐스팅한다. */}
+          <div className="flex items-center justify-between">
+            <div className="flex">
+              <Link
+                href={"/find" as Route}
+                className="px-2 py-1 text-body-s text-font-dark"
+              >
+                아이디 찾기
+              </Link>
+              <Link
+                href={"/find" as Route}
+                className="px-2 py-1 text-body-s text-font-dark"
+              >
+                비밀번호 찾기
+              </Link>
+            </div>
+            <Link
+              href={"/signup" as Route}
+              className="px-2 py-1 text-body-s text-font-dark"
+            >
+              회원가입
+            </Link>
+          </div>
+        </div>
 
         <Button
           type="submit"
@@ -166,21 +221,6 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
           로그인
         </Button>
       </form>
-
-      {/* /find·/signup은 아직 라우트가 없다(LI-2·SU-1 — 로드맵 미편성·T-18). typedRoutes가
-          모르는 경로라 (protected)/layout.tsx와 같은 방식으로 캐스팅한다. */}
-      <div className="flex items-center justify-center gap-3 text-body-s text-font-dark-subtle">
-        <Link href={"/find" as Route}>아이디 찾기</Link>
-        <span aria-hidden>·</span>
-        <Link href={"/find" as Route}>비밀번호 찾기</Link>
-        <span aria-hidden>·</span>
-        <Link href={"/signup" as Route}>회원가입</Link>
-      </div>
-
-      <div className="flex justify-center gap-4">
-        <NaverLoginButton />
-        <KakaoLoginButton />
-      </div>
     </div>
   );
 }

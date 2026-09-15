@@ -1,7 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-
 import { Gnb } from "@/components/common/gnb";
 import { useAuthStore } from "@/stores/auth";
 
@@ -16,13 +14,12 @@ import { useAuthStore } from "@/stores/auth";
  * 넘어간다 — 타입을 이름으로 연결하지 않고 구조적으로만 맞춰 `Gnb`가 store 타입을 몰라도 되게
  * 한다.
  *
- * `/login`에서는 GNB를 숨긴다(docs/routing-and-auth.md §1 — "LI-1·SU-1~3는 GNB 없음"). 루트
- * layout이 `SiteGnb`를 무조건 렌더링해 라우트 분기가 없으므로 여기서 pathname으로 최소
- * 분기한다. `/signup`류는 아직 라우트가 없어 이번엔 조건에 안 넣는다 — 생기는 시점에 추가.
+ * `/login`도 GNB를 그대로 보여준다 — 팀 IA 시트 CM-1(글로벌 헤더) 비고엔 "LI-1·SU-1~3는 GNB
+ * 없음"이라고 적혀 있지만, 실제 Figma(`[삼성가고싶어요] GUI` 파일, 로그인 프레임
+ * `889:61144`)엔 `NavBar` 인스턴스가 포함돼 있어 IA 쪽이 스테일한 것으로 확인(2026-09-15).
+ * 한 번 라우트 분기로 숨겼다가 Figma 확인 후 다시 제거함.
  */
 export function SiteGnb() {
-  const pathname = usePathname();
   const status = useAuthStore((state) => state.status);
-  if (pathname === "/login") return null;
   return <Gnb authStatus={status} />;
 }
