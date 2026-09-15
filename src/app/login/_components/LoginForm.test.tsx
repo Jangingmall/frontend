@@ -141,6 +141,14 @@ describe("LoginForm", () => {
     );
 
     unmount();
+    // 방금 로그인 성공으로 status가 "authenticated"로 바뀌어 있다 — 리마운트 폼은 그
+    // 상태를 보고 즉시 밖으로 내보낸다(새 가드, 아래 별도 테스트로 커버). 여기서 보려는 건
+    // "아이디 저장"의 순수 localStorage prefill이라 로그아웃한 새 세션을 흉내 낸다.
+    useAuthStore.setState({
+      status: "anonymous",
+      accessToken: null,
+      user: null,
+    });
     renderLoginForm();
 
     expect(
@@ -148,6 +156,48 @@ describe("LoginForm", () => {
         .value,
     ).toBe(SEED_LOGIN.email);
     expect(screen.getByRole("checkbox", { name: "아이디 저장" })).toBeChecked();
+  });
+
+  it("이미 인증된 상태면 폼 대신 로딩을 보여주고 홈으로 리다이렉트한다", async () => {
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "token",
+      user: { id: 1, name: "김미담", role: "USER" },
+    });
+
+    renderLoginForm("/products");
+
+    expect(
+      screen.queryByPlaceholderText("이메일을 입력해주세요."),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("불러오는 중…")).toBeInTheDocument();
+    // /mypage가 아직 없어 로그인 성공(onSubmit) 때와 달리 fallback을 "/"로 명시한다 —
+    // returnUrl("/products")이 안전한 내부 경로면 그쪽이 우선.
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/products"));
+  });
+
+  it("이미 인증된 상태에서 returnUrl이 없으면 /mypage가 아니라 /로 보낸다", async () => {
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "token",
+      user: { id: 1, name: "김미담", role: "USER" },
+    });
+
+    renderLoginForm(null);
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
+  });
+
+  it("status가 loading이면 폼 대신 로딩을 보여준다", () => {
+    useAuthStore.setState({ status: "loading", accessToken: null, user: null });
+
+    renderLoginForm();
+
+    expect(
+      screen.queryByPlaceholderText("이메일을 입력해주세요."),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("불러오는 중…")).toBeInTheDocument();
+    expect(replace).not.toHaveBeenCalled();
   });
 
   it("카카오·네이버 버튼은 둘 다 비활성이다", () => {

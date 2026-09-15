@@ -1,6 +1,7 @@
 import { type DefaultBodyType, delay, http, type PathParams } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { setMockIdentity } from "@/api/member/mock/mock-identity";
 import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
@@ -16,6 +17,10 @@ type Envelope = ApiResponse<unknown> | ApiErrorResponse;
 beforeEach(() => {
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
   __resetRefreshState();
+  // 이 파일의 테스트는 전부 "이미 로그인 이력이 있다" 전제 — `/token/refresh`가 성공하는
+  // 케이스를 기본으로 둔다(§`api/member/mock/mock-identity.ts`). 실패 시나리오는 각 테스트가
+  // `server.use`로 핸들러 자체를 덮어써 이 기본값과 무관하게 동작한다.
+  setMockIdentity("USER");
 });
 
 describe("clientFetch — 인증 헤더", () => {

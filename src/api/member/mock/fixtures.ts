@@ -1,4 +1,5 @@
 import type { MemberProfileResponseDto } from "@/api/member/validation";
+import type { Role } from "@/types/auth";
 
 /**
  * 회원·인증 mock 데이터. 실제 검증 스키마(`memberProfileResponseDto`)로 테스트에서 검증해
@@ -39,3 +40,23 @@ export const memberMeArtisan: MemberProfileResponseDto = {
   role: "ARTISAN",
   profileImageUrl: null,
 };
+
+/** 관리자 변형 — `memberMeArtisan`과 같은 용도. */
+export const memberMeAdmin: MemberProfileResponseDto = {
+  memberId: 3,
+  email: "admin@midam.test",
+  name: "관리자",
+  nickname: "관리자",
+  role: "ADMIN",
+  profileImageUrl: null,
+};
+
+/**
+ * `Role` → 고정 mock 프로필. `mock/handlers.ts`의 `/me`와 `app/mock-identity-switcher.tsx`
+ * ("리모컨")가 공유한다 — 신원별 fixture를 두 곳에서 따로 나열하지 않는다.
+ */
+export const mockIdentityFixtures = {
+  USER: memberMeUser,
+  ARTISAN: memberMeArtisan,
+  ADMIN: memberMeAdmin,
+} as const satisfies Record<Role, MemberProfileResponseDto>;

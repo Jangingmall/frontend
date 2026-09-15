@@ -7,6 +7,7 @@ import { Footer } from "@/components/common/footer";
 
 import { AuthBootstrap } from "./auth-bootstrap";
 import { pretendard } from "./fonts";
+import { MockIdentitySwitcher } from "./mock-identity-switcher-loader";
 import { QueryProvider } from "./query-provider";
 import { SiteGnb } from "./site-gnb";
 
@@ -26,6 +27,7 @@ export default function RootLayout({
             <SiteGnb />
             <main className="flex flex-1 flex-col">{children}</main>
             <Footer />
+            <MockIdentitySwitcher />
           </AuthBootstrap>
         </QueryProvider>
       </body>

@@ -108,6 +108,7 @@ function getServerRememberedEmail() {
 
 export function LoginForm({ returnUrl }: LoginFormProps) {
   const router = useRouter();
+  const status = useAuthStore((state) => state.status);
   const loginMutation = useLoginMutation();
   const [formError, setFormError] = useState<string | null>(null);
   const rememberedEmail = useSyncExternalStore(
@@ -138,6 +139,17 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
     if (rememberedEmail) setValue("email", rememberedEmail);
   }, [rememberedEmail, setValue]);
 
+  // 이미 인증된 사용자가 /login에 직접 접근(북마크·뒤로가기·URL 직접 입력)한 경우 밖으로
+  // 내보낸다. `(protected)/layout.tsx`(§5.1)의 반대 방향 가드 — 이쪽은 `docs/routing-and-
+  // auth.md` §5.3 표에 빠져 있던 케이스라 사용자 확인 후 이번에 추가했다. `/mypage`가 아직
+  // 라우트가 없어(T-20+ 미착수) fallback을 로그인 성공 시(`onSubmit`, "/mypage" 기본값)와
+  // 다르게 "/"로 명시한다 — 그대로 두면 404로 보낸다.
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace(safeReturnUrl(returnUrl, "/") as Route);
+    }
+  }, [status, returnUrl, router]);
+
   async function onSubmit(values: LoginFormValues) {
     setFormError(null);
     try {
@@ -150,6 +162,19 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
     } catch (error) {
       setFormError(mapLoginError(error));
     }
+  }
+
+  // `loading`(부팅 silent refresh 확정 전)·`authenticated`(위 effect가 곧 내보냄) 둘 다 폼을
+  // 보여주지 않는다 — `(protected)/layout.tsx`와 동일한 최소 접근성 fallback을 그대로 쓴다.
+  if (status !== "anonymous") {
+    return (
+      <output
+        aria-live="polite"
+        className="flex min-h-[50vh] items-center justify-center text-sm text-neutral-500"
+      >
+        불러오는 중…
+      </output>
+    );
   }
 
   return (

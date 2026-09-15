@@ -10,11 +10,15 @@ import {
   SEED_LOGIN,
 } from "./mock/fixtures";
 import { __resetLoginRateLimit } from "./mock/handlers";
+import { setMockIdentity } from "./mock/mock-identity";
 
 beforeEach(() => {
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
   __resetRefreshState();
   __resetLoginRateLimit();
+  // fetchMe·refreshToken 테스트는 "이미 로그인 이력이 있다" 전제다 — 명시적으로 깐다(이전엔
+  // 앞선 `login()` 테스트가 실행되며 우연히 같은 값을 남겨 통과했을 뿐이었다. §client.test.ts).
+  setMockIdentity("USER");
 });
 
 describe("member api", () => {

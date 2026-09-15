@@ -5,11 +5,13 @@ import type { ApiErrorResponse, ApiResponse } from "@/types/api";
 
 import {
   memberMeUser,
+  mockIdentityFixtures,
   SEED_ACCESS_TOKEN,
   SEED_ACCESS_TOKEN_PREFIX,
   SEED_ACCESS_TOKEN_REFRESHED,
   SEED_LOGIN,
 } from "./fixtures";
+import { getMockIdentity, setMockIdentity } from "./mock-identity";
 
 /**
  * 회원·인증 MSW 핸들러. `src/mocks/handlers.ts`에 등록된다.
@@ -69,6 +71,9 @@ export const memberHandlers = [
           "이메일 또는 비밀번호가 올바르지 않습니다.",
         );
       }
+      // SEED_LOGIN은 항상 memberMeUser(USER)에 대응한다 — "리모컨"으로 다른 신원을 골랐어도
+      // 실제 로그인 폼을 통과하면 그 선택을 덮어쓰고 USER로 되돌린다(실제 로그인 흐름과 동일).
+      setMockIdentity("USER");
       return mockOk({ accessToken: SEED_ACCESS_TOKEN, member: memberMeUser });
     },
   ),
@@ -80,14 +85,26 @@ export const memberHandlers = [
       if (!authorization.startsWith(`Bearer ${SEED_ACCESS_TOKEN_PREFIX}`)) {
         return mockError(401, "UNAUTHORIZED");
       }
-      return mockOk(memberMeUser);
+      const identity = getMockIdentity();
+      if (identity === "anonymous") return mockError(401, "UNAUTHORIZED");
+      return mockOk(mockIdentityFixtures[identity]);
     },
   ),
 
-  // 기본은 성공. refresh 실패 시나리오는 테스트가 `server.use`로 401을 덮어 검증한다.
-  http.post("*/api/member/token/refresh", () =>
-    mockOk({ accessToken: SEED_ACCESS_TOKEN_REFRESHED }),
+  // `getMockIdentity()`가 "anonymous"(로그인 이력 없음·로그아웃 — 기본값)면 401. `/login`
+  // 성공·"리모컨"(`mock-identity.ts`)으로 다른 신원을 고르면 그때부터 성공한다.
+  http.post<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/token/refresh",
+    () => {
+      if (getMockIdentity() === "anonymous") {
+        return mockError(401, "UNAUTHORIZED");
+      }
+      return mockOk({ accessToken: SEED_ACCESS_TOKEN_REFRESHED });
+    },
   ),
 
-  http.post("*/api/member/logout", () => mockOk(null)),
+  http.post("*/api/member/logout", () => {
+    setMockIdentity("anonymous");
+    return mockOk(null);
+  }),
 ];
