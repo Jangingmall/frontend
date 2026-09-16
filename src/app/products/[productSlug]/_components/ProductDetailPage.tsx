@@ -43,7 +43,12 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
   }, []);
   const handleLogin = useCallback(() => {
     const returnUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    router.push(`/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+    // searchParams와 safeReturnUrl에서 각각 한 번 디코딩한다.
+    const loginUrl =
+      `/login?returnUrl=${encodeURIComponent(encodeURIComponent(returnUrl))}` as const;
+    // Next 16.3.4의 최초 경로 캐시가 복귀 시 해시를 중복해서 붙이는 경우를 피한다.
+    if (window.location.hash) window.location.assign(loginUrl);
+    else router.push(loginUrl);
   }, [router]);
   const handleRequireLogin = useCallback(
     (confirm = true) => {
