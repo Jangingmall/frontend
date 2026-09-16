@@ -41,7 +41,7 @@ export function ProductSectionNav() {
           aria-current={activeSection === id ? "location" : undefined}
           className={cn(
             "flex min-w-0 flex-1 items-center justify-center px-2 py-3 text-body-m outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-border-white sm:min-w-18 sm:flex-none sm:px-6",
-            activeSection === id && "bg-fill-neutral-impact font-semibold",
+            activeSection === id && "bg-fill-neutral-impact font-bold",
           )}
         >
           {label}

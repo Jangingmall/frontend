@@ -11,6 +11,7 @@ import {
   StarFilledIcon,
 } from "@/components/ui/icons";
 import { productBadgeLabel } from "@/constants/badge";
+import { cn } from "@/lib/utils";
 import type { ProductSummary } from "@/types/product";
 import { getProductPath } from "@/utils/product-url";
 
@@ -21,6 +22,7 @@ interface ProductCardProps {
   isWishlisted?: boolean;
   onWishlist?: (productId: number) => void;
   isAboveFold?: boolean;
+  variant?: "default" | "related";
 }
 
 export function ProductCard({
@@ -28,6 +30,7 @@ export function ProductCard({
   isWishlisted = false,
   onWishlist,
   isAboveFold = false,
+  variant = "default",
 }: ProductCardProps) {
   const [hasImageError, setHasImageError] = useState(false);
   const thumbnail = pickThumbnailVariant(product.thumbnail, 640);
@@ -67,17 +70,32 @@ export function ProductCard({
           </span>
         )}
       </Link>
-      <div className="flex items-start justify-between gap-2 pt-2 pl-2">
+      <div
+        className={cn(
+          "flex items-start justify-between gap-2 pt-2 pl-2",
+          variant === "related" && "gap-0",
+        )}
+      >
         <div className="min-w-0">
           <Link
             href={{ pathname: href }}
             tabIndex={-1}
             aria-hidden="true"
-            className="block truncate text-title-m"
+            className={cn(
+              "block truncate text-title-m",
+              variant === "related" && "text-body-l leading-[1.3] font-medium",
+            )}
           >
             {product.name}
           </Link>
-          <p className="mt-1 truncate text-body-m">{product.artisan.name}</p>
+          <p
+            className={cn(
+              "mt-1 truncate text-body-m",
+              variant === "related" && "mt-0 leading-normal text-font-dark/60",
+            )}
+          >
+            {product.artisan.name}
+          </p>
         </div>
         <button
           type="button"
@@ -96,11 +114,20 @@ export function ProductCard({
         </button>
       </div>
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 px-2 text-body-m">
-        <span>{product.price.toLocaleString("ko-KR")}원</span>
+        <span
+          className={cn(
+            variant === "related" && "text-body-l leading-normal font-medium",
+          )}
+        >
+          {product.price.toLocaleString("ko-KR")}원
+        </span>
         {product.rating !== null && (
           <span
             aria-label={`평점 ${product.rating.toFixed(1)}, 후기 ${product.reviewCount}개`}
-            className="inline-flex items-center gap-1"
+            className={cn(
+              "inline-flex items-center gap-1",
+              variant === "related" && "gap-0.5 text-font-label",
+            )}
           >
             <StarFilledIcon className="size-5" aria-hidden="true" />
             {product.rating.toFixed(1)}

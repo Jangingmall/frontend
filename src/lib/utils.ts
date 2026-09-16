@@ -19,6 +19,7 @@ const FONT_SIZE_TOKENS = [
   "body-m",
   "body-s-b",
   "body-s",
+  "body",
   "caption-b",
   "caption",
   "button-xl",

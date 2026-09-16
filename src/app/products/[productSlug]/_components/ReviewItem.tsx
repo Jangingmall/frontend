@@ -13,22 +13,26 @@ interface ReviewItemProps {
 export function ReviewItem({ review }: ReviewItemProps) {
   const [imageIndex, setImageIndex] = useState<number | null>(null);
   return (
-    <article className="space-y-3 border-b border-border-jade-weak py-3">
-      <div>
-        <p className="text-body-s-b text-font-dark">{review.author}</p>
-        <div className="flex items-center gap-3">
-          <ReviewStars rating={review.rating} />
-          <time
-            className="text-caption text-font-dark-weak"
-            dateTime={review.createdAt}
-          >
-            {review.createdAt.replaceAll("-", ".")}
-          </time>
+    <article className="space-y-3 border-b border-border-jade-weak pb-3 last:border-b-0 last:pb-0">
+      <div className="space-y-2">
+        <div>
+          <p className="text-body font-bold text-font-dark-secondary">
+            {review.author}
+          </p>
+          <div className="flex items-center gap-3">
+            <ReviewStars rating={review.rating} />
+            <time
+              className="text-caption text-font-dark-weak"
+              dateTime={review.createdAt}
+            >
+              {review.createdAt.replaceAll("-", ".")}
+            </time>
+          </div>
         </div>
+        <p className="text-body whitespace-pre-wrap text-font-dark-subtle">
+          {review.body}
+        </p>
       </div>
-      <p className="text-body whitespace-pre-wrap text-font-dark-subtle">
-        {review.body}
-      </p>
       {review.images.length > 0 && (
         <div className="flex gap-1 overflow-x-auto">
           {review.images.map((image, index) => (

@@ -69,6 +69,10 @@
   --text-body-s--line-height: 1.4;
   --text-body-s--font-weight: 400;
 
+  --text-body: 0.8125rem;
+  --text-body--line-height: 1.5;
+  --text-body--font-weight: 500;
+
   --text-caption-b: 0.625rem;
   --text-caption-b--line-height: 1.4;
   --text-caption-b--font-weight: 600;

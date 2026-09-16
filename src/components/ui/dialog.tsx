@@ -1,19 +1,40 @@
 "use client";
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
+import { cva, type VariantProps } from "class-variance-authority";
 import type { MouseEventHandler, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
 import { CancelIcon } from "./icons";
 
-interface DialogProps {
+const dialogVariants = cva(
+  "relative max-h-full w-full overscroll-contain rounded-xs bg-bg-default text-font-dark shadow-floating outline-none",
+  {
+    variants: {
+      variant: {
+        default: "max-w-lg overflow-y-auto p-6",
+        form: "flex max-w-140 flex-col gap-3 overflow-hidden py-6",
+        confirmation: "max-w-120 overflow-y-auto px-6 pt-16 pb-6",
+      },
+    },
+    defaultVariants: { variant: "default" },
+  },
+);
+
+interface DialogProps extends VariantProps<typeof dialogVariants> {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: ReactNode;
   description?: ReactNode;
   className?: string;
   hideTitle?: boolean;
+  /** form 헤더의 필터 등 제목 옆에 놓이는 컨트롤 */
+  headerAction?: ReactNode;
+  /** form 본문 스크롤과 분리되는 하단 액션 */
+  footer?: ReactNode;
+  /** form/confirmation은 하단 액션으로 닫으며, 기본 모달은 X 버튼을 표시한다. */
+  showClose?: boolean;
   onClick?: MouseEventHandler<HTMLDivElement>;
   children: ReactNode;
 }
@@ -25,6 +46,10 @@ export function Dialog({
   description,
   className,
   hideTitle = false,
+  variant = "default",
+  headerAction,
+  footer,
+  showClose = variant === "default",
   onClick,
   children,
 }: DialogProps) {
@@ -40,29 +65,70 @@ export function Dialog({
           <DialogPrimitive.Popup
             onClick={onClick}
             data-slot="dialog-popup"
-            className={cn(
-              "relative max-h-full w-full max-w-lg overflow-y-auto overscroll-contain rounded-xs bg-bg-default p-6 text-font-dark shadow-floating outline-none",
-              className,
-            )}
+            className={cn(dialogVariants({ variant }), className)}
           >
-            <DialogPrimitive.Title
-              className={cn("pr-10 text-title-l", hideTitle && "sr-only")}
+            <div
+              className={cn(
+                variant === "form" &&
+                  "flex min-h-9.5 shrink-0 items-center justify-between gap-3 px-6 pb-2",
+                variant === "confirmation" && "text-center",
+              )}
             >
-              {title}
-            </DialogPrimitive.Title>
-            {description && (
-              <DialogPrimitive.Description className="mt-3 text-body-m text-font-dark-subtle">
-                {description}
-              </DialogPrimitive.Description>
+              <div>
+                <DialogPrimitive.Title
+                  className={cn(
+                    variant === "form" ? "text-title-m" : "text-title-l",
+                    showClose && "pr-10",
+                    hideTitle && "sr-only",
+                  )}
+                >
+                  {title}
+                </DialogPrimitive.Title>
+                {description && (
+                  <DialogPrimitive.Description
+                    className={cn(
+                      "mt-3 text-body-m text-font-dark-subtle",
+                      variant === "confirmation" &&
+                        "mt-2 text-body-l text-font-dark",
+                    )}
+                  >
+                    {description}
+                  </DialogPrimitive.Description>
+                )}
+              </div>
+              {headerAction}
+            </div>
+            {showClose && (
+              <DialogPrimitive.Close
+                data-slot="dialog-close"
+                aria-label="닫기"
+                className="absolute top-4 right-4 flex size-9 items-center justify-center rounded-xs outline-none focus-visible:outline-2 focus-visible:outline-border-jade-fill"
+              >
+                <CancelIcon className="size-6 [&_path]:fill-current" />
+              </DialogPrimitive.Close>
             )}
-            <DialogPrimitive.Close
-              data-slot="dialog-close"
-              aria-label="닫기"
-              className="absolute top-4 right-4 flex size-9 items-center justify-center rounded-xs outline-none focus-visible:outline-2 focus-visible:outline-border-jade-fill"
+            <div
+              data-slot="dialog-content"
+              className={cn(
+                variant === "default" && !hideTitle && "mt-6",
+                variant === "form" &&
+                  "mr-1 scrollbar-slim h-137 min-h-0 overflow-y-auto overscroll-contain pr-4 pl-6",
+                variant === "confirmation" && "mt-12",
+              )}
             >
-              <CancelIcon className="size-6 [&_path]:fill-current" />
-            </DialogPrimitive.Close>
-            <div className={cn(!hideTitle && "mt-6")}>{children}</div>
+              {children}
+            </div>
+            {footer && (
+              <div
+                data-slot="dialog-footer"
+                className={cn(
+                  "shrink-0",
+                  variant === "form" ? "px-6 pt-6" : "mt-6",
+                )}
+              >
+                {footer}
+              </div>
+            )}
           </DialogPrimitive.Popup>
         </DialogPrimitive.Viewport>
       </DialogPrimitive.Portal>

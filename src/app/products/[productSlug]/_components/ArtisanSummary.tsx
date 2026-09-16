@@ -35,8 +35,8 @@ export function ArtisanSummary({ artisan }: ArtisanSummaryProps) {
           {artisan.stage && <Badge>{artisan.stage}</Badge>}
           {artisan.craft && <Badge>{artisan.craft}</Badge>}
         </div>
-        <h3 className="text-title-m">{artisan.name}</h3>
-        <p className="mt-2 text-body-s leading-relaxed whitespace-pre-line text-font-dark-subtle">
+        <h3 className="text-title-m font-bold">{artisan.name}</h3>
+        <p className="mt-2 max-w-119.5 text-body whitespace-pre-line text-font-dark-subtle">
           {artisan.introduction || "장인 소개를 준비하고 있습니다."}
         </p>
         <div className="mt-auto self-end pt-6">
@@ -45,7 +45,7 @@ export function ArtisanSummary({ artisan }: ArtisanSummaryProps) {
               size="s"
               nativeButton={false}
               render={<Link href={{ pathname: artisan.href }} />}
-              className="h-10 pr-4"
+              className="h-10 gap-0 pr-4"
             >
               더보기
               <ChevronRightIcon className="size-6 [&_path]:fill-current" />

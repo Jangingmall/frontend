@@ -30,45 +30,45 @@ export function InquiryListDialog({
       open={open}
       onOpenChange={onOpenChange}
       title="문의 전체보기"
-      className="max-w-140"
-    >
-      <div className="mb-3 flex justify-end">
+      variant="form"
+      headerAction={
         <Checkbox
           checked={excludeSecret}
           onCheckedChange={onExcludeSecretChange}
         >
           비밀글 제외
         </Checkbox>
-      </div>
-      <div className="max-h-137 overflow-y-auto">
-        {items.length ? (
-          <Accordion>
-            {items.map((inquiry) => (
-              <InquiryItem key={inquiry.id} inquiry={inquiry} />
-            ))}
-          </Accordion>
-        ) : (
-          <EmptyState title="표시할 문의가 없습니다." />
-        )}
-      </div>
-      <div className="mt-6 flex gap-2">
-        <Button
-          variant="outline"
-          size="xl"
-          onClick={() => onOpenChange(false)}
-          className="min-w-0 flex-1 px-3 sm:w-40 sm:flex-none sm:px-6"
-        >
-          닫기
-        </Button>
-        <Button
-          size="xl"
-          className="min-w-0 flex-1 px-3 sm:px-6"
-          onClick={onCompose}
-          disabled={isComposingDisabled}
-        >
-          문의하기
-        </Button>
-      </div>
+      }
+      footer={
+        <div className="flex gap-2.5">
+          <Button
+            variant="jade"
+            size="xl"
+            onClick={() => onOpenChange(false)}
+            className="min-w-0 flex-1 border-border-neutral-subtle px-3 sm:w-40 sm:flex-none sm:px-6"
+          >
+            닫기
+          </Button>
+          <Button
+            size="xl"
+            className="min-w-0 flex-1 px-3 sm:px-6"
+            onClick={onCompose}
+            disabled={isComposingDisabled}
+          >
+            문의하기
+          </Button>
+        </div>
+      }
+    >
+      {items.length ? (
+        <Accordion className="[&_[data-slot=accordion]]:space-y-2">
+          {items.map((inquiry) => (
+            <InquiryItem key={inquiry.id} inquiry={inquiry} />
+          ))}
+        </Accordion>
+      ) : (
+        <EmptyState title="표시할 문의가 없습니다." />
+      )}
     </Dialog>
   );
 }

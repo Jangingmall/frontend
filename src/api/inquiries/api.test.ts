@@ -47,7 +47,7 @@ describe("상품 문의 응답 보안", () => {
     useAuthStore.getState().setSession("mock-access-token", {
       id: 1,
       name: "김미담",
-      roles: ["USER"],
+      role: "USER",
     });
     const data = await fetchInquiries(101, false, true, true);
     expect(data.items.find((item) => item.id === 3)).toMatchObject({
@@ -69,7 +69,7 @@ describe("상품 문의 응답 보안", () => {
     useAuthStore.getState().setSession("mock-access-token", {
       id: 1,
       name: "김미담",
-      roles: ["USER"],
+      role: "USER",
     });
     const before = await fetchInquiries(101, false, true, true);
     await createInquiry(

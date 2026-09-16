@@ -46,7 +46,7 @@ it.each([true, false])(
   (isMock) => {
     const { onNotify, onRequireLogin } = setup(101, { isMock });
     fireEvent.click(screen.getByRole("button", { name: "장바구니" }));
-    expect(onNotify).toHaveBeenCalledWith("필수 옵션을 선택해 주세요.");
+    expect(onNotify).toHaveBeenCalledWith("옵션을 선택하지 않았습니다");
     expect(screen.getAllByRole("combobox")[0]).toHaveFocus();
     expect(onRequireLogin).not.toHaveBeenCalled();
   },
@@ -73,7 +73,7 @@ it.each([
     useAuthStore.getState().setSession("mock-access-token", {
       id: 1,
       name: "테스트",
-      roles: ["USER"],
+      role: "USER",
     });
     const { onNotify, onRequireLogin, client } = setup(id, { isMock: false });
     const user = userEvent.setup();
@@ -94,7 +94,7 @@ it.each([
     useAuthStore.getState().setSession("mock-access-token", {
       id: 1,
       name: "테스트",
-      roles: ["USER"],
+      role: "USER",
     });
     const { onNotify, client } = setup(id);
     const user = userEvent.setup();
@@ -106,13 +106,15 @@ it.each([
   },
 );
 
-it("allows purchase without choosing an optional gift-only group", async () => {
+it("allows declining an optional gift-only group before purchase", async () => {
   const user = userEvent.setup();
   const product = getProductDetailMock(101)!;
   const { onRequireLogin } = setup(101, {
     optionGroups: product.optionGroups.filter((group) => group.kind === "GIFT"),
     variants: null,
   });
+  await user.click(screen.getByRole("combobox", { name: "선물 포장 (선택)" }));
+  await user.click(await screen.findByRole("option", { name: "선택 안 함" }));
   fireEvent.click(screen.getByRole("button", { name: "장바구니" }));
   expect(onRequireLogin).toHaveBeenCalledOnce();
   expect(screen.getByTestId("purchase-total")).toHaveTextContent(
@@ -120,9 +122,9 @@ it("allows purchase without choosing an optional gift-only group", async () => {
   );
   await user.click(screen.getByRole("combobox", { name: "선물 포장 (선택)" }));
   await user.click(
-    screen.getByRole("option", { name: "보자기 포장 (+3,000원)" }),
+    await screen.findByRole("option", { name: "보자기 포장 (+3,000원)" }),
   );
-  expect(screen.getAllByRole("button", { name: /삭제$/ })).toHaveLength(1);
+  expect(screen.getAllByRole("button", { name: /삭제$/ })).toHaveLength(2);
 });
 
 it("can add an optionless product again after removing its selection", async () => {
@@ -143,7 +145,7 @@ it("rolls wishlist back when the server rejects the change", async () => {
   useAuthStore.getState().setSession("mock-access-token", {
     id: 1,
     name: "테스트",
-    roles: ["USER"],
+    role: "USER",
   });
   const { onNotify } = setup(102);
   const user = userEvent.setup();
@@ -183,20 +185,18 @@ it.each([
   },
 );
 
-it("opens the next option, adds a card and applies gift wrapping without adding a second product", async () => {
+it("waits for all option choices and preserves completed cards when gift wrapping changes", async () => {
   const user = userEvent.setup();
   setup(101);
   const product = getProductDetailMock(101)!;
   await user.click(screen.getByRole("combobox", { name: "색상 (필수)" }));
-  await user.click(screen.getByRole("option", { name: "백색" }));
+  await user.click(await screen.findByRole("option", { name: "백색" }));
   expect(screen.getByRole("combobox", { name: "크기 (필수)" })).toHaveAttribute(
     "aria-expanded",
     "true",
   );
   await user.click(await screen.findByRole("option", { name: "소 (15 cm)" }));
-  expect(screen.getByTestId("purchase-total")).toHaveTextContent(
-    `${product.price.toLocaleString("ko-KR")}원`,
-  );
+  expect(screen.getByTestId("purchase-total")).toHaveTextContent(/^0원$/);
   await user.click(
     await screen.findByRole("option", { name: "보자기 포장 (+3,000원)" }),
   );
@@ -208,6 +208,18 @@ it("opens the next option, adds a card and applies gift wrapping without adding 
   expect(screen.getByTestId("purchase-total")).toHaveTextContent(
     `${((product.price + 3000) * 2).toLocaleString("ko-KR")}원`,
   );
-  await user.click(screen.getByRole("button", { name: /삭제$/ }));
+  await user.click(screen.getByRole("combobox", { name: "선물 포장 (선택)" }));
+  await user.click(await screen.findByRole("option", { name: "선택 안 함" }));
+  expect(screen.getAllByRole("button", { name: /삭제$/ })).toHaveLength(2);
+  expect(screen.getByTestId("purchase-total")).toHaveTextContent("66,000원");
+  await user.click(screen.getByRole("combobox", { name: "선물 포장 (선택)" }));
+  await user.click(
+    await screen.findByRole("option", { name: "보자기 포장 (+3,000원)" }),
+  );
+  expect(screen.getAllByRole("button", { name: /삭제$/ })).toHaveLength(2);
+  expect(screen.getByTestId("purchase-total")).toHaveTextContent("89,000원");
+  await user.click(screen.getByRole("button", { name: /보자기 포장 삭제$/ }));
+  expect(screen.getByTestId("purchase-total")).toHaveTextContent("20,000원");
+  await user.click(screen.getByRole("button", { name: /선택 안 함 삭제$/ }));
   expect(screen.getByTestId("purchase-total")).toHaveTextContent("0원");
 });

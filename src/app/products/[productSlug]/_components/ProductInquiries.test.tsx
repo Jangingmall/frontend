@@ -49,7 +49,7 @@ describe("상품 문의 화면", () => {
     useAuthStore.getState().setSession("mock-access-token", {
       id: 1,
       name: "김미담",
-      roles: ["USER"],
+      role: "USER",
     });
   }
   it("비로그인 작성 요청은 로그인 안내로 연결한다", async () => {
@@ -71,6 +71,30 @@ describe("상품 문의 화면", () => {
     expect(
       await screen.findByRole("dialog", { name: "상품 문의하기" }),
     ).toBeInTheDocument();
+  });
+  it("문의 유형이 빠지면 오류를 선택 상자에 연결하고 포커스한 뒤 선택 시 해제한다", async () => {
+    login();
+    mount();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "문의하기" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "내용 *" }),
+      "선물 포장이 가능한가요?",
+    );
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+
+    const type = screen.getByRole("combobox", { name: "문의 유형" });
+    await screen.findByText("문의 유형을 선택해주세요.");
+    expect(type).toHaveAttribute("aria-invalid", "true");
+    expect(type).toHaveAccessibleDescription("문의 유형을 선택해주세요.");
+    expect(type).toHaveFocus();
+
+    await user.click(type);
+    await user.click(await screen.findByRole("option", { name: "배송" }));
+    await waitFor(() =>
+      expect(type).not.toHaveAttribute("aria-invalid", "true"),
+    );
+    expect(type).not.toHaveAccessibleDescription("문의 유형을 선택해주세요.");
   });
   it("실패 후 입력을 보존하고 중복 제출을 막은 뒤 재시도 성공 시 개수를 갱신한다", async () => {
     login();

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 
 import {
   addSelection,
@@ -34,13 +34,15 @@ const NO_OPTION = "__no_option__";
 interface ProductPurchasePanelProps {
   product: ProductDetail;
   onNotify: ProductNotify;
-  onRequireLogin: () => void;
+  onRequireLogin: (confirm?: boolean) => void;
+  notice?: ReactNode;
 }
 
 export function ProductPurchasePanel({
   product,
   onNotify,
   onRequireLogin,
+  notice,
 }: ProductPurchasePanelProps) {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const userId = useAuthStore((state) => state.user?.id ?? null);
@@ -51,12 +53,12 @@ export function ProductPurchasePanel({
   );
   const [choices, setChoices] = useState<ProductChoices>({});
   const [lines, setLines] = useState<PurchaseSelection[]>(() => {
-    const initial = product.optionGroups.some((group) => group.required)
+    const initial = product.optionGroups.length
       ? null
       : createSelection(product, {});
     return initial ? [initial] : [];
   });
-  const [editingKey, setEditingKey] = useState<string | null>(
+  const [lastSelectionKey, setLastSelectionKey] = useState<string | null>(
     lines[0]?.key ?? null,
   );
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -65,9 +67,7 @@ export function ProductPurchasePanel({
   const soldOut = product.status === "SOLD_OUT" || product.stock === 0;
   const unknownStock = product.stock === null;
   const groups = product.optionGroups;
-  const requiredMissing = groups.filter(
-    (group) => group.required && !choices[group.id],
-  );
+  const missingGroups = groups.filter((group) => !choices[group.id]);
   const busy = actions.cart.isPending || actions.restock.isPending;
   const wished = isAuthenticated && (actions.state.data?.wished ?? false);
 
@@ -88,8 +88,9 @@ export function ProductPurchasePanel({
     const cleanChoices = Object.fromEntries(
       Object.entries(next).filter(([, id]) => id !== NO_OPTION),
     );
-    if (groups.some((item) => item.required && !cleanChoices[item.id])) {
-      setEditingKey(null);
+    // 선택 옵션도 '선택 안 함'으로 확정한 뒤 조합을 추가한다.
+    if (groups.some((item) => !next[item.id])) {
+      setLastSelectionKey(null);
       return;
     }
     const selection = createSelection(product, cleanChoices);
@@ -97,61 +98,43 @@ export function ProductPurchasePanel({
       onNotify("선택한 옵션은 현재 구매할 수 없습니다.");
       return;
     }
-    // 선물 포장은 방금 만든 일반 옵션 카드에 반영한다. 별도 상품으로 중복 추가하지 않는다.
-    const edited =
-      group.kind === "GIFT"
-        ? lines.find((line) => line.key === editingKey)
-        : undefined;
-    const retained = edited
-      ? lines.filter((line) => line.key !== edited.key)
-      : lines;
-    const existing = retained.find((line) => line.key === selection.key);
+    const existing = lines.find((line) => line.key === selection.key);
     const maximum = getMaxSelectionQuantity(
       product,
-      existing ? retained : [...retained, selection],
+      existing ? lines : [...lines, selection],
       selection.key,
     );
     if (maximum < 1 || (existing && existing.quantity >= maximum)) {
       onNotify("구매 가능한 최대 수량입니다.");
       return;
     }
-    const updated = addSelection(retained, selection, product);
-    setLines(
-      edited
-        ? setSelectionQuantity(
-            updated,
-            selection.key,
-            (existing?.quantity ?? 0) + edited.quantity,
-            product,
-          )
-        : updated,
-    );
-    setEditingKey(selection.key);
+    setLines(addSelection(lines, selection, product));
+    setLastSelectionKey(selection.key);
   }
 
-  function validatePurchase() {
+  function validatePurchase(confirmLogin = false) {
     if (!lines.length) {
       setHasError(true);
-      if (requiredMissing.length) {
+      if (missingGroups.length) {
         const index = groups.findIndex(
-          (group) => group.id === requiredMissing[0].id,
+          (group) => group.id === missingGroups[0].id,
         );
         optionRefs.current[index]
           ?.querySelector<HTMLButtonElement>("button")
           ?.focus();
-        onNotify("필수 옵션을 선택해 주세요.");
+        onNotify("옵션을 선택하지 않았습니다");
       } else onNotify("구매할 옵션을 다시 선택해 주세요.");
       return false;
     }
     if (!isAuthenticated) {
-      onRequireLogin();
+      onRequireLogin(confirmLogin);
       return false;
     }
     return true;
   }
 
   function handleCart() {
-    if (!validatePurchase() || busy) return;
+    if (!validatePurchase(true) || busy) return;
     if (!product.isMock) {
       onNotify("장바구니 기능은 준비 중입니다.");
       return;
@@ -177,7 +160,7 @@ export function ProductPurchasePanel({
 
   function handleWishlist() {
     if (!isAuthenticated) {
-      onRequireLogin();
+      onRequireLogin(true);
       return;
     }
     if (!product.isMock) {
@@ -195,7 +178,7 @@ export function ProductPurchasePanel({
 
   function handleRestock() {
     if (!isAuthenticated) {
-      onRequireLogin();
+      onRequireLogin(false);
       return;
     }
     if (!product.isMock) {
@@ -234,7 +217,7 @@ export function ProductPurchasePanel({
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
           <div className="flex items-start justify-between gap-3">
-            <h1 className="min-w-0 self-center text-title-xl break-keep">
+            <h1 className="min-w-0 self-center text-title-xl font-bold break-keep">
               {product.name}
             </h1>
             <div className="flex shrink-0">
@@ -268,14 +251,14 @@ export function ProductPurchasePanel({
             {product.artisan ? (
               product.artisan.href ? (
                 <Link
-                  className="flex min-w-0 items-center text-body-l text-font-dark-weak"
+                  className="flex min-w-0 items-center text-body-l leading-normal font-medium text-font-dark-weak"
                   href={{ pathname: product.artisan.href }}
                 >
                   {product.artisan.name}
                   <ChevronRightIcon className="size-5" />
                 </Link>
               ) : (
-                <span className="text-body-l text-font-dark-weak">
+                <span className="text-body-l leading-normal font-medium text-font-dark-weak">
                   {product.artisan.name}
                 </span>
               )
@@ -294,13 +277,13 @@ export function ProductPurchasePanel({
             )}
           </div>
         </div>
-        <p className="text-title-m">₩{product.price.toLocaleString("ko-KR")}</p>
+        <p className="text-title-m font-bold">{money(product.price)}</p>
       </div>
       <p className="text-body-m whitespace-pre-line">{product.description}</p>
       <div className="flex flex-col gap-2 border-t border-border-neutral-weak pt-6">
         {product.shipping && (
-          <dl className="grid grid-cols-[66px_1fr] gap-x-6 gap-y-2 text-body-s text-font-dark-subtle">
-            <dt className="font-bold">배송비</dt>
+          <dl className="grid grid-cols-[66px_1fr] gap-x-6 gap-y-2 text-body text-font-dark-subtle">
+            <dt className="font-bold text-font-dark-secondary">배송비</dt>
             <dd>
               {product.shipping.fee === null
                 ? "배송비 확인 필요"
@@ -312,7 +295,9 @@ export function ProductPurchasePanel({
             </dd>
             {product.shipping.productionDays && (
               <>
-                <dt className="font-bold">제작 기간</dt>
+                <dt className="font-bold text-font-dark-secondary">
+                  제작 기간
+                </dt>
                 <dd>{product.shipping.productionDays}</dd>
               </>
             )}
@@ -320,7 +305,7 @@ export function ProductPurchasePanel({
         )}
         {groups.length > 0 && (
           <div className="flex flex-col gap-2">
-            <p className="text-body-s font-bold">
+            <p className="text-body font-bold text-font-dark-secondary">
               선택 ({Object.values(choices).filter(Boolean).length}/
               {groups.length})
             </p>
@@ -364,17 +349,11 @@ export function ProductPurchasePanel({
                         unknownStock ||
                         groups
                           .slice(0, index)
-                          .some(
-                            (previous) =>
-                              previous.required && !choices[previous.id],
-                          )
+                          .some((previous) => !choices[previous.id])
                       }
                       className={cn(
                         choices[group.id] && "font-bold",
-                        hasError &&
-                          group.required &&
-                          !choices[group.id] &&
-                          "border-red-border",
+                        hasError && !choices[group.id] && "border-red-border",
                       )}
                     >
                       {items.map((item) => {
@@ -396,9 +375,9 @@ export function ProductPurchasePanel({
                 );
               })}
             </div>
-            {hasError && requiredMissing.length > 0 && (
+            {hasError && missingGroups.length > 0 && (
               <p className="text-body-s text-red-font">
-                필수 옵션을 선택해 주세요.
+                옵션을 선택해 주세요. 선물 포장은 선택 안 함을 고를 수 있습니다.
               </p>
             )}
           </div>
@@ -432,8 +411,8 @@ export function ProductPurchasePanel({
                   aria-label={`${line.label} 삭제`}
                   onClick={() => {
                     setLines(lines.filter((item) => item.key !== line.key));
-                    if (editingKey === line.key) {
-                      setEditingKey(null);
+                    if (lastSelectionKey === line.key) {
+                      setLastSelectionKey(null);
                       setChoices({});
                     }
                   }}
@@ -483,18 +462,23 @@ export function ProductPurchasePanel({
         </div>
       )}
       <div className="flex flex-col gap-6 border-t border-border-neutral-weak pt-6">
-        <p className="flex items-center justify-end gap-3">
-          <span className="text-body-s text-font-dark-subtle">
-            총 상품 금액
-          </span>
-          <strong
-            className="text-title-m"
-            aria-live="polite"
-            data-testid="purchase-total"
-          >
-            {money(getSelectionTotal(lines))}
-          </strong>
-        </p>
+        <div className="relative">
+          <p className="flex items-center justify-end gap-3">
+            <span className="text-body-s text-font-dark-subtle">
+              총 상품 금액
+            </span>
+            <strong
+              className="text-title-m font-bold"
+              aria-live="polite"
+              data-testid="purchase-total"
+            >
+              {money(getSelectionTotal(lines))}
+            </strong>
+          </p>
+          {notice && (
+            <div className="absolute inset-x-0 bottom-0 z-10">{notice}</div>
+          )}
+        </div>
         {unknownStock && (
           <p className="text-body-s text-font-dark-weak">
             재고를 확인 중입니다.
@@ -504,7 +488,7 @@ export function ProductPurchasePanel({
           <Button
             variant="outline"
             size="xl"
-            className="w-2/5 min-w-0 px-3 text-body-l xl:w-50"
+            className="w-2/5 min-w-0 border-border-neutral-solid px-3 xl:w-50"
             disabled={unknownStock && !soldOut}
             loading={busy}
             onClick={soldOut ? handleRestock : handleCart}
@@ -513,7 +497,7 @@ export function ProductPurchasePanel({
           </Button>
           <Button
             size="xl"
-            className="min-w-0 flex-1 px-3 text-body-l"
+            className="min-w-0 flex-1 px-3"
             disabled={soldOut || unknownStock}
             onClick={() => {
               if (validatePurchase())
