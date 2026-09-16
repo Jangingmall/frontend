@@ -1,4 +1,5 @@
 import type { ProductListQuery } from "@/api/products/query";
+import { publicEnv } from "@/lib/env";
 import { PRODUCT_LIST_SORT, type ProductListSort } from "@/types/sort";
 
 function parsePrice(value: string | null): number | undefined {
@@ -25,6 +26,9 @@ export function parseProductSearchParams(
       : "popular",
     category: params.get("category") || undefined,
     keyword: params.get("keyword") || undefined,
+    crafts: publicEnv.apiMocking
+      ? [...new Set(params.getAll("subcategory").filter(Boolean))].sort()
+      : [],
     materials: [...new Set(params.getAll("material").filter(Boolean))].sort(),
     minPrice,
     maxPrice,
@@ -38,13 +42,19 @@ export function updateProductSearchParams(
   patch: Partial<ProductListQuery>,
 ): URLSearchParams {
   const params = new URLSearchParams(current);
+  if (!publicEnv.apiMocking) params.delete("subcategory");
   if (!("page" in patch)) params.delete("page");
+  if ("category" in patch && patch.category !== current.get("category")) {
+    params.delete("subcategory");
+  }
   for (const [key, value] of Object.entries(patch)) {
-    if (key === "size") continue;
-    const param = key === "materials" ? "material" : key;
+    if (key === "size" || (key === "crafts" && !publicEnv.apiMocking)) continue;
+    const param =
+      key === "materials" ? "material" : key === "crafts" ? "subcategory" : key;
     params.delete(param);
     if (Array.isArray(value)) {
-      for (const item of [...new Set(value)].sort()) params.append(param, item);
+      for (const item of [...new Set(value)].filter(Boolean).sort())
+        params.append(param, item);
     } else if (
       value !== undefined &&
       value !== false &&

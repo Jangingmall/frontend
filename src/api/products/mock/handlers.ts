@@ -5,6 +5,7 @@ import { mockOk } from "@/mocks/envelope";
 import {
   productCatalogue,
   productCategories,
+  productCrafts,
   productMaterials,
 } from "./catalogue";
 
@@ -14,6 +15,7 @@ import {
  */
 export const productHandlers = [
   http.get("*/api/products/categories", () => mockOk(productCategories)),
+  http.get("*/api/products/subcategories", () => mockOk(productCrafts)),
   http.get("*/api/products/materials", () => mockOk(productMaterials)),
   http.get("*/api/products", ({ request }) => {
     const url = new URL(request.url);
@@ -21,6 +23,7 @@ export const productHandlers = [
     const params = url.searchParams;
     const size = Math.min(100, Math.max(1, Number(params.get("size")) || 20));
     const category = params.get("category");
+    const crafts = params.getAll("subcategory");
     const materials = params.getAll("material");
     const giftTheme = params.get("giftTheme");
     const items = productCatalogue.filter(
@@ -28,6 +31,7 @@ export const productHandlers = [
         (!category ||
           category === "kitchen" ||
           product.category === category) &&
+        (!crafts.length || crafts.includes(product.subcategory)) &&
         (!materials.length || materials.includes(product.material)) &&
         (!giftTheme || product.giftTheme === giftTheme) &&
         (!params.has("minPrice") ||

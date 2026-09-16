@@ -4,8 +4,14 @@ import type { ProductListQuery } from "@/api/products/query";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { ProductCategory, ProductMaterial } from "@/types/product-filter";
+import { publicEnv } from "@/lib/env";
+import type {
+  ProductCategory,
+  ProductCraft,
+  ProductMaterial,
+} from "@/types/product-filter";
 
+import { ProductCraftFilter } from "./ProductCraftFilter";
 import { ProductPriceFilter } from "./ProductPriceFilter";
 
 interface ProductFiltersProps {
@@ -13,6 +19,10 @@ interface ProductFiltersProps {
   category: ProductCategory;
   categories: ProductCategory[];
   materials: ProductMaterial[];
+  crafts: ProductCraft[];
+  isCraftsPending?: boolean;
+  hasCraftsError?: boolean;
+  onRetryCrafts?: () => void;
   onChange: (patch: Partial<ProductListQuery>) => void;
   onReset: () => void;
 }
@@ -22,12 +32,17 @@ export function ProductFilters({
   category,
   categories,
   materials,
+  crafts,
+  isCraftsPending,
+  hasCraftsError,
+  onRetryCrafts,
   onChange,
   onReset,
 }: ProductFiltersProps) {
   const parent =
     categories.find((item) => item.id === category.parentId) ?? category;
   const children = categories.filter((item) => item.parentId === parent.id);
+  const isSubcategory = category.parentId !== null;
 
   function handleMaterial(id: string) {
     const selected = query.materials ?? [];
@@ -41,33 +56,53 @@ export function ProductFilters({
   return (
     <aside aria-label="상품 필터" className="w-full lg:w-51 lg:shrink-0">
       <Accordion
+        key={category.id}
         title="필터"
         onReset={onReset}
         multiple
+        defaultValue={
+          publicEnv.apiMocking && isSubcategory && query.crafts?.length
+            ? ["craft"]
+            : []
+        }
         className="[&>div:first-child]:px-2 [&>div:first-child]:pt-2 [&>div:first-child>button]:underline"
       >
-        <AccordionItem title={parent.name} value="category">
-          <nav aria-label="상품 분류" className="flex flex-col">
-            {children.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-current={query.category === item.id ? "page" : undefined}
-                onClick={() =>
-                  onChange({
-                    category: item.id,
-                    materials: [],
-                    minPrice: undefined,
-                    maxPrice: undefined,
-                  })
-                }
-                className="border-b border-border-neutral-subtle py-2 text-left text-body-m text-font-dark aria-[current=page]:font-bold"
-              >
-                {item.name}
-              </button>
-            ))}
-          </nav>
-        </AccordionItem>
+        {isSubcategory && publicEnv.apiMocking && (
+          <AccordionItem title={category.name} value="craft">
+            <ProductCraftFilter
+              crafts={crafts}
+              selected={query.crafts ?? []}
+              isPending={isCraftsPending}
+              hasError={hasCraftsError}
+              onRetry={onRetryCrafts}
+              onChange={(crafts) => onChange({ crafts })}
+            />
+          </AccordionItem>
+        )}
+        {!isSubcategory && (
+          <AccordionItem title={parent.name} value="category">
+            <nav aria-label="상품 분류" className="flex flex-col">
+              {children.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  aria-current={query.category === item.id ? "page" : undefined}
+                  onClick={() =>
+                    onChange({
+                      category: item.id,
+                      materials: [],
+                      minPrice: undefined,
+                      maxPrice: undefined,
+                    })
+                  }
+                  className="border-b border-border-neutral-subtle py-2 text-left text-body-m text-font-dark aria-[current=page]:font-bold"
+                >
+                  {item.name}
+                </button>
+              ))}
+            </nav>
+          </AccordionItem>
+        )}
         <AccordionItem title="가격대" value="price">
           <ProductPriceFilter
             key={category.id}

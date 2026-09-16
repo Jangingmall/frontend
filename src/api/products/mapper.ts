@@ -1,8 +1,13 @@
 import type { Page } from "@/types/api";
-import type { ProductCategory, ProductMaterial } from "@/types/product-filter";
+import type {
+  ProductCategory,
+  ProductCraft,
+  ProductMaterial,
+} from "@/types/product-filter";
 
 import type {
   ProductCategoriesDto,
+  ProductCraftsDto,
   ProductMaterialsDto,
 } from "./filter-validation";
 import type { ProductSummary } from "./model";
@@ -25,6 +30,13 @@ export function mapProductMaterials(
   dto: ProductMaterialsDto,
 ): ProductMaterial[] {
   return dto.map((material) => ({ id: material.id, name: material.name }));
+}
+
+export function mapProductCrafts(dto: ProductCraftsDto): ProductCraft[] {
+  return dto.map((craft) => ({
+    id: String(craft.subcategoryId),
+    name: craft.name,
+  }));
 }
 
 export function mapProductSummary(dto: ProductSummaryDto): ProductSummary {

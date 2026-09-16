@@ -15,6 +15,7 @@ import { startMockWorker } from "@/mocks/start-browser";
 import { productKeys } from "@/queries/products/keys";
 import {
   useProductCategories,
+  useProductCrafts,
   useProductList,
   useProductMaterials,
 } from "@/queries/products/queries";
@@ -69,6 +70,7 @@ export function ProductListPage({
   const categories = useProductCategories(isReady, initialCategories);
   const materials = useProductMaterials(isReady && Boolean(query.category));
   const category = categories.data?.find((item) => item.id === query.category);
+  const crafts = useProductCrafts(isReady && category?.parentId != null);
   const parent = categories.data?.find(
     (item) => item.id === category?.parentId,
   );
@@ -87,6 +89,7 @@ export function ProductListPage({
 
   function handleReset() {
     handleChange({
+      crafts: [],
       materials: [],
       minPrice: undefined,
       maxPrice: undefined,
@@ -122,6 +125,12 @@ export function ProductListPage({
                   category={category}
                   categories={categories.data ?? []}
                   materials={materials.data}
+                  crafts={crafts.data ?? []}
+                  isCraftsPending={crafts.isPending}
+                  hasCraftsError={crafts.isError}
+                  onRetryCrafts={() => {
+                    void crafts.refetch();
+                  }}
                   onChange={handleChange}
                   onReset={handleReset}
                 />

@@ -1,6 +1,8 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 
 import { getProductSeo } from "./seo";
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 it.each([
   { page: "2" },
@@ -16,6 +18,7 @@ it.each([
 
 it.each([
   { material: ["wood", "metal"] },
+  { subcategory: ["1", "2"] },
   { sort: "price-asc" },
   { minPrice: "1000" },
   { hasGiftWrap: "true" },

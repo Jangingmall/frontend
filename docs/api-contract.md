@@ -148,6 +148,14 @@ type PagedResponse<T> = {
 - 찜 버튼은 표시와 콜백 경계까지 제공한다. 로그인 후 초기 찜 상태 조회 및 mutation 연결은 미완료이므로 페이지에서는 비활성화한다. 상품 상세 링크는 라우팅 계약을 따르지만 상세 화면 본체는 별도 작업이다.
 - MSW 모드는 140개 상품으로 필터·정렬·번호 페이지·빈 결과를 재현한다. 실제 서버와의 통합 검증 완료를 의미하지 않는다. 헤더·푸터·플로팅 버튼은 이 작업에 포함하지 않는다.
 
+### PL-3 종목 다중 필터 연결 상태 (2026-09-16, #44)
+
+- 위 공개조회 문서의 `{ code, name }` 종목 응답과 달리, 현재 BE `develop`의 `CategoryResponse.SubcategoryItem`은 `{ subcategoryId: number, categoryId: number, name: string }`이다. FE 종목 선택지는 이 실제 응답을 Zod 검증 후 `{ id: string, name: string }`으로 변환한다.
+- 현재 `CategoryController.subcategories()`에는 쓰임별 조회 파라미터가 없다. 전체 종목을 조회하며, BE 공예 대분류 `categoryId`와 개발용 쓰임 ID(`kitchen-1`)를 혼용하지 않는다.
+- FE `ProductListQuery.crafts`는 URL·목록 요청의 반복 `subcategory`로 직렬화한다. 종목 선택 간 OR, 다른 필터와 AND 조건은 MSW에서 동작한다. BE `ProductController.list()`는 여전히 Pageable만 받으므로 **운영 다중 필터 지원은 미완료**다. 실제 연동 시 반복 파라미터 지원과 기존 목록 DTO·페이지 계약을 함께 확정해야 한다.
+- 위 종목 필터는 **MSW 모드에서만 활성화**한다. `NEXT_PUBLIC_API_MOCKING`이 `enabled`가 아니면 종목 UI·선택지 조회를 막고, 직접 전달된 `crafts`도 서버·클라이언트 공통 요청 직렬화 및 캐시 키에서 제외한다. URL의 `subcategory`는 선택 상태·SEO에서 무시하며 다음 URL 변경 때 제거한다. BE 지원 검증 전까지 이 제한을 유지한다.
+- 자세한 Figma 반영·상태 복원·검증 방법은 [상품 목록 안내](product-list.md)의 #44 절을 따른다.
+
 ### 구매자 상호작용 (USER)
 
 PD-1의 기본 상세 조회는 `GET /api/products/{id}` 응답을 별도 DTO 검증·변환 계층으로 처리한다. 현재 상세 UI의 다중 이미지·옵션·장인 소개·안내 본문과 후기·문의·찜·담기·재입고 상태는 MSW로 검증한다. 모의 응답과 잠정 endpoint는 mock 모드에서만 사용하며, 운영 저장·주문·결제 연동 완료를 의미하지 않는다.

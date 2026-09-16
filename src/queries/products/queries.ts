@@ -4,10 +4,12 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import {
   fetchProductCategories,
+  fetchProductCrafts,
   fetchProductListClient,
   fetchProductMaterials,
 } from "@/api/products/client";
 import type { ProductListQuery } from "@/api/products/query";
+import { publicEnv } from "@/lib/env";
 import type { Page } from "@/types/api";
 import type { ProductSummary } from "@/types/product";
 import type { ProductCategory } from "@/types/product-filter";
@@ -47,6 +49,15 @@ export function useProductMaterials(enabled: boolean) {
     queryKey: productKeys.materials,
     queryFn: ({ signal }) => fetchProductMaterials(signal),
     enabled,
+    staleTime: 3600000,
+  });
+}
+
+export function useProductCrafts(enabled: boolean) {
+  return useQuery({
+    queryKey: productKeys.crafts,
+    queryFn: ({ signal }) => fetchProductCrafts(signal),
+    enabled: enabled && publicEnv.apiMocking,
     staleTime: 3600000,
   });
 }

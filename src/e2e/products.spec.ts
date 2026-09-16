@@ -120,3 +120,91 @@ test("PL-3에서 경로를 따라 대분류로 복귀하고 TOP으로 이동한�
   await page.getByRole("button", { name: "맨 위로" }).click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
 });
+
+test("PL-3 종목 복수 선택·해제와 새로고침·히스토리 복원", async ({ page }) => {
+  await page.goto("/products?category=kitchen-1&sort=price-desc&page=2");
+  await page.getByRole("button", { name: "다기 · 찻잔", exact: true }).click();
+  const first = page.getByRole("button", { name: "사기장", exact: true });
+  const second = page.getByRole("button", { name: "유기장", exact: true });
+  let documentRequests = 0;
+  page.on("request", (request) => {
+    if (request.isNavigationRequest() && request.frame() === page.mainFrame())
+      documentRequests++;
+  });
+  await first.click();
+  await expect(page).not.toHaveURL(/page=/);
+  await expect(page).toHaveURL(/sort=price-desc/);
+  await expect(
+    page.getByText("총 3개의 검색 결과", { exact: true }),
+  ).toBeVisible();
+  await second.click();
+  await expect(page).toHaveURL(/subcategory=1&subcategory=2/);
+  await expect(
+    page.getByText("총 6개의 검색 결과", { exact: true }),
+  ).toBeVisible();
+  await expect(first).toHaveAttribute("aria-pressed", "true");
+  await expect(second).toHaveAttribute("aria-pressed", "true");
+  expect(documentRequests).toBe(0);
+
+  await page.reload();
+  await expect(first).toHaveAttribute("aria-pressed", "true");
+  await expect(second).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("article")).toHaveCount(6);
+  await first.click();
+  await expect(first).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("article")).toHaveCount(3);
+  await page.goBack();
+  await expect(first).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("article")).toHaveCount(6);
+  await page.goForward();
+  await expect(first).toHaveAttribute("aria-pressed", "false");
+  await expect(second).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("article")).toHaveCount(3);
+});
+
+test("좁은 PL-3 화면에서 종목과 기존 필터를 함께 초기화한다", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto(
+    "/products?category=kitchen-1&subcategory=1&subcategory=2&material=ceramic&maxPrice=200000&hasGiftWrap=true&excludeSoldOut=true&sort=price-asc",
+  );
+  await expect(
+    page.getByText("총 1개의 검색 결과", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "사기장" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.getByRole("button", { name: "소재", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "도자기", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "초기화", exact: true }).click();
+  await expect(page).toHaveURL(/\?category=kitchen-1&sort=price-asc$/);
+  await expect(
+    page.getByText("총 16개의 검색 결과", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "사기장" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await expect(page.getByRole("button", { name: "유기장" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await expect(
+    page.getByRole("button", { name: "도자기", exact: true }),
+  ).toHaveAttribute("aria-pressed", "false");
+  await expect(
+    page.getByRole("checkbox", { name: "선물 포장 가능" }),
+  ).not.toBeChecked();
+  await expect(
+    page.getByRole("checkbox", { name: "품절 상품 제외" }),
+  ).not.toBeChecked();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+});

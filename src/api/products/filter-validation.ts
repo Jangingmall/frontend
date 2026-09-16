@@ -18,5 +18,15 @@ export const productMaterialsDto = z.array(
   z.object({ id: z.string(), name: z.string() }),
 );
 
+// BE develop CategoryResponse.SubcategoryItem의 실제 공개 응답.
+export const productCraftsDto = z.array(
+  z.object({
+    subcategoryId: z.number().int().positive(),
+    categoryId: z.number().int().positive(),
+    name: z.string().min(1),
+  }),
+);
+
 export type ProductCategoriesDto = z.infer<typeof productCategoriesDto>;
 export type ProductMaterialsDto = z.infer<typeof productMaterialsDto>;
+export type ProductCraftsDto = z.infer<typeof productCraftsDto>;

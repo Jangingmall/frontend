@@ -1,8 +1,9 @@
+import { publicEnv } from "@/lib/env";
 import { type GiftThemeId, toGiftThemeApi } from "@/types/gift-theme";
 import { type ProductListSort, toProductListSortApi } from "@/types/sort";
 
 /**
- * 상품 목록 조회 파라미터. PL-2·홈 선물 섹션에서 쓰는 공개 필터만 담는다.
+ * 상품 목록 조회 파라미터. PL-2·PL-3·홈 선물 섹션의 공개 필터를 담는다.
  * (docs/api-contract.md §5 목록 필터, docs/routing-and-auth.md §3)
  */
 export interface ProductListQuery {
@@ -14,6 +15,8 @@ export interface ProductListQuery {
   sort?: ProductListSort;
   keyword?: string;
   category?: string;
+  /** 공예 종목. BE 다중 필터 지원 전까지 MSW 모드에서만 사용한다. */
+  crafts?: string[];
   materials?: string[];
   minPrice?: number;
   maxPrice?: number;
@@ -70,6 +73,12 @@ export function toProductListSearchParams(
   params.set("sort", toProductListSortApi(query.sort));
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.category) params.set("category", query.category);
+  // TODO BE가 반복 subcategory의 OR 조건을 지원하면 운영 모드도 활성화한다.
+  if (publicEnv.apiMocking) {
+    for (const craft of [...new Set(query.crafts)].filter(Boolean).sort()) {
+      params.append("subcategory", craft);
+    }
+  }
   for (const material of [...new Set(query.materials)].filter(Boolean).sort()) {
     params.append("material", material);
   }

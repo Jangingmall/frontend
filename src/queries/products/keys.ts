@@ -10,5 +10,6 @@ export const productKeys = {
   list: (query: ProductListQuery) =>
     ["products", "list", toProductListSearchParams(query).toString()] as const,
   categories: ["products", "categories"] as const,
+  crafts: ["products", "crafts"] as const,
   materials: ["products", "materials"] as const,
 };
