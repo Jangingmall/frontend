@@ -1,7 +1,9 @@
 import { type DefaultBodyType, http, type PathParams } from "msw";
 
+import type { MemberProfileResponseDto } from "@/api/member/validation";
 import { mockError, mockOk } from "@/mocks/envelope";
 import type { ApiErrorResponse, ApiResponse } from "@/types/api";
+import type { OAuthProvider } from "@/types/auth";
 
 import {
   memberMeAdmin,
@@ -12,15 +14,18 @@ import {
   SEED_ACCESS_TOKEN_PREFIX,
   SEED_ACCESS_TOKEN_REFRESHED,
   SEED_LOGIN,
+  SEED_OAUTH_ACCESS_TOKEN,
   SEED_SIGNUP_ACCESS_TOKEN,
   SEED_VERIFICATION_CODE,
 } from "./fixtures";
 import {
+  __clearMockOAuthLinkedMembers,
   clearDynamicMember,
   getDynamicMember,
   getMockIdentity,
   setDynamicMember,
   setMockIdentity,
+  setMockOAuthLinkedMember,
 } from "./mock-identity";
 
 /**
@@ -60,6 +65,15 @@ const EXISTING_EMAILS = new Set(
     email.toLowerCase(),
   ),
 );
+/**
+ * `EXISTING_EMAILS`는 존재 여부만 알 뿐 회원 객체가 없다 — 소셜 로그인이 동일 이메일
+ * 계정에 "연동"하려면 실제 객체가 필요해서 별도로 둔다.
+ */
+const EXISTING_EMAIL_MEMBERS: Record<string, MemberProfileResponseDto> = {
+  [SEED_LOGIN.email.toLowerCase()]: memberMeUser,
+  [memberMeArtisan.email.toLowerCase()]: memberMeArtisan,
+  [memberMeAdmin.email.toLowerCase()]: memberMeAdmin,
+};
 const emailVerificationState = new Map<
   string,
   { sentAt: number; verified: boolean }
@@ -71,6 +85,7 @@ export function __resetEmailVerificationState(): void {
   emailVerificationState.clear();
   nextSignupMemberId = 100;
   clearDynamicMember();
+  __clearMockOAuthLinkedMembers();
 }
 
 export const memberHandlers = [
@@ -216,6 +231,40 @@ export const memberHandlers = [
       setMockIdentity("USER");
       setDynamicMember(member);
       return mockOk({ accessToken: SEED_SIGNUP_ACCESS_TOKEN, member }, 201);
+    },
+  ),
+
+  http.post<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/oauth2/complete-profile",
+    async ({ request }) => {
+      const body = (await request.json().catch(() => null)) as {
+        provider?: string;
+        email?: string;
+        name?: string;
+        phone?: string;
+      } | null;
+      if (!body?.provider || !body?.email || !body?.name || !body?.phone) {
+        return mockError(400, "INVALID_INPUT", "필수 항목이 비어 있어요.");
+      }
+      const email = body.email.toLowerCase();
+      // 동일 이메일 계정이 이미 있으면 신규 생성 대신 그 계정에 연동한다 — 이때 role은
+      // 신규 가입(항상 USER)과 달리 그 기존 계정의 실제 role을 그대로 따른다.
+      const linkedExisting = EXISTING_EMAIL_MEMBERS[email] ?? null;
+      const member: MemberProfileResponseDto = linkedExisting ?? {
+        memberId: nextSignupMemberId++,
+        email,
+        name: body.name,
+        nickname: null,
+        role: "USER",
+        profileImageUrl: null,
+      };
+      setMockIdentity(member.role);
+      setDynamicMember(member);
+      setMockOAuthLinkedMember(body.provider as OAuthProvider, member);
+      return mockOk(
+        { accessToken: SEED_OAUTH_ACCESS_TOKEN, member },
+        linkedExisting ? 200 : 201,
+      );
     },
   ),
 ];

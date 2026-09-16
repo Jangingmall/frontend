@@ -17,3 +17,6 @@ export interface AuthUser {
   name: string;
   role: Role;
 }
+
+/** 지원하는 소셜 로그인 제공자. 구글은 지원하지 않는다(디자인·기획 확정). */
+export type OAuthProvider = "naver" | "kakao";

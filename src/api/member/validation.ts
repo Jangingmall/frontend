@@ -65,3 +65,15 @@ export type EmailVerificationResponseDto = z.infer<
   typeof emailVerificationResponseDto
 >;
 export type SignupResponseDto = z.infer<typeof signupResponseDto>;
+
+/**
+ * `POST /api/member/oauth2/complete-profile` 응답. 경로만 확인됐고 응답 스키마는 미확정 —
+ * `signupResponseDto`와 동일하게 세션(`accessToken`+`member`)을 받는다고 가정한다. 실제
+ * BE가 다른 모양을 주면 배포 전까지 이 스키마의 `parse`가 실패한다 — 알고 진행하는 배포
+ * 순서 리스크.
+ */
+export const oauthCompleteProfileResponseDto = loginResponseDto;
+
+export type OAuthCompleteProfileResponseDto = z.infer<
+  typeof oauthCompleteProfileResponseDto
+>;

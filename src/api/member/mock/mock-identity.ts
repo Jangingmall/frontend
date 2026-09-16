@@ -2,7 +2,7 @@ import {
   type MemberProfileResponseDto,
   memberProfileResponseDto,
 } from "@/api/member/validation";
-import type { Role } from "@/types/auth";
+import type { OAuthProvider, Role } from "@/types/auth";
 
 /**
  * Mock 전용 "현재 로그인된 신원". `"anonymous"`는 로그인 이력이 없거나 로그아웃한 상태 —
@@ -84,4 +84,43 @@ export function getDynamicMember(): MemberProfileResponseDto | null {
 
 export function clearDynamicMember(): void {
   localStorage.removeItem(DYNAMIC_MEMBER_KEY);
+}
+
+const OAUTH_LINKED_KEY_PREFIX = "midam:mockOAuthLinked:";
+
+/**
+ * 소셜 로그인으로 이미 연동 완료한 회원 — provider별로 따로 저장한다. `dynamicMember`(위)와
+ * 분리하는 이유: `dynamicMember`는 `setMockIdentity`(로그아웃 포함)가 부를 때마다 지워지는데,
+ * "소셜로 가입 → 로그아웃 → 같은 소셜 계정으로 재로그인" 흐름에서 "연동 여부"는 로그아웃과
+ * 무관하게 남아 있어야 한다. `getDynamicMember`와 동일하게 저장된 값을 스키마로 재검증한다.
+ */
+export function getMockOAuthLinkedMember(
+  provider: OAuthProvider,
+): MemberProfileResponseDto | null {
+  const raw = localStorage.getItem(OAUTH_LINKED_KEY_PREFIX + provider);
+  if (!raw) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  const result = memberProfileResponseDto.safeParse(parsed);
+  return result.success ? result.data : null;
+}
+
+export function setMockOAuthLinkedMember(
+  provider: OAuthProvider,
+  member: MemberProfileResponseDto,
+): void {
+  localStorage.setItem(
+    OAUTH_LINKED_KEY_PREFIX + provider,
+    JSON.stringify(member),
+  );
+}
+
+/** 테스트 전용 — 모듈 스코프 없이 localStorage에 직접 쓰므로 provider별로 지운다. */
+export function __clearMockOAuthLinkedMembers(): void {
+  localStorage.removeItem(OAUTH_LINKED_KEY_PREFIX + "naver");
+  localStorage.removeItem(OAUTH_LINKED_KEY_PREFIX + "kakao");
 }
