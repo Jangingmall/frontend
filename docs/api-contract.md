@@ -124,9 +124,13 @@ type PagedResponse<T> = {
 
 - 목록 필터: `artisanId`, `category`, `subcategory`, `material`, `giftTheme`, `color`, `minPrice`, `maxPrice`, `hasGiftWrap`, `excludeSoldOut`(기본 `true`), `sort`, `keyword`.
 - `isLimited`, `isCustomOrder`는 **필터가 아니라 응답 배지 속성**. `primaryBadge`는 서버가 한정수량 → 신작 → 인기 우선순위로 하나만 계산.
-- 상품 상태: `DRAFT`, `ON_SALE`, `SOLD_OUT`, `HIDDEN`. **공개 목록 응답에는 `ON_SALE`/`SOLD_OUT`만** 나온다. `DRAFT`/`HIDDEN` 상세 접근은 `404`.
+- 상품 상태: `DRAFT`, `ON_SALE`, `SOLD_OUT`, `HIDDEN`. 공개 조회의 목표 계약은 `ON_SALE`/`SOLD_OUT`만 노출하는 것이다. `DRAFT`/`HIDDEN` 상세 접근 시 BE가 `404`를 반환한다는 규칙은 **BE 반영 확인이 필요한 잠정 계약**이다.
+- **현재 BE 구현** (2026-09-14, `develop`의 `d4542b7` 소스 기준): [ProductService](https://github.com/Jangingmall/backend/blob/d4542b78c7afce1ec58a27967799ec75ce162177/src/main/java/com/jangingmall/backend/product/application/ProductService.java)의 목록 조회 `findOnSale`은 `ON_SALE`만 반환한다. 상세 조회 `findById`는 상품이 없을 때만 `404` 처리하며, 존재하면 `DRAFT`/`HIDDEN`을 포함해 상태와 무관하게 반환한다. 운영 서버에 대한 통합 검증 결과를 의미하지 않는다.
+- **현재 FE 차단 처리**: `mapProductDetail`은 `ON_SALE`/`SOLD_OUT` 이외의 상태를 `null`로 변환하고, 상세 route는 `notFound()`로 상품 없음 화면을 표시한다. 이 처리는 FE 화면 노출을 막으며, BE API 자체의 비공개 데이터 반환을 차단하지는 않는다. 운영 연동 전에 BE 상세 조회의 상태 제한과 목록의 품절 포함 정책을 확정·검증해야 한다(§9).
 - 정렬 API enum: `POPULAR`, `NEWEST`, `WISHLIST_COUNT`, `SALES_COUNT`, `PRICE_ASC`, `PRICE_DESC`. URL 표현 ↔ enum 매핑은 [routing-and-auth.md](routing-and-auth.md) §3.
-- 상세 응답에는 옵션 그룹(`REQUIRED`/`OPTIONAL`/`TEXT`), `detailPageBlocks`(`h2`/`p`/`img`/`video`), `images`(ULID + 3 variant), `artisan` 요약이 포함된다. 전체 필드는 BE `docs/장인몰_API_계약서_공개조회.md`.
+- 현재 PD-1의 실제 상세 조회 어댑터는 `src/api/products/detail-validation.ts`의 `productDetailDto`를 기준으로 `productId`, `artisanId`, `title`, `description`, `price`, `stock`, `thumbnailUrl`, `status`를 검증한다. `description`, `stock`, `thumbnailUrl`은 null·누락을 허용한다.
+- BE 공개조회 계약서의 옵션 그룹(`REQUIRED`/`OPTIONAL`/`TEXT`), `detailPageBlocks`(`h2`/`p`/`img`/`video`), `images`(ULID + 3 variant), `artisan` 요약은 **후속 BE 연동 계약**으로 구분한다. 현재 실제 조회 어댑터에서 해당 필드를 읽어 표시하는 단계는 아니며, 연동 시 BE `docs/장인몰_API_계약서_공개조회.md`와 실제 응답의 일치 여부를 확인해야 한다.
+- PD-1 시연의 다중 이미지·옵션·장인·상세 본문은 **MSW 전용** `productDetailMockDto.detail` 확장이다. 이때의 `optionGroups`(`STANDARD`/`GIFT`)와 `content`(`heading`/`paragraph`/`image`)는 위 BE 계약의 필드·enum과 동일하지 않다. 실제 응답과 혼합하지 않으며, 자세한 경계는 [상품 상세 PD-1 구현 안내](product-detail.md)를 따른다.
 - 카테고리 관련 3개 엔드포인트는 응답 모양이 서로 다르다(BE `장인몰_API_명세_v1.csv` 기준, BE 자체 용어가 "카테고리"/"종목"을 혼용하므로 이 구분을 기준으로 삼는다):
   - `/categories/main` — 대분류 6종 고정: `{ items: [{ categoryCode, name, artisanCount, productCount, thumbnail }], totalCount }`. 소분류는 **포함되지 않는다.**
   - `/categories` — 대분류를 `{ code, name, productCount }` 플랫 리스트로 반환(필터 칩용). `category` 쿼리파라미터로 특정 카테고리 맥락 동적 목록도 지원.
@@ -145,6 +149,10 @@ type PagedResponse<T> = {
 - MSW 모드는 140개 상품으로 필터·정렬·번호 페이지·빈 결과를 재현한다. 실제 서버와의 통합 검증 완료를 의미하지 않는다. 헤더·푸터·플로팅 버튼은 이 작업에 포함하지 않는다.
 
 ### 구매자 상호작용 (USER)
+
+PD-1의 기본 상세 조회는 `GET /api/products/{id}` 응답을 별도 DTO 검증·변환 계층으로 처리한다. 현재 상세 UI의 다중 이미지·옵션·장인 소개·안내 본문과 후기·문의·찜·담기·재입고 상태는 MSW로 검증한다. 모의 응답과 잠정 endpoint는 mock 모드에서만 사용하며, 운영 저장·주문·결제 연동 완료를 의미하지 않는다.
+
+상세 FE 모델, 실제 기본 응답과 모의 확장 응답의 구분, 잠정 endpoint, 실행 방법 및 후속 연동 범위는 [상품 상세 PD-1 구현 안내](product-detail.md)에 기록한다.
 
 | Method        | 경로                              | 용도                     |
 | ------------- | --------------------------------- | ------------------------ |
@@ -260,4 +268,5 @@ type PagedResponse<T> = {
 | AI interview/generation      | 데이터 소유·갱신 규칙                                                                                                                                                                                  |
 | 장인 심사 흐름               | 직접 승인/반려 vs 4단계 pipeline 단일화                                                                                                                                                                |
 | 상품 상태 변경               | `status` 요청 본문 필수 여부·허용 전이                                                                                                                                                                 |
+| 공개 상품 상태 제한          | BE 상세 조회의 `DRAFT`/`HIDDEN` → `404` 처리 및 `ON_SALE`/`SOLD_OUT` 조회 유지, 목록의 품절 포함 정책 확정·회귀 검증. 현재 FE의 상태 차단을 BE 접근 제어 완료로 간주하지 않는다.                       |
 | 후기·문의 mutation           | 상품별 후기·문의 작성/답변 상세 계약                                                                                                                                                                   |

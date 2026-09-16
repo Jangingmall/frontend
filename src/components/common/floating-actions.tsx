@@ -18,8 +18,8 @@ import { AiChatIcon, TopIcon } from "@/components/ui/icons";
  * IA상 "AI 추천 챗봇 버튼은 HO-1·PL-1·PL-2·PL-3에서만 노출"이라 전체 페이지에 까는 게
  * 아니라 딱 이 화면들에만 있어야 한다 — 그래서 `app/layout.tsx`(전역)가 아니라 각 화면의
  * `page.tsx`에서 개별 연결한다. `components/common/`에 두는 이유는 그 화면들이 이미
- * 같은 컴포넌트를 그대로 재사용할 수 있게 하기 위해서다(PL-1·PL-2·PL-3는 아직 미착수 —
- * 그 작업에서 여기 import만 추가하면 된다). 지금은 홈(`app/page.tsx`)에서만 렌더링.
+ * 같은 컴포넌트를 재사용할 수 있게 하기 위해서다. PD-1은 `showAiChat={false}`로 TOP만
+ * 표시하고, 홈·목록의 기본 표시 방식은 유지한다.
  *
  * 아이콘(`TopIcon`/`AiChatIcon`)은 `fill`이 SVG `path`에 고정돼 있어 `text-*`만으론 색이
  * 안 바뀐다 — `header.tsx`가 이미 쓰는 `[&_path]:fill-current` 패턴으로 우회한다.
@@ -30,26 +30,42 @@ import { AiChatIcon, TopIcon } from "@/components/ui/icons";
  * 넣었었는데, 실제 디자인은 라운드가 아예 없다(변수가 바인딩돼 있다고 값이 0이 아닌 건
  * 아니다 — Figma 변수 API가 막혀 있어 값 자체를 못 읽고 있었던 것). 라운드 클래스 제거.
  */
-export function FloatingActions() {
+interface FloatingActionsProps {
+  showAiChat?: boolean;
+}
+
+export function FloatingActions({ showAiChat = true }: FloatingActionsProps) {
   return (
     <div className="fixed right-0 bottom-16 z-40 flex w-13 flex-col overflow-hidden bg-fill-neutral-impact text-font-white [&_path]:fill-current">
       <button
         type="button"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        onClick={() =>
+          window.scrollTo({
+            top: 0,
+            behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)")
+              .matches
+              ? "instant"
+              : "smooth",
+          })
+        }
         aria-label="맨 위로"
         className="flex flex-col items-center gap-1 px-1 py-2 hover:bg-states-hover-25"
       >
         <TopIcon className="size-6" />
         <span className="text-caption">TOP</span>
       </button>
-      <div aria-hidden="true" className="h-px bg-font-white/20" />
-      <span
-        aria-disabled="true"
-        className="flex flex-col items-center gap-1 px-1 py-2 text-font-white/70"
-      >
-        <AiChatIcon className="size-6" />
-        <span className="text-caption">AI CHAT</span>
-      </span>
+      {showAiChat && (
+        <>
+          <div aria-hidden="true" className="h-px bg-font-white/20" />
+          <span
+            aria-disabled="true"
+            className="flex flex-col items-center gap-1 px-1 py-2 text-font-white/70"
+          >
+            <AiChatIcon className="size-6" />
+            <span className="text-caption">AI CHAT</span>
+          </span>
+        </>
+      )}
     </div>
   );
 }

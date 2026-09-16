@@ -21,4 +21,13 @@ describe("FloatingActions", () => {
       screen.getByText("AI CHAT").closest("[aria-disabled]"),
     ).toHaveAttribute("aria-disabled", "true");
   });
+
+  it("상품 상세에서는 TOP만 표시하고 동작을 유지한다", () => {
+    const scrollTo = vi.fn();
+    window.scrollTo = scrollTo;
+    render(<FloatingActions showAiChat={false} />);
+    expect(screen.queryByText("AI CHAT")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "맨 위로" }));
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+  });
 });

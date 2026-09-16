@@ -20,3 +20,5 @@ type Story = StoryObj<typeof meta>;
 
 /** TOP은 클릭 가능, AI CHAT은 아직 기능이 없어 비활성 상태다. */
 export const Default: Story = {};
+
+export const ProductDetail: Story = { args: { showAiChat: false } };
