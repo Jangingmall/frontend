@@ -158,12 +158,16 @@ export type OAuthLoginResult =
     };
 
 /**
- * 소셜 로그인 시작 — 목업 전용. 실제 흐름은 전체 페이지 리다이렉트(`GET
- * /api/member/oauth2/{provider}` → 네이버/카카오 동의 화면 → BE 콜백)라 fetch 왕복으로
- * 재현할 방법이 없다. 이 함수는 "동의 화면 통과 + BE 콜백 처리" 전체를 클라이언트에서 한
- * 번에 흉내낸다 — 이 provider로 이미 연동을 완료한 적 있으면 즉시 로그인, 처음이면 추가정보
- * 입력이 필요하다는 결과를 돌려준다. 실제 백엔드 도메인이 정해지면 이 함수를 지우고 호출부를
- * `<a href="/api/member/oauth2/{provider}">`로 교체한다.
+ * 소셜 로그인 시작 — 목업 전용. 실제 흐름은 전체 페이지 리다이렉트(네이버/카카오 동의 화면
+ * → BE 콜백)라 fetch 왕복으로 재현할 방법이 없다. 이 함수는 "동의 화면 통과 + BE 콜백 처리"
+ * 전체를 클라이언트에서 한 번에 흉내낸다 — 이 provider로 이미 연동을 완료한 적 있으면 즉시
+ * 로그인, 처음이면 추가정보 입력이 필요하다는 결과를 돌려준다. 실제 백엔드 도메인이 정해지면
+ * 이 함수를 지우고 호출부를 실제 리다이렉트 링크로 교체한다 — **정확한 시작 경로는 아직
+ * 미확정**이다. `docs/api-contract.md`·`docs/routing-and-auth.md` §4.1은
+ * `/api/member/oauth2/{provider}`라고 적어뒀지만 같은 문서 §8은 Spring Security의 실제
+ * 시작 경로를 `/oauth2/authorization/{provider}`(프레임워크 기본 경로)라고 설명해 서로
+ * 어긋난다 — `docs/api-contract.md` §9 "OAuth 로그인 시작 경로 불일치" 참고, BE 소스로
+ * 확정 전까지 아무 경로도 여기 단정해 적지 않는다.
  */
 export async function startMockOAuthLogin(
   provider: OAuthProvider,
