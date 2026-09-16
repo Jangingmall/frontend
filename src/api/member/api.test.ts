@@ -4,6 +4,7 @@ import { __resetRefreshState } from "@/lib/http/client";
 import { useAuthStore } from "@/stores/auth";
 
 import {
+  completeOAuthProfile,
   fetchMe,
   login,
   logout,
@@ -13,6 +14,7 @@ import {
   verifyEmailCode,
 } from "./api";
 import {
+  memberMeArtisan,
   SEED_ACCESS_TOKEN,
   SEED_ACCESS_TOKEN_REFRESHED,
   SEED_LOGIN,
@@ -180,5 +182,44 @@ describe("member api", () => {
         },
       }),
     ).rejects.toMatchObject({ name: "ApiError", status: 403 });
+  });
+
+  it("completeOAuthProfile: 새 이메일이면 가입 + 세션(accessToken+user)을 반환한다", async () => {
+    const result = await completeOAuthProfile({
+      provider: "kakao",
+      email: "kakao-newbie@midam.test",
+      name: "김소셜",
+      phone: "01012345678",
+    });
+
+    expect(result.accessToken).toBeTruthy();
+    expect(result.user).toMatchObject({ name: "김소셜", role: "USER" });
+  });
+
+  it("completeOAuthProfile: 필수 항목이 비어 있으면 ApiError 400", async () => {
+    await expect(
+      completeOAuthProfile({
+        provider: "naver",
+        email: "",
+        name: "김소셜",
+        phone: "01012345678",
+      }),
+    ).rejects.toMatchObject({ name: "ApiError", status: 400 });
+  });
+
+  it("completeOAuthProfile: 이미 존재하는 이메일이면 신규 가입 대신 그 계정에 연동한다(role 유지)", async () => {
+    // 카카오 이메일이 하필 기존 ARTISAN 계정과 같아도 신규 USER로 덮어쓰지 않는다 —
+    // 연동은 그 계정의 실제 role을 그대로 따라야 한다.
+    const result = await completeOAuthProfile({
+      provider: "kakao",
+      email: memberMeArtisan.email,
+      name: "다른이름",
+      phone: "01099998888",
+    });
+
+    expect(result.user).toMatchObject({
+      role: "ARTISAN",
+      name: memberMeArtisan.name,
+    });
   });
 });
