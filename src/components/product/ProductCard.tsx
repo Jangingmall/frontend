@@ -22,7 +22,7 @@ interface ProductCardProps {
   isWishlisted?: boolean;
   onWishlist?: (productId: number) => void;
   isAboveFold?: boolean;
-  variant?: "default" | "related";
+  variant?: "default" | "list" | "related";
 }
 
 export function ProductCard({
@@ -73,7 +73,7 @@ export function ProductCard({
       <div
         className={cn(
           "flex items-start justify-between gap-2 pt-2 pl-2",
-          variant === "related" && "gap-0",
+          variant !== "default" && "gap-0",
         )}
       >
         <div className="min-w-0">
@@ -91,6 +91,7 @@ export function ProductCard({
           <p
             className={cn(
               "mt-1 truncate text-body-m",
+              variant === "list" && "mt-0 text-font-dark/60",
               variant === "related" && "mt-0 leading-normal text-font-dark/60",
             )}
           >
@@ -126,7 +127,7 @@ export function ProductCard({
             aria-label={`평점 ${product.rating.toFixed(1)}, 후기 ${product.reviewCount}개`}
             className={cn(
               "inline-flex items-center gap-1",
-              variant === "related" && "gap-0.5 text-font-label",
+              variant !== "default" && "gap-0.5 text-font-label",
             )}
           >
             <StarFilledIcon className="size-5" aria-hidden="true" />
@@ -140,9 +141,13 @@ export function ProductCard({
             <li
               key={`${color.name}-${color.hex}`}
               title={color.name}
-              className="size-4 border border-border-neutral-subtle"
-              style={{ backgroundColor: color.hex }}
+              className={cn(variant === "list" && "p-0.5")}
             >
+              <span
+                aria-hidden="true"
+                className="block size-4 border border-border-neutral-subtle"
+                style={{ backgroundColor: color.hex }}
+              />
               <span className="sr-only">{color.name}</span>
             </li>
           ))}

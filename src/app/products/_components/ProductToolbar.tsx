@@ -14,9 +14,9 @@ interface ProductToolbarProps {
 
 const SORT_OPTIONS: { value: ProductListSort; label: string }[] = [
   { value: "popular", label: "인기순" },
-  { value: "newest", label: "신상품순" },
-  { value: "wishlist", label: "찜 많은순" },
+  { value: "newest", label: "최신순" },
   { value: "sales", label: "판매량순" },
+  { value: "wishlist", label: "찜 많은 순" },
   { value: "price-asc", label: "낮은 가격순" },
   { value: "price-desc", label: "높은 가격순" },
 ];
@@ -27,18 +27,23 @@ export function ProductToolbar({
   sort,
   onSortChange,
 }: ProductToolbarProps) {
+  const rootCategory = parent ?? category;
   return (
     <div>
-      <Breadcrumb>
-        <BreadcrumbItem href="/">홈</BreadcrumbItem>
-        {parent && (
+      <Breadcrumb className="flex-wrap">
+        <BreadcrumbItem href={category ? "/products" : "/"}>
+          {category ? "전체 카테고리" : "홈"}
+        </BreadcrumbItem>
+        {rootCategory && (
           <BreadcrumbItem
-            href={`/products?category=${encodeURIComponent(parent.id)}`}
+            href={`/products?category=${encodeURIComponent(rootCategory.id)}`}
           >
-            {parent.name}
+            {rootCategory.name}
           </BreadcrumbItem>
         )}
-        <BreadcrumbItem current>{category?.name ?? "전체 상품"}</BreadcrumbItem>
+        <BreadcrumbItem current>
+          {parent ? category?.name : "전체 상품"}
+        </BreadcrumbItem>
       </Breadcrumb>
       <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
         <div>

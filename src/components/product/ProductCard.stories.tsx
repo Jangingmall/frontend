@@ -30,6 +30,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = { decorators: [withListWidth] };
+export const ProductList: Story = {
+  decorators: [withListWidth],
+  args: { variant: "list" },
+};
 export const SoldOut: Story = {
   decorators: [withListWidth],
   args: { product: { ...product, isSoldOut: true } },
