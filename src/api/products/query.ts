@@ -1,3 +1,4 @@
+import { publicEnv } from "@/lib/env";
 import { type GiftThemeId, toGiftThemeApi } from "@/types/gift-theme";
 import { type ProductListSort, toProductListSortApi } from "@/types/sort";
 
@@ -14,7 +15,7 @@ export interface ProductListQuery {
   sort?: ProductListSort;
   keyword?: string;
   category?: string;
-  /** 공예 종목. 반복 subcategory 요청은 BE 다중 필터 지원 전까지 잠정 계약이다. */
+  /** 공예 종목. BE 다중 필터 지원 전까지 MSW 모드에서만 사용한다. */
   crafts?: string[];
   materials?: string[];
   minPrice?: number;
@@ -72,8 +73,11 @@ export function toProductListSearchParams(
   params.set("sort", toProductListSortApi(query.sort));
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.category) params.set("category", query.category);
-  for (const craft of [...new Set(query.crafts)].filter(Boolean).sort()) {
-    params.append("subcategory", craft);
+  // TODO BE가 반복 subcategory의 OR 조건을 지원하면 운영 모드도 활성화한다.
+  if (publicEnv.apiMocking) {
+    for (const craft of [...new Set(query.crafts)].filter(Boolean).sort()) {
+      params.append("subcategory", craft);
+    }
   }
   for (const material of [...new Set(query.materials)].filter(Boolean).sort()) {
     params.append("material", material);

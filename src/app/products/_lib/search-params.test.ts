@@ -1,9 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   parseProductSearchParams,
   updateProductSearchParams,
 } from "./search-params";
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 describe("상품 목록 URL", () => {
   it("종목을 소재와 독립적으로 읽고 빈 값·중복·선택 순서를 정규화한다", () => {

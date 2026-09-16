@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { productKeys } from "@/queries/products/keys";
 
 import { toProductListSearchParams } from "./query";
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 describe("상품 필터 요청", () => {
   it("종목을 반복 subcategory로 보내고 순서가 다른 선택도 같은 캐시를 사용한다", () => {

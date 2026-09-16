@@ -9,6 +9,7 @@ import {
   fetchProductMaterials,
 } from "@/api/products/client";
 import type { ProductListQuery } from "@/api/products/query";
+import { publicEnv } from "@/lib/env";
 import type { Page } from "@/types/api";
 import type { ProductSummary } from "@/types/product";
 import type { ProductCategory } from "@/types/product-filter";
@@ -56,7 +57,7 @@ export function useProductCrafts(enabled: boolean) {
   return useQuery({
     queryKey: productKeys.crafts,
     queryFn: ({ signal }) => fetchProductCrafts(signal),
-    enabled,
+    enabled: enabled && publicEnv.apiMocking,
     staleTime: 3600000,
   });
 }

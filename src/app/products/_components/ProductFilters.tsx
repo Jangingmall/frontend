@@ -4,6 +4,7 @@ import type { ProductListQuery } from "@/api/products/query";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { publicEnv } from "@/lib/env";
 import type {
   ProductCategory,
   ProductCraft,
@@ -59,10 +60,14 @@ export function ProductFilters({
         title="필터"
         onReset={onReset}
         multiple
-        defaultValue={isSubcategory && query.crafts?.length ? ["craft"] : []}
+        defaultValue={
+          publicEnv.apiMocking && isSubcategory && query.crafts?.length
+            ? ["craft"]
+            : []
+        }
         className="[&>div:first-child]:px-2 [&>div:first-child]:pt-2 [&>div:first-child>button]:underline"
       >
-        {isSubcategory ? (
+        {isSubcategory && publicEnv.apiMocking && (
           <AccordionItem title={category.name} value="craft">
             <ProductCraftFilter
               crafts={crafts}
@@ -73,7 +78,8 @@ export function ProductFilters({
               onChange={(crafts) => onChange({ crafts })}
             />
           </AccordionItem>
-        ) : (
+        )}
+        {!isSubcategory && (
           <AccordionItem title={parent.name} value="category">
             <nav aria-label="상품 분류" className="flex flex-col">
               {children.map((item) => (

@@ -1,6 +1,8 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 
 import { getProductSeo } from "./seo";
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 it.each([
   { page: "2" },

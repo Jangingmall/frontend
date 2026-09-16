@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   fetchProductCategories,
@@ -6,6 +6,8 @@ import {
   fetchProductListClient,
   fetchProductMaterials,
 } from "./client";
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 describe("상품 목록 공개 조회", () => {
   it("실제 종목 응답의 숫자 ID를 화면용 문자열 ID로 변환한다", async () => {

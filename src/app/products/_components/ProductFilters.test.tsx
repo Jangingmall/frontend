@@ -11,6 +11,8 @@ import {
 
 import { ProductFilters } from "./ProductFilters";
 
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
+
 const props = {
   category: productCategories[1],
   categories: productCategories,
