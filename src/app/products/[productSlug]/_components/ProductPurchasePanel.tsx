@@ -421,18 +421,11 @@ export function ProductPurchasePanel({
                 </Button>
               </div>
               <ul className="flex flex-col gap-1 text-caption text-font-label">
-                {groups
-                  .filter((group) => line.choices[group.id])
-                  .map((group) => (
-                    <li key={group.id}>
-                      - {group.label}:{" "}
-                      {
-                        group.values.find(
-                          (value) => value.id === line.choices[group.id],
-                        )?.label
-                      }
-                    </li>
-                  ))}
+                {groups.map((group) => (
+                  <li key={group.id}>
+                    - {group.label}: {line.optionLabels[group.id]}
+                  </li>
+                ))}
               </ul>
               <div className="mt-3 flex items-center justify-end gap-4 border-t border-border-jade-weak pt-1">
                 <Stepper

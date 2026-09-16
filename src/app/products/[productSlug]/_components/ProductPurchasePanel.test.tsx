@@ -9,7 +9,7 @@ import {
   resetProductDetailActionState,
 } from "@/api/products/mock/detail-action-handlers";
 import { getProductDetailMock } from "@/api/products/mock/detail-fixtures";
-import { mockError } from "@/mocks/envelope";
+import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 import type { ProductDetail } from "@/types/product-detail";
@@ -133,6 +133,50 @@ it("can add an optionless product again after removing its selection", async () 
   await user.click(screen.getByRole("button", { name: /삭제$/ }));
   await user.click(screen.getByRole("button", { name: "작품 추가" }));
   expect(screen.getAllByRole("button", { name: /삭제$/ })).toHaveLength(1);
+});
+
+it("shows a generated no-gift choice while excluding it from the cart request", async () => {
+  const user = userEvent.setup();
+  const product = getProductDetailMock(101)!;
+  const cartRequest = vi.fn();
+  server.use(
+    http.post(
+      "*/api/products/:productId/detail-actions/cart-items",
+      async ({ request }) => {
+        cartRequest(await request.json());
+        return mockOk({ duplicate: false });
+      },
+    ),
+  );
+  useAuthStore.getState().setSession("mock-access-token", {
+    id: 1,
+    name: "테스트",
+    role: "USER",
+  });
+  setup(101, {
+    optionGroups: product.optionGroups.map((group) => ({
+      ...group,
+      values: group.values.filter((value) => value.label !== "선택 안 함"),
+    })),
+  });
+  await user.click(screen.getByRole("combobox", { name: "색상 (필수)" }));
+  await user.click(await screen.findByRole("option", { name: "백색" }));
+  await user.click(await screen.findByRole("option", { name: "소 (15 cm)" }));
+  await user.click(await screen.findByRole("option", { name: "선택 안 함" }));
+
+  expect(screen.getByText("- 선물 포장: 선택 안 함")).toBeInTheDocument();
+  const removeButton = screen.getByRole("button", {
+    name: "백색 / 소 (15 cm) / 선택 안 함 삭제",
+  });
+  expect(screen.getByTestId("purchase-total")).toHaveTextContent("20,000원");
+  await user.click(screen.getByRole("button", { name: "장바구니" }));
+  await waitFor(() =>
+    expect(cartRequest).toHaveBeenCalledWith({
+      lines: [{ choices: { color: "white", size: "small" }, quantity: 1 }],
+    }),
+  );
+  await user.click(removeButton);
+  expect(screen.getByTestId("purchase-total")).toHaveTextContent(/^0원$/);
 });
 
 it("rolls wishlist back when the server rejects the change", async () => {

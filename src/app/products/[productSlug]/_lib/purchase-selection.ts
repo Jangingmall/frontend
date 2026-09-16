@@ -5,6 +5,7 @@ export type ProductChoices = Record<string, string>;
 export interface PurchaseSelection {
   key: string;
   choices: ProductChoices;
+  optionLabels: Record<string, string>;
   label: string;
   unitPrice: number;
   stock: number;
@@ -23,12 +24,14 @@ export function createSelection(
   )
     return null;
   const values = [];
+  const optionLabels: Record<string, string> = {};
   const standardIds: string[] = [];
   let giftDelta = 0;
   for (const group of product.optionGroups) {
     const id = choices[group.id];
     const value = group.values.find((option) => option.id === id);
     if ((!value && group.required) || (id && !value)) return null;
+    optionLabels[group.id] = value?.label ?? "선택 안 함";
     if (!value) continue;
     if (value.stock === null || value.stock < 1) return null;
     values.push(value);
@@ -68,7 +71,10 @@ export function createSelection(
   return {
     key: JSON.stringify(Object.entries(validChoices)),
     choices: validChoices,
-    label: values.map((value) => value.label).join(" / ") || product.name,
+    optionLabels,
+    label:
+      product.optionGroups.map((group) => optionLabels[group.id]).join(" / ") ||
+      product.name,
     unitPrice,
     stock,
     quantity: 1,
