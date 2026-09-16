@@ -236,4 +236,58 @@ describe("member api", () => {
       code: "CONFLICT",
     });
   });
+
+  it("completeOAuthProfile: 네이버는 이메일 인증을 먼저 완료하지 않으면 ApiError 403(리뷰)", async () => {
+    // 카카오는 provider가 이미 인증한 이메일을 주지만, 네이버는 `/signup`과 같은 이메일
+    // 인증 흐름을 거쳐야 한다 — UI의 `canSubmit` 가드가 아니라 핸들러 자체가 강제해야
+    // 한다(이전엔 이 검사가 빠져 있었다).
+    await expect(
+      completeOAuthProfile({
+        provider: "naver",
+        email: "naver-unverified@midam.test",
+        name: "김소셜",
+        phone: "01012345678",
+      }),
+    ).rejects.toMatchObject({
+      name: "ApiError",
+      status: 403,
+      code: "FORBIDDEN",
+    });
+  });
+
+  it("일반 가입으로 만든 이메일은 이후 OAuth 완료 요청에서도 이미 가입된 이메일로 취급된다(리뷰)", async () => {
+    // `EXISTING_EMAILS`가 가입 시점에 갱신되지 않으면 두 흐름을 넘나들며 같은 이메일로
+    // 회원이 두 번 생성될 수 있었다 — signup 성공 후 같은 이메일로 OAuth 완료를 시도해
+    // CONFLICT가 나는지 확인한다.
+    const email = "cross-flow@midam.test";
+    await requestEmailVerification({ email });
+    await verifyEmailCode({ email, code: SEED_VERIFICATION_CODE });
+    await signup({
+      email,
+      password: "Abcd1234!",
+      passwordConfirm: "Abcd1234!",
+      name: "홍길동",
+      phone: "01012345678",
+      role: "USER",
+      agreements: {
+        age14OrOlder: true,
+        termsOfService: true,
+        privacyCollection: true,
+        marketing: false,
+      },
+    });
+
+    await expect(
+      completeOAuthProfile({
+        provider: "kakao",
+        email,
+        name: "김소셜",
+        phone: "01099998888",
+      }),
+    ).rejects.toMatchObject({
+      name: "ApiError",
+      status: 409,
+      code: "CONFLICT",
+    });
+  });
 });

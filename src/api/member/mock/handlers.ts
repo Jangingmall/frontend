@@ -59,11 +59,17 @@ export function __resetLoginRateLimit(): void {
  * `verificationExpiresInSeconds` 이내에 `verify`를 부르지 않으면 만료 처리한다.
  */
 const VERIFICATION_TTL_MS = 600 * 1000;
-const EXISTING_EMAILS = new Set(
-  [SEED_LOGIN.email, memberMeArtisan.email, memberMeAdmin.email].map((email) =>
-    email.toLowerCase(),
-  ),
-);
+const SEED_EXISTING_EMAILS = [
+  SEED_LOGIN.email,
+  memberMeArtisan.email,
+  memberMeAdmin.email,
+].map((email) => email.toLowerCase());
+/**
+ * 이미 가입된 이메일 목록. 시드로 초기화하고, `/signup`·`/oauth2/complete-profile`이
+ * 성공할 때마다 새 이메일을 추가한다 — 안 그러면 "일반 가입으로 새 이메일 생성 → 같은
+ * 이메일로 소셜 OAuth 시도"처럼 두 흐름을 넘나드는 경우 중복 검사를 통과해버린다(PR 리뷰).
+ */
+const EXISTING_EMAILS = new Set(SEED_EXISTING_EMAILS);
 const emailVerificationState = new Map<
   string,
   { sentAt: number; verified: boolean }
@@ -76,6 +82,8 @@ export function __resetEmailVerificationState(): void {
   nextSignupMemberId = 100;
   clearDynamicMember();
   __clearMockOAuthLinkedMembers();
+  EXISTING_EMAILS.clear();
+  SEED_EXISTING_EMAILS.forEach((email) => EXISTING_EMAILS.add(email));
 }
 
 export const memberHandlers = [
@@ -218,6 +226,7 @@ export const memberHandlers = [
         role: "USER" as const,
         profileImageUrl: null,
       };
+      EXISTING_EMAILS.add(email);
       setMockIdentity("USER");
       setDynamicMember(member);
       return mockOk({ accessToken: SEED_SIGNUP_ACCESS_TOKEN, member }, 201);
@@ -251,6 +260,17 @@ export const memberHandlers = [
       if (EXISTING_EMAILS.has(email)) {
         return mockError(409, "CONFLICT", "이미 가입된 이메일이에요.");
       }
+      // 카카오는 provider가 이미 인증한 이메일을 주므로(§ suggestedEmail) 별도 인증이
+      // 없고, 네이버는 이메일을 직접 입력·인증해야 한다(§ IA "소셜 이메일 미제공 처리") —
+      // `/signup`(210행 부근)과 동일한 이메일 인증 흐름을 공유하므로 여기서도 똑같이
+      // 인증 완료 여부를 확인한다. 이전엔 이 검사가 빠져 있었다(PR 리뷰) — UI의
+      // `canSubmit` 가드로는 막히지만 목업 핸들러 자체의 계약은 아니었다.
+      if (
+        provider === "naver" &&
+        !emailVerificationState.get(email)?.verified
+      ) {
+        return mockError(403, "FORBIDDEN", "이메일 인증을 먼저 완료해주세요.");
+      }
       const member: MemberProfileResponseDto = {
         memberId: nextSignupMemberId++,
         email,
@@ -259,6 +279,7 @@ export const memberHandlers = [
         role: "USER",
         profileImageUrl: null,
       };
+      EXISTING_EMAILS.add(email);
       setMockIdentity(member.role);
       setDynamicMember(member);
       setMockOAuthLinkedMember(provider, member);
