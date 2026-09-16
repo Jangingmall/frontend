@@ -4,11 +4,25 @@ import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { SEED_VERIFICATION_CODE } from "@/api/member/mock/fixtures";
+import {
+  memberMeUser,
+  SEED_VERIFICATION_CODE,
+} from "@/api/member/mock/fixtures";
 import { __resetEmailVerificationState } from "@/api/member/mock/handlers";
+import {
+  getMockOAuthLinkedMember,
+  setMockOAuthLinkedMember,
+} from "@/api/member/mock/mock-identity";
 import { useAuthStore } from "@/stores/auth";
+import type { OAuthProvider } from "@/types/auth";
 
 import { SignupFlow } from "./SignupFlow";
+
+// `startMockOAuthLogin`이 `publicEnv.apiMocking`를 확인한다 — 플레인 `vitest run`은
+// `.env.local`을 안 읽어 기본값이 false라, 명시적으로 켜지 않으면 소셜 버튼 클릭마다 던진다.
+vi.mock("@/lib/env", () => ({
+  publicEnv: { apiMocking: true, tossClientKey: "" },
+}));
 
 const replace = vi.fn();
 const push = vi.fn();
@@ -17,7 +31,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace, push }),
 }));
 
-function renderSignupFlow(returnUrl: string | null = null) {
+function renderSignupFlow(
+  returnUrl: string | null = null,
+  provider: OAuthProvider | null = null,
+) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
@@ -26,7 +43,9 @@ function renderSignupFlow(returnUrl: string | null = null) {
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
     );
   }
-  return render(<SignupFlow returnUrl={returnUrl} />, { wrapper: Wrapper });
+  return render(<SignupFlow returnUrl={returnUrl} provider={provider} />, {
+    wrapper: Wrapper,
+  });
 }
 
 beforeEach(() => {
@@ -102,15 +121,101 @@ describe("SignupFlow", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it("네이버·카카오 가입 버튼은 둘 다 비활성이다", () => {
+  it("카카오 버튼을 처음 누르면 소셜 추가정보 입력(02단계)으로 전환하고, 이메일은 프리필·잠금된다", async () => {
+    // IA: 카카오는 인증된 이메일을 제공해 인증 단계를 생략한다.
+    const user = userEvent.setup();
     renderSignupFlow();
 
+    await user.click(
+      screen.getByRole("button", { name: "카카오톡으로 빠르게 가입하기" }),
+    );
+
+    expect(await screen.findByText("이름")).toBeInTheDocument();
+    // 이메일 인증 절차 없이 바로 "인증 완료"에 준하는 안내가 보인다.
     expect(
-      screen.getByRole("button", { name: "네이버로 가입 (준비 중)" }),
-    ).toBeDisabled();
+      screen.getByText("제공자가 인증한 이메일이에요."),
+    ).toBeInTheDocument();
+    const emailInput = screen.getByPlaceholderText("example@email.com");
+    expect(emailInput).toBeDisabled();
+    expect((emailInput as HTMLInputElement).value).toMatch(
+      /^kakao-.+@midam\.test$/,
+    );
+    // 소셜 모드는 비밀번호를 받지 않는다.
+    expect(screen.queryByPlaceholderText("비밀번호")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "카카오로 가입 (준비 중)" }),
-    ).toBeDisabled();
+      screen.queryByPlaceholderText("비밀번호 확인"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("네이버 버튼을 누르면 소셜 추가정보 입력으로 전환하되 이메일은 직접 입력·인증해야 한다", async () => {
+    // IA: 네이버는 이메일을 제공하지 않는다 — 소셜 이메일 미제공 처리.
+    const user = userEvent.setup();
+    renderSignupFlow();
+
+    await user.click(
+      screen.getByRole("button", { name: "네이버로 빠르게 가입하기" }),
+    );
+
+    expect(await screen.findByText("이름")).toBeInTheDocument();
+    const emailInput = screen.getByPlaceholderText("example@email.com");
+    expect(emailInput).not.toBeDisabled();
+    expect((emailInput as HTMLInputElement).value).toBe("");
+    expect(
+      screen.getByRole("button", { name: "인증 메일 발송" }),
+    ).toBeInTheDocument();
+  });
+
+  it("카카오 소셜 추가정보를 제출하면 가입 완료 페이지로 이동하고 연동 상태가 저장된다", async () => {
+    const user = userEvent.setup();
+    renderSignupFlow("/products");
+
+    await user.click(
+      screen.getByRole("button", { name: "카카오톡으로 빠르게 가입하기" }),
+    );
+    await user.type(await screen.findByPlaceholderText("홍길동"), "김소셜");
+    const [phoneMiddle, phoneLast] = screen.getAllByPlaceholderText("0000");
+    await user.type(phoneMiddle, "1234");
+    await user.type(phoneLast, "5678");
+    await user.click(screen.getByRole("checkbox", { name: "전체 동의하기" }));
+
+    const submitButton = screen.getByRole("button", { name: "가입하기" });
+    await waitFor(() => expect(submitButton).not.toBeDisabled());
+    await user.click(submitButton);
+
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith(
+        "/signup/complete?returnUrl=%2Fproducts",
+      ),
+    );
+    // 다음에 같은 provider로 다시 시도하면 즉시 로그인되도록(§4·§7-3) 연동 상태가 저장돼야
+    // 한다 — 제출 직후 이 컴포넌트는 이미 authenticated로 바뀌어 "불러오는 중" 화면으로
+    // 전환되므로(실제 앱이라면 이 시점에 페이지를 떠난다), UI 재상호작용 대신 저장된 값을
+    // 직접 확인한다.
+    expect(getMockOAuthLinkedMember("kakao")?.name).toBe("김소셜");
+  });
+
+  it("이미 연동된 소셜 계정으로 다시 시도하면 추가정보 입력 없이 즉시 로그인된다", async () => {
+    setMockOAuthLinkedMember("kakao", memberMeUser);
+    const user = userEvent.setup();
+    renderSignupFlow("/products");
+
+    await user.click(
+      screen.getByRole("button", { name: "카카오톡으로 빠르게 가입하기" }),
+    );
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/products"));
+    // 추가정보 입력 화면으로는 전혀 넘어가지 않는다.
+    expect(screen.queryByText("이름")).not.toBeInTheDocument();
+  });
+
+  it("/login에서 provider와 함께 진입하면 01단계를 건너뛰고 자동으로 목업 판정을 실행한다", async () => {
+    renderSignupFlow(null, "naver");
+
+    // 첫 렌더부터 01단계(가입 수단 선택) 자체를 그리지 않는다 — 깜빡임 방지.
+    expect(
+      screen.queryByRole("button", { name: "이메일,비밀번호로 가입하기" }),
+    ).not.toBeInTheDocument();
+    expect(await screen.findByText("이름")).toBeInTheDocument();
   });
 
   it("가입 성공 시 /signup/complete로 이동한다 — 가드가 자기 자신을 덮어쓰지 않는다", async () => {

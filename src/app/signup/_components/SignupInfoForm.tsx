@@ -15,11 +15,13 @@ import { Select, SelectItem } from "@/components/ui/select";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import { ApiError } from "@/lib/http/api-error";
 import {
+  useCompleteOAuthProfileMutation,
   useRequestEmailVerificationMutation,
   useSignupMutation,
   useVerifyEmailCodeMutation,
 } from "@/queries/member/mutations";
 import { useAuthStore } from "@/stores/auth";
+import type { OAuthProvider } from "@/types/auth";
 
 import { TermsAgreementFields } from "./TermsAgreementFields";
 
@@ -61,20 +63,44 @@ function passwordStrengthState(password: string): {
   return { state: "perfect", label: "높음" };
 }
 
+const nameSchema = z
+  .string()
+  .trim()
+  .min(1, "이름을 입력해주세요.")
+  .regex(/^[가-힣a-zA-Z\s]{2,20}$/, "이름은 한글·영문 2~20자로 입력해주세요.");
+
+const emailSchema = z
+  .string()
+  .min(1, "이메일을 입력해주세요.")
+  .email("이메일 형식이 올바르지 않아요.");
+
+const phoneFieldsSchema = z.object({
+  phonePrefix: z.enum(PHONE_PREFIXES),
+  phoneMiddle: z.string().regex(/^\d{4}$/, "숫자 4자리를 입력해주세요."),
+  phoneLast: z.string().regex(/^\d{4}$/, "숫자 4자리를 입력해주세요."),
+});
+
+const termsFieldsSchema = z.object({
+  age14OrOlder: z.boolean().refine((v) => v, {
+    message: "만 14세 이상만 가입할 수 있어요.",
+  }),
+  termsOfService: z.boolean().refine((v) => v, {
+    message: "이용약관에 동의해주세요.",
+  }),
+  privacyCollection: z.boolean().refine((v) => v, {
+    message: "개인정보 수집·이용에 동의해주세요.",
+  }),
+  privacyThirdParty: z.boolean().refine((v) => v, {
+    message: "개인정보 제3자 제공에 동의해주세요.",
+  }),
+  marketing: z.boolean(),
+  eventPromotion: z.boolean(),
+});
+
 export const signupInfoSchema = z
   .object({
-    name: z
-      .string()
-      .trim()
-      .min(1, "이름을 입력해주세요.")
-      .regex(
-        /^[가-힣a-zA-Z\s]{2,20}$/,
-        "이름은 한글·영문 2~20자로 입력해주세요.",
-      ),
-    email: z
-      .string()
-      .min(1, "이메일을 입력해주세요.")
-      .email("이메일 형식이 올바르지 않아요."),
+    name: nameSchema,
+    email: emailSchema,
     password: z
       .string()
       .min(8, "비밀번호는 8자 이상 입력해주세요.")
@@ -84,30 +110,35 @@ export const signupInfoSchema = z
         "영문 대/소문자, 숫자, 특수기호(!,@,#,$,%) 중 3가지 이상 포함해주세요.",
       ),
     passwordConfirm: z.string().min(1, "비밀번호를 다시 입력해주세요."),
-    phonePrefix: z.enum(PHONE_PREFIXES),
-    phoneMiddle: z.string().regex(/^\d{4}$/, "숫자 4자리를 입력해주세요."),
-    phoneLast: z.string().regex(/^\d{4}$/, "숫자 4자리를 입력해주세요."),
-    age14OrOlder: z.boolean().refine((v) => v, {
-      message: "만 14세 이상만 가입할 수 있어요.",
-    }),
-    termsOfService: z.boolean().refine((v) => v, {
-      message: "이용약관에 동의해주세요.",
-    }),
-    privacyCollection: z.boolean().refine((v) => v, {
-      message: "개인정보 수집·이용에 동의해주세요.",
-    }),
-    privacyThirdParty: z.boolean().refine((v) => v, {
-      message: "개인정보 제3자 제공에 동의해주세요.",
-    }),
-    marketing: z.boolean(),
-    eventPromotion: z.boolean(),
   })
+  .merge(phoneFieldsSchema)
+  .merge(termsFieldsSchema)
   .refine((data) => data.password === data.passwordConfirm, {
     message: "비밀번호가 일치하지 않아요.",
     path: ["passwordConfirm"],
   });
 
 export type SignupInfoFormValues = z.infer<typeof signupInfoSchema>;
+
+/**
+ * 소셜 추가정보 모드 스키마. 이름·전화번호·약관은 이메일 가입과 동일하게 검증한다. 이메일은
+ * provider가 인증된 값을 안 줬을 때만(네이버) 직접 입력이 필요하고, 준 경우(카카오)는 이미
+ * 유효한 값이 채워져 있어 같은 `emailSchema`로도 그대로 통과한다.
+ *
+ * `password`·`passwordConfirm`은 폼에 렌더링하지 않지만 스키마엔 남겨둔다 — 출력 타입을
+ * `signupInfoSchema`와 완전히 동일하게(`SignupInfoFormValues`) 맞춰야 `SignupInfoForm`이
+ * `useForm` 인스턴스 하나로 두 모드를 처리할 수 있다(모드에 따라 `resolver`만 바꿔 끼운다).
+ * 제약을 걸지 않아 기본값 `""`가 그대로 통과한다.
+ */
+export const socialInfoSchema = z
+  .object({
+    name: nameSchema,
+    email: emailSchema,
+    password: z.string(),
+    passwordConfirm: z.string(),
+  })
+  .merge(phoneFieldsSchema)
+  .merge(termsFieldsSchema);
 
 type VerificationStatus = "idle" | "sent" | "verified";
 
@@ -148,18 +179,35 @@ function FieldRow({
   );
 }
 
+/** 소셜 추가정보 모드 컨텍스트. `null`이면 일반 이메일 가입. */
+export interface SocialSignupContext {
+  provider: OAuthProvider;
+  /** provider가 인증된 이메일을 줬으면 그 값 — 이메일 입력·인증 단계를 생략한다. */
+  suggestedEmail: string | null;
+}
+
 interface SignupInfoFormProps {
   /** `/signup?returnUrl=...`의 원본 값. 검증은 `safeReturnUrl`이 소비 시점에 한다. */
   returnUrl: string | null;
   /** Figma "취소" 버튼(Submit Row) — 01단계로 되돌아간다. */
   onCancel: () => void;
+  /** 소셜 버튼으로 진입했으면 세팅된다. `null`이면 이 폼은 평소처럼 이메일 가입을 받는다. */
+  socialContext: SocialSignupContext | null;
 }
 
-export function SignupInfoForm({ returnUrl, onCancel }: SignupInfoFormProps) {
+export function SignupInfoForm({
+  returnUrl,
+  onCancel,
+  socialContext,
+}: SignupInfoFormProps) {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(null);
+  // 소셜 로그인이 이미 인증된 이메일을 줬으면(카카오) 처음부터 "인증 완료" 상태로 시작해
+  // 이메일 입력·인증 UI 전체를 건너뛴다 — 네이버(이메일 미제공)·일반 이메일 가입은 기존과
+  // 동일하게 "idle"에서 시작한다.
+  const isSocialEmailProvided = socialContext?.suggestedEmail != null;
   const [verificationStatus, setVerificationStatus] =
-    useState<VerificationStatus>("idle");
+    useState<VerificationStatus>(isSocialEmailProvided ? "verified" : "idle");
   const [verificationCode, setVerificationCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
@@ -168,6 +216,7 @@ export function SignupInfoForm({ returnUrl, onCancel }: SignupInfoFormProps) {
   const requestVerificationMutation = useRequestEmailVerificationMutation();
   const verifyCodeMutation = useVerifyEmailCodeMutation();
   const signupMutation = useSignupMutation();
+  const completeOAuthProfileMutation = useCompleteOAuthProfileMutation();
 
   const {
     register,
@@ -179,10 +228,10 @@ export function SignupInfoForm({ returnUrl, onCancel }: SignupInfoFormProps) {
     setValue,
     formState: { errors },
   } = useForm<SignupInfoFormValues>({
-    resolver: zodResolver(signupInfoSchema),
+    resolver: zodResolver(socialContext ? socialInfoSchema : signupInfoSchema),
     defaultValues: {
       name: "",
-      email: "",
+      email: socialContext?.suggestedEmail ?? "",
       password: "",
       passwordConfirm: "",
       phonePrefix: "010",
@@ -277,21 +326,29 @@ export function SignupInfoForm({ returnUrl, onCancel }: SignupInfoFormProps) {
 
   async function onSubmit(values: SignupInfoFormValues) {
     setFormError(null);
+    const phone = `${values.phonePrefix}${values.phoneMiddle}${values.phoneLast}`;
     try {
-      const { accessToken, user } = await signupMutation.mutateAsync({
-        email: values.email,
-        password: values.password,
-        passwordConfirm: values.passwordConfirm,
-        name: values.name,
-        phone: `${values.phonePrefix}${values.phoneMiddle}${values.phoneLast}`,
-        role: "USER",
-        agreements: {
-          age14OrOlder: values.age14OrOlder,
-          termsOfService: values.termsOfService,
-          privacyCollection: values.privacyCollection,
-          marketing: values.marketing || values.eventPromotion,
-        },
-      });
+      const { accessToken, user } = socialContext
+        ? await completeOAuthProfileMutation.mutateAsync({
+            provider: socialContext.provider,
+            email: values.email,
+            name: values.name,
+            phone,
+          })
+        : await signupMutation.mutateAsync({
+            email: values.email,
+            password: values.password,
+            passwordConfirm: values.passwordConfirm,
+            name: values.name,
+            phone,
+            role: "USER",
+            agreements: {
+              age14OrOlder: values.age14OrOlder,
+              termsOfService: values.termsOfService,
+              privacyCollection: values.privacyCollection,
+              marketing: values.marketing || values.eventPromotion,
+            },
+          });
       // 로그인과 동일하게 세션을 만든다(design.md §0.2 — BE 응답 계약 변경 반영 전제).
       useAuthStore.getState().setSession(accessToken, user);
       const target = returnUrl
@@ -301,8 +358,13 @@ export function SignupInfoForm({ returnUrl, onCancel }: SignupInfoFormProps) {
     } catch (error) {
       // 인증 메일 발송 단계와 동일하게, 가입 시점에 이메일이 선점된 경합(CONFLICT)은
       // 이메일 필드 에러로 매핑한다 — 폼 상단 일반 에러로만 보여주면 어떤 입력을 고쳐야
-      // 하는지 바로 알기 어렵다.
-      if (error instanceof ApiError && error.code === "CONFLICT") {
+      // 하는지 바로 알기 어렵다. 소셜 모드는 이메일이 provider가 준 값이거나 방금 인증한
+      // 값이라 필드 에러로 되돌릴 곳이 마땅치 않아 공통 에러로만 보여준다.
+      if (
+        !socialContext &&
+        error instanceof ApiError &&
+        error.code === "CONFLICT"
+      ) {
         setError("email", { message: mapSignupError(error) });
       } else {
         setFormError(mapSignupError(error));
@@ -340,19 +402,22 @@ export function SignupInfoForm({ returnUrl, onCancel }: SignupInfoFormProps) {
                 {...register("email")}
               />
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="s"
-              disabled={
-                isEmailLocked ||
-                resendCooldown > 0 ||
-                requestVerificationMutation.isPending
-              }
-              onClick={handleSendVerification}
-            >
-              {verificationActionLabel}
-            </Button>
+            {/* 카카오처럼 provider가 이미 인증된 이메일을 준 경우 인증요청 자체가 필요 없다. */}
+            {!isSocialEmailProvided && (
+              <Button
+                type="button"
+                variant="outline"
+                size="s"
+                disabled={
+                  isEmailLocked ||
+                  resendCooldown > 0 ||
+                  requestVerificationMutation.isPending
+                }
+                onClick={handleSendVerification}
+              >
+                {verificationActionLabel}
+              </Button>
+            )}
           </div>
 
           {verificationStatus === "sent" && (
@@ -393,39 +458,45 @@ export function SignupInfoForm({ returnUrl, onCancel }: SignupInfoFormProps) {
           )}
           {verificationStatus === "verified" && (
             <p className="px-2 py-1 text-caption text-font-dark-subtle">
-              인증 완료
+              {isSocialEmailProvided
+                ? "제공자가 인증한 이메일이에요."
+                : "인증 완료"}
             </p>
           )}
         </FieldRow>
 
-        <FieldRow label="비밀번호">
-          <InputField
-            type="password"
-            placeholder="비밀번호"
-            error={errors.password?.message}
-            helperText={
-              errors.password?.message
-                ? undefined
-                : "영어 대/소문자 구분, 숫자 및 특수기호(!,@,#,$,%) 최소 3가지 이상 포함 8자리 이상"
-            }
-            {...register("password")}
-          />
-        </FieldRow>
+        {socialContext == null && (
+          <>
+            <FieldRow label="비밀번호">
+              <InputField
+                type="password"
+                placeholder="비밀번호"
+                error={errors.password?.message}
+                helperText={
+                  errors.password?.message
+                    ? undefined
+                    : "영어 대/소문자 구분, 숫자 및 특수기호(!,@,#,$,%) 최소 3가지 이상 포함 8자리 이상"
+                }
+                {...register("password")}
+              />
+            </FieldRow>
 
-        <FieldRow label="비밀번호 확인">
-          <InputField
-            type="password"
-            placeholder="비밀번호 확인"
-            error={errors.passwordConfirm?.message}
-            {...register("passwordConfirm")}
-          />
-          <ProgressBar
-            className="mt-2 ml-2 max-w-60"
-            state={strength.state}
-            label="비밀번호 안전도"
-            labelEnd={strength.label}
-          />
-        </FieldRow>
+            <FieldRow label="비밀번호 확인">
+              <InputField
+                type="password"
+                placeholder="비밀번호 확인"
+                error={errors.passwordConfirm?.message}
+                {...register("passwordConfirm")}
+              />
+              <ProgressBar
+                className="mt-2 ml-2 max-w-60"
+                state={strength.state}
+                label="비밀번호 안전도"
+                labelEnd={strength.label}
+              />
+            </FieldRow>
+          </>
+        )}
 
         <FieldRow label="휴대전화">
           {/* 행 안의 개별 InputField에 error를 주면(에러 텍스트가 그 필드만 키를 키워) items-center
@@ -490,7 +561,11 @@ export function SignupInfoForm({ returnUrl, onCancel }: SignupInfoFormProps) {
           size="xl"
           className="w-90"
           disabled={!canSubmit}
-          loading={signupMutation.isPending}
+          loading={
+            socialContext
+              ? completeOAuthProfileMutation.isPending
+              : signupMutation.isPending
+          }
         >
           가입하기
         </Button>

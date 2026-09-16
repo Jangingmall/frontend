@@ -11,7 +11,7 @@ import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
-import { SignupInfoForm } from "./SignupInfoForm";
+import { SignupInfoForm, type SocialSignupContext } from "./SignupInfoForm";
 
 const push = vi.fn();
 const onCancel = vi.fn();
@@ -20,7 +20,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }));
 
-function renderSignupInfoForm(returnUrl: string | null = null) {
+function renderSignupInfoForm(
+  returnUrl: string | null = null,
+  socialContext: SocialSignupContext | null = null,
+) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
@@ -29,9 +32,14 @@ function renderSignupInfoForm(returnUrl: string | null = null) {
       <QueryClientProvider client={client}>{children}</QueryClientProvider>
     );
   }
-  return render(<SignupInfoForm returnUrl={returnUrl} onCancel={onCancel} />, {
-    wrapper: Wrapper,
-  });
+  return render(
+    <SignupInfoForm
+      returnUrl={returnUrl}
+      onCancel={onCancel}
+      socialContext={socialContext}
+    />,
+    { wrapper: Wrapper },
+  );
 }
 
 async function fillEmail(
@@ -285,5 +293,33 @@ describe("SignupInfoForm", () => {
     await user.click(submitButton);
 
     await waitFor(() => expect(push).toHaveBeenCalledWith("/signup/complete"));
+  });
+
+  it("socialContext(이메일 제공)면 비밀번호 필드 없이 이메일이 잠긴 채로 프리필된다", () => {
+    renderSignupInfoForm(null, {
+      provider: "kakao",
+      suggestedEmail: "kakao-user@midam.test",
+    });
+
+    const emailInput = screen.getByPlaceholderText("example@email.com");
+    expect(emailInput).toBeDisabled();
+    expect((emailInput as HTMLInputElement).value).toBe(
+      "kakao-user@midam.test",
+    );
+    expect(screen.queryByPlaceholderText("비밀번호")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "인증 메일 발송" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("socialContext(이메일 미제공)면 비밀번호 없이 이메일 입력·인증이 그대로 필요하다", () => {
+    renderSignupInfoForm(null, { provider: "naver", suggestedEmail: null });
+
+    const emailInput = screen.getByPlaceholderText("example@email.com");
+    expect(emailInput).not.toBeDisabled();
+    expect(screen.queryByPlaceholderText("비밀번호")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "인증 메일 발송" }),
+    ).toBeInTheDocument();
   });
 });

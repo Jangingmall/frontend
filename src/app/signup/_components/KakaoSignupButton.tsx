@@ -2,20 +2,27 @@
  * 카카오 소셜 가입 전폭 버튼(SU-1). 로그인 화면의 원형 아이콘 버튼(`KakaoLoginButton`)과
  * 시각적으로 다른 variant라 컴포넌트는 재사용하지 않는다. 아이콘은 버튼 배경 위에 그대로
  * 얹히는 flat glyph라 `KakaoLoginButton`의 원형 배지 아이콘과는 다른 asset —
- * Figma 노드(`1175:17149`)를 이미지로 직접 export해 그 path를 그대로 옮겼다(design.md
- * §7-9: 임의로 다시 그리지 않는다는 원칙).
+ * Figma 노드(`1175:17149`)를 이미지로 직접 export해 그 path를 그대로 옮겼다(임의로 다시
+ * 그리지 않는다는 원칙).
  *
- * BE는 카카오 OAuth2를 이미 구현·테스트했지만(T-17에서 확인), 가리킬 실제 백엔드 도메인이
- * 아직 없어 비활성이다.
+ * 클릭 로직은 부모(`SignupMethodStep`)가 갖고 있다 — 이 컴포넌트는 아이콘·스타일만 책임진다.
  */
-export function KakaoSignupButton() {
+interface KakaoSignupButtonProps {
+  onClick: () => void;
+  loading?: boolean;
+}
+
+export function KakaoSignupButton({
+  onClick,
+  loading = false,
+}: KakaoSignupButtonProps) {
   return (
     <button
       type="button"
-      disabled
-      aria-disabled="true"
-      aria-label="카카오로 가입 (준비 중)"
-      className="flex h-11 w-full shrink-0 cursor-not-allowed items-center gap-3 rounded-sm bg-[#FEE500] pl-5 text-sm font-bold text-black/90 opacity-60"
+      onClick={onClick}
+      disabled={loading}
+      aria-busy={loading || undefined}
+      className="flex h-11 w-full shrink-0 items-center gap-3 rounded-sm bg-[#FEE500] pl-5 text-sm font-bold text-black/90 disabled:cursor-not-allowed disabled:opacity-60"
     >
       <svg
         width="19"
@@ -33,7 +40,7 @@ export function KakaoSignupButton() {
           fillOpacity="0.902"
         />
       </svg>
-      카카오톡으로 빠르게 가입하기
+      {loading ? "연결하는 중…" : "카카오톡으로 빠르게 가입하기"}
     </button>
   );
 }

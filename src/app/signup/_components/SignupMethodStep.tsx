@@ -1,4 +1,7 @@
+import type { OAuthLoginResult } from "@/api/member/api";
 import { Button } from "@/components/ui/button";
+import { useStartOAuthLoginMutation } from "@/queries/member/mutations";
+import type { OAuthProvider } from "@/types/auth";
 
 import { KakaoSignupButton } from "./KakaoSignupButton";
 import { NaverSignupButton } from "./NaverSignupButton";
@@ -6,9 +9,26 @@ import { NaverSignupButton } from "./NaverSignupButton";
 /** 01단계(SU-1) — 가입 수단 선택. */
 interface SignupMethodStepProps {
   onSelectEmail: () => void;
+  /**
+   * 소셜 버튼 클릭 → 목업 OAuth 시작 결과. 이미 연동된 계정이면 `authenticated`, 처음이면
+   * `needsProfile` — 02단계로 넘어가 이름·전화번호를 받아야 한다는 뜻이다. 부모
+   * (`SignupFlow`)가 두 결과를 어떻게 처리할지 결정한다.
+   */
+  onOAuthComplete: (result: OAuthLoginResult) => void;
 }
 
-export function SignupMethodStep({ onSelectEmail }: SignupMethodStepProps) {
+export function SignupMethodStep({
+  onSelectEmail,
+  onOAuthComplete,
+}: SignupMethodStepProps) {
+  const startOAuthLoginMutation = useStartOAuthLoginMutation();
+
+  function handleOAuthClick(provider: OAuthProvider) {
+    startOAuthLoginMutation.mutate(provider, {
+      onSuccess: onOAuthComplete,
+    });
+  }
+
   return (
     <div className="flex w-full flex-col items-center gap-6">
       <p className="text-center text-caption text-font-dark-subtle">
@@ -18,8 +38,14 @@ export function SignupMethodStep({ onSelectEmail }: SignupMethodStepProps) {
       </p>
 
       <div className="flex w-90 flex-col gap-4">
-        <NaverSignupButton />
-        <KakaoSignupButton />
+        <NaverSignupButton
+          onClick={() => handleOAuthClick("naver")}
+          loading={startOAuthLoginMutation.isPending}
+        />
+        <KakaoSignupButton
+          onClick={() => handleOAuthClick("kakao")}
+          loading={startOAuthLoginMutation.isPending}
+        />
       </div>
 
       <div className="flex w-full items-center gap-1">
