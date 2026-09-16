@@ -41,8 +41,11 @@ async function fillEmail(
   await user.type(screen.getByPlaceholderText("example@email.com"), email);
 }
 
-async function fillBaseFields(user: ReturnType<typeof userEvent.setup>) {
-  await user.type(screen.getByPlaceholderText("홍길동"), "홍길동");
+async function fillBaseFields(
+  user: ReturnType<typeof userEvent.setup>,
+  name = "홍길동",
+) {
+  await user.type(screen.getByPlaceholderText("홍길동"), name);
   await fillEmail(user, "newbie@midam.test");
   await user.type(screen.getByPlaceholderText("비밀번호"), "Abcd1234!");
   await user.type(screen.getByPlaceholderText("비밀번호 확인"), "Abcd1234!");
@@ -143,6 +146,29 @@ describe("SignupInfoForm", () => {
 
     await screen.findByPlaceholderText("인증코드를 입력해주세요");
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("이름이 공백만이면 제출 시 필수값 에러를 보여주고 제출되지 않는다", async () => {
+    // 리뷰(F4) — 이름 정규식이 `\s`를 포함하고 길이도 원본 문자열 기준이라 "   "처럼 공백만
+    // 2자 이상인 값도 유효했다. `z.string().trim()`으로 앞뒤 공백을 먼저 지우게 고쳤다.
+    const user = userEvent.setup();
+    renderSignupInfoForm();
+
+    await fillBaseFields(user, "   ");
+    await user.click(screen.getByRole("button", { name: "인증 메일 발송" }));
+    await user.type(
+      await screen.findByPlaceholderText("인증코드를 입력해주세요"),
+      SEED_VERIFICATION_CODE,
+    );
+    await user.click(screen.getByRole("button", { name: "인증 확인" }));
+    await agreeAllTerms(user);
+
+    const submitButton = screen.getByRole("button", { name: "가입하기" });
+    await waitFor(() => expect(submitButton).not.toBeDisabled());
+    await user.click(submitButton);
+
+    expect(await screen.findByText("이름을 입력해주세요.")).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("가입 제출 시 CONFLICT면 이메일 필드 에러로 보여준다", async () => {

@@ -65,6 +65,7 @@ export const signupInfoSchema = z
   .object({
     name: z
       .string()
+      .trim()
       .min(1, "이름을 입력해주세요.")
       .regex(
         /^[가-힣a-zA-Z\s]{2,20}$/,
