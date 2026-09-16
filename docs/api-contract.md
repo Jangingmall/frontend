@@ -140,9 +140,9 @@ type PagedResponse<T> = {
 
 - 구현 진입점은 `/products?category=kitchen`이다. `kitchen`과 소분류·소재 ID는 개발용 MSW 값이며 운영 ID가 아니다.
 - 공개 목록은 기존 `validation → mapper → fetch` 경계를 유지한다. 최초 서버 조회는 상품 목록 태그와 1시간 재검증을 사용하고, 이후 조회는 공개 `clientFetch`와 TanStack Query로 처리한다.
-- 번호 페이지는 FE의 기존 `page`, `size`, `items`, `totalCount` 계약을 따른다. BE `develop`의 공개조회·협업 계약서는 cursor/limit 방식이므로 실제 연동 전에 번호 페이지 지원 여부를 확정해야 한다.
+- 번호 페이지는 FE/MSW의 기존 `page`, `size`, `items`, `totalCount` 계약을 따른다. 2026-09-16 확인한 Notion 명세는 요청에 `cursor`/`limit`, 응답에 `page`/`totalPages`를 기재하지만 `page` 요청이 빠져 있다. BE 번호 페이지 지원과 `limit` 변환을 확인한 뒤 실제 연동한다(#48).
 - 현재 FE 카드 응답은 중첩 `artisan`, `{ imageId, variants }` 형태 `thumbnail`이다. BE 공개조회 문서의 `thumbnailUrl` 및 협업 문서의 thumbnail 배열과 다르다. 실제 응답 확정 시 검증 스키마와 mapper에서 조정한다.
-- 카테고리·소재 조회 경로는 공개조회 계약에 있지만 응답 모양은 미정이다. 현재 카테고리는 `{ id, name, description, parentId, minPrice, maxPrice }[]`, 소재는 `{ id, name }[]`로 검증한다. 다중 소재는 반복 `material` 파라미터로 전달하며 BE의 단일 소재 계약 확장이 필요하다.
+- Notion 명세의 카테고리는 `{ code, name, productCount }[]`, 소재는 `{ code, name }[]`이다. 현재 FE/MSW는 카테고리 `{ id, name, description, parentId, minPrice, maxPrice }[]`, 소재 `{ id, name }[]`를 사용하는 잠정 모델로, 실제 연동 시 검증·mapper를 명세와 BE 응답에 맞춘다. 반복 `material`의 복수 값 형식과 OR 조건은 BE 확인 대상이다(#48).
 - 색상 표시는 선택적 `colors: { name, hex }[]` 잠정 필드다. 없으면 표시하지 않는다. `hex`는 6자리 색상 값만 허용하며, BE의 단일 `color` 필드와 옵션 목록 관계를 확인해야 한다.
 - 시안의 기본 품절 체크박스는 해제 상태다. BE의 기본값 `true`에 영향받지 않도록 `excludeSoldOut=false`도 요청에 명시한다.
 - 찜 버튼은 표시와 콜백 경계까지 제공한다. 로그인 후 초기 찜 상태 조회 및 mutation 연결은 미완료이므로 페이지에서는 비활성화한다. 상품 상세 링크는 라우팅 계약을 따르지만 상세 화면 본체는 별도 작업이다.
@@ -155,6 +155,13 @@ type PagedResponse<T> = {
 - FE `ProductListQuery.crafts`는 URL·목록 요청의 반복 `subcategory`로 직렬화한다. 종목 선택 간 OR, 다른 필터와 AND 조건은 MSW에서 동작한다. BE `ProductController.list()`는 여전히 Pageable만 받으므로 **운영 다중 필터 지원은 미완료**다. 실제 연동 시 반복 파라미터 지원과 기존 목록 DTO·페이지 계약을 함께 확정해야 한다.
 - 위 종목 필터는 **MSW 모드에서만 활성화**한다. `NEXT_PUBLIC_API_MOCKING`이 `enabled`가 아니면 종목 UI·선택지 조회를 막고, 직접 전달된 `crafts`도 서버·클라이언트 공통 요청 직렬화 및 캐시 키에서 제외한다. URL의 `subcategory`는 선택 상태·SEO에서 무시하며 다음 URL 변경 때 제거한다. BE 지원 검증 전까지 이 제한을 유지한다.
 - 자세한 Figma 반영·상태 복원·검증 방법은 [상품 목록 안내](product-list.md)의 #44 절을 따른다.
+
+### API 연동 보류 결정 (2026-09-16, #48)
+
+- 쇼핑 분류는 PD 기준으로 확정했다. 현재 `dev`의 GNB·메가패널·분류 정의·진입 URL은 변경하지 않는다. 기존 BE 공예 분류에 맞춰 화면 분류를 바꾸지 않는다.
+- BE가 상품 목록·종목 선택지·소재 선택지 API를 정비하는 동안 실제 연동은 보류한다. #45의 종목 다중 선택·초기화·URL 복원은 MSW 기준으로 유지하며 운영 API 모드의 종목 제한도 유지한다.
+- 이번 후속 작업은 문서와 재연동 지점의 주석만 보완한다. API 파라미터·응답을 임의로 추가하거나 변경하지 않으며, 프론트의 잠정 모델에 맞춘 BE 변경을 요구하지 않는다.
+- 재연동 시 PD 분류 코드·상품 매핑, 종목/소재 복수 값, 페이지 요청, 선택지 DTO 및 분류별 캐시를 함께 확인한다. 세부 조건과 현재 개발용 URL의 한계는 [상품 목록의 특이사항](product-list.md#api-연동-보류-특이사항-48)을 따른다.
 
 ### 구매자 상호작용 (USER)
 
