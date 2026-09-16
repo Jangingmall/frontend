@@ -119,6 +119,32 @@ describe("SignupInfoForm", () => {
     expect(screen.queryByText("10:00 남음")).not.toBeInTheDocument();
   });
 
+  it("인증 메일 발송이 실패했다가 재시도로 성공하면 이전 폼 에러가 사라진다", async () => {
+    // 리뷰(F3) — 첫 발송이 5xx로 실패해 `formError`가 뜬 뒤, 같은 버튼으로 재시도해 성공해도
+    // 그 에러가 안 지워져서 "코드 입력 가능한 정상 상태"인데도 실패 안내가 남아 있었다.
+    // `{ once: true }`라 첫 호출만 가로채고, 재시도는 handlers.ts의 기본(성공) 핸들러로
+    // 자연스럽게 폴백한다.
+    server.use(
+      http.post(
+        "*/api/member/email-verifications",
+        () => mockError(500, "INTERNAL_ERROR", "일시적 오류"),
+        { once: true },
+      ),
+    );
+    const user = userEvent.setup();
+    renderSignupInfoForm();
+
+    await fillEmail(user, "newbie@midam.test");
+    const verifyButton = screen.getByRole("button", { name: "인증 메일 발송" });
+    await user.click(verifyButton);
+    await screen.findByRole("alert");
+
+    await user.click(verifyButton);
+
+    await screen.findByPlaceholderText("인증코드를 입력해주세요");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it("가입 제출 시 CONFLICT면 이메일 필드 에러로 보여준다", async () => {
     // 리뷰(F2) — 인증 메일 발송 단계의 CONFLICT는 이메일 필드로 매핑되는데, 최종 제출 단계는
     // 폼 상단 일반 에러로만 나와서 어떤 입력을 고쳐야 하는지 알기 어려웠다.
@@ -143,9 +169,14 @@ describe("SignupInfoForm", () => {
     await waitFor(() => expect(submitButton).not.toBeDisabled());
     await user.click(submitButton);
 
-    expect(
-      await screen.findByText("이미 가입된 이메일이에요."),
-    ).toBeInTheDocument();
+    const errorText = await screen.findByText("이미 가입된 이메일이에요.");
+    // 텍스트만 보면 폼 상단 `formError`로 회귀해도 같은 문구라 통과해버린다 — 실제로
+    // 이메일 필드에 연결됐는지는 `aria-describedby`로 확인해야 한다(리뷰 nit). 이 시점엔
+    // 인증 완료로 이메일 input이 `disabled`라 base-ui가 `aria-invalid`는 일부러 안 붙인다
+    // (`useFieldValidation.js`: `!state.disabled && !disabled`) — `aria-describedby`는
+    // disabled 여부와 무관하게 항상 연결되므로 이쪽이 신뢰할 수 있는 신호다.
+    const emailInput = screen.getByPlaceholderText("example@email.com");
+    expect(emailInput.getAttribute("aria-describedby")).toBe(errorText.id);
     expect(push).not.toHaveBeenCalled();
   });
 

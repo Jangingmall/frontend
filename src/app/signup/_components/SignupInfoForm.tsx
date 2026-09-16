@@ -231,6 +231,7 @@ export function SignupInfoForm({ returnUrl, onCancel }: SignupInfoFormProps) {
   async function handleSendVerification() {
     const isEmailValid = await trigger("email");
     if (!isEmailValid) return;
+    setFormError(null);
     const { email } = getValues();
     try {
       const { expiresInSeconds } =
