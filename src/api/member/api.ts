@@ -158,16 +158,15 @@ export type OAuthLoginResult =
     };
 
 /**
- * 소셜 로그인 시작 — 목업 전용. 실제 흐름은 전체 페이지 리다이렉트(네이버/카카오 동의 화면
- * → BE 콜백)라 fetch 왕복으로 재현할 방법이 없다. 이 함수는 "동의 화면 통과 + BE 콜백 처리"
- * 전체를 클라이언트에서 한 번에 흉내낸다 — 이 provider로 이미 연동을 완료한 적 있으면 즉시
- * 로그인, 처음이면 추가정보 입력이 필요하다는 결과를 돌려준다. 실제 백엔드 도메인이 정해지면
- * 이 함수를 지우고 호출부를 실제 리다이렉트 링크로 교체한다 — **정확한 시작 경로는 아직
- * 미확정**이다. `docs/api-contract.md`·`docs/routing-and-auth.md` §4.1은
- * `/api/member/oauth2/{provider}`라고 적어뒀지만 같은 문서 §7(Proxy)은 Spring Security의 실제
- * 시작 경로를 `/oauth2/authorization/{provider}`(프레임워크 기본 경로)라고 설명해 서로
- * 어긋난다 — `docs/api-contract.md` §9 "OAuth 로그인 시작 경로 불일치" 참고, BE 소스로
- * 확정 전까지 아무 경로도 여기 단정해 적지 않는다.
+ * 소셜 로그인 시작 — 목업 전용. 실제 흐름은 전체 페이지 리다이렉트(`GET
+ * /api/member/oauth2/{provider}` → 302로 Spring Security `/oauth2/authorization/{provider}`
+ * → 동의 화면 → BE 콜백 → 쿠키 기반 티켓 교환)라 fetch 왕복으로 재현할 방법이 없다. 이
+ * 함수는 그 전체를 클라이언트에서 한 번에 흉내낸다 — 이 provider로 이미 연동을 완료한 적
+ * 있으면 즉시 로그인, 처음이면 추가정보 입력이 필요하다는 결과를 돌려준다. 실제 백엔드
+ * 도메인이 정해지면 이 함수를 지우고 호출부를 `<a href="/api/member/oauth2/{provider}">`로
+ * 교체한다 — 시작 경로 자체는 BE 소스(`OAuthController`) 직접 대조로 확인됐다. 다만 그
+ * 뒤 단계(추가정보 제출)의 요청·응답 계약은 이 목업과 다르다 — `docs/api-contract.md` §9
+ * "OAuth 목업·실제 계약 괴리" 참고.
  */
 export async function startMockOAuthLogin(
   provider: OAuthProvider,
@@ -203,10 +202,10 @@ export interface CompleteOAuthProfileRequest {
 }
 
 /**
- * `POST /api/member/oauth2/complete-profile` → 소셜 추가정보 제출, 가입/연동 + 자동 로그인.
- * **BE에 요청한 응답 계약을 전제로 한다**(`signup()`과 동일한 리스크) — 이 엔드포인트는
- * 경로만 확인됐고 응답 스키마는 미확정이라, `signup()`과 같은 모양(`{ accessToken, member }`)
- * 을 받는다고 가정한다. 실제 BE가 다른 모양을 주면 배포 전까지 파싱에 실패한다.
+ * `POST /api/member/oauth2/complete-profile` → 소셜 추가정보 제출, 가입 + 자동 로그인.
+ * 응답엔 `name`이 없다(`validation.ts`의 `oauthCompleteProfileResponseDto` 주석 참고) —
+ * 방금 폼에서 받은 `body.name`을 그대로 쓴다. `login()`·`signup()`과 호출 형태를
+ * 맞추기 위해 반환 타입은 동일하게 `{ accessToken, user }`로 둔다.
  */
 export async function completeOAuthProfile(
   body: CompleteOAuthProfileRequest,
@@ -215,6 +214,10 @@ export async function completeOAuthProfile(
     "/api/member/oauth2/complete-profile",
     { method: "POST", body, auth: false },
   );
-  const { accessToken, member } = oauthCompleteProfileResponseDto.parse(data);
-  return { accessToken, user: mapMemberProfile(member) };
+  const { accessToken, memberId, role } =
+    oauthCompleteProfileResponseDto.parse(data);
+  return {
+    accessToken,
+    user: { id: memberId, name: body.name, role },
+  };
 }

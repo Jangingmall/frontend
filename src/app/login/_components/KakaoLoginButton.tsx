@@ -6,9 +6,10 @@
  * 실제 백엔드 도메인이 아직 없어(`API_BASE_URL`이 목업용 더미 값) 진짜 리다이렉트로는 못
  * 붙이지만, 클릭하면 목업 OAuth 흐름으로 연결된다 — 실제 판정 로직은
  * `/signup`(`SignupFlow`)에 있고, 이 버튼은 `provider` 쿼리와 함께 그리로 navigate만 한다.
- * 도메인이 정해지면 이 버튼의 `onClick`을 실제 리다이렉트 링크로 바꾼다 — 정확한 시작 경로는
- * 아직 미확정이니 `api/member/api.ts`의 `startMockOAuthLogin` 주석과
- * `docs/api-contract.md` §9 "OAuth 로그인 시작 경로 불일치"를 먼저 확인한다.
+ * 도메인이 정해지면 이 버튼의 `onClick`을 `<a href="/api/member/oauth2/kakao">`로 바꾼다
+ * (시작 경로는 BE 소스 대조로 확인됨) — 다만 그 뒤 단계는 이 목업과 요청·응답 계약이
+ * 다르니 `api/member/api.ts`의 `startMockOAuthLogin` 주석과 `docs/api-contract.md`
+ * §9 "OAuth 목업·실제 계약 괴리"를 먼저 확인한다.
  */
 interface KakaoLoginButtonProps {
   onClick: () => void;

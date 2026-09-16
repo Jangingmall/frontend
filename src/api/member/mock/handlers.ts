@@ -64,15 +64,6 @@ const EXISTING_EMAILS = new Set(
     email.toLowerCase(),
   ),
 );
-/**
- * `EXISTING_EMAILS`는 존재 여부만 알 뿐 회원 객체가 없다 — 소셜 로그인이 동일 이메일
- * 계정에 "연동"하려면 실제 객체가 필요해서 별도로 둔다.
- */
-const EXISTING_EMAIL_MEMBERS: Record<string, MemberProfileResponseDto> = {
-  [SEED_LOGIN.email.toLowerCase()]: memberMeUser,
-  [memberMeArtisan.email.toLowerCase()]: memberMeArtisan,
-  [memberMeAdmin.email.toLowerCase()]: memberMeAdmin,
-};
 const emailVerificationState = new Map<
   string,
   { sentAt: number; verified: boolean }
@@ -250,10 +241,17 @@ export const memberHandlers = [
       }
       const provider = body.provider;
       const email = body.email.toLowerCase();
-      // 동일 이메일 계정이 이미 있으면 신규 생성 대신 그 계정에 연동한다 — 이때 role은
-      // 신규 가입(항상 USER)과 달리 그 기존 계정의 실제 role을 그대로 따른다.
-      const linkedExisting = EXISTING_EMAIL_MEMBERS[email] ?? null;
-      const member: MemberProfileResponseDto = linkedExisting ?? {
+      // 실제 BE(`OAuthMemberService.requireNewEmail`)는 이미 가입된 이메일이면 신규
+      // 생성도 "연동"도 안 하고 무조건 CONFLICT를 던진다 — "기존 계정에 연동"하는 기능
+      // 자체가 없다(BE 소스 직접 대조로 확인). 이전엔 IA 문구("동일 이메일이면 소셜
+      // 연동")를 읽고 여기서 연동을 흉내냈지만, 그 IA 의도에 대응하는 BE 기능이 없고
+      // 목업 안에서도 이 분기에 실제로 도달할 방법이 없었다(네이버는 이메일 인증 요청
+      // 단계에서 먼저 막히고, 카카오는 provider가 주는 합성 이메일이 기존 이메일과 겹칠
+      // 일이 없음) — 죽은 코드였다.
+      if (EXISTING_EMAILS.has(email)) {
+        return mockError(409, "CONFLICT", "이미 가입된 이메일이에요.");
+      }
+      const member: MemberProfileResponseDto = {
         memberId: nextSignupMemberId++,
         email,
         name: body.name,
@@ -264,9 +262,16 @@ export const memberHandlers = [
       setMockIdentity(member.role);
       setDynamicMember(member);
       setMockOAuthLinkedMember(provider, member);
+      // 실제 응답은 평면 구조(memberId·email·role·accessToken)다 — `member` 객체를 그대로
+      // 안 돌려준다. `validation.ts`의 `oauthCompleteProfileResponseDto` 주석 참고.
       return mockOk(
-        { accessToken: SEED_OAUTH_ACCESS_TOKEN, member },
-        linkedExisting ? 200 : 201,
+        {
+          memberId: member.memberId,
+          email: member.email,
+          role: member.role,
+          accessToken: SEED_OAUTH_ACCESS_TOKEN,
+        },
+        201,
       );
     },
   ),

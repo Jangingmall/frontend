@@ -220,19 +220,20 @@ describe("member api", () => {
     ).rejects.toMatchObject({ name: "ApiError", status: 400 });
   });
 
-  it("completeOAuthProfile: 이미 존재하는 이메일이면 신규 가입 대신 그 계정에 연동한다(role 유지)", async () => {
-    // 카카오 이메일이 하필 기존 ARTISAN 계정과 같아도 신규 USER로 덮어쓰지 않는다 —
-    // 연동은 그 계정의 실제 role을 그대로 따라야 한다.
-    const result = await completeOAuthProfile({
-      provider: "kakao",
-      email: memberMeArtisan.email,
-      name: "다른이름",
-      phone: "01099998888",
-    });
-
-    expect(result.user).toMatchObject({
-      role: "ARTISAN",
-      name: memberMeArtisan.name,
+  it("completeOAuthProfile: 이미 가입된 이메일이면 ApiError 409(실제 BE는 연동을 지원하지 않는다)", async () => {
+    // BE `OAuthMemberService.requireNewEmail`을 직접 대조해 확인 — 기존 이메일이면
+    // "연동"이 아니라 무조건 CONFLICT다(PR 리뷰).
+    await expect(
+      completeOAuthProfile({
+        provider: "kakao",
+        email: memberMeArtisan.email,
+        name: "다른이름",
+        phone: "01099998888",
+      }),
+    ).rejects.toMatchObject({
+      name: "ApiError",
+      status: 409,
+      code: "CONFLICT",
     });
   });
 });

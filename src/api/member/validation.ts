@@ -67,12 +67,27 @@ export type EmailVerificationResponseDto = z.infer<
 export type SignupResponseDto = z.infer<typeof signupResponseDto>;
 
 /**
- * `POST /api/member/oauth2/complete-profile` 응답. 경로만 확인됐고 응답 스키마는 미확정 —
- * `signupResponseDto`와 동일하게 세션(`accessToken`+`member`)을 받는다고 가정한다. 실제
- * BE가 다른 모양을 주면 배포 전까지 이 스키마의 `parse`가 실패한다 — 알고 진행하는 배포
- * 순서 리스크.
+ * `POST /api/member/oauth2/complete-profile` 응답. `signup`/`login`과 달리 **중첩된
+ * `member` 객체가 아니라 평면 구조**다 — BE 레포(`Jangingmall/backend`)
+ * `OAuthController.CompletionResponse(memberId, email, role, accessToken)`를 직접
+ * 대조해 확인. `name`은 응답에 없다 — 이 엔드포인트를 부르는 시점엔 폼에서 막 입력받은
+ * 이름을 이미 갖고 있으므로(`SignupInfoForm.onSubmit`), 서버가 굳이 돌려줄 필요가 없는
+ * 값이다.
+ *
+ * 실제 요청 바디는 `{ name, phone, agreements }`뿐이고(`email`·`provider` 없음), 신원은
+ * `oauthOnboarding` 쿠키로 서버가 식별한다 — 목업은 리다이렉트·쿠키 체인 자체를 흉내낼
+ * 수 없어(§`startMockOAuthLogin` 주석) 클라이언트가 `provider`·`email`을 명시적으로
+ * 보내는 더 단순한 계약을 쓴다. 실제 연동 시 요청 바디 계약도 함께 맞춰야 한다 —
+ * `docs/api-contract.md` §9 확인.
  */
-export const oauthCompleteProfileResponseDto = loginResponseDto;
+export const oauthCompleteProfileResponseDto = z
+  .object({
+    memberId: z.number().int(),
+    email: z.string(),
+    role: roleSchema,
+    accessToken: z.string().min(1),
+  })
+  .passthrough();
 
 export type OAuthCompleteProfileResponseDto = z.infer<
   typeof oauthCompleteProfileResponseDto
