@@ -15,9 +15,16 @@ let startPromise: Promise<void> | null = null;
  * 재마운트로 호출이 겹쳐도 모든 호출자가 "워커 등록 완료"를 함께 기다린다(boolean 가드는
  * `worker.start()` 완료 전에 두 번째 호출을 즉시 resolve시켜 첫 요청이 인터셉트를 놓친다).
  * 실패하면 상태를 되돌려 다음 호출이 재시도할 수 있게 한다.
+ *
+ * `NODE_ENV === "production"`이면 플래그가 켜져 있어도 띄우지 않는다 —
+ * `src/instrumentation.ts`(서버 쪽 게이트)와 동일한 이유(PR 리뷰 — CodeRabbit Security
+ * Review). 배포 환경 변수에 실수로 목업 플래그가 남아 있어도 브라우저에서 임의 mock
+ * 신원(예: ADMIN)을 얻을 수 없게 한다.
  */
 export function startMockWorker(): Promise<void> {
-  if (!publicEnv.apiMocking) return Promise.resolve();
+  if (!publicEnv.apiMocking || process.env.NODE_ENV === "production") {
+    return Promise.resolve();
+  }
   startPromise ??= (async () => {
     const { worker } = await import("./browser");
     await worker.start({ onUnhandledRequest: "bypass" });

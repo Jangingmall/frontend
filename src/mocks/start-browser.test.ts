@@ -44,4 +44,14 @@ describe("startMockWorker", () => {
     await expect(startMockWorker()).resolves.toBeUndefined();
     expect(start).toHaveBeenCalledTimes(2);
   });
+
+  it("NODE_ENV가 production이면 apiMocking이 켜져 있어도 워커를 띄우지 않는다(PR 리뷰 — 보안)", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    const { startMockWorker } = await import("./start-browser");
+
+    await expect(startMockWorker()).resolves.toBeUndefined();
+
+    expect(start).not.toHaveBeenCalled();
+    vi.unstubAllEnvs();
+  });
 });
