@@ -134,6 +134,35 @@ describe("member api", () => {
     expect(result.user).toMatchObject({ name: "홍길동", role: "USER" });
   });
 
+  it("signup 직후 fetchMe는 방금 가입한 회원을 돌려준다(고정 시드 아님)", async () => {
+    // 코드 리뷰 발견 — `/me`가 항상 고정 fixture(`memberMeUser`, 이름 "김미담")를 돌려줘서,
+    // 가입 직후 새로고침하거나 `/me`를 다시 부르면 방금 입력한 이름·이메일이 사라지고
+    // 시드 값으로 보였다. `setDynamicMember`로 `/me`가 실제 가입 회원을 기억하게 고쳤다.
+    const email = "freshsignup@midam.test";
+    await requestEmailVerification({ email });
+    await verifyEmailCode({ email, code: SEED_VERIFICATION_CODE });
+    const { accessToken } = await signup({
+      email,
+      password: "Abcd1234!",
+      passwordConfirm: "Abcd1234!",
+      name: "이신입",
+      phone: "01098765432",
+      role: "USER",
+      agreements: {
+        age14OrOlder: true,
+        termsOfService: true,
+        privacyCollection: true,
+        marketing: false,
+      },
+    });
+
+    useAuthStore.setState({ accessToken });
+    const me = await fetchMe();
+
+    expect(me.name).toBe("이신입");
+    expect(me.name).not.toBe("김미담");
+  });
+
   it("signup: 이메일 인증 없이 가입하면 ApiError 403", async () => {
     await expect(
       signup({

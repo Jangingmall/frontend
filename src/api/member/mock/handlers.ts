@@ -15,7 +15,13 @@ import {
   SEED_SIGNUP_ACCESS_TOKEN,
   SEED_VERIFICATION_CODE,
 } from "./fixtures";
-import { getMockIdentity, setMockIdentity } from "./mock-identity";
+import {
+  clearDynamicMember,
+  getDynamicMember,
+  getMockIdentity,
+  setDynamicMember,
+  setMockIdentity,
+} from "./mock-identity";
 
 /**
  * 회원·인증 MSW 핸들러. `src/mocks/handlers.ts`에 등록된다.
@@ -64,6 +70,7 @@ let nextSignupMemberId = 100;
 export function __resetEmailVerificationState(): void {
   emailVerificationState.clear();
   nextSignupMemberId = 100;
+  clearDynamicMember();
 }
 
 export const memberHandlers = [
@@ -114,7 +121,9 @@ export const memberHandlers = [
       }
       const identity = getMockIdentity();
       if (identity === "anonymous") return mockError(401, "UNAUTHORIZED");
-      return mockOk(mockIdentityFixtures[identity]);
+      // `/signup`으로 방금 가입한 회원이면 고정 fixture 대신 그 정보를 돌려준다 — 안 그러면
+      // 이름·이메일이 항상 시드 값("김미담")으로 보인다(코드 리뷰 발견).
+      return mockOk(getDynamicMember() ?? mockIdentityFixtures[identity]);
     },
   ),
 
@@ -198,13 +207,14 @@ export const memberHandlers = [
       }
       const member = {
         memberId: nextSignupMemberId++,
-        email: body.email,
+        email,
         name: body.name,
         nickname: null,
         role: "USER" as const,
         profileImageUrl: null,
       };
       setMockIdentity("USER");
+      setDynamicMember(member);
       return mockOk({ accessToken: SEED_SIGNUP_ACCESS_TOKEN, member }, 201);
     },
   ),
