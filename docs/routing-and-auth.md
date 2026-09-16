@@ -83,17 +83,17 @@
 
 BE 계약([PHASE2-2 인증 정책 계약서](https://github.com/Jangingmall/backend/blob/main/docs/PHASE2-2_%EC%9D%B8%EC%A6%9D_%EC%A0%95%EC%B1%85_%EA%B3%84%EC%95%BD%EC%84%9C.md)) 기준.
 
-| 항목           | 내용                                                                                                                                 |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| 인증 방식      | JWT                                                                                                                                  |
-| Access Token   | 30분. `Authorization: Bearer {accessToken}` 헤더. **브라우저 메모리 저장** (LocalStorage 금지)                                       |
-| Refresh Token  | 1주. **HttpOnly Cookie**. `POST /api/member/token/refresh`로만 사용                                                                  |
-| 로그인         | `POST /api/member/login` → access는 응답 body(메모리), refresh는 Set-Cookie                                                          |
-| OAuth          | `GET /api/member/oauth2/{kakao\|google}` → 최초 로그인 시 `POST /api/member/oauth2/complete-profile`로 추가 정보 입력 후 `USER` 부여 |
-| 부팅·새로고침  | 메모리가 비므로 앱 시작 시 **silent refresh 1회** 시도 → 성공 시 세션 복원, 실패 시 비로그인 시작                                    |
-| 요청 중 만료   | 401 → 클라이언트 fetcher가 refresh(single-flight) 후 원요청 1회 재시도 → refresh도 실패 시 로그아웃 처리                             |
-| 로그아웃       | `POST /api/member/logout` (서버 refresh 무효화) → 메모리 access 제거 + Query 캐시 클리어                                             |
-| `ARTISAN` 전환 | `POST /api/member/artisans/applications` → `ADMIN` 승인 후 role 전환                                                                 |
+| 항목           | 내용                                                                                                                                |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| 인증 방식      | JWT                                                                                                                                 |
+| Access Token   | 30분. `Authorization: Bearer {accessToken}` 헤더. **브라우저 메모리 저장** (LocalStorage 금지)                                      |
+| Refresh Token  | 1주. **HttpOnly Cookie**. `POST /api/member/token/refresh`로만 사용                                                                 |
+| 로그인         | `POST /api/member/login` → access는 응답 body(메모리), refresh는 Set-Cookie                                                         |
+| OAuth          | `GET /api/member/oauth2/{naver\|kakao}` → 최초 로그인 시 `POST /api/member/oauth2/complete-profile`로 추가 정보 입력 후 `USER` 부여 |
+| 부팅·새로고침  | 메모리가 비므로 앱 시작 시 **silent refresh 1회** 시도 → 성공 시 세션 복원, 실패 시 비로그인 시작                                   |
+| 요청 중 만료   | 401 → 클라이언트 fetcher가 refresh(single-flight) 후 원요청 1회 재시도 → refresh도 실패 시 로그아웃 처리                            |
+| 로그아웃       | `POST /api/member/logout` (서버 refresh 무효화) → 메모리 access 제거 + Query 캐시 클리어                                            |
+| `ARTISAN` 전환 | `POST /api/member/artisans/applications` → `ADMIN` 승인 후 role 전환                                                                |
 
 ### 4.1 인증 상태 저장 — `stores/auth.ts` (Zustand)
 
