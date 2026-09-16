@@ -9,6 +9,7 @@ import {
   updateProductSearchParams,
 } from "@/app/products/_lib/search-params";
 import { ErrorState } from "@/components/common/error-state";
+import { FloatingActions } from "@/components/common/floating-actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { startMockWorker } from "@/mocks/start-browser";
 import { productKeys } from "@/queries/products/keys";
@@ -141,6 +142,7 @@ export function ProductListPage({
               onSortChange={(sort) => handleChange({ sort })}
             />
             <ProductResults
+              isCategoryList={Boolean(query.category)}
               data={products.data}
               isPending={products.isPending}
               isFetching={products.isFetching}
@@ -161,6 +163,7 @@ export function ProductListPage({
           </div>
         </div>
       )}
+      {query.category && <FloatingActions />}
     </main>
   );
 }

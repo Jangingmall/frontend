@@ -6,12 +6,14 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 import type { Page } from "@/types/api";
 import type { ProductSummary } from "@/types/product";
 
 import { ProductGridSkeleton } from "./ProductGridSkeleton";
 
 interface ProductResultsProps {
+  isCategoryList?: boolean;
   data?: Page<ProductSummary>;
   isPending: boolean;
   isFetching: boolean;
@@ -24,6 +26,7 @@ interface ProductResultsProps {
 }
 
 export function ProductResults({
+  isCategoryList = false,
   data,
   isPending,
   isFetching,
@@ -42,7 +45,7 @@ export function ProductResults({
             ? "상품을 불러오는 중"
             : hasError
               ? "조회 실패"
-              : `총 ${(data?.totalCount ?? 0).toLocaleString("ko-KR")}개`}
+              : `총 ${(data?.totalCount ?? 0).toLocaleString("ko-KR")}개${isCategoryList ? "의 검색 결과" : ""}`}
         </p>
         <Checkbox
           checked={excludeSoldOut}
@@ -54,7 +57,7 @@ export function ProductResults({
       {hasError ? (
         <ErrorState title="상품을 불러오지 못했어요" onRetry={onRetry} />
       ) : isPending ? (
-        <ProductGridSkeleton />
+        <ProductGridSkeleton isCategoryList={isCategoryList} />
       ) : !data?.items.length ? (
         <EmptyState
           title="조건에 맞는 상품이 없어요"
@@ -69,12 +72,17 @@ export function ProductResults({
         <>
           <div
             aria-busy={isFetching}
-            className="grid grid-cols-2 gap-x-6 gap-y-6 xl:grid-cols-4"
+            className={cn(
+              "grid grid-cols-2 gap-6 xl:grid-cols-4",
+              isCategoryList &&
+                "justify-between xl:grid-cols-[repeat(4,minmax(0,16.25rem))]",
+            )}
           >
             {data.items.map((product, index) => (
               <ProductCard
                 key={product.id}
                 product={product}
+                variant={isCategoryList ? "list" : "default"}
                 isAboveFold={index < 4}
               />
             ))}

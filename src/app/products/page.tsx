@@ -56,7 +56,11 @@ export default async function ProductsPage({
     }),
   ]);
   return (
-    <Suspense fallback={<ProductGridSkeleton />}>
+    <Suspense
+      fallback={
+        <ProductGridSkeleton isCategoryList={Boolean(query.category)} />
+      }
+    >
       <HydrationBoundary state={dehydrate(queryClient)}>
         <ProductListPage initialQuery={query} />
       </HydrationBoundary>

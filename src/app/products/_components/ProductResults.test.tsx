@@ -11,6 +11,7 @@ import { ProductResults } from "./ProductResults";
 
 function createProps() {
   return {
+    isCategoryList: true,
     isPending: false,
     isFetching: false,
     hasError: false,
@@ -43,7 +44,7 @@ describe("상품 조회 상태", () => {
     const props = createProps();
     const data = mapProductListPage(productListPage1, { page: 1, size: 2 });
     render(<ProductResults {...props} data={data} />);
-    expect(screen.getByText("총 3개")).toBeInTheDocument();
+    expect(screen.getByText("총 3개의 검색 결과")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "2 페이지" }));
     expect(props.onPageChange).toHaveBeenCalledWith(2);
     expect(props.onPageChange).toHaveBeenCalledOnce();

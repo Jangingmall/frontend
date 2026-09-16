@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { formatPriceLabel } from "@/app/products/_lib/price-label";
 import { Slider } from "@/components/ui/slider";
 
 interface ProductPriceFilterProps {
@@ -31,8 +32,8 @@ export function ProductPriceFilter({
       step={1000}
       disabled={min === max}
       value={value}
-      minLabel={`${value[0].toLocaleString("ko-KR")}원`}
-      maxLabel={`${value[1].toLocaleString("ko-KR")}원`}
+      minLabel={formatPriceLabel(value[0])}
+      maxLabel={formatPriceLabel(value[1])}
       getAriaLabel={(index) => (index === 0 ? "최소 가격" : "최대 가격")}
       onValueChange={(next) => {
         if (Array.isArray(next)) setDraft([next[0], next[1]]);
