@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   memberMeUser,
@@ -13,6 +13,7 @@ import {
   getMockOAuthLinkedMember,
   setMockOAuthLinkedMember,
 } from "@/api/member/mock/mock-identity";
+import { publicEnv } from "@/lib/env";
 import { useAuthStore } from "@/stores/auth";
 import type { OAuthProvider } from "@/types/auth";
 
@@ -53,6 +54,10 @@ beforeEach(() => {
   push.mockClear();
   useAuthStore.setState({ status: "anonymous", accessToken: null, user: null });
   __resetEmailVerificationState();
+});
+
+afterEach(() => {
+  Object.assign(publicEnv, { apiMocking: true });
 });
 
 describe("SignupFlow", () => {
@@ -259,5 +264,33 @@ describe("SignupFlow", () => {
     );
     // 가드가 끼어들었다면 이렇게 "/products"로 replace가 불렸을 것이다.
     expect(replace).not.toHaveBeenCalled();
+  });
+
+  it("목업이 꺼져 소셜 버튼이 실패하면 조용히 끝나지 않고 에러를 보여준다(리뷰 F1)", async () => {
+    // `startMockOAuthLogin`이 던지는 유일한 경로 — 실제 배포에서 apiMocking이 꺼진 채
+    // 아직 실제 OAuth 리다이렉트로 안 바꾼 상태를 흉내낸다.
+    Object.assign(publicEnv, { apiMocking: false });
+    const user = userEvent.setup();
+    renderSignupFlow();
+
+    await user.click(
+      screen.getByRole("button", { name: "카카오톡으로 빠르게 가입하기" }),
+    );
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    // 추가정보 입력 화면으로는 넘어가지 않고 01단계에 그대로 남는다.
+    expect(
+      screen.getByRole("button", { name: "이메일,비밀번호로 가입하기" }),
+    ).toBeInTheDocument();
+  });
+
+  it("목업이 꺼진 채 /login에서 provider로 진입하면 01단계로 빠져나오며 에러를 보여준다(리뷰 F1)", async () => {
+    Object.assign(publicEnv, { apiMocking: false });
+    renderSignupFlow(null, "kakao");
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "이메일,비밀번호로 가입하기" }),
+    ).toBeInTheDocument();
   });
 });

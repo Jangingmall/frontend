@@ -15,17 +15,28 @@ interface SignupMethodStepProps {
    * (`SignupFlow`)가 두 결과를 어떻게 처리할지 결정한다.
    */
   onOAuthComplete: (result: OAuthLoginResult) => void;
+  /**
+   * `startMockOAuthLogin`이 실패하면(예: `publicEnv.apiMocking`이 꺼진 배포) 호출된다.
+   * 부모가 에러 메시지 상태를 소유한다 — `/login`에서 넘어온 자동 진입 실패도 같은 상태를
+   * 공유해야 하기 때문이다(리뷰 F1: 실패해도 안내 없이 조용히 끝나는 문제).
+   */
+  onOAuthError: () => void;
+  /** `onOAuthError`로 세팅된 메시지. `null`이면 표시하지 않는다. */
+  errorMessage: string | null;
 }
 
 export function SignupMethodStep({
   onSelectEmail,
   onOAuthComplete,
+  onOAuthError,
+  errorMessage,
 }: SignupMethodStepProps) {
   const startOAuthLoginMutation = useStartOAuthLoginMutation();
 
   function handleOAuthClick(provider: OAuthProvider) {
     startOAuthLoginMutation.mutate(provider, {
       onSuccess: onOAuthComplete,
+      onError: onOAuthError,
     });
   }
 
@@ -47,6 +58,12 @@ export function SignupMethodStep({
           loading={startOAuthLoginMutation.isPending}
         />
       </div>
+
+      {errorMessage != null && (
+        <p role="alert" className="text-body-s text-red-font">
+          {errorMessage}
+        </p>
+      )}
 
       <div className="flex w-full items-center gap-1">
         <hr className="h-px flex-1 border-0 bg-border-jade-weak" />

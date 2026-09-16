@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { OAuthLoginResult } from "@/api/member/api";
+import { resolveErrorMessage } from "@/constants/error-messages";
 import { safeReturnUrl } from "@/lib/auth/return-url";
 import { useStartOAuthLoginMutation } from "@/queries/member/mutations";
 import { useAuthStore } from "@/stores/auth";
@@ -53,6 +54,12 @@ export function SignupFlow({ returnUrl, provider }: SignupFlowProps) {
   const [step, setStep] = useState<SignupStep>("method");
   const [socialContext, setSocialContext] =
     useState<SocialSignupContext | null>(null);
+  // 리뷰 F1: `startMockOAuthLogin`이 실패해도(예: `publicEnv.apiMocking`이 꺼진 배포)
+  // 버튼 클릭·`/login` 자동 진입 둘 다 조용히 끝나던 문제 — 01단계에 공통으로 보여줄
+  // 에러 메시지를 여기서 소유한다.
+  const [oauthErrorMessage, setOauthErrorMessage] = useState<string | null>(
+    null,
+  );
   const hasCheckedEntryGuard = useRef(false);
   const startOAuthLoginMutation = useStartOAuthLoginMutation();
 
@@ -91,6 +98,7 @@ export function SignupFlow({ returnUrl, provider }: SignupFlowProps) {
     if (provider) {
       startOAuthLoginMutation.mutate(provider, {
         onSuccess: handleOAuthComplete,
+        onError: () => setOauthErrorMessage(resolveErrorMessage()),
       });
     }
     // `hasCheckedEntryGuard` 가드가 있어 `handleOAuthComplete`·`startOAuthLoginMutation`이
@@ -139,6 +147,8 @@ export function SignupFlow({ returnUrl, provider }: SignupFlowProps) {
           <SignupMethodStep
             onSelectEmail={() => setStep("info")}
             onOAuthComplete={handleOAuthComplete}
+            onOAuthError={() => setOauthErrorMessage(resolveErrorMessage())}
+            errorMessage={oauthErrorMessage}
           />
         </div>
       ) : (
