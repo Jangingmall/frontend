@@ -1,4 +1,7 @@
-import type { MemberProfileResponseDto } from "@/api/member/validation";
+import {
+  type MemberProfileResponseDto,
+  memberProfileResponseDto,
+} from "@/api/member/validation";
 import type { Role } from "@/types/auth";
 
 /**
@@ -62,14 +65,21 @@ export function setDynamicMember(member: MemberProfileResponseDto): void {
   localStorage.setItem(DYNAMIC_MEMBER_KEY, JSON.stringify(member));
 }
 
+/**
+ * 저장된 값을 `memberProfileResponseDto`로 다시 검증한다(타입 단언만으로는 손상되거나
+ * 예전 스키마로 남은 localStorage 값을 걸러내지 못한다 — 코드 리뷰 발견).
+ */
 export function getDynamicMember(): MemberProfileResponseDto | null {
   const raw = localStorage.getItem(DYNAMIC_MEMBER_KEY);
   if (!raw) return null;
+  let parsed: unknown;
   try {
-    return JSON.parse(raw) as MemberProfileResponseDto;
+    parsed = JSON.parse(raw);
   } catch {
     return null;
   }
+  const result = memberProfileResponseDto.safeParse(parsed);
+  return result.success ? result.data : null;
 }
 
 export function clearDynamicMember(): void {
