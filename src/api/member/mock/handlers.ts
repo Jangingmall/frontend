@@ -4,14 +4,24 @@ import { mockError, mockOk } from "@/mocks/envelope";
 import type { ApiErrorResponse, ApiResponse } from "@/types/api";
 
 import {
+  memberMeAdmin,
+  memberMeArtisan,
   memberMeUser,
   mockIdentityFixtures,
   SEED_ACCESS_TOKEN,
   SEED_ACCESS_TOKEN_PREFIX,
   SEED_ACCESS_TOKEN_REFRESHED,
   SEED_LOGIN,
+  SEED_SIGNUP_ACCESS_TOKEN,
+  SEED_VERIFICATION_CODE,
 } from "./fixtures";
-import { getMockIdentity, setMockIdentity } from "./mock-identity";
+import {
+  clearDynamicMember,
+  getDynamicMember,
+  getMockIdentity,
+  setDynamicMember,
+  setMockIdentity,
+} from "./mock-identity";
 
 /**
  * 회원·인증 MSW 핸들러. `src/mocks/handlers.ts`에 등록된다.
@@ -37,6 +47,30 @@ let windowStartedAt = Date.now();
 export function __resetLoginRateLimit(): void {
   requestCount = 0;
   windowStartedAt = Date.now();
+}
+
+/**
+ * 이메일 인증 mock 상태. **placeholder 계약**(design.md §0.1·§7-2) — 실제 BE 엔드포인트가
+ * 아니라, BE가 코드 입력 방식으로 바꿔줄 거라 전제하고 지어낸 흐름을 흉내 낸다.
+ * `verificationExpiresInSeconds` 이내에 `verify`를 부르지 않으면 만료 처리한다.
+ */
+const VERIFICATION_TTL_MS = 600 * 1000;
+const EXISTING_EMAILS = new Set(
+  [SEED_LOGIN.email, memberMeArtisan.email, memberMeAdmin.email].map((email) =>
+    email.toLowerCase(),
+  ),
+);
+const emailVerificationState = new Map<
+  string,
+  { sentAt: number; verified: boolean }
+>();
+let nextSignupMemberId = 100;
+
+/** 테스트 전용 — 모듈 스코프 이메일 인증 상태를 비운다. */
+export function __resetEmailVerificationState(): void {
+  emailVerificationState.clear();
+  nextSignupMemberId = 100;
+  clearDynamicMember();
 }
 
 export const memberHandlers = [
@@ -87,7 +121,9 @@ export const memberHandlers = [
       }
       const identity = getMockIdentity();
       if (identity === "anonymous") return mockError(401, "UNAUTHORIZED");
-      return mockOk(mockIdentityFixtures[identity]);
+      // `/signup`으로 방금 가입한 회원이면 고정 fixture 대신 그 정보를 돌려준다 — 안 그러면
+      // 이름·이메일이 항상 시드 값("김미담")으로 보인다(코드 리뷰 발견).
+      return mockOk(getDynamicMember() ?? mockIdentityFixtures[identity]);
     },
   ),
 
@@ -107,4 +143,79 @@ export const memberHandlers = [
     setMockIdentity("anonymous");
     return mockOk(null);
   }),
+
+  http.post<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/email-verifications",
+    async ({ request }) => {
+      const body = (await request.json().catch(() => null)) as {
+        email?: string;
+      } | null;
+      const email = body?.email?.toLowerCase();
+      if (!email) {
+        return mockError(400, "INVALID_INPUT", "email이 필요합니다.");
+      }
+      if (EXISTING_EMAILS.has(email)) {
+        return mockError(409, "CONFLICT", "이미 가입된 이메일이에요.");
+      }
+      emailVerificationState.set(email, {
+        sentAt: Date.now(),
+        verified: false,
+      });
+      return mockOk({ expiresInSeconds: VERIFICATION_TTL_MS / 1000 });
+    },
+  ),
+
+  http.post<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/email-verifications/verify",
+    async ({ request }) => {
+      const body = (await request.json().catch(() => null)) as {
+        email?: string;
+        code?: string;
+      } | null;
+      const email = body?.email?.toLowerCase();
+      if (!email || !body?.code) {
+        return mockError(400, "INVALID_INPUT", "email·code가 필요합니다.");
+      }
+      const state = emailVerificationState.get(email);
+      if (!state || Date.now() - state.sentAt > VERIFICATION_TTL_MS) {
+        return mockError(410, "RESOURCE_EXPIRED", "인증 시간이 지났습니다.");
+      }
+      if (body.code !== SEED_VERIFICATION_CODE) {
+        return mockError(400, "INVALID_INPUT", "인증코드가 올바르지 않아요.");
+      }
+      emailVerificationState.set(email, { ...state, verified: true });
+      return mockOk(null);
+    },
+  ),
+
+  http.post<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/signup",
+    async ({ request }) => {
+      const body = (await request.json().catch(() => null)) as {
+        email?: string;
+        name?: string;
+      } | null;
+      const email = body?.email?.toLowerCase();
+      if (!email || !body?.name) {
+        return mockError(400, "INVALID_INPUT", "필수 항목이 비어 있어요.");
+      }
+      if (EXISTING_EMAILS.has(email)) {
+        return mockError(409, "CONFLICT", "이미 가입된 이메일이에요.");
+      }
+      if (!emailVerificationState.get(email)?.verified) {
+        return mockError(403, "FORBIDDEN", "이메일 인증을 먼저 완료해주세요.");
+      }
+      const member = {
+        memberId: nextSignupMemberId++,
+        email,
+        name: body.name,
+        nickname: null,
+        role: "USER" as const,
+        profileImageUrl: null,
+      };
+      setMockIdentity("USER");
+      setDynamicMember(member);
+      return mockOk({ accessToken: SEED_SIGNUP_ACCESS_TOKEN, member }, 201);
+    },
+  ),
 ];

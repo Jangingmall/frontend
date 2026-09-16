@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Figma `[FE] Components / progress-bar` set. 4칸 stepped 바(각 칸 4px, gap 8, pill).
+ * Figma `[FE] Components / progress-bar` set. 4칸 stepped 바(각 칸 4px, gap 8, 직각).
  * `State` 는 채워진 칸 수 + 색을 함께 결정한다:
  *   default 0 · alert 1(red) · caution 2(yellow) · good 3(green) · perfect 4(green)
  * 위쪽 라벨(label-1 / label-2)은 옵션. 색은 컴포넌트 토큰 `--progress-bar-*` + 빈 칸
@@ -58,7 +58,7 @@ function ProgressBar({
           <span
             key={i}
             className={cn(
-              "h-full flex-1 rounded-full bg-fill-neutral-weak",
+              "h-full flex-1 bg-fill-neutral-weak",
               i < filled && fill,
             )}
           />

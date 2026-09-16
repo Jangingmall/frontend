@@ -1,3 +1,7 @@
+import {
+  type MemberProfileResponseDto,
+  memberProfileResponseDto,
+} from "@/api/member/validation";
 import type { Role } from "@/types/auth";
 
 /**
@@ -38,6 +42,46 @@ export function getMockIdentity(): MockIdentity {
   return isMockIdentity(raw) ? raw : "anonymous";
 }
 
+/**
+ * 고정 fixture(`mockIdentityFixtures`) 대신 `/me`가 돌려줄 신원을 지정한다 — 항상 같은
+ * `identity`(role)로 전환하며 그 fixture로 되돌아간다는 뜻이라, 이전에 남아 있던
+ * {@link setDynamicMember} 오버라이드는 여기서 지운다. `/signup`처럼 실제 가입한 회원
+ * 정보를 `/me`에 반영하려면 이 호출 *다음*에 `setDynamicMember`를 불러 덮어써야 한다.
+ */
 export function setMockIdentity(identity: MockIdentity): void {
   localStorage.setItem(MOCK_IDENTITY_KEY, identity);
+  clearDynamicMember();
+}
+
+const DYNAMIC_MEMBER_KEY = "midam:mockDynamicMember";
+
+/**
+ * `/signup`으로 방금 가입한 회원 — `/me`가 고정 fixture 대신 이 값을 돌려주게 한다.
+ * (2026-09-16, 코드 리뷰: 가입 직후 `/me`를 다시 부르면 방금 입력한 이름·이메일이 아니라
+ * 항상 고정 시드 `memberMeUser`("김미담")로 돌아가던 버그.) `setMockIdentity`를 다시 부르면
+ * 지워진다.
+ */
+export function setDynamicMember(member: MemberProfileResponseDto): void {
+  localStorage.setItem(DYNAMIC_MEMBER_KEY, JSON.stringify(member));
+}
+
+/**
+ * 저장된 값을 `memberProfileResponseDto`로 다시 검증한다(타입 단언만으로는 손상되거나
+ * 예전 스키마로 남은 localStorage 값을 걸러내지 못한다 — 코드 리뷰 발견).
+ */
+export function getDynamicMember(): MemberProfileResponseDto | null {
+  const raw = localStorage.getItem(DYNAMIC_MEMBER_KEY);
+  if (!raw) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  const result = memberProfileResponseDto.safeParse(parsed);
+  return result.success ? result.data : null;
+}
+
+export function clearDynamicMember(): void {
+  localStorage.removeItem(DYNAMIC_MEMBER_KEY);
 }

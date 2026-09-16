@@ -43,3 +43,25 @@ export const loginResponseDto = z
 export type AccessTokenResponseDto = z.infer<typeof accessTokenResponseDto>;
 export type MemberProfileResponseDto = z.infer<typeof memberProfileResponseDto>;
 export type LoginResponseDto = z.infer<typeof loginResponseDto>;
+
+/**
+ * `POST /api/member/email-verifications` 응답. **placeholder 계약**(design.md §0.1·§7-2) —
+ * 실제 BE는 지금 이메일 인증 코드 API가 없고(재전송 전용 + magic-link 방식) 코드 입력 방식으로
+ * 바꿀 예정이라고만 전달받았다. BE가 실제로 배포하면 이 스키마를 다시 대조해야 한다.
+ */
+export const emailVerificationResponseDto = z
+  .object({ expiresInSeconds: z.number().int().positive() })
+  .passthrough();
+
+/**
+ * `POST /api/member/signup` 응답. **BE에 변경을 요청한 형태**(design.md §0.2) — 로그인과
+ * 동일하게 세션(`accessToken`+`member`)을 받는다고 가정한다. 실제로 지금 BE가 주는 건
+ * `{ memberId, email, status }`뿐이라(세션 없음) BE가 이 변경을 배포하기 전엔 실제 서버로
+ * 가입할 때마다 이 스키마의 `parse`가 실패한다 — 알고 진행하는 배포 순서 리스크.
+ */
+export const signupResponseDto = loginResponseDto;
+
+export type EmailVerificationResponseDto = z.infer<
+  typeof emailVerificationResponseDto
+>;
+export type SignupResponseDto = z.infer<typeof signupResponseDto>;
