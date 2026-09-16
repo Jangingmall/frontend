@@ -1,8 +1,26 @@
 import { describe, expect, it } from "vitest";
 
+import { productKeys } from "@/queries/products/keys";
+
 import { toProductListSearchParams } from "./query";
 
 describe("상품 필터 요청", () => {
+  it("종목을 반복 subcategory로 보내고 순서가 다른 선택도 같은 캐시를 사용한다", () => {
+    const query = {
+      category: "kitchen-1",
+      crafts: ["2", "1", "2", ""],
+      materials: ["wood"],
+    };
+    const params = toProductListSearchParams(query);
+    expect(params.getAll("subcategory")).toEqual(["1", "2"]);
+    expect(params.getAll("material")).toEqual(["wood"]);
+    expect(productKeys.list(query)).toEqual(
+      productKeys.list({ ...query, crafts: ["1", "2"] }),
+    );
+    expect(productKeys.list(query)).not.toEqual(
+      productKeys.list({ ...query, crafts: ["1"] }),
+    );
+  });
   it("품절 제외 체크 해제를 서버 기본값에 맡기지 않는다", () => {
     expect(toProductListSearchParams({}).get("excludeSoldOut")).toBe("false");
   });

@@ -4,6 +4,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import {
   fetchProductCategories,
+  fetchProductCrafts,
   fetchProductListClient,
   fetchProductMaterials,
 } from "@/api/products/client";
@@ -46,6 +47,15 @@ export function useProductMaterials(enabled: boolean) {
   return useQuery({
     queryKey: productKeys.materials,
     queryFn: ({ signal }) => fetchProductMaterials(signal),
+    enabled,
+    staleTime: 3600000,
+  });
+}
+
+export function useProductCrafts(enabled: boolean) {
+  return useQuery({
+    queryKey: productKeys.crafts,
+    queryFn: ({ signal }) => fetchProductCrafts(signal),
     enabled,
     staleTime: 3600000,
   });

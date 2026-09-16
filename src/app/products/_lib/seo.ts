@@ -10,6 +10,7 @@ export function getProductSeo(
   }
   const query = parseProductSearchParams(search);
   const hasFilters = Boolean(
+    query.crafts?.length ||
     query.materials?.length ||
     query.keyword ||
     query.hasGiftWrap ||

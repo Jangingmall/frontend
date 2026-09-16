@@ -16,6 +16,7 @@ it.each([
 
 it.each([
   { material: ["wood", "metal"] },
+  { subcategory: ["1", "2"] },
   { sort: "price-asc" },
   { minPrice: "1000" },
   { hasGiftWrap: "true" },

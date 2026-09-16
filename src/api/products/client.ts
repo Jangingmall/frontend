@@ -1,8 +1,13 @@
 import { clientFetch } from "@/lib/http/client";
 
-import { productCategoriesDto, productMaterialsDto } from "./filter-validation";
+import {
+  productCategoriesDto,
+  productCraftsDto,
+  productMaterialsDto,
+} from "./filter-validation";
 import {
   mapProductCategories,
+  mapProductCrafts,
   mapProductListPage,
   mapProductMaterials,
 } from "./mapper";
@@ -41,4 +46,12 @@ export async function fetchProductMaterials(signal?: AbortSignal) {
     signal,
   });
   return mapProductMaterials(productMaterialsDto.parse(dto));
+}
+
+export async function fetchProductCrafts(signal?: AbortSignal) {
+  const dto = await clientFetch<unknown>("/api/products/subcategories", {
+    auth: false,
+    signal,
+  });
+  return mapProductCrafts(productCraftsDto.parse(dto));
 }

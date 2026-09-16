@@ -1,3 +1,4 @@
+import type { ProductCraftsDto } from "@/api/products/filter-validation";
 import { GIFT_THEMES, toGiftThemeApi } from "@/types/gift-theme";
 import type { ProductCategory, ProductMaterial } from "@/types/product-filter";
 
@@ -41,6 +42,16 @@ export const productMaterials: ProductMaterial[] = [
   { id: "metal", name: "금속" },
 ];
 
+/** 개발용 종목 ID·이름. 쓰임 분류 ID와 별개이며 운영 ID가 아니다. */
+export const productCrafts: ProductCraftsDto = [
+  { subcategoryId: 1, categoryId: 1, name: "사기장" },
+  { subcategoryId: 2, categoryId: 2, name: "유기장" },
+  { subcategoryId: 3, categoryId: 3, name: "목기장" },
+  { subcategoryId: 4, categoryId: 3, name: "칠장" },
+  { subcategoryId: 5, categoryId: 3, name: "나전장" },
+  { subcategoryId: 6, categoryId: 3, name: "죽세장" },
+];
+
 /** 번호 페이지, 필터 조합, 품절 상태를 재현하는 결정적 개발 데이터. */
 export const productCatalogue = Array.from({ length: 140 }, (_, index) => {
   const seed = productListPage1.items[index % productListPage1.items.length];
@@ -57,6 +68,9 @@ export const productCatalogue = Array.from({ length: 140 }, (_, index) => {
       })),
     },
     category: `kitchen-${(index % 9) + 1}`,
+    subcategory: String(
+      productCrafts[Math.floor(index / 9) % productCrafts.length].subcategoryId,
+    ),
     material: productMaterials[index % productMaterials.length].id,
     // 실제 BE 필드를 흉내낸다 — 요청 쿼리도 같은 API 코드로 보내니(toGiftThemeApi) 핸들러가
     // 값을 변환하지 않고 그대로 비교할 수 있다.
