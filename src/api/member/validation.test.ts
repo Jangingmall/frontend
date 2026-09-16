@@ -7,8 +7,10 @@ import {
 } from "./mock/fixtures";
 import {
   accessTokenResponseDto,
+  emailVerificationResponseDto,
   loginResponseDto,
   memberProfileResponseDto,
+  signupResponseDto,
 } from "./validation";
 
 describe("accessTokenResponseDto", () => {
@@ -81,5 +83,34 @@ describe("loginResponseDto", () => {
     expect(
       loginResponseDto.safeParse({ accessToken: SEED_ACCESS_TOKEN }).success,
     ).toBe(false);
+  });
+});
+
+describe("emailVerificationResponseDto", () => {
+  it("expiresInSeconds 양의 정수를 통과시킨다", () => {
+    expect(
+      emailVerificationResponseDto.parse({ expiresInSeconds: 600 }),
+    ).toEqual({ expiresInSeconds: 600 });
+  });
+
+  it("음수·소수는 거부한다", () => {
+    expect(
+      emailVerificationResponseDto.safeParse({ expiresInSeconds: -1 }).success,
+    ).toBe(false);
+    expect(
+      emailVerificationResponseDto.safeParse({ expiresInSeconds: 1.5 }).success,
+    ).toBe(false);
+  });
+});
+
+describe("signupResponseDto", () => {
+  // §0.2(design.md) — 로그인과 동일 모양이라고 가정한 별칭. loginResponseDto 계약을 그대로 따른다.
+  it("accessToken + member를 통과시킨다(loginResponseDto와 동일 계약)", () => {
+    expect(
+      signupResponseDto.parse({
+        accessToken: SEED_ACCESS_TOKEN,
+        member: memberMeUser,
+      }),
+    ).toEqual({ accessToken: SEED_ACCESS_TOKEN, member: memberMeUser });
   });
 });

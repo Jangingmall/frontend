@@ -22,6 +22,12 @@ export const SEED_LOGIN = {
   password: "midam1234",
 };
 
+/** 회원가입 mock 전용 시드. (design.md §6 — 코드 인증 2개는 placeholder 계약, signup은
+ * BE 요청 반영 전제 계약) */
+export const SEED_VERIFICATION_CODE = "123456";
+/** 가입 성공 시 발급되는 access token(로그인 시드와 같은 접두사라 `/me`도 그대로 인정). */
+export const SEED_SIGNUP_ACCESS_TOKEN = "mock-access-token-signup";
+
 export const memberMeUser: MemberProfileResponseDto = {
   memberId: 1,
   email: SEED_LOGIN.email,
