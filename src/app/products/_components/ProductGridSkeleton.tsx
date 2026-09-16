@@ -1,11 +1,22 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
-export function ProductGridSkeleton() {
+interface ProductGridSkeletonProps {
+  isCategoryList?: boolean;
+}
+
+export function ProductGridSkeleton({
+  isCategoryList = false,
+}: ProductGridSkeletonProps) {
   return (
     <div
       role="status"
       aria-label="상품 불러오는 중"
-      className="grid grid-cols-2 gap-x-6 gap-y-6 xl:grid-cols-4"
+      className={cn(
+        "grid grid-cols-2 gap-6 xl:grid-cols-4",
+        isCategoryList &&
+          "justify-between xl:grid-cols-[repeat(4,minmax(0,16.25rem))]",
+      )}
     >
       {Array.from({ length: 8 }, (_, index) => (
         <div key={index} className="space-y-3">
