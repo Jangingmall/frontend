@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { FloatingActions } from "@/components/common/floating-actions";
@@ -20,17 +21,53 @@ interface ProductDetailPageProps {
 }
 
 export function ProductDetailPage({ product }: ProductDetailPageProps) {
+  const router = useRouter();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [notice, setNotice] = useState<{
     id: number;
     message: string;
     action?: { label: string; onClick: () => void };
+    placement: "page" | "purchase";
   } | null>(null);
   const noticeId = useRef(0);
   const handleNotify = useCallback<ProductNotify>((message, action) => {
-    setNotice({ id: ++noticeId.current, message, action });
+    setNotice({ id: ++noticeId.current, message, action, placement: "page" });
   }, []);
-  const handleRequireLogin = useCallback(() => setIsLoginOpen(true), []);
+  const handlePurchaseNotify = useCallback<ProductNotify>((message, action) => {
+    setNotice({
+      id: ++noticeId.current,
+      message,
+      action,
+      placement: "purchase",
+    });
+  }, []);
+  const handleLogin = useCallback(() => {
+    const returnUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    // searchParams와 safeReturnUrl에서 각각 한 번 디코딩한다.
+    const loginUrl =
+      `/login?returnUrl=${encodeURIComponent(encodeURIComponent(returnUrl))}` as const;
+    // Next 16.3.4의 최초 경로 캐시가 복귀 시 해시를 중복해서 붙이는 경우를 피한다.
+    if (window.location.hash) window.location.assign(loginUrl);
+    else router.push(loginUrl);
+  }, [router]);
+  const handleRequireLogin = useCallback(
+    (confirm = true) => {
+      if (confirm) setIsLoginOpen(true);
+      else handleLogin();
+    },
+    [handleLogin],
+  );
+
+  const toast = notice && (
+    <Toast
+      key={notice.id}
+      className="h-auto min-h-11.5 w-full justify-between bg-bg-deam py-3 [&>span]:px-4"
+      actionLabel={notice.action?.label}
+      onAction={notice.action?.onClick}
+    >
+      {notice.message}
+    </Toast>
+  );
 
   useEffect(() => {
     if (!notice) return;
@@ -51,12 +88,13 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
           aria-label="상품 정보 및 구매"
           className="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1"
         >
-          {/* 기존 sticky GNB(122px) 아래에 여백을 확보한다. */}
-          <div className="lg:sticky lg:top-36.5 lg:max-h-[calc(100dvh-170px)] lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
+          {/* GNB(122px)와 PD 주석의 상단 여백(48px)을 함께 확보한다. */}
+          <div className="lg:sticky lg:top-42.5 lg:max-h-[calc(100dvh-194px)] lg:overflow-y-auto lg:overscroll-contain">
             <ProductPurchasePanel
               product={product}
-              onNotify={handleNotify}
+              onNotify={handlePurchaseNotify}
               onRequireLogin={handleRequireLogin}
+              notice={notice?.placement === "purchase" ? toast : null}
             />
           </div>
         </aside>
@@ -74,7 +112,7 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
               productId={product.id}
               isMock={product.isMock}
               onNotify={handleNotify}
-              onRequireLogin={handleRequireLogin}
+              onRequireLogin={handleLogin}
             />
           </div>
           <RelatedProducts products={product.relatedProducts} />
@@ -85,50 +123,38 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
       <Dialog
         open={isLoginOpen}
         onOpenChange={setIsLoginOpen}
-        title="로그인이 필요한 기능입니다"
-        description="로그인 후 관심 작품을 저장하고 주문·문의를 이용할 수 있습니다."
-        className="max-w-100"
+        title="로그인 후 이용 가능한 서비스입니다"
+        description="로그인 페이지로 이동하시겠습니까?"
+        variant="confirmation"
       >
-        <div className="flex gap-2">
+        <div className="flex gap-2.5">
           <Button
-            variant="outline"
-            size="s"
-            className="flex-1"
+            variant="jade"
+            size="xl"
+            className="flex-1 border-border-neutral-subtle"
             onClick={() => setIsLoginOpen(false)}
           >
             취소
           </Button>
           <Button
             variant="solid"
-            size="s"
+            size="xl"
             className="flex-1"
             onClick={() => {
               setIsLoginOpen(false);
-              handleNotify("로그인 화면을 준비 중입니다.");
+              handleLogin();
             }}
           >
-            로그인
+            로그인하기
           </Button>
         </div>
       </Dialog>
-      {notice && (
+      {notice?.placement === "page" && (
         <div
           className="fixed inset-x-4 bottom-6 z-80 flex justify-center"
           key={notice.id}
         >
-          <Toast
-            className="h-auto min-h-10 max-w-full py-1 [&>span]:px-3"
-            actionLabel={notice.action?.label}
-            onAction={
-              notice.action
-                ? () => {
-                    notice.action?.onClick();
-                  }
-                : undefined
-            }
-          >
-            {notice.message}
-          </Toast>
+          <div className="max-w-140">{toast}</div>
         </div>
       )}
     </div>

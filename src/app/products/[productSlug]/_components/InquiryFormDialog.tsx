@@ -1,5 +1,6 @@
+import { Field } from "@base-ui/react/field";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
@@ -8,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog } from "@/components/ui/dialog";
 import { InputField } from "@/components/ui/input-field";
 import { Select, SelectItem } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { useCreateInquiry } from "@/queries/inquiries/mutations";
 import { useAuthStore } from "@/stores/auth";
 import type { ProductDetail, ProductNotify } from "@/types/product-detail";
@@ -37,6 +39,9 @@ export function InquiryFormDialog({
   onNotify,
   onRequireLogin,
 }: InquiryFormDialogProps) {
+  const formId = useId();
+  const titleId = useId();
+  const bodyId = useId();
   const form = useForm<InquiryFormValues>({
     resolver: zodResolver(inquiryFormSchema),
     defaultValues: { title: "", body: "", isSecret: false },
@@ -77,9 +82,33 @@ export function InquiryFormDialog({
       open={open}
       onOpenChange={close}
       title="상품 문의하기"
-      className="max-w-140"
+      variant="form"
+      footer={
+        <div className="flex gap-2.5">
+          <Button
+            variant="jade"
+            size="xl"
+            type="button"
+            className="min-w-0 flex-1 border-border-neutral-subtle px-3 sm:w-40 sm:flex-none sm:px-6"
+            disabled={mutation.isPending}
+            onClick={() => close(false)}
+          >
+            취소
+          </Button>
+          <Button
+            type="submit"
+            form={formId}
+            size="xl"
+            className="min-w-0 flex-1 px-3 sm:px-6"
+            loading={mutation.isPending}
+          >
+            등록하기
+          </Button>
+        </div>
+      }
     >
       <form
+        id={formId}
         onSubmit={(event) => void form.handleSubmit(submit)(event)}
         noValidate
         className="space-y-4"
@@ -94,12 +123,14 @@ export function InquiryFormDialog({
                 </span>
               )}
               <div className="min-w-0 space-y-2 break-words">
-                <p className="text-body-m font-semibold">{product.name}</p>
-                <p className="text-body-m text-font-dark-weak">
-                  {product.artisan?.name}
-                </p>
+                <div>
+                  <p className="text-body-m font-semibold">{product.name}</p>
+                  <p className="text-body-m text-font-dark-weak">
+                    {product.artisan?.name}
+                  </p>
+                </div>
                 <p className="text-body-s-b">
-                  ₩{product.price.toLocaleString("ko-KR")}
+                  {product.price.toLocaleString("ko-KR")}원
                 </p>
               </div>
             </div>
@@ -110,7 +141,10 @@ export function InquiryFormDialog({
             {form.formState.errors.root.message}
           </p>
         )}
-        <div className="space-y-2">
+        <Field.Root
+          invalid={Boolean(form.formState.errors.type)}
+          className="space-y-2"
+        >
           <p className="text-body-s-b">
             문의 유형 <span className="text-red-font">*</span>
           </p>
@@ -120,6 +154,10 @@ export function InquiryFormDialog({
             render={({ field }) => (
               <Select
                 ariaLabel="문의 유형"
+                inputRef={field.ref}
+                name={field.name}
+                required
+                className="aria-invalid:border-red-border aria-invalid:focus-visible:outline-red-border"
                 items={TYPES.map((value) => ({ value, label: value }))}
                 value={field.value ?? null}
                 onValueChange={field.onChange}
@@ -138,36 +176,54 @@ export function InquiryFormDialog({
             )}
           />
           {form.formState.errors.type && (
-            <p role="alert" className="text-caption text-red-font">
+            <Field.Error
+              match
+              role="alert"
+              className="text-caption text-red-font"
+            >
               {form.formState.errors.type.message}
-            </p>
+            </Field.Error>
           )}
-        </div>
+        </Field.Root>
         {type === "기타" && (
-          <InputField
-            label="문의 제목 *"
-            placeholder="30자 이내로 입력해주세요."
-            maxLength={30}
-            error={form.formState.errors.title?.message}
-            disabled={mutation.isPending}
-            {...form.register("title")}
-          />
+          <div className="space-y-2">
+            <label htmlFor={titleId} className="block text-body-s-b">
+              문의 제목 <span className="text-red-font">*</span>
+            </label>
+            <InputField
+              id={titleId}
+              className="h-9"
+              placeholder="30자 이내로 입력해주세요."
+              maxLength={30}
+              error={form.formState.errors.title?.message}
+              disabled={mutation.isPending}
+              {...form.register("title")}
+            />
+          </div>
         )}
-        <div className="space-y-2">
-          <label htmlFor="inquiry-body" className="text-body-s-b">
+        <div className="space-y-3">
+          <label htmlFor={bodyId} className="block text-body-s-b">
             내용 <span className="text-red-font">*</span>
           </label>
-          <div className="border border-border-neutral-weak p-2 focus-within:border-border-jade-fill">
+          <div
+            className={cn(
+              "flex min-h-27 flex-col border p-2",
+              form.formState.errors.body
+                ? "border-red-border"
+                : "border-border-neutral-subtle focus-within:border-border-jade-fill",
+            )}
+          >
             <textarea
-              id="inquiry-body"
+              id={bodyId}
               placeholder="문의할 내용을 작성해주세요."
               maxLength={2000}
               aria-invalid={Boolean(form.formState.errors.body)}
               aria-describedby={
-                form.formState.errors.body ? "inquiry-body-error" : undefined
+                form.formState.errors.body ? `${bodyId}-error` : undefined
               }
               disabled={mutation.isPending}
-              className="[field-sizing:content] max-h-[50dvh] min-h-27 w-full resize-y text-body-s outline-none"
+              rows={4}
+              className="[field-sizing:content] min-h-19 w-full resize-none text-body-s outline-none"
               {...form.register("body")}
             />
             <p className="text-right text-caption text-font-dark-weak">
@@ -176,7 +232,7 @@ export function InquiryFormDialog({
           </div>
           {form.formState.errors.body && (
             <p
-              id="inquiry-body-error"
+              id={`${bodyId}-error`}
               role="alert"
               className="text-caption text-red-font"
             >
@@ -206,26 +262,6 @@ export function InquiryFormDialog({
             </p>
           </AccordionItem>
         </Accordion>
-        <div className="flex gap-2 pt-6">
-          <Button
-            variant="outline"
-            size="xl"
-            type="button"
-            className="min-w-0 flex-1 px-3 sm:w-40 sm:flex-none sm:px-6"
-            disabled={mutation.isPending}
-            onClick={() => close(false)}
-          >
-            취소
-          </Button>
-          <Button
-            type="submit"
-            size="xl"
-            className="min-w-0 flex-1 px-3 sm:px-6"
-            loading={mutation.isPending}
-          >
-            등록하기
-          </Button>
-        </div>
       </form>
     </Dialog>
   );

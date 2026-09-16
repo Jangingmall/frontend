@@ -18,7 +18,10 @@ export function ProductInformationAccordion({
       aria-labelledby={`${id}-title`}
       className="scroll-mt-40 border-t border-border-neutral-weak px-2 pt-4"
     >
-      <h2 id={`${id}-title`} className="mb-3 text-title-l">
+      <h2
+        id={`${id}-title`}
+        className="mb-3 text-title-l leading-[1.3] font-bold"
+      >
         {title}
       </h2>
       {rows.length ? (

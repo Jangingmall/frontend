@@ -6,8 +6,60 @@ async function openDetail(page: Page, path = detailPath) {
   await page.goto(path);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(
+    page
+      .getByRole("banner")
+      .getByRole("link", { name: /^(로그인|마이페이지)$/ }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "고객", exact: true }).click();
+  await expect(
     page.getByRole("link", { name: "마이페이지", exact: true }),
   ).toBeVisible();
+}
+
+test("찜 로그인 안내에서 로그인하고 원래 상품으로 복귀한다", async ({
+  page,
+}) => {
+  await page.goto(detailPath);
+  await page.getByRole("button", { name: "찜하기", exact: true }).click();
+  const modal = page.getByRole("dialog", {
+    name: "로그인 후 이용 가능한 서비스입니다",
+  });
+  await expect(modal).toBeVisible();
+  await modal.getByRole("button", { name: "로그인하기", exact: true }).click();
+  await expect(page).toHaveURL(/\/login\?returnUrl=/);
+  await page.getByPlaceholder("이메일을 입력해주세요.").fill("user@midam.test");
+  await page.getByPlaceholder("비밀번호를 입력해주세요.").fill("midam1234");
+  await page.getByRole("button", { name: "로그인", exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(encodeURI(detailPath)));
+});
+
+test("비회원 문의는 로그인으로 바로 이동하고 상품 복귀 경로를 전달한다", async ({
+  page,
+}) => {
+  await page.goto(detailPath);
+  await page.getByRole("button", { name: "문의하기", exact: true }).click();
+  await expect(page).toHaveURL(/\/login\?returnUrl=/);
+  const url = new URL(page.url());
+  expect(decodeURIComponent(url.searchParams.get("returnUrl")!)).toBe(
+    encodeURI(detailPath),
+  );
+});
+
+for (const hash of ["", "#tab%252"]) {
+  test(`비회원 문의 로그인 후 인코딩된 복귀 경로를 유지한다 (해시 ${hash ? "포함" : "없음"})`, async ({
+    page,
+  }) => {
+    await page.goto(`${detailPath}?keyword=%26%2B%25%23${hash}`);
+    const originalUrl = page.url();
+    await page.getByRole("button", { name: "문의하기", exact: true }).click();
+    await expect(page).toHaveURL(/\/login\?returnUrl=/);
+    await page
+      .getByPlaceholder("이메일을 입력해주세요.")
+      .fill("user@midam.test");
+    await page.getByPlaceholder("비밀번호를 입력해주세요.").fill("midam1234");
+    await page.getByRole("button", { name: "로그인", exact: true }).click();
+    await expect(page).toHaveURL(originalUrl);
+  });
 }
 
 async function chooseOptions(page: Page, color = "백색") {

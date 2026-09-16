@@ -25,7 +25,7 @@ describe("product detail mock actions", () => {
     useAuthStore.getState().setSession("mock-access-token", {
       id: 1,
       name: "테스트",
-      roles: ["USER"],
+      role: "USER",
     });
   });
   it("persists wishlist state per product and user", async () => {

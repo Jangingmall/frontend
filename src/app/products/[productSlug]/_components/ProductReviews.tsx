@@ -32,7 +32,7 @@ export function ProductReviews(props: ProductReviewsProps) {
   return (
     <section
       id="product-reviews"
-      className="scroll-mt-40 border-t border-border-jade-weak px-2 py-4"
+      className="scroll-mt-40 border-t border-border-neutral-weak px-2 pt-4 pb-3"
     >
       <Suspense fallback={<ReviewLoading />}>
         <ReviewUrlState {...props} />
@@ -80,7 +80,7 @@ function ReviewContent({
   if (!isMock)
     return (
       <>
-        <h2 className="text-title-l">후기</h2>
+        <h2 className="text-title-l leading-[1.3] font-bold">후기</h2>
         <EmptyState title="후기 조회를 준비 중입니다." />
       </>
     );
@@ -92,7 +92,7 @@ function ReviewContent({
   } = query.data ?? {};
   return (
     <>
-      <h2 className="text-title-l text-font-dark">
+      <h2 className="text-title-l leading-[1.3] font-bold text-font-dark">
         후기{reviewCount !== undefined ? ` (${reviewCount})` : ""}
       </h2>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -122,7 +122,7 @@ function ReviewContent({
             onValueChange={(value) => {
               if (value) changeFilters({ sort: value as ReviewSort, page: 1 });
             }}
-            className="w-30"
+            className="w-25"
           >
             {SORT_ITEMS.map((item) => (
               <SelectItem key={item.value} value={item.value}>
@@ -140,7 +140,7 @@ function ReviewContent({
           onRetry={() => void query.refetch()}
         />
       ) : items.length ? (
-        <div className="mt-3 px-2" aria-busy={query.isFetching}>
+        <div className="mt-3 space-y-3 px-2" aria-busy={query.isFetching}>
           {items.map((review) => (
             <ReviewItem key={review.id} review={review} />
           ))}
