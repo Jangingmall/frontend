@@ -196,6 +196,19 @@ describe("member api", () => {
     expect(result.user).toMatchObject({ name: "김소셜", role: "USER" });
   });
 
+  it("completeOAuthProfile: 지원하지 않는 provider면 ApiError 400(리뷰 nit)", async () => {
+    // 타입상 "naver"|"kakao"만 허용되지만, mock 핸들러가 런타임에도 그 계약을 실제로
+    // 지키는지 확인한다 — TS로는 막히는 값을 일부러 흘려보낸다.
+    await expect(
+      completeOAuthProfile({
+        provider: "google" as unknown as "naver",
+        email: "google-user@midam.test",
+        name: "김소셜",
+        phone: "01012345678",
+      }),
+    ).rejects.toMatchObject({ name: "ApiError", status: 400 });
+  });
+
   it("completeOAuthProfile: 필수 항목이 비어 있으면 ApiError 400", async () => {
     await expect(
       completeOAuthProfile({

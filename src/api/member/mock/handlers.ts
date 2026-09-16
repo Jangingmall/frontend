@@ -3,7 +3,6 @@ import { type DefaultBodyType, http, type PathParams } from "msw";
 import type { MemberProfileResponseDto } from "@/api/member/validation";
 import { mockError, mockOk } from "@/mocks/envelope";
 import type { ApiErrorResponse, ApiResponse } from "@/types/api";
-import type { OAuthProvider } from "@/types/auth";
 
 import {
   memberMeAdmin,
@@ -246,6 +245,10 @@ export const memberHandlers = [
       if (!body?.provider || !body?.email || !body?.name || !body?.phone) {
         return mockError(400, "INVALID_INPUT", "필수 항목이 비어 있어요.");
       }
+      if (body.provider !== "naver" && body.provider !== "kakao") {
+        return mockError(400, "INVALID_INPUT", "지원하지 않는 provider예요.");
+      }
+      const provider = body.provider;
       const email = body.email.toLowerCase();
       // 동일 이메일 계정이 이미 있으면 신규 생성 대신 그 계정에 연동한다 — 이때 role은
       // 신규 가입(항상 USER)과 달리 그 기존 계정의 실제 role을 그대로 따른다.
@@ -260,7 +263,7 @@ export const memberHandlers = [
       };
       setMockIdentity(member.role);
       setDynamicMember(member);
-      setMockOAuthLinkedMember(body.provider as OAuthProvider, member);
+      setMockOAuthLinkedMember(provider, member);
       return mockOk(
         { accessToken: SEED_OAUTH_ACCESS_TOKEN, member },
         linkedExisting ? 200 : 201,
