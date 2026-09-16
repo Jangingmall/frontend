@@ -263,8 +263,8 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
               </p>
             )}
 
-            {/* /find·/signup은 아직 라우트가 없다(LI-2·SU-1 — 로드맵 미편성·T-18). typedRoutes가
-                모르는 경로라 (protected)/layout.tsx와 같은 방식으로 캐스팅한다. */}
+            {/* /find는 아직 라우트가 없다(LI-2 — 로드맵 미편성). typedRoutes가 모르는 경로라
+                (protected)/layout.tsx와 같은 방식으로 캐스팅한다. */}
             <div className="flex items-center justify-between">
               <div className="flex">
                 <Link
@@ -280,9 +280,15 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
                   비밀번호 찾기
                 </Link>
               </div>
-              {/* Figma: 회원가입만 Bold, 나머지 둘은 Regular */}
+              {/* Figma: 회원가입만 Bold, 나머지 둘은 Regular. returnUrl이 있으면 그대로 이어서
+                  넘긴다 — 로그인 대신 가입을 택해도 원래 가려던 곳으로 복귀할 수 있게
+                  (design.md §0.2·§1). */}
               <Link
-                href={"/signup" as Route}
+                href={
+                  (returnUrl
+                    ? `/signup?returnUrl=${encodeURIComponent(returnUrl)}`
+                    : "/signup") as Route
+                }
                 className="flex min-w-[4.5rem] items-center justify-center px-2 py-1 text-body-s-b text-font-dark"
               >
                 회원가입

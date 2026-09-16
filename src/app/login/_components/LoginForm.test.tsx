@@ -296,4 +296,22 @@ describe("LoginForm", () => {
       screen.getByRole("button", { name: "네이버로 로그인 (준비 중)" }),
     ).toBeDisabled();
   });
+
+  it("회원가입 링크가 returnUrl을 이어서 넘긴다(design.md §0.2 — /signup으로도 원래 목적지 복귀)", () => {
+    renderLoginForm("/products");
+
+    expect(screen.getByRole("link", { name: "회원가입" })).toHaveAttribute(
+      "href",
+      "/signup?returnUrl=%2Fproducts",
+    );
+  });
+
+  it("returnUrl이 없으면 회원가입 링크도 쿼리스트링 없이 /signup만 가리킨다", () => {
+    renderLoginForm(null);
+
+    expect(screen.getByRole("link", { name: "회원가입" })).toHaveAttribute(
+      "href",
+      "/signup",
+    );
+  });
 });
