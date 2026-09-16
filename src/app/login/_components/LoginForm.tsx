@@ -16,6 +16,7 @@ import { safeReturnUrl } from "@/lib/auth/return-url";
 import { ApiError } from "@/lib/http/api-error";
 import { useLoginMutation } from "@/queries/member/mutations";
 import { useAuthStore } from "@/stores/auth";
+import type { OAuthProvider } from "@/types/auth";
 
 import { KakaoLoginButton } from "./KakaoLoginButton";
 import { NaverLoginButton } from "./NaverLoginButton";
@@ -134,6 +135,18 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
   const [rememberIdOverride, setRememberIdOverride] = useState<boolean | null>(
     null,
   );
+
+  /**
+   * 원형 소셜 버튼 클릭 → `/signup?provider=...`로 navigate만 한다. 실제 목업 OAuth 판정
+   * (연동됨/최초 로그인)은 여기서 하지 않고 `/signup`(`SignupFlow`)에서 한 곳으로 통일해
+   * 실행한다 — `/signup`의 전폭 버튼과 진입점을 하나로 합치기 위해서다.
+   */
+  function handleOAuthClick(provider: OAuthProvider) {
+    const target = returnUrl
+      ? `/signup?provider=${provider}&returnUrl=${encodeURIComponent(returnUrl)}`
+      : `/signup?provider=${provider}`;
+    router.push(target as Route);
+  }
   const rememberId = rememberIdOverride ?? rememberedEmail !== null;
 
   const {
@@ -212,8 +225,8 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
               소셜 로그인
             </p>
             <div className="flex gap-16">
-              <NaverLoginButton />
-              <KakaoLoginButton />
+              <NaverLoginButton onClick={() => handleOAuthClick("naver")} />
+              <KakaoLoginButton onClick={() => handleOAuthClick("kakao")} />
             </div>
           </div>
 

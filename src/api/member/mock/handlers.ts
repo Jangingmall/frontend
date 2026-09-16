@@ -1,5 +1,6 @@
 import { type DefaultBodyType, http, type PathParams } from "msw";
 
+import type { MemberProfileResponseDto } from "@/api/member/validation";
 import { mockError, mockOk } from "@/mocks/envelope";
 import type { ApiErrorResponse, ApiResponse } from "@/types/api";
 
@@ -12,15 +13,18 @@ import {
   SEED_ACCESS_TOKEN_PREFIX,
   SEED_ACCESS_TOKEN_REFRESHED,
   SEED_LOGIN,
+  SEED_OAUTH_ACCESS_TOKEN,
   SEED_SIGNUP_ACCESS_TOKEN,
   SEED_VERIFICATION_CODE,
 } from "./fixtures";
 import {
+  __clearMockOAuthLinkedMembers,
   clearDynamicMember,
   getDynamicMember,
   getMockIdentity,
   setDynamicMember,
   setMockIdentity,
+  setMockOAuthLinkedMember,
 } from "./mock-identity";
 
 /**
@@ -55,11 +59,17 @@ export function __resetLoginRateLimit(): void {
  * `verificationExpiresInSeconds` 이내에 `verify`를 부르지 않으면 만료 처리한다.
  */
 const VERIFICATION_TTL_MS = 600 * 1000;
-const EXISTING_EMAILS = new Set(
-  [SEED_LOGIN.email, memberMeArtisan.email, memberMeAdmin.email].map((email) =>
-    email.toLowerCase(),
-  ),
-);
+const SEED_EXISTING_EMAILS = [
+  SEED_LOGIN.email,
+  memberMeArtisan.email,
+  memberMeAdmin.email,
+].map((email) => email.toLowerCase());
+/**
+ * 이미 가입된 이메일 목록. 시드로 초기화하고, `/signup`·`/oauth2/complete-profile`이
+ * 성공할 때마다 새 이메일을 추가한다 — 안 그러면 "일반 가입으로 새 이메일 생성 → 같은
+ * 이메일로 소셜 OAuth 시도"처럼 두 흐름을 넘나드는 경우 중복 검사를 통과해버린다(PR 리뷰).
+ */
+const EXISTING_EMAILS = new Set(SEED_EXISTING_EMAILS);
 const emailVerificationState = new Map<
   string,
   { sentAt: number; verified: boolean }
@@ -71,6 +81,9 @@ export function __resetEmailVerificationState(): void {
   emailVerificationState.clear();
   nextSignupMemberId = 100;
   clearDynamicMember();
+  __clearMockOAuthLinkedMembers();
+  EXISTING_EMAILS.clear();
+  SEED_EXISTING_EMAILS.forEach((email) => EXISTING_EMAILS.add(email));
 }
 
 export const memberHandlers = [
@@ -213,9 +226,74 @@ export const memberHandlers = [
         role: "USER" as const,
         profileImageUrl: null,
       };
+      EXISTING_EMAILS.add(email);
       setMockIdentity("USER");
       setDynamicMember(member);
       return mockOk({ accessToken: SEED_SIGNUP_ACCESS_TOKEN, member }, 201);
+    },
+  ),
+
+  http.post<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/oauth2/complete-profile",
+    async ({ request }) => {
+      const body = (await request.json().catch(() => null)) as {
+        provider?: string;
+        email?: string;
+        name?: string;
+        phone?: string;
+      } | null;
+      if (!body?.provider || !body?.email || !body?.name || !body?.phone) {
+        return mockError(400, "INVALID_INPUT", "필수 항목이 비어 있어요.");
+      }
+      if (body.provider !== "naver" && body.provider !== "kakao") {
+        return mockError(400, "INVALID_INPUT", "지원하지 않는 provider예요.");
+      }
+      const provider = body.provider;
+      const email = body.email.toLowerCase();
+      // 실제 BE(`OAuthMemberService.requireNewEmail`)는 이미 가입된 이메일이면 신규
+      // 생성도 "연동"도 안 하고 무조건 CONFLICT를 던진다 — "기존 계정에 연동"하는 기능
+      // 자체가 없다(BE 소스 직접 대조로 확인). 이전엔 IA 문구("동일 이메일이면 소셜
+      // 연동")를 읽고 여기서 연동을 흉내냈지만, 그 IA 의도에 대응하는 BE 기능이 없고
+      // 목업 안에서도 이 분기에 실제로 도달할 방법이 없었다(네이버는 이메일 인증 요청
+      // 단계에서 먼저 막히고, 카카오는 provider가 주는 합성 이메일이 기존 이메일과 겹칠
+      // 일이 없음) — 죽은 코드였다.
+      if (EXISTING_EMAILS.has(email)) {
+        return mockError(409, "CONFLICT", "이미 가입된 이메일이에요.");
+      }
+      // 카카오는 provider가 이미 인증한 이메일을 주므로(§ suggestedEmail) 별도 인증이
+      // 없고, 네이버는 이메일을 직접 입력·인증해야 한다(§ IA "소셜 이메일 미제공 처리") —
+      // `/signup`(210행 부근)과 동일한 이메일 인증 흐름을 공유하므로 여기서도 똑같이
+      // 인증 완료 여부를 확인한다. 이전엔 이 검사가 빠져 있었다(PR 리뷰) — UI의
+      // `canSubmit` 가드로는 막히지만 목업 핸들러 자체의 계약은 아니었다.
+      if (
+        provider === "naver" &&
+        !emailVerificationState.get(email)?.verified
+      ) {
+        return mockError(403, "FORBIDDEN", "이메일 인증을 먼저 완료해주세요.");
+      }
+      const member: MemberProfileResponseDto = {
+        memberId: nextSignupMemberId++,
+        email,
+        name: body.name,
+        nickname: null,
+        role: "USER",
+        profileImageUrl: null,
+      };
+      EXISTING_EMAILS.add(email);
+      setMockIdentity(member.role);
+      setDynamicMember(member);
+      setMockOAuthLinkedMember(provider, member);
+      // 실제 응답은 평면 구조(memberId·email·role·accessToken)다 — `member` 객체를 그대로
+      // 안 돌려준다. `validation.ts`의 `oauthCompleteProfileResponseDto` 주석 참고.
+      return mockOk(
+        {
+          memberId: member.memberId,
+          email: member.email,
+          role: member.role,
+          accessToken: SEED_OAUTH_ACCESS_TOKEN,
+        },
+        201,
+      );
     },
   ),
 ];

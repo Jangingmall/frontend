@@ -3,12 +3,16 @@
 import { useMutation } from "@tanstack/react-query";
 
 import {
+  completeOAuthProfile,
+  type CompleteOAuthProfileRequest,
   login,
   requestEmailVerification,
   signup,
   type SignupRequest,
+  startMockOAuthLogin,
   verifyEmailCode,
 } from "@/api/member/api";
+import type { OAuthProvider } from "@/types/auth";
 
 /**
  * 로그인 mutation. `login()` api 함수 하나만 호출한다 — 로그인 응답에 `member`가 이미
@@ -43,5 +47,24 @@ export function useVerifyEmailCodeMutation() {
 export function useSignupMutation() {
   return useMutation({
     mutationFn: (body: SignupRequest) => signup(body),
+  });
+}
+
+/**
+ * 소셜 로그인 시작 mutation. `startMockOAuthLogin`은 목업 전용이라 실제 네트워크 호출이
+ * 없지만, 화면 조합 코드는 `api` 계층을 직접 호출하지 않는다는 레이어 규칙은 네트워크 호출
+ * 여부와 무관하게 적용된다 — 다른 placeholder 계약 함수들과 동일하게 mutation으로 감싼다.
+ */
+export function useStartOAuthLoginMutation() {
+  return useMutation({
+    mutationFn: (provider: OAuthProvider) => startMockOAuthLogin(provider),
+  });
+}
+
+/** 소셜 추가정보 제출 mutation. 세션 반영은 화면 조합 코드의 책임이다. */
+export function useCompleteOAuthProfileMutation() {
+  return useMutation({
+    mutationFn: (body: CompleteOAuthProfileRequest) =>
+      completeOAuthProfile(body),
   });
 }

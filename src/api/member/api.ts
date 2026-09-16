@@ -1,12 +1,20 @@
+import { publicEnv } from "@/lib/env";
 import { clientFetch, refreshAccessToken } from "@/lib/http/client";
-import type { AuthUser } from "@/types/auth";
+import type { AuthUser, OAuthProvider } from "@/types/auth";
 
 import { mapMemberProfile } from "./mapper";
+import { SEED_OAUTH_ACCESS_TOKEN } from "./mock/fixtures";
+import {
+  getMockOAuthLinkedMember,
+  setDynamicMember,
+  setMockIdentity,
+} from "./mock/mock-identity";
 import {
   accessTokenResponseDto,
   emailVerificationResponseDto,
   loginResponseDto,
   memberProfileResponseDto,
+  oauthCompleteProfileResponseDto,
   signupResponseDto,
 } from "./validation";
 
@@ -139,4 +147,77 @@ export async function signup(
   });
   const { accessToken, member } = signupResponseDto.parse(data);
   return { accessToken, user: mapMemberProfile(member) };
+}
+
+export type OAuthLoginResult =
+  | { outcome: "authenticated"; accessToken: string; user: AuthUser }
+  | {
+      outcome: "needsProfile";
+      provider: OAuthProvider;
+      suggestedEmail: string | null;
+    };
+
+/**
+ * 소셜 로그인 시작 — 목업 전용. 실제 흐름은 전체 페이지 리다이렉트(`GET
+ * /api/member/oauth2/{provider}` → 302로 Spring Security `/oauth2/authorization/{provider}`
+ * → 동의 화면 → BE 콜백 → 쿠키 기반 티켓 교환)라 fetch 왕복으로 재현할 방법이 없다. 이
+ * 함수는 그 전체를 클라이언트에서 한 번에 흉내낸다 — 이 provider로 이미 연동을 완료한 적
+ * 있으면 즉시 로그인, 처음이면 추가정보 입력이 필요하다는 결과를 돌려준다. 실제 백엔드
+ * 도메인이 정해지면 이 함수를 지우고 호출부를 `<a href="/api/member/oauth2/{provider}">`로
+ * 교체한다 — 시작 경로 자체는 BE 소스(`OAuthController`) 직접 대조로 확인됐다. 다만 그
+ * 뒤 단계(추가정보 제출)의 요청·응답 계약은 이 목업과 다르다 — `docs/api-contract.md` §9
+ * "OAuth 목업·실제 계약 괴리" 참고.
+ */
+export async function startMockOAuthLogin(
+  provider: OAuthProvider,
+): Promise<OAuthLoginResult> {
+  if (!publicEnv.apiMocking) {
+    throw new Error("소셜 로그인은 아직 준비 중입니다.");
+  }
+
+  const linked = getMockOAuthLinkedMember(provider);
+  if (linked) {
+    setMockIdentity(linked.role);
+    setDynamicMember(linked);
+    return {
+      outcome: "authenticated",
+      accessToken: SEED_OAUTH_ACCESS_TOKEN,
+      user: mapMemberProfile(linked),
+    };
+  }
+
+  // IA의 두 분기를 provider별로 하나씩 재현한다: 카카오는 항상 인증된 이메일을 제공해
+  // 이메일 인증 단계를 생략하고, 네이버는 이메일을 제공하지 않아 직접 입력·인증이
+  // 필요하다. 실제 제공자·BE 계약이 확정되기 전까지의 목업 전용 가정이다.
+  const suggestedEmail =
+    provider === "kakao" ? `kakao-${Date.now()}@midam.test` : null;
+  return { outcome: "needsProfile", provider, suggestedEmail };
+}
+
+export interface CompleteOAuthProfileRequest {
+  provider: OAuthProvider;
+  email: string;
+  name: string;
+  phone: string;
+}
+
+/**
+ * `POST /api/member/oauth2/complete-profile` → 소셜 추가정보 제출, 가입 + 자동 로그인.
+ * 응답엔 `name`이 없다(`validation.ts`의 `oauthCompleteProfileResponseDto` 주석 참고) —
+ * 방금 폼에서 받은 `body.name`을 그대로 쓴다. `login()`·`signup()`과 호출 형태를
+ * 맞추기 위해 반환 타입은 동일하게 `{ accessToken, user }`로 둔다.
+ */
+export async function completeOAuthProfile(
+  body: CompleteOAuthProfileRequest,
+): Promise<{ accessToken: string; user: AuthUser }> {
+  const data = await clientFetch<unknown>(
+    "/api/member/oauth2/complete-profile",
+    { method: "POST", body, auth: false },
+  );
+  const { accessToken, memberId, role } =
+    oauthCompleteProfileResponseDto.parse(data);
+  return {
+    accessToken,
+    user: { id: memberId, name: body.name, role },
+  };
 }

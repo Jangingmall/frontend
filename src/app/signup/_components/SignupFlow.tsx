@@ -2,12 +2,16 @@
 
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import type { OAuthLoginResult } from "@/api/member/api";
+import { resolveErrorMessage } from "@/constants/error-messages";
 import { safeReturnUrl } from "@/lib/auth/return-url";
+import { useStartOAuthLoginMutation } from "@/queries/member/mutations";
 import { useAuthStore } from "@/stores/auth";
+import type { OAuthProvider } from "@/types/auth";
 
-import { SignupInfoForm } from "./SignupInfoForm";
+import { SignupInfoForm, type SocialSignupContext } from "./SignupInfoForm";
 import { SignupMethodStep } from "./SignupMethodStep";
 import { SignupStepIndicator } from "./SignupStepIndicator";
 
@@ -16,6 +20,11 @@ type SignupStep = "method" | "info";
 interface SignupFlowProps {
   /** `/signup?returnUrl=...`의 원본 값. 검증은 `safeReturnUrl`이 소비 시점에 한다. */
   returnUrl: string | null;
+  /**
+   * `/login`의 원형 소셜 버튼에서 `/signup?provider=...`로 navigate해 넘어온 경우의 provider.
+   * `null`이면 이 화면에 직접 진입한 것 — 01단계(가입 수단 선택)부터 보여준다.
+   */
+  provider: OAuthProvider | null;
 }
 
 /**
@@ -39,21 +48,79 @@ interface SignupFlowProps {
  * 이 앱의 인증 store는 메모리 전용이라 "이미 로그인된 채 진입"이 아니고서야 `/signup`이
  * 마운트된 동안 `status`가 authenticated로 바뀌는 경우는 가입 성공뿐이다.
  */
-export function SignupFlow({ returnUrl }: SignupFlowProps) {
+export function SignupFlow({ returnUrl, provider }: SignupFlowProps) {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
   const [step, setStep] = useState<SignupStep>("method");
+  const [socialContext, setSocialContext] =
+    useState<SocialSignupContext | null>(null);
+  // 리뷰 F1: `startMockOAuthLogin`이 실패해도(예: `publicEnv.apiMocking`이 꺼진 배포)
+  // 버튼 클릭·`/login` 자동 진입 둘 다 조용히 끝나던 문제 — 01단계에 공통으로 보여줄
+  // 에러 메시지를 여기서 소유한다.
+  const [oauthErrorMessage, setOauthErrorMessage] = useState<string | null>(
+    null,
+  );
   const hasCheckedEntryGuard = useRef(false);
+  const startOAuthLoginMutation = useStartOAuthLoginMutation();
+
+  /**
+   * 소셜 버튼 클릭(`SignupMethodStep`)과 `/login`에서 넘어온 자동 진입(아래 effect) 둘 다
+   * 이 콜백 하나로 처리한다 — 목업 판정 결과를 다루는 로직은 한 곳에만 둔다. `useCallback`은
+   * 아래 effect의 의존성 배열을 안정시키기 위해서다(effect 자체는 `hasCheckedEntryGuard`로
+   * 이미 1회성이 보장돼 있어 참조 안정성이 없어도 동작엔 문제없었지만, exhaustive-deps 규칙을
+   * 우회하지 않고 정공법으로 지킨다).
+   */
+  const handleOAuthComplete = useCallback(
+    (result: OAuthLoginResult) => {
+      if (result.outcome === "authenticated") {
+        useAuthStore.getState().setSession(result.accessToken, result.user);
+        router.replace(safeReturnUrl(returnUrl, "/") as Route);
+        return;
+      }
+      setSocialContext({
+        provider: result.provider,
+        suggestedEmail: result.suggestedEmail,
+      });
+      setStep("info");
+    },
+    [returnUrl, router],
+  );
 
   useEffect(() => {
     if (status === "loading" || hasCheckedEntryGuard.current) return;
     hasCheckedEntryGuard.current = true;
     if (status === "authenticated") {
       router.replace(safeReturnUrl(returnUrl, "/") as Route);
+      return;
     }
-  }, [status, returnUrl, router]);
+    // status가 "anonymous"로 확정된 시점에만, `/login`에서 provider와 함께 넘어온 경우
+    // `SignupMethodStep`의 버튼 클릭과 동일한 로직을 한 번 자동 실행한다.
+    if (provider) {
+      startOAuthLoginMutation.mutate(provider, {
+        onSuccess: handleOAuthComplete,
+        onError: () => setOauthErrorMessage(resolveErrorMessage()),
+      });
+    }
+    // `hasCheckedEntryGuard` 가드가 있어 `handleOAuthComplete`·`startOAuthLoginMutation`이
+    // 매 렌더 새 참조라도 이 effect가 두 번째로 실제 로직을 실행하는 일은 없다 — 재실행돼도
+    // 위 가드에서 막힌다.
+  }, [
+    status,
+    returnUrl,
+    router,
+    provider,
+    startOAuthLoginMutation,
+    handleOAuthComplete,
+  ]);
 
-  if (status !== "anonymous") {
+  // `provider`로 진입했으면 목업 판정이 끝나 `step`이 "info"로 바뀌거나(추가정보 필요)
+  // 리다이렉트가 시작될 때까지(연동됨) 01단계 UI를 아예 그리지 않는다 — 안 그러면 그 사이
+  // 01단계가 잠깐 보였다 사라지는 깜빡임이 생긴다. mutation이 실패하면(목업에선 사실상
+  // 없지만 방어적으로) 무한 로딩에 갇히지 않도록 01단계로 빠져나간다.
+  const isResolvingOAuthEntry =
+    provider != null && step === "method" && !startOAuthLoginMutation.isError;
+
+  if (status !== "anonymous" || isResolvingOAuthEntry) {
     return (
       <output
         aria-live="polite"
@@ -77,13 +144,24 @@ export function SignupFlow({ returnUrl }: SignupFlowProps) {
 
       {step === "method" ? (
         <div className="mt-16 flex w-full max-w-[27rem] flex-col items-center">
-          <SignupMethodStep onSelectEmail={() => setStep("info")} />
+          <SignupMethodStep
+            onSelectEmail={() => setStep("info")}
+            onOAuthComplete={handleOAuthComplete}
+            onOAuthError={() => setOauthErrorMessage(resolveErrorMessage())}
+            errorMessage={oauthErrorMessage}
+          />
         </div>
       ) : (
         <div className="mt-16 flex w-full flex-col items-center">
           <SignupInfoForm
             returnUrl={returnUrl}
-            onCancel={() => setStep("method")}
+            socialContext={socialContext}
+            onCancel={() => {
+              setStep("method");
+              // 소셜 모드로 들어왔다가 취소하고 다시 "이메일로 가입하기"를 누르면 이메일
+              // 가입 모드로 정상 복귀해야 한다 — 안 지우면 소셜 모드가 그대로 남는다.
+              setSocialContext(null);
+            }}
           />
         </div>
       )}

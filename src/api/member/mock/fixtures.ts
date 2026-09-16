@@ -27,6 +27,8 @@ export const SEED_LOGIN = {
 export const SEED_VERIFICATION_CODE = "123456";
 /** 가입 성공 시 발급되는 access token(로그인 시드와 같은 접두사라 `/me`도 그대로 인정). */
 export const SEED_SIGNUP_ACCESS_TOKEN = "mock-access-token-signup";
+/** 소셜 로그인/가입 성공 시 발급되는 access token(같은 이유로 같은 접두사 공유). */
+export const SEED_OAUTH_ACCESS_TOKEN = "mock-access-token-oauth";
 
 export const memberMeUser: MemberProfileResponseDto = {
   memberId: 1,

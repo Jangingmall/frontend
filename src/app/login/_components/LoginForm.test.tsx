@@ -15,9 +15,10 @@ import { useAuthStore } from "@/stores/auth";
 import { LoginForm } from "./LoginForm";
 
 const replace = vi.fn();
+const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace }),
+  useRouter: () => ({ replace, push }),
 }));
 
 function renderLoginForm(returnUrl: string | null = null) {
@@ -34,6 +35,7 @@ function renderLoginForm(returnUrl: string | null = null) {
 
 beforeEach(() => {
   replace.mockClear();
+  push.mockClear();
   useAuthStore.setState({ status: "anonymous", accessToken: null, user: null });
   __resetLoginRateLimit();
   localStorage.clear();
@@ -286,15 +288,24 @@ describe("LoginForm", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it("카카오·네이버 버튼은 둘 다 비활성이다", () => {
+  it("카카오 버튼을 누르면 provider 쿼리와 함께 /signup으로 이동한다", async () => {
+    const user = userEvent.setup();
     renderLoginForm();
 
-    expect(
-      screen.getByRole("button", { name: "카카오로 로그인 (준비 중)" }),
-    ).toBeDisabled();
-    expect(
-      screen.getByRole("button", { name: "네이버로 로그인 (준비 중)" }),
-    ).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "카카오로 로그인" }));
+
+    expect(push).toHaveBeenCalledWith("/signup?provider=kakao");
+  });
+
+  it("네이버 버튼을 누르면 returnUrl도 그대로 이어서 넘긴다", async () => {
+    const user = userEvent.setup();
+    renderLoginForm("/products");
+
+    await user.click(screen.getByRole("button", { name: "네이버로 로그인" }));
+
+    expect(push).toHaveBeenCalledWith(
+      "/signup?provider=naver&returnUrl=%2Fproducts",
+    );
   });
 
   it("회원가입 링크가 returnUrl을 이어서 넘긴다(design.md §0.2 — /signup으로도 원래 목적지 복귀)", () => {

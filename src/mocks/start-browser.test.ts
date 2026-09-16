@@ -44,4 +44,19 @@ describe("startMockWorker", () => {
     await expect(startMockWorker()).resolves.toBeUndefined();
     expect(start).toHaveBeenCalledTimes(2);
   });
+
+  it("Vercel production이면 apiMocking이 켜져 있어도 워커를 띄우지 않는다(PR 리뷰 — 보안)", async () => {
+    // 처음엔 `NODE_ENV === "production"`로 막았다가 CI E2E(의도적으로 production
+    // 빌드에서 목업을 씀)까지 걸려 전부 실패한 적이 있다 — `publicEnv.isVercelProduction`
+    // (Vercel 실제 배포에서만 참)으로 바꿨다.
+    vi.doMock("@/lib/env", () => ({
+      publicEnv: { apiMocking: true, isVercelProduction: true },
+    }));
+    const { startMockWorker } = await import("./start-browser");
+
+    await expect(startMockWorker()).resolves.toBeUndefined();
+
+    expect(start).not.toHaveBeenCalled();
+    vi.doUnmock("@/lib/env");
+  });
 });

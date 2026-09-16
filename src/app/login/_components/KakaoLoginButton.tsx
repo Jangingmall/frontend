@@ -3,19 +3,25 @@
  * `889:61144` → node `889:61153`)에서 실제 아이콘 SVG를 그대로 가져왔다 — 브랜드 로고를
  * 임의로 그리지 않는다는 원칙(docs/architecture.md)을 지키면서도 플레이스홀더보다 정확하다.
  *
- * BE는 카카오 OAuth2를 이미 구현·테스트했고(`docs/회원_구현_현황.md`), same-origin rewrite도
- * `/oauth2/*`까지 선반영했다(`next.config.ts`) — 그런데도 비활성인 이유는 가리킬 실제 백엔드
- * 도메인이 아직 없어서다(`API_BASE_URL`이 목업용 더미 값). 도메인이 정해지면 `disabled`만
- * 떼고 `<a href="/api/member/oauth2/kakao">`로 바꾸면 된다.
+ * 실제 백엔드 도메인이 아직 없어(`API_BASE_URL`이 목업용 더미 값) 진짜 리다이렉트로는 못
+ * 붙이지만, 클릭하면 목업 OAuth 흐름으로 연결된다 — 실제 판정 로직은
+ * `/signup`(`SignupFlow`)에 있고, 이 버튼은 `provider` 쿼리와 함께 그리로 navigate만 한다.
+ * 도메인이 정해지면 이 버튼의 `onClick`을 `<a href="/api/member/oauth2/kakao">`로 바꾼다
+ * (시작 경로는 BE 소스 대조로 확인됨) — 다만 그 뒤 단계는 이 목업과 요청·응답 계약이
+ * 다르니 `api/member/api.ts`의 `startMockOAuthLogin` 주석과 `docs/api-contract.md`
+ * §9 "OAuth 목업·실제 계약 괴리"를 먼저 확인한다.
  */
-export function KakaoLoginButton() {
+interface KakaoLoginButtonProps {
+  onClick: () => void;
+}
+
+export function KakaoLoginButton({ onClick }: KakaoLoginButtonProps) {
   return (
     <button
       type="button"
-      disabled
-      aria-disabled="true"
-      aria-label="카카오로 로그인 (준비 중)"
-      className="size-12 shrink-0 cursor-not-allowed overflow-hidden rounded-full opacity-60"
+      onClick={onClick}
+      aria-label="카카오로 로그인"
+      className="size-12 shrink-0 overflow-hidden rounded-full"
     >
       <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
         <rect width="48" height="48" rx="24" fill="#FEE500" />

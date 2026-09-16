@@ -39,4 +39,14 @@ export function validateEnvironment(environment: NodeJS.ProcessEnv) {
 export const publicEnv = {
   apiMocking: process.env.NEXT_PUBLIC_API_MOCKING === "enabled",
   tossClientKey: process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "",
+  /**
+   * Vercel이 실제 production 배포에서만 자동으로 심어주는 값이다 — `NODE_ENV`와 달리
+   * "최적화된 빌드 모드"가 아니라 "어디에 떠 있는가"를 가리킨다. CI(`npm run build &&
+   * npm run start`)나 로컬 production 빌드는 `NODE_ENV`는 `"production"`이어도
+   * `VERCEL_ENV`는 비어 있다 — 그래서 목업을 production 배포에서만 막을 때는
+   * `NODE_ENV`가 아니라 이 값을 써야 한다(PR 리뷰 — CI E2E가 `NODE_ENV` 기준 차단에
+   * 걸려 전부 실패했던 사고). 서버·클라이언트 어디서나 같은 값을 보도록
+   * `NEXT_PUBLIC_VERCEL_ENV`(Vercel이 자동으로 클라이언트에도 노출하는 값)로 통일한다.
+   */
+  isVercelProduction: process.env.NEXT_PUBLIC_VERCEL_ENV === "production",
 } as const;
