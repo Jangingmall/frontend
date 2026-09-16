@@ -44,6 +44,10 @@ describe("Dialog", () => {
     const user = userEvent.setup();
     render(<DialogExample />);
     await user.click(screen.getByRole("button", { name: "열기" }));
+    // 모달의 다음 프레임 초기 포커스가 Select 클릭과 겹치지 않게 기다린다.
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "닫기" })).toHaveFocus(),
+    );
     await user.click(screen.getByRole("combobox", { name: "문의 유형" }));
     await user.click(screen.getByRole("option", { name: "배송 문의" }));
     expect(
