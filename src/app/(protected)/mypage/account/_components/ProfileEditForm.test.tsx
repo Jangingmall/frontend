@@ -82,9 +82,11 @@ describe("ProfileEditForm", () => {
     expect(onCancel).toHaveBeenCalled();
   });
 
-  it("소셜 계정이면 간편로그인 연동 정보를 읽기 전용으로 보여준다", () => {
+  it("소셜 계정이면 간편로그인 연동 배지를 보여준다", () => {
     renderForm({ ...LOCAL_PROFILE, authProvider: "kakao" });
 
-    expect(screen.getByDisplayValue("카카오 연동됨")).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "카카오 계정 연동계정" }),
+    ).toBeInTheDocument();
   });
 });

@@ -14,6 +14,8 @@ import { ApiError } from "@/lib/http/api-error";
 import { useUpdateProfileMutation } from "@/queries/member/mutations";
 import type { MemberProfile } from "@/types/member";
 
+import { ProviderBadge } from "./ProviderBadge";
+
 /**
  * 이름·휴대전화 수정 인라인 폼(Figma ID-1-edit). 비밀번호는 다루지 않는다 —
  * `PasswordChangeTab`으로 완전히 분리했다(design.md §7-8). 이메일은 BE에 변경
@@ -43,14 +45,6 @@ function splitPhone(phone: string): {
     phoneLast: rest.slice(4, 8),
   };
 }
-
-const PROVIDER_LABEL: Record<
-  Exclude<MemberProfile["authProvider"], "local">,
-  string
-> = {
-  naver: "네이버",
-  kakao: "카카오",
-};
 
 interface ProfileEditFormProps {
   profile: MemberProfile;
@@ -98,6 +92,8 @@ function ProfileEditForm({
       noValidate
       className="max-w-165 space-y-4 py-6"
     >
+      <h2 className="px-2 text-title-m text-font-dark">내 정보 수정하기</h2>
+
       {formError != null && (
         <p role="alert" className="text-body-s text-red-font">
           {formError}
@@ -114,6 +110,9 @@ function ProfileEditForm({
       <InputField label="이메일" value={profile.email} disabled readOnly />
 
       <div className="space-y-1">
+        <p className="px-2 py-1 text-caption text-font-dark">
+          휴대전화 <span className="text-red-font">*</span>
+        </p>
         <div className="flex items-center gap-2">
           <div className="w-32">
             <Controller
@@ -155,12 +154,10 @@ function ProfileEditForm({
       </div>
 
       {profile.authProvider !== "local" && (
-        <InputField
-          label="간편로그인"
-          value={`${PROVIDER_LABEL[profile.authProvider]} 연동됨`}
-          disabled
-          readOnly
-        />
+        <div className="space-y-1">
+          <p className="px-2 py-1 text-caption text-font-dark">간편로그인</p>
+          <ProviderBadge provider={profile.authProvider} variant="pill" />
+        </div>
       )}
 
       <div className="flex gap-2.5 pt-2">
