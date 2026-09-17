@@ -9,33 +9,33 @@ import { cn } from "@/lib/utils";
 /**
  * 마이페이지 공용 좌측 내비. Figma MY-6(비밀번호 재확인 게이트) 기준 8항목 —
  * 활성 항목은 어두운 배경(`--components/button/black`)+굵은 흰 글씨, 비활성 항목은
- * 배경 없이 진한 글씨(회색 아님) + 가운데 정렬, 12px 패딩(2026-09-17 `get_design_context`
+ * 배경 없이 진한 글씨(회색 아님) + 좌측 정렬, 12px 패딩(2026-09-17 `get_design_context`
  * 직접 대조로 확정 — 이전 버전은 메타데이터만 보고 GnbNav 스타일을 임의로 가져다 썼다).
  *
- * 이 작업(회원정보 수정)이 마이페이지 최초 착수라, "회원 정보 수정"·"상품 문의" 둘만 실제
- * 라우트가 있다. 나머지 6항목은 각각 다른 작업(T-27/29/30/20/31)이 라우트를 채울 때까지
- * `disabled`로 둔다 — `GnbNav`가 목적지 없는 항목("장인관"·"기획전")을 처리하는 것과 같은
- * 패턴(같은 텍스트 스타일 유지, hover만 뺌).
+ * "회원 정보 수정"·"상품 문의" 둘만 실제 화면이 있고, 나머지 6항목은 각 화면의 설계·구현이
+ * 아직 없어 `상품 문의`와 같은 "준비 중" placeholder 페이지로 연결한다.
  */
 interface MypageNavItem {
   label: string;
-  href?: Route;
-  disabled?: boolean;
+  href: Route;
 }
 
 const MYPAGE_NAV_ITEMS: MypageNavItem[] = [
-  { label: "주문 및 배송", disabled: true },
-  { label: "취소 · 교환 · 환불", disabled: true },
-  { label: "내가 쓴 후기", disabled: true },
-  { label: "찜 목록", disabled: true },
-  { label: "최근 본 상품", disabled: true },
+  { label: "주문 및 배송", href: "/mypage/orders" as Route },
+  {
+    label: "취소 · 교환 · 환불",
+    href: "/mypage/orders/cancellations" as Route,
+  },
+  { label: "내가 쓴 후기", href: "/mypage/reviews" as Route },
+  { label: "찜 목록", href: "/mypage/wishlist" as Route },
+  { label: "최근 본 상품", href: "/mypage/recent" as Route },
   { label: "상품 문의", href: "/mypage/inquiries" as Route },
   { label: "회원 정보 수정", href: "/mypage/account" as Route },
-  { label: "설정", disabled: true },
+  { label: "설정", href: "/mypage/settings" as Route },
 ];
 
 const ITEM_CLASS =
-  "flex items-center justify-center rounded-xs p-3 text-body-m text-center transition-colors";
+  "flex items-center justify-start rounded-xs p-3 text-body-m text-left transition-colors";
 
 function MypageSidebar() {
   const pathname = usePathname();
@@ -46,18 +46,6 @@ function MypageSidebar() {
       className="flex w-51 flex-col gap-1"
     >
       {MYPAGE_NAV_ITEMS.map((item) => {
-        if (item.disabled || !item.href) {
-          return (
-            <span
-              key={item.label}
-              aria-disabled="true"
-              className={cn(ITEM_CLASS, "text-font-dark")}
-            >
-              {item.label}
-            </span>
-          );
-        }
-
         const active = pathname === item.href;
 
         return (

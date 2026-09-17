@@ -23,38 +23,40 @@
 
 ### 2.1 공개 · 구매자
 
-| 화면                 | 경로                                             | 화면ID      | 접근 · 핵심 계약                                                                                         |
-| -------------------- | ------------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------- |
-| 홈                   | `/`                                              | HO-1        | 공개                                                                                                     |
-| 검색                 | `/search?q=`                                     | SR-1        | 공개                                                                                                     |
-| 상품 목록(전체)      | `/products` · `/products?preset=new\|best\|gift` | PL-1        | 공개. `preset`(목적별 큐레이션). 필터 없음                                                               |
-| 상품 목록(대분류)    | `/products?category={대분류}`                    | PL-2        | 공개. `sort`, `filter`, `page`                                                                           |
-| 상품 목록(소분류)    | `/products?category={소분류}`                    | PL-3        | 공개. `sort`, `filter`, `page`                                                                           |
-| 상품 상세            | `/products/[slug]-[productId]`                   | PD-1        | 공개. `productId`로 API 조회                                                                             |
-| 장인 목록            | `/artisans`                                      | AL-1        | 공개. **범위 밖**(장인관)                                                                                |
-| 장인 상세            | `/artisans/[slug]-[artisanId]`                   | AD-1        | 공개. **범위 밖**(장인관)                                                                                |
-| 장바구니             | `/cart`                                          | CA-1        | 비회원 허용, 독립 페이지                                                                                 |
-| 결제                 | `/checkout/[orderId]`                            | CO-1        | 로그인 필요                                                                                              |
-| 결제 실패            | `/checkout/fail`                                 | CO-4        | 로그인 필요. 실패 사유 표시 → 재시도 시 `/checkout/[orderId]` 복귀                                       |
-| 주문 완료            | `/checkout/[orderId]/complete`                   | OC-1        | 로그인 + 본인 주문 확인                                                                                  |
-| 마이페이지           | `/mypage`                                        | MY-1        | 로그인. 대시보드(프로필 + 최근 주문·찜·최근 본 상품). 적립금·구매등급 정책 미확정 시 프로필에서 제외(§9) |
-| 주문 내역            | `/mypage/orders`                                 | MY-2        | 로그인                                                                                                   |
-| 주문 상세            | `/mypage/orders/[orderId]`                       | OD-1        | 로그인 + 본인 주문                                                                                       |
-| 주문 취소 신청       | `/mypage/orders/[orderId]/cancel`                | RT-1        | 로그인 + 본인 주문. 개발 백로그 미편성(§9)                                                               |
-| 교환·반품 신청       | `/mypage/orders/[orderId]/return`                | RT-2        | 로그인 + 본인 주문. 개발 백로그 미편성(§9)                                                               |
-| 후기 관리            | `/mypage/reviews`                                | MY-3        | 로그인                                                                                                   |
-| 상품 문의            | `/mypage/inquiries`                              | —           | 로그인. Figma 마이페이지 좌측 내비 항목이나 화면 설계·API 계약이 없어 placeholder만("준비 중" 안내)      |
-| 찜·최근 본 상품      | `/mypage/wishlist`                               | MY-5        | 로그인. `tab=wishlist \| recent` (관심 장인 탭은 범위 밖)                                                |
-| 회원정보 수정        | `/mypage/account`                                | ID-1        | 로그인. `tab=info \| addresses \| payment-methods`. 배송지·결제수단 편집은 모달                          |
-| 설정                 | `/mypage/settings`                               | MY-11       | 로그인                                                                                                   |
-| 회원 탈퇴            | `/mypage/withdraw`                               | MY-12       | 로그인. 개발 백로그 미편성(§9)                                                                           |
-| 로그인               | `/login`                                         | LI-1        | 내부 상대 `returnUrl`만 허용 (§6)                                                                        |
-| 회원가입             | `/signup`                                        | SU-1 · SU-2 | 약관 동의 → 정보 입력을 in-page 스텝으로. IA는 약관을 `/signup/terms`로 분리하나 FE는 단일 라우트 스텝   |
-| 회원가입 완료        | `/signup/complete`                               | SU-3        | 가입 직후 1회 노출. 직접 접근 시 `/`로                                                                   |
-| 아이디·비밀번호 찾기 | `/find`                                          | LI-2        | 공개. 개발 백로그 미편성                                                                                 |
-| 비밀번호 재설정      | `/reset?token=`                                  | LI-3        | 공개. 개발 백로그 미편성                                                                                 |
-| 고객센터             | `/support`                                       | CS-1        | 공개. `section=faq \| shipping-returns \| dispute`. 개발 백로그 미편성(정적 3탭)                         |
-| 1:1 문의             | `/support/inquiry`                               | CS-2        | 공개. 개발 백로그 미편성(MVP 제외 — 이메일 안내 대체 가능)                                               |
+| 화면                 | 경로                                             | 화면ID      | 접근 · 핵심 계약                                                                                                                                                     |
+| -------------------- | ------------------------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 홈                   | `/`                                              | HO-1        | 공개                                                                                                                                                                 |
+| 검색                 | `/search?q=`                                     | SR-1        | 공개                                                                                                                                                                 |
+| 상품 목록(전체)      | `/products` · `/products?preset=new\|best\|gift` | PL-1        | 공개. `preset`(목적별 큐레이션). 필터 없음                                                                                                                           |
+| 상품 목록(대분류)    | `/products?category={대분류}`                    | PL-2        | 공개. `sort`, `filter`, `page`                                                                                                                                       |
+| 상품 목록(소분류)    | `/products?category={소분류}`                    | PL-3        | 공개. `sort`, `filter`, `page`                                                                                                                                       |
+| 상품 상세            | `/products/[slug]-[productId]`                   | PD-1        | 공개. `productId`로 API 조회                                                                                                                                         |
+| 장인 목록            | `/artisans`                                      | AL-1        | 공개. **범위 밖**(장인관)                                                                                                                                            |
+| 장인 상세            | `/artisans/[slug]-[artisanId]`                   | AD-1        | 공개. **범위 밖**(장인관)                                                                                                                                            |
+| 장바구니             | `/cart`                                          | CA-1        | 비회원 허용, 독립 페이지                                                                                                                                             |
+| 결제                 | `/checkout/[orderId]`                            | CO-1        | 로그인 필요                                                                                                                                                          |
+| 결제 실패            | `/checkout/fail`                                 | CO-4        | 로그인 필요. 실패 사유 표시 → 재시도 시 `/checkout/[orderId]` 복귀                                                                                                   |
+| 주문 완료            | `/checkout/[orderId]/complete`                   | OC-1        | 로그인 + 본인 주문 확인                                                                                                                                              |
+| 마이페이지           | `/mypage`                                        | MY-1        | 로그인. 대시보드(프로필 + 최근 주문·찜·최근 본 상품). 적립금·구매등급 정책 미확정 시 프로필에서 제외(§9)                                                             |
+| 주문 내역            | `/mypage/orders`                                 | MY-2        | 로그인. Figma 마이페이지 좌측 내비 항목이나 화면 설계·API 계약이 없어 placeholder만("준비 중" 안내)                                                                  |
+| 주문 상세            | `/mypage/orders/[orderId]`                       | OD-1        | 로그인 + 본인 주문                                                                                                                                                   |
+| 주문 취소 신청       | `/mypage/orders/[orderId]/cancel`                | RT-1        | 로그인 + 본인 주문. 개발 백로그 미편성(§9)                                                                                                                           |
+| 교환·반품 신청       | `/mypage/orders/[orderId]/return`                | RT-2        | 로그인 + 본인 주문. 개발 백로그 미편성(§9)                                                                                                                           |
+| 취소·교환·환불 내역  | `/mypage/orders/cancellations`                   | —           | 로그인. Figma 마이페이지 좌측 내비 항목이나 화면 설계·API 계약이 없어 placeholder만("준비 중" 안내)                                                                  |
+| 후기 관리            | `/mypage/reviews`                                | MY-3        | 로그인. Figma 마이페이지 좌측 내비 항목이나 화면 설계·API 계약이 없어 placeholder만("준비 중" 안내)                                                                  |
+| 상품 문의            | `/mypage/inquiries`                              | —           | 로그인. Figma 마이페이지 좌측 내비 항목이나 화면 설계·API 계약이 없어 placeholder만("준비 중" 안내)                                                                  |
+| 찜 목록              | `/mypage/wishlist`                               | MY-5        | 로그인. Figma 마이페이지 좌측 내비 항목이나 화면 설계·API 계약이 없어 placeholder만("준비 중" 안내)                                                                  |
+| 최근 본 상품         | `/mypage/recent`                                 | MY-5        | 로그인. Figma 마이페이지 좌측 내비 항목이나 화면 설계·API 계약이 없어 placeholder만("준비 중" 안내). 찜 목록과 별개 라우트 — Figma 좌측 내비에 두 항목이 분리돼 있다 |
+| 회원정보 수정        | `/mypage/account`                                | ID-1        | 로그인. `tab=info \| addresses \| payment-methods`. 배송지·결제수단 편집은 모달                                                                                      |
+| 설정                 | `/mypage/settings`                               | MY-11       | 로그인. Figma 마이페이지 좌측 내비 항목이나 화면 설계·API 계약이 없어 placeholder만("준비 중" 안내)                                                                  |
+| 회원 탈퇴            | `/mypage/withdraw`                               | MY-12       | 로그인. 개발 백로그 미편성(§9)                                                                                                                                       |
+| 로그인               | `/login`                                         | LI-1        | 내부 상대 `returnUrl`만 허용 (§6)                                                                                                                                    |
+| 회원가입             | `/signup`                                        | SU-1 · SU-2 | 약관 동의 → 정보 입력을 in-page 스텝으로. IA는 약관을 `/signup/terms`로 분리하나 FE는 단일 라우트 스텝                                                               |
+| 회원가입 완료        | `/signup/complete`                               | SU-3        | 가입 직후 1회 노출. 직접 접근 시 `/`로                                                                                                                               |
+| 아이디·비밀번호 찾기 | `/find`                                          | LI-2        | 공개. 개발 백로그 미편성                                                                                                                                             |
+| 비밀번호 재설정      | `/reset?token=`                                  | LI-3        | 공개. 개발 백로그 미편성                                                                                                                                             |
+| 고객센터             | `/support`                                       | CS-1        | 공개. `section=faq \| shipping-returns \| dispute`. 개발 백로그 미편성(정적 3탭)                                                                                     |
+| 1:1 문의             | `/support/inquiry`                               | CS-2        | 공개. 개발 백로그 미편성(MVP 제외 — 이메일 안내 대체 가능)                                                                                                           |
 
 ### 2.2 판매자
 
@@ -77,7 +79,7 @@
 - 상품 목록 `preset`은 목적별 큐레이션(`new` 신상품 · `best` 베스트 · `gift` 선물관)이다. 분류 이동 축인 `category`와 직교하며, `preset` 진입은 필터 없는 PL-1 상태다.
 - 상품 목록 sort URL 표현: `popular`, `newest`, `wishlist`, `sales`, `price-asc`, `price-desc` (기본 `popular`). API enum(`POPULAR` 등) 매핑은 API 계층에서 한다.
 - 장인 목록 sort URL 표현: `popular`, `most-products`, `recently-joined` (기본 `popular`) → API enum `POPULAR`, `MOST_PRODUCTS`, `RECENTLY_JOINED`.
-- 찜·최근 본 상품 탭: `tab=wishlist \| recent` (기본 `wishlist`).
+- 찜·최근 본 상품: Figma 좌측 내비에 별개 항목으로 있어 `tab` 쿼리 하나가 아니라 `/mypage/wishlist`·`/mypage/recent` 별도 라우트 2개를 쓴다.
 - 목록 페이지네이션은 번호 방식이다. `page`는 search parameter(`?page=3`)로 관리하고, 데이터 계층은 `useQuery` + `page` + `keepPreviousData`로 조회한다(→ [data-layer.md](data-layer.md) §6.7). 무한 스크롤은 쓰지 않는다.
 
 ## 4. 인증 라이프사이클

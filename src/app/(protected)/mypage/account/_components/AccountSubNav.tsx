@@ -19,7 +19,7 @@ const ACCOUNT_NAV_ITEMS: { value: AccountTab; label: string }[] = [
 ];
 
 const ITEM_CLASS =
-  "flex items-center justify-center rounded-xs p-3 text-body-m text-center transition-colors";
+  "flex items-center justify-start rounded-xs p-3 text-body-m text-left transition-colors";
 
 function AccountSubNav({ activeTab }: { activeTab: AccountTab }) {
   return (
