@@ -135,7 +135,7 @@ function PasswordChangeForm() {
   }
 
   return (
-    <div className="space-y-6 py-6">
+    <div className="max-w-165 space-y-6 py-6">
       <h2 className="px-3 text-title-m text-font-dark">비밀번호 변경</h2>
 
       <form

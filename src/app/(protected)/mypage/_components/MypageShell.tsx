@@ -8,10 +8,12 @@ import type { ReactNode } from "react";
  * — Figma 대조 결과 두 셸은 서로 다른 좌측 내비를 쓰지만 바깥 레이아웃(제목 위치, 2단
  * 구성, 사이드바 폭)은 동일하다.
  *
- * 콘텐츠 영역은 `flex-1`로 남은 폭을 다 차지하지 않는다 — Figma ID-1의 "Profile
- * Container"가 660px 고정폭이고, 사이드바-콘텐츠 간격(252px)과 콘텐츠-페이지 우측 여백
- * (276px)이 비슷해 그 660px 박스가 남은 공간 안에서 가운데 정렬된 것으로 측정됐다
- * (2026-09-17 `get_design_context` 대조). `max-w-165`(660px) + `mx-auto`로 재현한다.
+ * 콘텐츠 영역 자체엔 최대폭을 두지 않는다(`flex-1` 그대로) — Figma 화면마다 콘텐츠 폭이
+ * 다르다: ID-1(내 정보 수정)의 "Profile Container"는 660px 고정폭이지만, ID-3(배송지)의
+ * "Shipping Info"는 1116px로 사이드바 옆 남은 공간을 거의 다 쓴다(2026-09-17
+ * `get_design_context` 대조 — 처음엔 ID-1 수치만 보고 셸 레벨에 660px cap을 걸었다가
+ * 배송지 탭이 좁아지는 회귀를 만들었다). 좁은 폼 화면(`AccountInfoTab`/`ProfileEditForm`/
+ * `PasswordChangeTab`)이 각자 `max-w-165`를 갖는 이유다.
  */
 interface MypageShellProps {
   title: ReactNode;
@@ -25,9 +27,7 @@ function MypageShell({ title, sidebar, children }: MypageShellProps) {
       {title}
       <div className="flex gap-6">
         {sidebar}
-        <div className="min-w-0 flex-1">
-          <div className="mx-auto w-full max-w-165">{children}</div>
-        </div>
+        <div className="min-w-0 flex-1">{children}</div>
       </div>
     </div>
   );
