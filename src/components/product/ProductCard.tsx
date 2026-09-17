@@ -13,9 +13,8 @@ import {
 import { productBadgeLabel } from "@/constants/badge";
 import { cn } from "@/lib/utils";
 import type { ProductSummary } from "@/types/product";
+import { pickThumbnailVariant } from "@/utils/image";
 import { getProductPath } from "@/utils/product-url";
-
-import { pickThumbnailVariant } from "./product-thumbnail";
 
 interface ProductCardProps {
   product: ProductSummary;
