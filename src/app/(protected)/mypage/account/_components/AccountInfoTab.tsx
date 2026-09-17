@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ErrorState } from "@/components/common/error-state";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatPhone } from "@/constants/phone";
 import { ApiError } from "@/lib/http/api-error";
 import { useMemberProfileQuery } from "@/queries/member/queries";
 
@@ -12,10 +13,14 @@ import { ProfileEditForm } from "./ProfileEditForm";
 import { ProviderBadge } from "./ProviderBadge";
 
 /**
- * "내 정보" 탭(Figma ID-1/ID-1-edit). 기본은 이름·이메일(읽기 전용)·휴대전화·간편로그인
- * (소셜 계정만)을 보여주는 조회 화면이고, "수정하기" 버튼을 누르면 같은 자리에서
- * `ProfileEditForm`으로 바뀐다 — 모달이 아니라 인라인 전환이다. 비밀번호 변경은 별도 내비 탭
+ * "내 정보" 탭(Figma ID-1/ID-1-edit). 기본은 이름·이메일(읽기 전용)·휴대전화·간편로그인을
+ * 보여주는 조회 화면이고, "수정하기" 버튼을 누르면 같은 자리에서 `ProfileEditForm`으로
+ * 바뀐다 — 모달이 아니라 인라인 전환이다. 비밀번호 변경은 별도 내비 탭
  * (`AccountSubNav`/`PasswordChangeTab`)으로 완전히 분리되어 여기엔 없다.
+ *
+ * 간편로그인 행은 LOCAL 계정도 숨기지 않고 "연동되지 않음"으로 보여준다 — Figma
+ * ID-1-edit-local은 이 행 자체를 뺐지만, 조회 화면에서는 연동 여부를 명시하는 쪽으로
+ * 정정(사용자 피드백).
  *
  * Figma엔 "마케팅 수신동의" 행도 있지만 회원 API 응답에 그 값 자체가 없어(validation.ts
  * `memberProfileResponseDto` 참고) 뺐다 — routing-and-auth.md §9 대시보드 적립금·구매등급과
@@ -78,15 +83,15 @@ function AccountInfoTab() {
         <dt className="text-body-s-b text-font-dark">이메일</dt>
         <dd className="text-font-dark">{profile.email}</dd>
         <dt className="text-body-s-b text-font-dark">휴대전화</dt>
-        <dd className="text-font-dark">{profile.phone}</dd>
-        {profile.authProvider !== "local" && (
-          <>
-            <dt className="text-body-s-b text-font-dark">간편로그인</dt>
-            <dd>
-              <ProviderBadge provider={profile.authProvider} variant="circle" />
-            </dd>
-          </>
-        )}
+        <dd className="text-font-dark">{formatPhone(profile.phone)}</dd>
+        <dt className="text-body-s-b text-font-dark">간편로그인</dt>
+        <dd>
+          {profile.authProvider === "local" ? (
+            <span className="text-font-dark-subtle">연동되지 않음</span>
+          ) : (
+            <ProviderBadge provider={profile.authProvider} variant="circle" />
+          )}
+        </dd>
       </dl>
     </div>
   );

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/ui/input-field";
 import { Select, SelectItem } from "@/components/ui/select";
 import { resolveErrorMessage } from "@/constants/error-messages";
-import { PHONE_PREFIXES, type PhonePrefix } from "@/constants/phone";
+import { PHONE_PREFIXES, splitPhone } from "@/constants/phone";
 import { ApiError } from "@/lib/http/api-error";
 import { useUpdateProfileMutation } from "@/queries/member/mutations";
 import type { MemberProfile } from "@/types/member";
@@ -29,22 +29,6 @@ const profileFormSchema = z.object({
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
-
-function splitPhone(phone: string): {
-  phonePrefix: PhonePrefix;
-  phoneMiddle: string;
-  phoneLast: string;
-} {
-  const prefix = PHONE_PREFIXES.find((candidate) =>
-    phone.startsWith(candidate),
-  );
-  const rest = prefix ? phone.slice(prefix.length) : phone.slice(3);
-  return {
-    phonePrefix: prefix ?? "010",
-    phoneMiddle: rest.slice(0, 4),
-    phoneLast: rest.slice(4, 8),
-  };
-}
 
 interface ProfileEditFormProps {
   profile: MemberProfile;

@@ -36,14 +36,15 @@ describe("AccountInfoTab", () => {
 
     expect(await screen.findByText("김미담")).toBeInTheDocument();
     expect(screen.getByText(SEED_LOGIN.email)).toBeInTheDocument();
-    expect(screen.getByText("01011112222")).toBeInTheDocument();
+    expect(screen.getByText("010-1111-2222")).toBeInTheDocument();
   });
 
-  it("LOCAL 계정이면 간편로그인 행을 숨긴다", async () => {
+  it("LOCAL 계정이면 간편로그인이 연동되지 않음으로 나온다", async () => {
     renderTab();
 
     expect(await screen.findByText("김미담")).toBeInTheDocument();
-    expect(screen.queryByText("간편로그인")).not.toBeInTheDocument();
+    expect(screen.getByText("간편로그인")).toBeInTheDocument();
+    expect(screen.getByText("연동되지 않음")).toBeInTheDocument();
   });
 
   it("소셜 계정이면 간편로그인 행에 연동 배지를 보여준다", async () => {
