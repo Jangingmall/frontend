@@ -71,6 +71,50 @@ describe("PasswordChangeTab", () => {
     ).toBeInTheDocument();
   });
 
+  it("새 비밀번호를 입력하면 안전도 표시가 갱신된다", async () => {
+    const user = userEvent.setup();
+    renderTab();
+
+    const newPasswordInput = await screen.findByPlaceholderText("새 비밀번호");
+    await user.type(newPasswordInput, "NewPassw0rd!");
+
+    expect(await screen.findByText("비밀번호 안전도")).toBeInTheDocument();
+    expect(screen.getByText("매우 높음")).toBeInTheDocument();
+  });
+
+  it("영문·숫자·특수기호 중 3가지 미만이면 제출하지 않는다", async () => {
+    const user = userEvent.setup();
+    renderTab();
+
+    await user.type(
+      await screen.findByPlaceholderText("현재 비밀번호"),
+      SEED_LOGIN.password,
+    );
+    await user.type(screen.getByPlaceholderText("새 비밀번호"), "onlylower1");
+    await user.type(
+      screen.getByPlaceholderText("새 비밀번호 확인"),
+      "onlylower1",
+    );
+    await user.click(screen.getByRole("button", { name: "변경하기" }));
+
+    expect(
+      await screen.findByText(
+        "영문 대/소문자, 숫자, 특수기호(!,@,#,$,%) 중 3가지 이상 포함해주세요.",
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("'취소'를 누르면 입력한 값을 모두 지운다", async () => {
+    const user = userEvent.setup();
+    renderTab();
+
+    const newPasswordInput = await screen.findByPlaceholderText("새 비밀번호");
+    await user.type(newPasswordInput, "NewPassw0rd!");
+    await user.click(screen.getByRole("button", { name: "취소" }));
+
+    expect(newPasswordInput).toHaveValue("");
+  });
+
   it("현재 비밀번호가 틀리면 폼 레벨 에러를 보여준다", async () => {
     const user = userEvent.setup();
     renderTab();
