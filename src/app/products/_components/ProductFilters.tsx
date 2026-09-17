@@ -1,6 +1,9 @@
 "use client";
 
-import { canUseProductCrafts } from "@/api/products/integration";
+import {
+  canUseProductCrafts,
+  canUseProductMaterials,
+} from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -113,26 +116,28 @@ export function ProductFilters({
             onChange={onChange}
           />
         </AccordionItem>
-        <AccordionItem title="소재" value="material">
-          <div className="grid grid-cols-2 gap-1">
-            {materials.map((material) => {
-              const isSelected =
-                query.materials?.includes(material.id) ?? false;
-              return (
-                <Button
-                  key={material.id}
-                  type="button"
-                  variant={isSelected ? "solid" : "outline"}
-                  size="xs"
-                  aria-pressed={isSelected}
-                  onClick={() => handleMaterial(material.id)}
-                >
-                  {material.name}
-                </Button>
-              );
-            })}
-          </div>
-        </AccordionItem>
+        {canUseProductMaterials() && (
+          <AccordionItem title="소재" value="material">
+            <div className="grid grid-cols-2 gap-1">
+              {materials.map((material) => {
+                const isSelected =
+                  query.materials?.includes(material.id) ?? false;
+                return (
+                  <Button
+                    key={material.id}
+                    type="button"
+                    variant={isSelected ? "solid" : "outline"}
+                    size="xs"
+                    aria-pressed={isSelected}
+                    onClick={() => handleMaterial(material.id)}
+                  >
+                    {material.name}
+                  </Button>
+                );
+              })}
+            </div>
+          </AccordionItem>
+        )}
       </Accordion>
       <div className="flex min-h-9 items-center px-2">
         <Checkbox

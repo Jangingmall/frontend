@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// TODO BE 응답 확정 시 대조한다. 경로만 공개조회 계약에 있고 응답 형태는 미정이다.
+// MSW 화면 모델 검증. 실제 BE 분류 검증·명시적 ID 연결은 backend-validation/mapper에서 처리한다.
 export const productCategoriesDto = z.array(
   z
     .object({

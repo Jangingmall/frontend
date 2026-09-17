@@ -69,7 +69,7 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
     ).toBe(false);
   });
 
-  it("선택 데이터가 있어도 종목 UI를 숨기고 기존 필터는 유지한다", () => {
+  it("선택 데이터가 있어도 미지원 종목·소재 UI를 숨기고 가격 필터는 유지한다", () => {
     render(
       <ProductFilters
         query={query}
@@ -88,7 +88,9 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
       screen.queryByRole("button", { name: "사기장" }),
     ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "가격대" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "소재" })).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "소재" }),
+    ).not.toBeInTheDocument();
   });
 
   it("종목 선택지 조회도 시작하지 않는다", () => {

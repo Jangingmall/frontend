@@ -9,5 +9,11 @@ export function assertProductListApiReady() {
 }
 
 export function canUseProductCrafts() {
-  return publicEnv.apiMocking || publicEnv.productListApi === true;
+  // TODO 공예 종목 endpoint와 목록 필터 계약 구현·검증 후 별도로 활성화한다.
+  return publicEnv.apiMocking;
+}
+
+export function canUseProductMaterials() {
+  // TODO PD 분류 조건(subcategoryId/category) 및 목록 필터 계약 검증 후 별도로 활성화한다.
+  return publicEnv.apiMocking;
 }

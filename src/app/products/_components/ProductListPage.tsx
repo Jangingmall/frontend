@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { canUseProductMaterials } from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import {
   parseProductSearchParams,
@@ -68,6 +69,7 @@ export function ProductListPage({
     hasInitialQuery ? initialData : undefined,
   );
   const categories = useProductCategories(isReady, initialCategories);
+  const hasMaterialCapability = canUseProductMaterials();
   const materials = useProductMaterials(
     isReady && Boolean(query.category),
     query.category,
@@ -115,22 +117,25 @@ export function ProductListPage({
         <div className="flex flex-col gap-6 lg:flex-row">
           {query.category && (
             <>
-              {categories.isError || materials.isError ? (
+              {categories.isError ||
+              (hasMaterialCapability && materials.isError) ? (
                 <div className="lg:w-51 lg:shrink-0">
                   <ErrorState
                     title="필터를 불러오지 못했어요"
                     onRetry={() => {
                       void categories.refetch();
-                      void materials.refetch();
+                      if (hasMaterialCapability) void materials.refetch();
                     }}
                   />
                 </div>
-              ) : category && materials.data ? (
+              ) : category && (!hasMaterialCapability || materials.data) ? (
                 <ProductFilters
                   query={query}
                   category={category}
                   categories={categories.data ?? []}
-                  materials={materials.data}
+                  materials={
+                    hasMaterialCapability ? (materials.data ?? []) : []
+                  }
                   crafts={crafts.data ?? []}
                   isCraftsPending={crafts.isPending}
                   hasCraftsError={crafts.isError}
@@ -140,7 +145,8 @@ export function ProductListPage({
                   onChange={handleChange}
                   onReset={handleReset}
                 />
-              ) : categories.isPending || materials.isPending ? (
+              ) : categories.isPending ||
+                (hasMaterialCapability && materials.isPending) ? (
                 <Skeleton className="h-48 w-full lg:w-51 lg:shrink-0" />
               ) : (
                 <div className="lg:w-51 lg:shrink-0">

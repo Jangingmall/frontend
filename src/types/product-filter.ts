@@ -5,7 +5,7 @@ export interface ProductCategory {
   parentId: string | null;
   minPrice: number;
   maxPrice: number;
-  /** 운영 선택지 응답에서 받은 값. GNB URL과 별개이며 미매핑은 undefined. */
+  /** 확정 매핑에 등록하고 BE 응답에 존재하는 코드/ID. 미매핑은 undefined. */
   apiCode?: string;
 }
 

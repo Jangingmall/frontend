@@ -13,7 +13,11 @@ import {
   productCraftsDto,
   productMaterialsDto,
 } from "./filter-validation";
-import { assertProductListApiReady } from "./integration";
+import {
+  assertProductListApiReady,
+  canUseProductCrafts,
+  canUseProductMaterials,
+} from "./integration";
 import {
   mapProductCategories,
   mapProductCrafts,
@@ -82,6 +86,9 @@ export async function fetchProductMaterials(
   signal?: AbortSignal,
 ) {
   assertProductListApiReady();
+  if (!canUseProductMaterials()) {
+    throw new ApiError(503, { errorCode: "PRODUCT_MATERIALS_NOT_READY" });
+  }
   const search = await getOptionSearch(category, signal);
   const dto = await clientFetch<unknown>(`/api/products/materials${search}`, {
     auth: false,
@@ -99,8 +106,11 @@ export async function fetchProductCrafts(
   signal?: AbortSignal,
 ) {
   assertProductListApiReady();
+  if (!canUseProductCrafts()) {
+    throw new ApiError(503, { errorCode: "PRODUCT_CRAFTS_NOT_READY" });
+  }
   const search = await getOptionSearch(category, signal);
-  // TODO 현재 endpoint는 품목이다. 공예 종목 제공 API/의미 합의 전 운영 설정을 켜지 않는다.
+  // TODO 현재 endpoint는 품목이다. 공예 종목 API/의미를 확정해 맞추기 전 canUseProductCrafts를 활성화하지 않는다.
   const dto = await clientFetch<unknown>(
     `/api/products/subcategories${search}`,
     {

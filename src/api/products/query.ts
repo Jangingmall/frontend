@@ -2,7 +2,7 @@ import { publicEnv } from "@/lib/env";
 import { type GiftThemeId, toGiftThemeApi } from "@/types/gift-theme";
 import { type ProductListSort, toProductListSortApi } from "@/types/sort";
 
-import { canUseProductCrafts } from "./integration";
+import { canUseProductCrafts, canUseProductMaterials } from "./integration";
 
 /**
  * 상품 목록 조회 파라미터. PL-2·PL-3·홈 선물 섹션의 공개 필터를 담는다.
@@ -17,7 +17,7 @@ export interface ProductListQuery {
   sort?: ProductListSort;
   keyword?: string;
   category?: string;
-  /** 공예 종목. MSW 또는 검증 후 활성화한 준비용 API에서 사용한다. */
+  /** 공예 종목. 현재 MSW에서만 사용하며 목록 API 활성화와 별도로 지원 여부를 확인한다. */
   crafts?: string[];
   materials?: string[];
   minPrice?: number;
@@ -81,8 +81,12 @@ export function toProductListSearchParams(
       params.append("subcategory", craft);
     }
   }
-  for (const material of [...new Set(query.materials)].filter(Boolean).sort()) {
-    params.append("material", material);
+  if (canUseProductMaterials()) {
+    for (const material of [...new Set(query.materials)]
+      .filter(Boolean)
+      .sort()) {
+      params.append("material", material);
+    }
   }
   for (const key of ["minPrice", "maxPrice"] as const) {
     const value = query[key];

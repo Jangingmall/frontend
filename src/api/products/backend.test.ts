@@ -4,7 +4,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { publicEnv } from "@/lib/env";
 import { mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
-import { productKeys } from "@/queries/products/keys";
 
 import { fetchProductCategoriesServer, fetchProductList } from "./api";
 import {
@@ -114,23 +113,8 @@ describe("BE 연결 준비", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it("GNB URL은 보존하고 목록·선택지 요청에서만 응답의 분류 코드로 변환한다", async () => {
-    const requests: URL[] = [];
-    server.use(
-      http.get("*/api/products/categories", () => mockOk(categories)),
-      http.get("*/api/products", ({ request }) => {
-        requests.push(new URL(request.url));
-        return mockOk(backendPage);
-      }),
-      http.get("*/api/products/materials", ({ request }) => {
-        requests.push(new URL(request.url));
-        return mockOk(["백토", "목재"]);
-      }),
-      http.get("*/api/products/subcategories", ({ request }) => {
-        requests.push(new URL(request.url));
-        return mockOk([{ code: "SAGI", name: "사기장" }]);
-      }),
-    );
+  it("서버·브라우저 분류 조회는 GNB를 보존하지만 같은 이름만으로 코드를 연결하지 않는다", async () => {
+    server.use(http.get("*/api/products/categories", () => mockOk(categories)));
     const mapped = await fetchProductCategories();
     expect(mapped).toEqual(await fetchProductCategoriesServer());
     expect(mapped).toEqual(
@@ -138,69 +122,58 @@ describe("BE 연결 준비", () => {
         expect.objectContaining({
           id: "키친-다이닝",
           parentId: null,
-          apiCode: "KITCHEN",
+          apiCode: undefined,
         }),
         expect.objectContaining({
           id: "다기-찻잔",
           parentId: "키친-다이닝",
-          apiCode: "TEA",
+          apiCode: undefined,
         }),
       ]),
     );
-    const query = {
-      category: "다기-찻잔",
-      crafts: ["SAGI", "YUGI", "SAGI"],
-      materials: ["목재", "백토"],
-      minPrice: 1000,
-      maxPrice: 50000,
-      hasGiftWrap: true,
-      excludeSoldOut: false,
-    };
-    await fetchProductList(query);
-    await fetchProductListClient(query);
-    expect(await fetchProductMaterials("다기-찻잔")).toEqual([
-      { id: "백토", name: "백토" },
-      { id: "목재", name: "목재" },
-    ]);
-    expect(await fetchProductCrafts("다기-찻잔")).toEqual([
-      { id: "SAGI", name: "사기장" },
-    ]);
-    expect(requests).toHaveLength(4);
-    expect(
-      requests.every((url) => url.searchParams.get("category") === "TEA"),
-    ).toBe(true);
-    expect(requests[0].searchParams.getAll("subcategory")).toEqual([
-      "SAGI",
-      "YUGI",
-    ]);
-    expect(requests[0].searchParams.getAll("material")).toEqual([
-      "목재",
-      "백토",
-    ]);
-    expect(query.category).toBe("다기-찻잔");
-    expect(productKeys.materials("다기-찻잔")).not.toEqual(
-      productKeys.materials("그릇-접시"),
-    );
-    expect(productKeys.crafts("다기-찻잔")).not.toEqual(
-      productKeys.crafts("그릇-접시"),
-    );
   });
 
-  it("현재 공예 분류를 PD 분류로 오인하거나 미매핑 분류를 전체 조회로 바꾸지 않는다", async () => {
-    let listCalls = 0;
+  it.each([
+    { response: [{ categoryId: 1, name: "도자기" }] },
+    { response: categories },
+  ])(
+    "미확정 분류를 전체 조회로 바꾸지 않고 서버·브라우저 모두 차단한다: $response",
+    async ({ response }) => {
+      let listCalls = 0;
+      server.use(
+        http.get("*/api/products/categories", () => mockOk(response)),
+        http.get("*/api/products", () => {
+          listCalls++;
+          return mockOk(backendPage);
+        }),
+      );
+      for (const fetchList of [fetchProductList, fetchProductListClient]) {
+        await expect(
+          fetchList({ category: "다기-찻잔" }),
+        ).rejects.toMatchObject({
+          code: "PRODUCT_CATEGORY_NOT_MAPPED",
+        });
+      }
+      expect(listCalls).toBe(0);
+    },
+  );
+
+  it("목록 설정을 켜도 서버·브라우저 요청에서 미지원 소재·종목은 제외한다", async () => {
+    const requests: URLSearchParams[] = [];
     server.use(
-      http.get("*/api/products/categories", () =>
-        mockOk([{ categoryId: 1, name: "도자기" }]),
-      ),
-      http.get("*/api/products", () => {
-        listCalls++;
+      http.get("*/api/products", ({ request }) => {
+        requests.push(new URL(request.url).searchParams);
         return mockOk(backendPage);
       }),
     );
-    await expect(
-      fetchProductListClient({ category: "다기-찻잔" }),
-    ).rejects.toThrow();
-    expect(listCalls).toBe(0);
+    for (const fetchList of [fetchProductList, fetchProductListClient]) {
+      await fetchList({ crafts: ["SAGI"], materials: ["WOOD"] });
+    }
+    expect(requests).toHaveLength(2);
+    for (const params of requests) {
+      expect(params.has("subcategory")).toBe(false);
+      expect(params.has("material")).toBe(false);
+    }
   });
 
   it("비공개 상품·잘못된 가격·잘못된 페이지 응답은 화면에 전달하지 않는다", async () => {

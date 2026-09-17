@@ -8,7 +8,10 @@ import {
   fetchProductListClient,
   fetchProductMaterials,
 } from "@/api/products/client";
-import { canUseProductCrafts } from "@/api/products/integration";
+import {
+  canUseProductCrafts,
+  canUseProductMaterials,
+} from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { publicEnv } from "@/lib/env";
 import type { Page } from "@/types/api";
@@ -49,7 +52,10 @@ export function useProductMaterials(enabled: boolean, category?: string) {
   return useQuery({
     queryKey: productKeys.materials(category),
     queryFn: ({ signal }) => fetchProductMaterials(category, signal),
-    enabled: enabled && (publicEnv.apiMocking || Boolean(category)),
+    enabled:
+      enabled &&
+      canUseProductMaterials() &&
+      (publicEnv.apiMocking || Boolean(category)),
     staleTime: 3600000,
   });
 }

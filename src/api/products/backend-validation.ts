@@ -31,7 +31,7 @@ export const backendOptionsDto = z.array(
   }),
 );
 
-// 기존 숫자 categoryId도 수용하되 PD 이름과 일치하는지 mapper에서 별도로 확인한다.
+// 기존 숫자 categoryId도 수용하되 GNB 연결은 이름이 아닌 확정 ID 매핑으로만 판단한다.
 export const backendCategoriesDto = z.union([
   backendOptionsDto,
   z

@@ -8,6 +8,7 @@ import {
   backendCategoriesDto,
   backendProductListDto,
 } from "./backend-validation";
+import { PRODUCT_CATEGORY_API_CODES } from "./category-mapping";
 
 export function mapBackendProductList(data: unknown): Page<ProductSummary> {
   const dto = backendProductListDto.parse(data);
@@ -33,15 +34,13 @@ export function mapBackendProductList(data: unknown): Page<ProductSummary> {
   };
 }
 
-export function mapBackendProductCategories(data: unknown): ProductCategory[] {
+export function mapBackendProductCategories(
+  data: unknown,
+  categoryCodes: Readonly<Record<string, string>> = PRODUCT_CATEGORY_API_CODES,
+): ProductCategory[] {
   const options = backendCategoriesDto.parse(data);
-  const byName = new Map(
-    options.map((item) => [toGnbCategoryCode(item.name), item.code]),
-  );
-  if (
-    byName.size !== options.length ||
-    new Set(options.map((item) => item.code)).size !== options.length
-  ) {
+  const availableCodes = new Set(options.map((item) => item.code));
+  if (availableCodes.size !== options.length) {
     throw new ApiError(502, { errorCode: "PRODUCT_CATEGORY_MAPPING_INVALID" });
   }
   // 계층·URL은 기존 PD/GNB 정의에서 가져온다. BE에 설명·parentId·가격 집계를 새로 요구하지 않는다.
@@ -54,6 +53,9 @@ export function mapBackendProductCategories(data: unknown): ProductCategory[] {
   });
   return categories.map((category) => {
     const id = toGnbCategoryCode(category.name);
+    const code = Object.hasOwn(categoryCodes, id)
+      ? categoryCodes[id]
+      : undefined;
     return {
       id,
       name: category.name,
@@ -62,7 +64,7 @@ export function mapBackendProductCategories(data: unknown): ProductCategory[] {
       // Figma 가격 슬라이더의 UI 범위이며 상품 가격 통계가 아니다.
       minPrice: 1000,
       maxPrice: 9990000,
-      apiCode: byName.get(id),
+      apiCode: code && availableCodes.has(code) ? code : undefined,
     };
   });
 }
