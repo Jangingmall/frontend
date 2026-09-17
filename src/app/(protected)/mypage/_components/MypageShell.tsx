@@ -7,6 +7,11 @@ import type { ReactNode } from "react";
  * (4항목 서브내비, "회원 정보 수정" 제목)가 좌측 내비 내용만 다르고 이 뼈대는 공유한다
  * — Figma 대조 결과 두 셸은 서로 다른 좌측 내비를 쓰지만 바깥 레이아웃(제목 위치, 2단
  * 구성, 사이드바 폭)은 동일하다.
+ *
+ * 콘텐츠 영역은 `flex-1`로 남은 폭을 다 차지하지 않는다 — Figma ID-1의 "Profile
+ * Container"가 660px 고정폭이고, 사이드바-콘텐츠 간격(252px)과 콘텐츠-페이지 우측 여백
+ * (276px)이 비슷해 그 660px 박스가 남은 공간 안에서 가운데 정렬된 것으로 측정됐다
+ * (2026-09-17 `get_design_context` 대조). `max-w-165`(660px) + `mx-auto`로 재현한다.
  */
 interface MypageShellProps {
   title: ReactNode;
@@ -20,7 +25,9 @@ function MypageShell({ title, sidebar, children }: MypageShellProps) {
       {title}
       <div className="flex gap-6">
         {sidebar}
-        <div className="min-w-0 flex-1">{children}</div>
+        <div className="min-w-0 flex-1">
+          <div className="mx-auto w-full max-w-165">{children}</div>
+        </div>
       </div>
     </div>
   );

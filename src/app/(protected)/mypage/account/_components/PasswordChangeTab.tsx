@@ -123,7 +123,7 @@ function PasswordChangeForm() {
       <form
         onSubmit={(event) => void handleSubmit(submit)(event)}
         noValidate
-        className="max-w-165 space-y-3 px-3"
+        className="space-y-3 px-3"
       >
         {formError != null && (
           <p role="alert" className="text-body-s text-red-font">

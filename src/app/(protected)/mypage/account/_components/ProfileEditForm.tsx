@@ -90,7 +90,7 @@ function ProfileEditForm({
     <form
       onSubmit={(event) => void handleSubmit(submit)(event)}
       noValidate
-      className="max-w-165 space-y-4 py-6"
+      className="space-y-4 py-6"
     >
       <h2 className="px-2 text-title-m text-font-dark">내 정보 수정하기</h2>
 
