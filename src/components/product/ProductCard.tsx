@@ -32,7 +32,9 @@ export function ProductCard({
   variant = "default",
 }: ProductCardProps) {
   const [hasImageError, setHasImageError] = useState(false);
-  const thumbnail = pickThumbnailVariant(product.thumbnail, 640);
+  const thumbnailUrl = product.thumbnail
+    ? pickThumbnailVariant(product.thumbnail, 640)?.url
+    : product.thumbnailUrl;
   const href = getProductPath(product);
   const badge = product.primaryBadge
     ? productBadgeLabel(product.primaryBadge)
@@ -47,9 +49,9 @@ export function ProductCard({
       >
         <Image
           src={
-            hasImageError || !thumbnail
+            hasImageError || !thumbnailUrl
               ? "/images/product-placeholder.png"
-              : thumbnail.url
+              : thumbnailUrl
           }
           alt=""
           fill
@@ -87,15 +89,18 @@ export function ProductCard({
           >
             {product.name}
           </Link>
-          <p
-            className={cn(
-              "mt-1 truncate text-body-m",
-              variant === "list" && "mt-0 text-font-dark/60",
-              variant === "related" && "mt-0 leading-normal text-font-dark/60",
-            )}
-          >
-            {product.artisan.name}
-          </p>
+          {product.artisan.name && (
+            <p
+              className={cn(
+                "mt-1 truncate text-body-m",
+                variant === "list" && "mt-0 text-font-dark/60",
+                variant === "related" &&
+                  "mt-0 leading-normal text-font-dark/60",
+              )}
+            >
+              {product.artisan.name}
+            </p>
+          )}
         </div>
         <button
           type="button"
@@ -123,7 +128,7 @@ export function ProductCard({
         </span>
         {product.rating !== null && (
           <span
-            aria-label={`평점 ${product.rating.toFixed(1)}, 후기 ${product.reviewCount}개`}
+            aria-label={`평점 ${product.rating.toFixed(1)}${product.reviewCount === null ? "" : `, 후기 ${product.reviewCount}개`}`}
             className={cn(
               "inline-flex items-center gap-1",
               variant !== "default" && "gap-0.5 text-font-label",

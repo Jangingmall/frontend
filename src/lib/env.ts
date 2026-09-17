@@ -9,6 +9,11 @@ const schema = z.object({
   NEXT_PUBLIC_TOSS_CLIENT_KEY: z.string().optional().or(z.literal("")),
   // "enabled"이면 MSW 목업으로 동작(백엔드 불필요). 비어 있으면 실제 백엔드.
   NEXT_PUBLIC_API_MOCKING: z.enum(["enabled"]).optional().or(z.literal("")),
+  // BE·인프라 검증 전 기본 비활성. MSW와 별개인 상품 목록 계약 활성화 설정이다.
+  NEXT_PUBLIC_PRODUCT_LIST_API: z
+    .enum(["enabled"])
+    .optional()
+    .or(z.literal("")),
 });
 
 export function validateEnvironment(environment: NodeJS.ProcessEnv) {
@@ -38,6 +43,7 @@ export function validateEnvironment(environment: NodeJS.ProcessEnv) {
  */
 export const publicEnv = {
   apiMocking: process.env.NEXT_PUBLIC_API_MOCKING === "enabled",
+  productListApi: process.env.NEXT_PUBLIC_PRODUCT_LIST_API === "enabled",
   tossClientKey: process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "",
   /**
    * Vercel이 실제 production 배포에서만 자동으로 심어주는 값이다 — `NODE_ENV`와 달리

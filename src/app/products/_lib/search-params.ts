@@ -1,5 +1,8 @@
+import {
+  canUseProductCrafts,
+  canUseProductMaterials,
+} from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
-import { publicEnv } from "@/lib/env";
 import { PRODUCT_LIST_SORT, type ProductListSort } from "@/types/sort";
 
 function parsePrice(value: string | null): number | undefined {
@@ -26,10 +29,12 @@ export function parseProductSearchParams(
       : "popular",
     category: params.get("category") || undefined,
     keyword: params.get("keyword") || undefined,
-    crafts: publicEnv.apiMocking
+    crafts: canUseProductCrafts()
       ? [...new Set(params.getAll("subcategory").filter(Boolean))].sort()
       : [],
-    materials: [...new Set(params.getAll("material").filter(Boolean))].sort(),
+    materials: canUseProductMaterials()
+      ? [...new Set(params.getAll("material").filter(Boolean))].sort()
+      : [],
     minPrice,
     maxPrice,
     hasGiftWrap: params.get("hasGiftWrap") === "true",
@@ -42,13 +47,19 @@ export function updateProductSearchParams(
   patch: Partial<ProductListQuery>,
 ): URLSearchParams {
   const params = new URLSearchParams(current);
-  if (!publicEnv.apiMocking) params.delete("subcategory");
+  if (!canUseProductCrafts()) params.delete("subcategory");
+  if (!canUseProductMaterials()) params.delete("material");
   if (!("page" in patch)) params.delete("page");
   if ("category" in patch && patch.category !== current.get("category")) {
     params.delete("subcategory");
   }
   for (const [key, value] of Object.entries(patch)) {
-    if (key === "size" || (key === "crafts" && !publicEnv.apiMocking)) continue;
+    if (
+      key === "size" ||
+      (key === "crafts" && !canUseProductCrafts()) ||
+      (key === "materials" && !canUseProductMaterials())
+    )
+      continue;
     const param =
       key === "materials" ? "material" : key === "crafts" ? "subcategory" : key;
     params.delete(param);

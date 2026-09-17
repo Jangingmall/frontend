@@ -5,6 +5,8 @@ export interface ProductCategory {
   parentId: string | null;
   minPrice: number;
   maxPrice: number;
+  /** 확정 매핑에 등록하고 BE 응답에 존재하는 코드/ID. 미매핑은 undefined. */
+  apiCode?: string;
 }
 
 export interface ProductMaterial {

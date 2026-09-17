@@ -1,8 +1,15 @@
+import { publicEnv } from "@/lib/env";
 import { fetchPublicApi } from "@/lib/http/fetcher";
 import { isrTags } from "@/lib/isr/tags";
 import type { Page } from "@/types/api";
 
+import {
+  mapBackendProductCategories,
+  mapBackendProductList,
+  resolveProductCategoryCode,
+} from "./backend-mapper";
 import { productCategoriesDto } from "./filter-validation";
+import { assertProductListApiReady } from "./integration";
 import { mapProductCategories, mapProductListPage } from "./mapper";
 import type { ProductSummary } from "./model";
 import {
@@ -16,11 +23,14 @@ import { productListResponseDto } from "./validation";
 const PRODUCT_LIST_REVALIDATE = 3600;
 
 export async function fetchProductCategoriesServer() {
+  assertProductListApiReady();
   const dto = await fetchPublicApi<unknown>("/api/products/categories", {
     tags: [isrTags.productList()],
     revalidate: PRODUCT_LIST_REVALIDATE,
   });
-  return mapProductCategories(productCategoriesDto.parse(dto));
+  return publicEnv.apiMocking
+    ? mapProductCategories(productCategoriesDto.parse(dto))
+    : mapBackendProductCategories(dto);
 }
 
 /**
@@ -33,13 +43,26 @@ export async function fetchProductCategoriesServer() {
 export async function fetchProductList(
   query: ProductListQuery = {},
 ): Promise<Page<ProductSummary>> {
+  assertProductListApiReady();
   const { page, size } = resolveProductListPaging(query);
-  const search = toProductListSearchParams(query);
+  const apiQuery =
+    !publicEnv.apiMocking && query.category
+      ? {
+          ...query,
+          category: resolveProductCategoryCode(
+            query.category,
+            await fetchProductCategoriesServer(),
+          ),
+        }
+      : query;
+  const search = toProductListSearchParams(apiQuery);
 
   const dto = await fetchPublicApi<unknown>(`/api/products?${search}`, {
     tags: [isrTags.productList()],
     revalidate: PRODUCT_LIST_REVALIDATE,
   });
 
-  return mapProductListPage(productListResponseDto.parse(dto), { page, size });
+  return publicEnv.apiMocking
+    ? mapProductListPage(productListResponseDto.parse(dto), { page, size })
+    : mapBackendProductList(dto);
 }

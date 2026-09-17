@@ -1,10 +1,13 @@
 "use client";
 
+import {
+  canUseProductCrafts,
+  canUseProductMaterials,
+} from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { publicEnv } from "@/lib/env";
 import type {
   ProductCategory,
   ProductCraft,
@@ -61,13 +64,13 @@ export function ProductFilters({
         onReset={onReset}
         multiple
         defaultValue={
-          publicEnv.apiMocking && isSubcategory && query.crafts?.length
+          canUseProductCrafts() && isSubcategory && query.crafts?.length
             ? ["craft"]
             : []
         }
         className="[&>div:first-child]:px-2 [&>div:first-child]:pt-2 [&>div:first-child>button]:underline"
       >
-        {isSubcategory && publicEnv.apiMocking && (
+        {isSubcategory && canUseProductCrafts() && (
           <AccordionItem title={category.name} value="craft">
             <ProductCraftFilter
               crafts={crafts}
@@ -113,26 +116,28 @@ export function ProductFilters({
             onChange={onChange}
           />
         </AccordionItem>
-        <AccordionItem title="소재" value="material">
-          <div className="grid grid-cols-2 gap-1">
-            {materials.map((material) => {
-              const isSelected =
-                query.materials?.includes(material.id) ?? false;
-              return (
-                <Button
-                  key={material.id}
-                  type="button"
-                  variant={isSelected ? "solid" : "outline"}
-                  size="xs"
-                  aria-pressed={isSelected}
-                  onClick={() => handleMaterial(material.id)}
-                >
-                  {material.name}
-                </Button>
-              );
-            })}
-          </div>
-        </AccordionItem>
+        {canUseProductMaterials() && (
+          <AccordionItem title="소재" value="material">
+            <div className="grid grid-cols-2 gap-1">
+              {materials.map((material) => {
+                const isSelected =
+                  query.materials?.includes(material.id) ?? false;
+                return (
+                  <Button
+                    key={material.id}
+                    type="button"
+                    variant={isSelected ? "solid" : "outline"}
+                    size="xs"
+                    aria-pressed={isSelected}
+                    onClick={() => handleMaterial(material.id)}
+                  >
+                    {material.name}
+                  </Button>
+                );
+              })}
+            </div>
+          </AccordionItem>
+        )}
       </Accordion>
       <div className="flex min-h-9 items-center px-2">
         <Checkbox

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   DEFAULT_PRODUCT_LIST_SIZE,
@@ -6,6 +6,8 @@ import {
   resolveProductListPaging,
   toProductListSearchParams,
 } from "./query";
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 describe("resolveProductListPaging", () => {
   it("값이 없으면 기본값을 쓴다", () => {

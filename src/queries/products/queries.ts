@@ -8,6 +8,10 @@ import {
   fetchProductListClient,
   fetchProductMaterials,
 } from "@/api/products/client";
+import {
+  canUseProductCrafts,
+  canUseProductMaterials,
+} from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { publicEnv } from "@/lib/env";
 import type { Page } from "@/types/api";
@@ -44,24 +48,26 @@ export function useProductCategories(
   });
 }
 
-export function useProductMaterials(enabled: boolean) {
-  // TODO #48: PD 분류별 소재 조회를 연결할 때 요청과 query key에 category를
-  // 함께 넣어 서로 다른 분류의 선택지가 캐시를 공유하지 않게 한다.
+export function useProductMaterials(enabled: boolean, category?: string) {
   return useQuery({
-    queryKey: productKeys.materials,
-    queryFn: ({ signal }) => fetchProductMaterials(signal),
-    enabled,
+    queryKey: productKeys.materials(category),
+    queryFn: ({ signal }) => fetchProductMaterials(category, signal),
+    enabled:
+      enabled &&
+      canUseProductMaterials() &&
+      (publicEnv.apiMocking || Boolean(category)),
     staleTime: 3600000,
   });
 }
 
-export function useProductCrafts(enabled: boolean) {
-  // TODO #48: PD 분류별 요청·캐시와 상품 목록의 복수 필터를 함께 검증한 뒤
-  // 아래 제한과 ProductFilters·search-params·목록 직렬화의 MSW 제한을 해제한다.
+export function useProductCrafts(enabled: boolean, category?: string) {
   return useQuery({
-    queryKey: productKeys.crafts,
-    queryFn: ({ signal }) => fetchProductCrafts(signal),
-    enabled: enabled && publicEnv.apiMocking,
+    queryKey: productKeys.crafts(category),
+    queryFn: ({ signal }) => fetchProductCrafts(category, signal),
+    enabled:
+      enabled &&
+      canUseProductCrafts() &&
+      (publicEnv.apiMocking || Boolean(category)),
     staleTime: 3600000,
   });
 }
