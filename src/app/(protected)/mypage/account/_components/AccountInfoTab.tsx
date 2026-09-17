@@ -77,15 +77,15 @@ function AccountInfoTab() {
         </Button>
       </div>
 
-      <dl className="grid grid-cols-[5.625rem_1fr] items-center gap-y-3 text-body-s">
-        <dt className="text-body-s-b text-font-dark">이름</dt>
-        <dd className="text-font-dark">{profile.name}</dd>
-        <dt className="text-body-s-b text-font-dark">이메일</dt>
-        <dd className="text-font-dark">{profile.email}</dd>
-        <dt className="text-body-s-b text-font-dark">휴대전화</dt>
-        <dd className="text-font-dark">{formatPhone(profile.phone)}</dd>
-        <dt className="text-body-s-b text-font-dark">간편로그인</dt>
-        <dd>
+      <dl className="grid grid-cols-[5.625rem_1fr] items-center gap-x-6 gap-y-3 text-body-s">
+        <dt className="py-2 text-body-s-b text-font-dark">이름</dt>
+        <dd className="py-2 text-font-dark">{profile.name}</dd>
+        <dt className="py-2 text-body-s-b text-font-dark">이메일</dt>
+        <dd className="py-2 text-font-dark">{profile.email}</dd>
+        <dt className="py-2 text-body-s-b text-font-dark">휴대전화</dt>
+        <dd className="py-2 text-font-dark">{formatPhone(profile.phone)}</dd>
+        <dt className="py-2 text-body-s-b text-font-dark">간편로그인</dt>
+        <dd className="py-2">
           {profile.authProvider === "local" ? (
             <span className="text-font-dark-subtle">연동되지 않음</span>
           ) : (
