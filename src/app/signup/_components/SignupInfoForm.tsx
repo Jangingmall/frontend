@@ -13,6 +13,7 @@ import { InputField } from "@/components/ui/input-field";
 import { ProgressBar, type ProgressState } from "@/components/ui/progress-bar";
 import { Select, SelectItem } from "@/components/ui/select";
 import { resolveErrorMessage } from "@/constants/error-messages";
+import { PHONE_PREFIXES } from "@/constants/phone";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useCompleteOAuthProfileMutation,
@@ -35,8 +36,6 @@ import { TermsAgreementFields } from "./TermsAgreementFields";
  *
  * 이메일 인증은 실제 BE 계약이 아니라 placeholder다(design.md §0.1·§7-2).
  */
-
-const PHONE_PREFIXES = ["010", "011", "016", "017", "018", "019"] as const;
 
 const PASSWORD_SPECIAL_CHARS = "!@#$%";
 
