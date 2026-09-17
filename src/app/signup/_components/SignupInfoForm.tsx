@@ -10,9 +10,13 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/ui/input-field";
-import { ProgressBar, type ProgressState } from "@/components/ui/progress-bar";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { Select, SelectItem } from "@/components/ui/select";
 import { resolveErrorMessage } from "@/constants/error-messages";
+import {
+  countPasswordClasses,
+  passwordStrengthState,
+} from "@/constants/password";
 import { PHONE_PREFIXES } from "@/constants/phone";
 import { ApiError } from "@/lib/http/api-error";
 import {
@@ -36,31 +40,6 @@ import { TermsAgreementFields } from "./TermsAgreementFields";
  *
  * 이메일 인증은 실제 BE 계약이 아니라 placeholder다(design.md §0.1·§7-2).
  */
-
-const PASSWORD_SPECIAL_CHARS = "!@#$%";
-
-function countPasswordClasses(value: string): number {
-  let count = 0;
-  if (/[A-Z]/.test(value)) count += 1;
-  if (/[a-z]/.test(value)) count += 1;
-  if (/\d/.test(value)) count += 1;
-  if (new RegExp(`[${PASSWORD_SPECIAL_CHARS}]`).test(value)) count += 1;
-  return count;
-}
-
-function passwordStrengthState(password: string): {
-  state: ProgressState;
-  label: string;
-} {
-  if (password.length === 0) return { state: "default", label: "" };
-  const classes = countPasswordClasses(password);
-  if (password.length < 8 || classes <= 1) {
-    return { state: "alert", label: "매우낮음" };
-  }
-  if (classes === 2) return { state: "caution", label: "낮음" };
-  if (classes === 3) return { state: "good", label: "보통" };
-  return { state: "perfect", label: "높음" };
-}
 
 const nameSchema = z
   .string()
