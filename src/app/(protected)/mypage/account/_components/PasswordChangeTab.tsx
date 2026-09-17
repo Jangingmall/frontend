@@ -177,11 +177,11 @@ function PasswordChangeForm() {
             {...register("newPassword")}
           />
         </FieldRow>
-        <FieldRow label="새 비밀번호 확인" required>
+        <FieldRow label="비밀번호 확인" required>
           <InputField
-            aria-label="새 비밀번호 확인"
+            aria-label="비밀번호 확인"
             type="password"
-            placeholder="새 비밀번호 확인"
+            placeholder="비밀번호 확인"
             error={errors.newPasswordConfirm?.message}
             {...register("newPasswordConfirm")}
           />

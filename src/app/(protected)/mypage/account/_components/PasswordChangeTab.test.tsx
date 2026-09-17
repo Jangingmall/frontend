@@ -31,7 +31,7 @@ beforeEach(() => {
 });
 
 describe("PasswordChangeTab", () => {
-  it("새 비밀번호 확인이 일치하지 않으면 클라이언트 에러를 보여주고 제출하지 않는다", async () => {
+  it("비밀번호 확인이 일치하지 않으면 클라이언트 에러를 보여주고 제출하지 않는다", async () => {
     const user = userEvent.setup();
     renderTab();
 
@@ -41,7 +41,7 @@ describe("PasswordChangeTab", () => {
     );
     await user.type(screen.getByPlaceholderText("새 비밀번호"), "NewPassw0rd!");
     await user.type(
-      screen.getByPlaceholderText("새 비밀번호 확인"),
+      screen.getByPlaceholderText("비밀번호 확인"),
       "다른값입니다",
     );
     await user.click(screen.getByRole("button", { name: "변경하기" }));
@@ -61,7 +61,7 @@ describe("PasswordChangeTab", () => {
     );
     await user.type(screen.getByPlaceholderText("새 비밀번호"), "NewPassw0rd!");
     await user.type(
-      screen.getByPlaceholderText("새 비밀번호 확인"),
+      screen.getByPlaceholderText("비밀번호 확인"),
       "NewPassw0rd!",
     );
     await user.click(screen.getByRole("button", { name: "변경하기" }));
@@ -91,10 +91,7 @@ describe("PasswordChangeTab", () => {
       SEED_LOGIN.password,
     );
     await user.type(screen.getByPlaceholderText("새 비밀번호"), "onlylower1");
-    await user.type(
-      screen.getByPlaceholderText("새 비밀번호 확인"),
-      "onlylower1",
-    );
+    await user.type(screen.getByPlaceholderText("비밀번호 확인"), "onlylower1");
     await user.click(screen.getByRole("button", { name: "변경하기" }));
 
     expect(
@@ -125,7 +122,7 @@ describe("PasswordChangeTab", () => {
     );
     await user.type(screen.getByPlaceholderText("새 비밀번호"), "NewPassw0rd!");
     await user.type(
-      screen.getByPlaceholderText("새 비밀번호 확인"),
+      screen.getByPlaceholderText("비밀번호 확인"),
       "NewPassw0rd!",
     );
     await user.click(screen.getByRole("button", { name: "변경하기" }));
