@@ -20,3 +20,38 @@ export const productCartInput = z.object({
 });
 export type ProductCartLine = z.infer<typeof productCartInput>["lines"][number];
 export type ProductActionState = z.infer<typeof productActionStateDto>;
+
+const positiveId = z.number().int().positive().safe();
+export const productWishPageDto = z.object({
+  items: z.array(z.object({ productId: positiveId })),
+  hasNext: z.boolean(),
+  nextCursor: z.string().nullable(),
+  totalCount: z.number().int().nonnegative(),
+});
+export const backendCartInput = z.object({
+  productId: positiveId,
+  quantity: z.number().int().min(1).max(10000),
+  selectedOptions: z.array(
+    z.object({ optionGroupId: positiveId, choiceId: positiveId }),
+  ),
+  textInputs: z.array(
+    z.object({ optionGroupId: positiveId, text: z.string().min(1).max(500) }),
+  ),
+});
+export const backendCartDto = z.object({
+  sections: z.array(
+    z.object({
+      artisanId: positiveId,
+      items: z.array(
+        z.object({
+          cartItemId: positiveId,
+          productId: positiveId,
+          quantity: z.number().int().positive(),
+        }),
+      ),
+    }),
+  ),
+  totalPrice: z.number().int().nonnegative(),
+  totalShippingFee: z.number().int().nonnegative(),
+  totalCount: z.number().int().nonnegative(),
+});

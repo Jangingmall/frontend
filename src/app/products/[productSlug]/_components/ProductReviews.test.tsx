@@ -7,9 +7,11 @@ import {
   waitFor,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { reviewHandlers } from "@/api/reviews/mock/handlers";
+import { mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 
 import { ProductReviews } from "./ProductReviews";
@@ -38,7 +40,7 @@ describe("상품 후기 화면", () => {
       window.dispatchEvent(new PopStateEvent("popstate"));
     });
   });
-  function mount(productId = 101) {
+  function mount(productId = 101, isMock = true) {
     return render(
       <QueryClientProvider
         client={
@@ -47,13 +49,47 @@ describe("상품 후기 화면", () => {
       >
         <ProductReviews
           productId={productId}
-          isMock
+          isMock={isMock}
           onNotify={vi.fn()}
           onRequireLogin={vi.fn()}
         />
       </QueryClientProvider>,
     );
   }
+  it("실제 후기를 표시하고 미제공 사진·전체 평균·옵션을 숨긴다", async () => {
+    window.history.replaceState(null, "", "/products/test-101?photoOnly=true");
+    server.use(
+      http.get("*/api/products/101/reviews", ({ request }) => {
+        expect(new URL(request.url).searchParams.has("photoOnly")).toBe(false);
+        return mockOk({
+          content: [
+            {
+              reviewId: 1,
+              productId: 101,
+              writerId: 3,
+              rating: 4,
+              content: "만족합니다",
+              createdAt: "2026-09-17T11:30:00",
+            },
+          ],
+          number: 0,
+          size: 5,
+          totalElements: 8,
+        });
+      }),
+    );
+    mount(101, false);
+    await screen.findByText("후기 (8)");
+    expect(screen.getByText("만족합니다")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", { name: "사진 후기만 보기" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("평점 없음")).not.toBeInTheDocument();
+    expect(screen.queryByText(/^옵션:/)).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "2 페이지" }),
+    ).toBeInTheDocument();
+  });
   it("다섯 후기와 사진 필터, 다음 페이지를 표시한다", async () => {
     mount();
     await screen.findByText("후기 (12)");

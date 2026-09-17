@@ -73,7 +73,7 @@ describe("product detail mock actions", () => {
   it("never requests unimplemented production endpoints", async () => {
     Object.assign(publicEnv, { apiMocking: false });
     const fetchSpy = vi.spyOn(globalThis, "fetch");
-    await expect(setProductWishlist(101, true)).rejects.toThrow("아직");
+    await expect(requestProductRestock(101)).rejects.toThrow("아직");
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

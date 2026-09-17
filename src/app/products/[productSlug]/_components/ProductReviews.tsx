@@ -53,7 +53,7 @@ function ReviewUrlState(props: ProductReviewsProps) {
       filters={{
         page: Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1,
         sort,
-        photoOnly: search.get("photoOnly") === "true",
+        photoOnly: props.isMock && search.get("photoOnly") === "true",
       }}
     />
   );
@@ -77,13 +77,6 @@ function ReviewContent({
       `${pathname}?${search}${window.location.hash}`,
     );
   }
-  if (!isMock)
-    return (
-      <>
-        <h2 className="text-title-l leading-[1.3] font-bold">후기</h2>
-        <EmptyState title="후기 조회를 준비 중입니다." />
-      </>
-    );
   const {
     items = [],
     totalCount = 0,
@@ -96,25 +89,29 @@ function ReviewContent({
         후기{reviewCount !== undefined ? ` (${reviewCount})` : ""}
       </h2>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <ReviewStars rating={rating} size="m" />
-          <span className="text-title-l text-font-dark">
-            {query.isPending
-              ? "—"
-              : rating === null
-                ? "평점 없음"
-                : rating.toFixed(1)}
-          </span>
-        </div>
+        {isMock && (
+          <div className="flex items-center gap-2">
+            <ReviewStars rating={rating} size="m" />
+            <span className="text-title-l text-font-dark">
+              {query.isPending
+                ? "—"
+                : rating === null
+                  ? "평점 없음"
+                  : rating.toFixed(1)}
+            </span>
+          </div>
+        )}
         <div className="flex items-center gap-4">
-          <Checkbox
-            checked={filters.photoOnly}
-            onCheckedChange={(photoOnly) =>
-              changeFilters({ photoOnly, page: 1 })
-            }
-          >
-            사진 후기만 보기
-          </Checkbox>
+          {isMock && (
+            <Checkbox
+              checked={filters.photoOnly}
+              onCheckedChange={(photoOnly) =>
+                changeFilters({ photoOnly, page: 1 })
+              }
+            >
+              사진 후기만 보기
+            </Checkbox>
+          )}
           <Select
             ariaLabel="후기 정렬"
             items={SORT_ITEMS}

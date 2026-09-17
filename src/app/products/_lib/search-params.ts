@@ -3,6 +3,8 @@ import {
   canUseProductMaterials,
 } from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
+import { publicEnv } from "@/lib/env";
+import { GIFT_THEMES } from "@/types/gift-theme";
 import { PRODUCT_LIST_SORT, type ProductListSort } from "@/types/sort";
 
 function parsePrice(value: string | null): number | undefined {
@@ -15,7 +17,13 @@ export function parseProductSearchParams(
   params: URLSearchParams,
 ): ProductListQuery {
   const page = Number(params.get("page"));
-  const sort = params.get("sort") ?? "popular";
+  const requestedSort =
+    params.get("sort") ?? (publicEnv.apiMocking ? "popular" : "newest");
+  const sort =
+    !publicEnv.apiMocking &&
+    !["newest", "price-asc", "price-desc"].includes(requestedSort)
+      ? "newest"
+      : requestedSort;
   let minPrice = parsePrice(params.get("minPrice"));
   let maxPrice = parsePrice(params.get("maxPrice"));
   if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
@@ -27,6 +35,8 @@ export function parseProductSearchParams(
     sort: Object.hasOwn(PRODUCT_LIST_SORT, sort)
       ? (sort as ProductListSort)
       : "popular",
+    giftTheme: GIFT_THEMES.find((theme) => theme.id === params.get("giftTheme"))
+      ?.id,
     category: params.get("category") || undefined,
     keyword: params.get("keyword") || undefined,
     crafts: canUseProductCrafts()
@@ -37,7 +47,7 @@ export function parseProductSearchParams(
       : [],
     minPrice,
     maxPrice,
-    hasGiftWrap: params.get("hasGiftWrap") === "true",
+    hasGiftWrap: publicEnv.apiMocking && params.get("hasGiftWrap") === "true",
     excludeSoldOut: params.get("excludeSoldOut") === "true",
   };
 }
@@ -47,6 +57,7 @@ export function updateProductSearchParams(
   patch: Partial<ProductListQuery>,
 ): URLSearchParams {
   const params = new URLSearchParams(current);
+  if (!publicEnv.apiMocking) params.delete("hasGiftWrap");
   if (!canUseProductCrafts()) params.delete("subcategory");
   if (!canUseProductMaterials()) params.delete("material");
   if (!("page" in patch)) params.delete("page");
@@ -56,6 +67,7 @@ export function updateProductSearchParams(
   for (const [key, value] of Object.entries(patch)) {
     if (
       key === "size" ||
+      (key === "hasGiftWrap" && !publicEnv.apiMocking) ||
       (key === "crafts" && !canUseProductCrafts()) ||
       (key === "materials" && !canUseProductMaterials())
     )

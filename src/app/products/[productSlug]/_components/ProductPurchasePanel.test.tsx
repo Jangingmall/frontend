@@ -9,6 +9,7 @@ import {
   resetProductDetailActionState,
 } from "@/api/products/mock/detail-action-handlers";
 import { getProductDetailMock } from "@/api/products/mock/detail-fixtures";
+import { publicEnv } from "@/lib/env";
 import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
@@ -19,6 +20,7 @@ import { ProductPurchasePanel } from "./ProductPurchasePanel";
 vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 beforeEach(() => {
+  Object.assign(publicEnv, { apiMocking: true });
   useAuthStore.getState().clear();
   resetProductDetailActionState();
 });
@@ -41,7 +43,7 @@ function setup(id: number, overrides: Partial<ProductDetail> = {}) {
   return { onNotify, onRequireLogin, client };
 }
 
-it.each([true, false])(
+it.each([true])(
   "blocks missing required options for isMock=%s and focuses the first select",
   (isMock) => {
     const { onNotify, onRequireLogin } = setup(101, { isMock });
@@ -52,7 +54,7 @@ it.each([true, false])(
   },
 );
 
-it.each([true, false])(
+it.each([true])(
   "requires login for an optionless cart and wishlist with isMock=%s",
   (isMock) => {
     const { onRequireLogin, onNotify, client } = setup(102, { isMock });
@@ -65,11 +67,11 @@ it.each([true, false])(
 );
 
 it.each([
-  [102, "장바구니", "장바구니 기능은 준비 중입니다."],
-  [103, "재입고 알림", "재입고 알림 기능은 준비 중입니다."],
+  [102, "장바구니"],
+  [103, "재입고 알림"],
 ] as const)(
   "does not start a mutation for non-mock product %s (%s)",
-  async (id, button, message) => {
+  async (id, button) => {
     useAuthStore.getState().setSession("mock-access-token", {
       id: 1,
       name: "테스트",
@@ -80,10 +82,44 @@ it.each([
     await user.click(screen.getByRole("button", { name: button }));
 
     expect(client.getMutationCache().getAll()).toHaveLength(0);
-    expect(onNotify).toHaveBeenCalledWith(message);
+    expect(screen.getByRole("button", { name: button })).toBeDisabled();
+    expect(onNotify).not.toHaveBeenCalled();
     expect(onRequireLogin).not.toHaveBeenCalled();
   },
 );
+
+it("loads real wish state and waits for server confirmation before changing it", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  useAuthStore
+    .getState()
+    .setSession("mock-access-token", { id: 1, name: "구매자", role: "USER" });
+  let wished = true;
+  server.use(
+    http.get("*/api/member/me/wishes", () =>
+      mockOk({
+        items: wished ? [{ productId: 102 }] : [],
+        nextCursor: null,
+        hasNext: false,
+        totalCount: wished ? 1 : 0,
+      }),
+    ),
+    http.delete("*/api/products/102/wish", () => {
+      wished = false;
+      return mockOk(null);
+    }),
+  );
+  const { onNotify } = setup(102, { isMock: false });
+  await userEvent.click(await screen.findByRole("button", { name: "찜 취소" }));
+  await waitFor(() =>
+    expect(onNotify).toHaveBeenCalledWith("찜한 작품에서 삭제했습니다."),
+  );
+  expect(screen.getByRole("button", { name: "찜하기" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  expect(screen.getByRole("button", { name: "구매하기" })).toBeDisabled();
+  expect(screen.queryByLabelText("선택한 옵션")).not.toBeInTheDocument();
+});
 
 it.each([
   [102, "장바구니", "장바구니에 작품을 담았습니다."],
@@ -214,8 +250,6 @@ it("disables purchase for unknown stock", () => {
 it.each([
   [0, true],
   [null, true],
-  [0, false],
-  [null, false],
 ] as const)(
   "allows restock for sold-out stock %s with isMock=%s",
   (stock, isMock) => {

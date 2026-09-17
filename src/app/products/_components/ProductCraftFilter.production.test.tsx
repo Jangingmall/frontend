@@ -1,11 +1,8 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, renderHook, screen } from "@testing-library/react";
-import { http } from "msw";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import { fetchProductList } from "@/api/products/api";
-import { fetchProductListClient } from "@/api/products/client";
 import {
   productCategories,
   productMaterials,
@@ -16,8 +13,6 @@ import {
   updateProductSearchParams,
 } from "@/app/products/_lib/search-params";
 import { getProductSeo } from "@/app/products/_lib/seo";
-import { mockOk } from "@/mocks/envelope";
-import { server } from "@/mocks/server";
 import { productKeys } from "@/queries/products/keys";
 import { useProductCrafts } from "@/queries/products/queries";
 
@@ -33,23 +28,6 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
     expect(productKeys.list(query)).toEqual(
       productKeys.list({ category: query.category }),
     );
-  });
-
-  it("연동 준비 설정이 꺼져 있으면 서버와 브라우저의 실제 목록 요청을 막는다", async () => {
-    const requests: URLSearchParams[] = [];
-    server.use(
-      http.get("*/api/products", ({ request }) => {
-        requests.push(new URL(request.url).searchParams);
-        return mockOk({});
-      }),
-    );
-    await expect(fetchProductList(query)).rejects.toMatchObject({
-      code: "PRODUCT_LIST_API_NOT_READY",
-    });
-    await expect(fetchProductListClient(query)).rejects.toMatchObject({
-      code: "PRODUCT_LIST_API_NOT_READY",
-    });
-    expect(requests).toHaveLength(0);
   });
 
   it("직접 입력한 URL의 종목을 비활성 상태로 읽고 URL 갱신에서도 제거한다", () => {
@@ -88,6 +66,9 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
       screen.queryByRole("button", { name: "사기장" }),
     ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "가격대" })).toBeVisible();
+    expect(
+      screen.queryByRole("checkbox", { name: "선물 포장 가능" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "소재" }),
     ).not.toBeInTheDocument();

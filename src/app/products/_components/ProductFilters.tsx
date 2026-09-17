@@ -8,6 +8,7 @@ import type { ProductListQuery } from "@/api/products/query";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { publicEnv } from "@/lib/env";
 import type {
   ProductCategory,
   ProductCraft,
@@ -139,14 +140,16 @@ export function ProductFilters({
           </AccordionItem>
         )}
       </Accordion>
-      <div className="flex min-h-9 items-center px-2">
-        <Checkbox
-          checked={query.hasGiftWrap ?? false}
-          onCheckedChange={(checked) => onChange({ hasGiftWrap: checked })}
-        >
-          선물 포장 가능
-        </Checkbox>
-      </div>
+      {publicEnv.apiMocking && (
+        <div className="flex min-h-9 items-center px-2">
+          <Checkbox
+            checked={query.hasGiftWrap ?? false}
+            onCheckedChange={(checked) => onChange({ hasGiftWrap: checked })}
+          >
+            선물 포장 가능
+          </Checkbox>
+        </div>
+      )}
     </aside>
   );
 }

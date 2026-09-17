@@ -13,7 +13,7 @@ export interface ProductListQuery {
   page?: number;
   /** 기본 20, 최대 100. (docs/api-contract.md §2.4) */
   size?: number;
-  /** 기본 `popular`. */
+  /** mock 기본 popular, 실제 API 기본 newest. */
   sort?: ProductListSort;
   keyword?: string;
   category?: string;
@@ -63,8 +63,7 @@ export function resolveProductListPaging(query: ProductListQuery): {
 
 /**
  * 화면/캐시 쿼리 → 요청 파라미터. 실제 BE의 Spring Pageable만 0-based로 변환한다.
- * TODO 분류·종목/소재 복수 값·6개 정렬은 준비용 계약이다. 현재 BE Pageable은 정렬 enum을
- * 처리하지 않는다. BE 확인 전 integration.ts의 운영 제한을 해제하지 않는다.
+ * 실제 요청에는 Pageable만 전송한다. FE 필터는 backend-list에서 전체 조회 후 적용한다.
  */
 export function toProductListSearchParams(
   query: ProductListQuery,
@@ -73,6 +72,18 @@ export function toProductListSearchParams(
   const params = new URLSearchParams();
   params.set("page", String(publicEnv.apiMocking ? page : page - 1));
   params.set("size", String(size));
+  if (!publicEnv.apiMocking) {
+    params.append(
+      "sort",
+      query.sort === "price-asc"
+        ? "price,asc"
+        : query.sort === "price-desc"
+          ? "price,desc"
+          : "createdAt,desc",
+    );
+    params.append("sort", "id,asc");
+    return params;
+  }
   params.set("sort", toProductListSortApi(query.sort));
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.category) params.set("category", query.category);
@@ -96,7 +107,7 @@ export function toProductListSearchParams(
   }
   if (query.giftTheme) params.set("giftTheme", toGiftThemeApi(query.giftTheme));
   if (query.hasGiftWrap) params.set("hasGiftWrap", "true");
-  // 명세의 기본값과 무관하게 체크 해제 상태도 명시한다. 실제 BE의 조건 처리는 확인 대기다.
+  // 데모 API에서는 체크 해제 상태도 명시한다. 실제 BE는 ON_SALE만 반환한다.
   params.set("excludeSoldOut", String(query.excludeSoldOut ?? false));
   return params;
 }

@@ -78,3 +78,17 @@ describe("상품 목록 URL", () => {
     ).toBe("material=wood&hasGiftWrap=true&page=2");
   });
 });
+it("선물 테마 URL은 알려진 테마만 읽고 페이지 변경에도 유지한다", () => {
+  expect(
+    parseProductSearchParams(new URLSearchParams("giftTheme=housewarming")),
+  ).toMatchObject({ giftTheme: "housewarming" });
+  expect(
+    parseProductSearchParams(new URLSearchParams("giftTheme=unknown"))
+      .giftTheme,
+  ).toBeUndefined();
+  expect(
+    updateProductSearchParams(new URLSearchParams("giftTheme=housewarming"), {
+      page: 2,
+    }).get("giftTheme"),
+  ).toBe("housewarming");
+});

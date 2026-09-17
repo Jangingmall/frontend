@@ -15,6 +15,13 @@ const base = {
 };
 
 describe("상품 상세 응답 경계", () => {
+  it("현재 응답의 제작 기간을 사용하고 배송비는 추측하지 않는다", () => {
+    expect(
+      mapProductDetail(
+        productDetailDto.parse({ ...base, productionPeriodDays: 7 }),
+      )?.shipping,
+    ).toEqual({ fee: null, freeAbove: null, productionDays: "7일" });
+  });
   it.each([null, undefined, ""])(
     "상품 설명의 원래 값을 보존한다: %s",
     (description) => {

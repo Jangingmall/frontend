@@ -23,6 +23,7 @@ export const productDetailDto = z.object({
   description: z.string().nullish(),
   price: natural,
   stock: natural.nullish(),
+  productionPeriodDays: natural.nullish(),
   thumbnailUrl: imageSource.nullish().or(z.literal("")),
   status: z.enum(["ON_SALE", "SOLD_OUT", "DRAFT", "HIDDEN"]),
 });
@@ -95,3 +96,11 @@ export const productDetailMockDto = productDetailDto.extend({
 
 export type ProductDetailDto = z.infer<typeof productDetailDto>;
 export type ProductDetailMockDto = z.infer<typeof productDetailMockDto>;
+
+export const productArtisanDto = z.object({
+  artisanId: natural.positive(),
+  businessName: z.string().trim().min(1),
+  introduction: z.string().nullish(),
+  profileImageUrl: imageSource.nullish().or(z.literal("")),
+  category: z.string().nullish(),
+});

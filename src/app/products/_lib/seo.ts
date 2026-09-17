@@ -1,3 +1,5 @@
+import { publicEnv } from "@/lib/env";
+
 import { parseProductSearchParams } from "./search-params";
 
 export function getProductSeo(
@@ -13,11 +15,12 @@ export function getProductSeo(
     query.crafts?.length ||
     query.materials?.length ||
     query.keyword ||
+    query.giftTheme ||
     query.hasGiftWrap ||
     query.excludeSoldOut ||
     (query.minPrice !== undefined && query.minPrice > 0) ||
     query.maxPrice !== undefined ||
-    query.sort !== "popular",
+    query.sort !== (publicEnv.apiMocking ? "popular" : "newest"),
   );
   // 번호 페이지도 대표 카테고리 canonical을 유지한다. page 자체는 필터가 아니다.
   const canonical = query.category

@@ -40,3 +40,17 @@ export const inquiryListDto = z
   .passthrough();
 export type InquiryDto = z.infer<typeof inquiryDto>;
 export type InquiryListDto = z.infer<typeof inquiryListDto>;
+
+export const backendInquiryInputDto = z.object({
+  content: z.string().trim().min(1).max(1000),
+  secret: z.boolean(),
+});
+export const backendCreatedInquiryDto = z.object({
+  questionId: z.number().int().positive().safe(),
+  productId: z.number().int().positive().safe(),
+  writerId: z.number().int().positive().safe(),
+  content: z.string(),
+  secret: z.boolean(),
+  createdAt: z.string(),
+  answer: z.null(),
+});

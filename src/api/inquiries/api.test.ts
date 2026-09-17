@@ -12,18 +12,18 @@ describe("상품 문의 응답 보안", () => {
     resetInquiryMock();
     useAuthStore.getState().clear();
   });
-  it("실제 환경에서는 미확정 조회·등록 요청을 보내지 않는다", async () => {
+  it("실제 환경의 비밀문의 조회·등록을 보류한다", async () => {
     const fetch = vi.spyOn(globalThis, "fetch");
     await expect(fetchInquiries(101, false, false, false)).rejects.toThrow(
-      "준비 중",
+      "일시 중단",
     );
     await expect(
       createInquiry(
         101,
-        { type: "배송", title: "", body: "문의", isSecret: false },
+        { type: "배송", title: "", body: "문의", isSecret: true },
         false,
       ),
-    ).rejects.toThrow("준비 중");
+    ).rejects.toThrow("공개 문의만");
     expect(fetch).not.toHaveBeenCalled();
   });
   it("공개 응답 자체에서 다른 사람의 비밀 제목·본문·답변을 제거한다", async () => {

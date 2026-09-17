@@ -25,7 +25,7 @@ export function ReviewItem({ review }: ReviewItemProps) {
               className="text-caption text-font-dark-weak"
               dateTime={review.createdAt}
             >
-              {review.createdAt.replaceAll("-", ".")}
+              {review.createdAt.split("T")[0].replaceAll("-", ".")}
             </time>
           </div>
         </div>
@@ -54,9 +54,11 @@ export function ReviewItem({ review }: ReviewItemProps) {
           ))}
         </div>
       )}
-      <p className="text-caption text-font-dark-weak">
-        옵션: {review.optionLabel}
-      </p>
+      {review.optionLabel && (
+        <p className="text-caption text-font-dark-weak">
+          옵션: {review.optionLabel}
+        </p>
+      )}
       <ProductImageLightbox
         images={review.images}
         open={imageIndex !== null}

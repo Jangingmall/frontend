@@ -1,4 +1,3 @@
-import { GNB_CATEGORIES, toGnbCategoryCode } from "@/constants/gnb-category";
 import { ApiError } from "@/lib/http/api-error";
 import type { Page } from "@/types/api";
 import type { ProductSummary } from "@/types/product";
@@ -7,9 +6,8 @@ import type { ProductCategory } from "@/types/product-filter";
 import {
   backendCategoriesDto,
   backendProductListDto,
+  backendSubcategoriesDto,
 } from "./backend-validation";
-import { PRODUCT_CATEGORY_API_CODES } from "./category-mapping";
-
 export function mapBackendProductList(data: unknown): Page<ProductSummary> {
   const dto = backendProductListDto.parse(data);
   return {
@@ -19,13 +17,12 @@ export function mapBackendProductList(data: unknown): Page<ProductSummary> {
       price: item.price,
       thumbnail: null,
       thumbnailUrl: item.thumbnailUrl || null,
-      artisan: { id: item.artisanId, name: item.artisanName ?? null },
+      artisan: { id: item.artisanId, name: null },
       craftCategory: null,
-      rating: item.rating ?? null,
-      reviewCount: item.reviewCount ?? null,
-      primaryBadge: item.primaryBadge ?? null,
-      isSoldOut: item.status === "SOLD_OUT",
-      // TODO 색상 코드→표시 색상 합의 전에는 WHITE 등 문자열의 임의 색상 칩을 만들지 않는다.
+      rating: null,
+      reviewCount: null,
+      primaryBadge: null,
+      isSoldOut: false,
     })),
     page: dto.number + 1,
     pageSize: dto.size,
@@ -33,50 +30,44 @@ export function mapBackendProductList(data: unknown): Page<ProductSummary> {
     totalPages: Math.max(1, dto.totalPages),
   };
 }
-
 export function mapBackendProductCategories(
   data: unknown,
-  categoryCodes: Readonly<Record<string, string>> = PRODUCT_CATEGORY_API_CODES,
+  subcategories: unknown = [],
 ): ProductCategory[] {
-  const options = backendCategoriesDto.parse(data);
-  const availableCodes = new Set(options.map((item) => item.code));
-  if (availableCodes.size !== options.length) {
+  const parents = backendCategoriesDto.parse(data),
+    children = backendSubcategoriesDto.parse(subcategories);
+  const ids = new Set(parents.map((p) => p.categoryId));
+  if (
+    ids.size !== parents.length ||
+    new Set(children.map((c) => c.subcategoryId)).size !== children.length ||
+    children.some((c) => !ids.has(c.categoryId))
+  )
     throw new ApiError(502, { errorCode: "PRODUCT_CATEGORY_MAPPING_INVALID" });
-  }
-  // 계층·URL은 기존 PD/GNB 정의에서 가져온다. BE에 설명·parentId·가격 집계를 새로 요구하지 않는다.
-  const categories = GNB_CATEGORIES.flatMap((parent) => {
-    const parentId = toGnbCategoryCode(parent.name);
-    return [
-      { name: parent.name, parentId: null },
-      ...parent.subcategories.map((child) => ({ name: child.name, parentId })),
-    ];
-  });
-  return categories.map((category) => {
-    const id = toGnbCategoryCode(category.name);
-    const code = Object.hasOwn(categoryCodes, id)
-      ? categoryCodes[id]
-      : undefined;
-    return {
-      id,
-      name: category.name,
-      parentId: category.parentId,
-      description: "",
-      // Figma 가격 슬라이더의 UI 범위이며 상품 가격 통계가 아니다.
-      minPrice: 1000,
-      maxPrice: 9990000,
-      apiCode: code && availableCodes.has(code) ? code : undefined,
-    };
-  });
+  // 가격 범위는 UI 입력 한도이며, 상품 집계 데이터가 아니다.
+  const defaults = { description: "", minPrice: 0, maxPrice: 9990000 };
+  return [
+    ...parents.map((p) => ({
+      ...defaults,
+      id: `category-${p.categoryId}`,
+      name: p.name,
+      parentId: null,
+      apiCode: String(p.categoryId),
+    })),
+    ...children.map((c) => ({
+      ...defaults,
+      id: `subcategory-${c.subcategoryId}`,
+      name: c.name,
+      parentId: `category-${c.categoryId}`,
+      apiCode: String(c.subcategoryId),
+    })),
+  ];
 }
-
 export function resolveProductCategoryCode(
   category: string,
   categories: ProductCategory[],
-): string {
-  const code = categories.find((item) => item.id === category)?.apiCode;
-  if (!code) {
-    // 미매핑 분류를 무필터 전체 조회로 바꾸면 URL과 결과가 달라진다.
+) {
+  const code = categories.find((c) => c.id === category)?.apiCode;
+  if (!code)
     throw new ApiError(503, { errorCode: "PRODUCT_CATEGORY_NOT_MAPPED" });
-  }
   return code;
 }

@@ -15,7 +15,7 @@ import {
   inquiryHandlers,
   resetInquiryMock,
 } from "@/api/inquiries/mock/handlers";
-import { mockError } from "@/mocks/envelope";
+import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
@@ -27,7 +27,7 @@ describe("상품 문의 화면", () => {
     resetInquiryMock();
     useAuthStore.getState().clear();
   });
-  function mount() {
+  function mount(isMock = true) {
     const onRequireLogin = vi.fn();
     const onNotify = vi.fn();
     const client = new QueryClient({
@@ -37,7 +37,7 @@ describe("상품 문의 화면", () => {
       <QueryClientProvider client={client}>
         <ProductInquiries
           productId={101}
-          isMock
+          isMock={isMock}
           onNotify={onNotify}
           onRequireLogin={onRequireLogin}
         />
@@ -52,6 +52,47 @@ describe("상품 문의 화면", () => {
       role: "USER",
     });
   }
+  it("실제 공개 문의는 유형 없이 1000자까지 등록하고 목록을 요청하지 않는다", async () => {
+    login();
+    const listRequest = vi.fn();
+    server.use(
+      http.get("*/api/products/101/questions", () => {
+        listRequest();
+        return mockOk({});
+      }),
+      http.post("*/api/products/101/questions", async ({ request }) => {
+        expect(await request.json()).toEqual({
+          content: "제작 기간 문의",
+          secret: false,
+        });
+        return mockOk({
+          questionId: 1,
+          productId: 101,
+          writerId: 1,
+          content: "제작 기간 문의",
+          secret: false,
+          createdAt: "2026-09-17T10:00:00",
+          answer: null,
+        });
+      }),
+    );
+    const { onNotify } = mount(false);
+    await userEvent.click(screen.getByRole("button", { name: "문의하기" }));
+    expect(
+      screen.queryByRole("combobox", { name: "문의 유형" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", { name: "비밀글 설정" }),
+    ).not.toBeInTheDocument();
+    const body = screen.getByRole("textbox", { name: "내용 *" });
+    expect(body).toHaveAttribute("maxlength", "1000");
+    await userEvent.type(body, "제작 기간 문의");
+    await userEvent.click(screen.getByRole("button", { name: "등록하기" }));
+    await waitFor(() =>
+      expect(onNotify).toHaveBeenCalledWith("문의가 등록되었습니다."),
+    );
+    expect(listRequest).not.toHaveBeenCalled();
+  });
   it("비로그인 작성 요청은 로그인 안내로 연결한다", async () => {
     const { onRequireLogin } = mount();
     await userEvent.click(screen.getByRole("button", { name: "문의하기" }));

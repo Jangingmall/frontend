@@ -3,20 +3,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { validateEnvironment } from "./env";
 
 describe("validateEnvironment", () => {
-  it("상품 목록 연동 설정의 잘못된 값을 거부한다", () => {
-    expect(() =>
-      validateEnvironment({
-        NODE_ENV: "test",
-        NEXT_PUBLIC_PRODUCT_LIST_API: "true",
-      }),
-    ).toThrow();
-    expect(() =>
-      validateEnvironment({
-        NODE_ENV: "test",
-        NEXT_PUBLIC_PRODUCT_LIST_API: "enabled",
-      }),
-    ).not.toThrow();
-  });
   it("requires the server-only ISR variables in production", () => {
     expect(() =>
       validateEnvironment({
@@ -59,14 +45,6 @@ describe("validateEnvironment", () => {
 // publicEnv/serverEnv는 모듈 로드 시 process.env에서 값을 굳힌다. 케이스별로
 // stubEnv + resetModules 후 재 import 한다.
 describe("runtime env objects", () => {
-  it("상품 목록 운영 설정은 기본 꺼짐이고 명시적으로 enabled일 때만 켜진다", async () => {
-    vi.stubEnv("NEXT_PUBLIC_PRODUCT_LIST_API", "");
-    vi.resetModules();
-    expect((await import("./env")).publicEnv.productListApi).toBe(false);
-    vi.stubEnv("NEXT_PUBLIC_PRODUCT_LIST_API", "enabled");
-    vi.resetModules();
-    expect((await import("./env")).publicEnv.productListApi).toBe(true);
-  });
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.resetModules();

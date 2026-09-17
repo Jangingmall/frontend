@@ -22,3 +22,20 @@ export const reviewPageDto = z
   })
   .passthrough();
 export type ReviewPageDto = z.infer<typeof reviewPageDto>;
+
+/** 현재 BE ProductReviewResponse.ReviewView + Spring Page. */
+export const backendReviewPageDto = z.object({
+  content: z.array(
+    z.object({
+      reviewId: z.number().int().positive().safe(),
+      productId: z.number().int().positive().safe(),
+      writerId: z.number().int().positive().safe(),
+      rating: z.number().int().min(1).max(5),
+      content: z.string(),
+      createdAt: z.string(),
+    }),
+  ),
+  number: z.number().int().nonnegative(),
+  size: z.number().int().positive(),
+  totalElements: z.number().int().nonnegative(),
+});
