@@ -8,16 +8,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ApiError } from "@/lib/http/api-error";
 import { useMemberProfileQuery } from "@/queries/member/queries";
 
-import { PasswordChangeModal } from "./PasswordChangeModal";
-import { ProfileEditModal } from "./ProfileEditModal";
+import { ProfileEditForm } from "./ProfileEditForm";
 
 /**
- * "내 정보" 탭. 이름·이메일(읽기 전용)·휴대전화를 표시하고, 수정은 두 개의 독립된
- * 모달(`ProfileEditModal`/`PasswordChangeModal`)로 연다 — design.md §7-8.
+ * "내 정보" 탭(Figma ID-1/ID-1-edit). 기본은 이름·이메일(읽기 전용)·휴대전화를 보여주는
+ * 조회 화면이고, "회원 정보 수정" 버튼을 누르면 같은 자리에서 `ProfileEditForm`으로
+ * 바뀐다 — 모달이 아니라 인라인 전환이다. 비밀번호 변경은 별도 내비 탭
+ * (`AccountSubNav`/`PasswordChangeTab`)으로 완전히 분리되어 여기엔 없다.
  */
 function AccountInfoTab() {
-  const [editOpen, setEditOpen] = useState(false);
-  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [mode, setMode] = useState<"view" | "edit">("view");
   const profileQuery = useMemberProfileQuery();
 
   if (profileQuery.isPending) {
@@ -43,6 +43,16 @@ function AccountInfoTab() {
 
   const profile = profileQuery.data;
 
+  if (mode === "edit") {
+    return (
+      <ProfileEditForm
+        profile={profile}
+        onCancel={() => setMode("view")}
+        onSuccess={() => setMode("view")}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6 py-6">
       <div className="flex items-center justify-between">
@@ -51,7 +61,7 @@ function AccountInfoTab() {
           type="button"
           variant="outline"
           size="s"
-          onClick={() => setEditOpen(true)}
+          onClick={() => setMode("edit")}
         >
           회원 정보 수정
         </Button>
@@ -65,24 +75,6 @@ function AccountInfoTab() {
         <dt className="text-font-dark-subtle">휴대전화</dt>
         <dd className="text-font-dark">{profile.phone}</dd>
       </dl>
-
-      {profile.authProvider === "local" && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="xs"
-          onClick={() => setPasswordOpen(true)}
-        >
-          비밀번호 변경
-        </Button>
-      )}
-
-      <ProfileEditModal
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        profile={profile}
-      />
-      <PasswordChangeModal open={passwordOpen} onOpenChange={setPasswordOpen} />
     </div>
   );
 }

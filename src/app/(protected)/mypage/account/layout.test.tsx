@@ -2,13 +2,19 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SEED_ACCESS_TOKEN, SEED_LOGIN } from "@/api/member/mock/fixtures";
 import { setMockIdentity } from "@/api/member/mock/mock-identity";
 import { useAuthStore } from "@/stores/auth";
 
 import MypageAccountLayout from "./layout";
+
+vi.mock("next/navigation", () => ({
+  useSearchParams: () => new URLSearchParams("tab=info"),
+  useRouter: () => ({ back: vi.fn() }),
+  usePathname: () => "/mypage/account",
+}));
 
 function renderLayout() {
   const client = new QueryClient({

@@ -1,38 +1,27 @@
 import { EmptyState } from "@/components/common/empty-state";
 
+import { normalizeAccountTab } from "./_components/account-tabs";
 import { AccountInfoTab } from "./_components/AccountInfoTab";
-import { type AccountTab, AccountTabs } from "./_components/AccountTabs";
 import { AddressesTab } from "./_components/AddressesTab";
+import { PasswordChangeTab } from "./_components/PasswordChangeTab";
 
 interface AccountPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-const VALID_TABS: readonly AccountTab[] = [
-  "info",
-  "addresses",
-  "payment-methods",
-];
-
-function normalizeTab(value: string | string[] | undefined): AccountTab {
-  const candidate = Array.isArray(value) ? value[0] : value;
-  return VALID_TABS.includes(candidate as AccountTab)
-    ? (candidate as AccountTab)
-    : "info";
-}
-
 /**
- * 회원 정보 수정(`/mypage/account`, `tab=info|addresses|payment-methods`). 비밀번호
- * 재확인 게이트는 `account/layout.tsx`가 담당한다 — 여기 도달했다는 건 이미 통과했다는 뜻.
+ * 회원 정보 수정(`/mypage/account`, `tab=info|password|addresses|payment-methods`).
+ * 비밀번호 재확인 게이트와 좌측 서브내비(`AccountSubNav`)는 `account/layout.tsx`가
+ * 담당한다 — 여기 도달했다는 건 이미 통과했다는 뜻.
  */
 export default async function AccountPage({ searchParams }: AccountPageProps) {
   const params = await searchParams;
-  const tab = normalizeTab(params.tab);
+  const tab = normalizeAccountTab(params.tab);
 
   return (
     <div>
-      <AccountTabs activeTab={tab} />
       {tab === "info" && <AccountInfoTab />}
+      {tab === "password" && <PasswordChangeTab />}
       {tab === "addresses" && <AddressesTab />}
       {tab === "payment-methods" && (
         <EmptyState
