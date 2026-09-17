@@ -5,8 +5,7 @@ import { useState } from "react";
 
 import type { ImageRef } from "@/types/image";
 import type { Money } from "@/types/money";
-
-import { pickThumbnailVariant } from "./product-thumbnail";
+import { pickThumbnailVariant } from "@/utils/image";
 
 interface ProductOrderProps {
   thumbnail: ImageRef;

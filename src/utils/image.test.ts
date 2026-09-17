@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { ImageRef } from "@/types/image";
 
-import { pickThumbnailVariant } from "./product-thumbnail";
+import { pickThumbnailVariant } from "./image";
 
 const thumbnail: ImageRef = {
   imageId: "image_01HXYZ",
