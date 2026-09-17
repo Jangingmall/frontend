@@ -173,6 +173,19 @@ describe("OrderProductCard", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("onAction이 없으면 액션 버튼이 비활성 상태로 렌더된다", () => {
+    render(
+      <OrderProductCard
+        thumbnail={thumbnail}
+        productName="상품명"
+        price={10000}
+        status="SHIPPING"
+      />,
+    );
+    expect(screen.getByRole("button", { name: "배송 조회" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "1:1 문의" })).toBeDisabled();
+  });
+
   it("onAction 클릭 시 올바른 action 타입을 전달한다", () => {
     const onAction = vi.fn();
     render(

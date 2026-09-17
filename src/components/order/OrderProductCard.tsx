@@ -112,6 +112,7 @@ export function OrderProductCard(props: OrderProductCardProps) {
                   variant="solid"
                   size="m"
                   className="w-full"
+                  disabled={!props.onAction}
                   onClick={() => props.onAction?.(action)}
                 >
                   {ORDER_CARD_ACTION_LABEL[action]}

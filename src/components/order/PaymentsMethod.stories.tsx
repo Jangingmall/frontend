@@ -30,9 +30,24 @@ export const Default: Story = {
   },
 };
 
+export const RealtimeTransferSelected: Story = {
+  name: "실시간 계좌이체 선택",
+  args: { value: "REALTIME_TRANSFER" },
+};
+
 export const BankTransferSelected: Story = {
   name: "무통장입금 선택 시 안내 박스",
   args: { value: "BANK_TRANSFER" },
+};
+
+export const CardSelected: Story = {
+  name: "신용·체크카드 선택",
+  args: { value: "CARD" },
+};
+
+export const TossPaySelected: Story = {
+  name: "토스페이 선택",
+  args: { value: "TOSS_PAY" },
 };
 
 export const BankTransferWithAccount: Story = {
