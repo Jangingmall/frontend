@@ -1,22 +1,25 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
 import { fn } from "storybook/test";
 
+import { RadioGroup } from "@/components/ui/radio-button";
+
 import { AddressCard } from "./AddressCard";
 
+// AddressCard 안의 기본 배송지 selecter는 `Radio`(value 필수 + RadioGroup 컨텍스트 필요)라
+// 스토리에서도 RadioGroup으로 감싼다(radio-button.stories.tsx와 같은 이유).
 const meta = {
   title: "Member/AddressCard",
   component: AddressCard,
   decorators: [
     (Story) => (
-      <div className="w-100">
+      <RadioGroup className="w-64">
         <Story />
-      </div>
+      </RadioGroup>
     ),
   ],
   args: {
     onEdit: fn(),
     onDelete: fn(),
-    onSetDefault: fn(),
   },
 } satisfies Meta<typeof AddressCard>;
 

@@ -49,7 +49,7 @@ describe("AddressesTab", () => {
     expect(
       screen.getByText("경기도 성남시 분당구 판교역로 235"),
     ).toBeInTheDocument();
-    expect(screen.getByText("기본 배송지")).toBeInTheDocument();
+    expect(screen.getByText("기본 주소지")).toBeInTheDocument();
   });
 
   it("추가하기 → 배송지 등록에 성공하면 목록에 새 항목이 보인다", async () => {
@@ -83,7 +83,7 @@ describe("AddressesTab", () => {
     renderTab();
     await screen.findByText("서울특별시 강남구 학동로 343");
 
-    const cards = screen.getAllByText("배송지 삭제하기");
+    const cards = screen.getAllByText("주소지 삭제하기");
     await user.click(cards[1]);
 
     await waitFor(() =>
@@ -96,21 +96,19 @@ describe("AddressesTab", () => {
     ).toBeInTheDocument();
   });
 
-  it("기본 배송지로 설정하면 배지가 옮겨간다", async () => {
+  it("기본 주소지로 설정하면 헤더 라벨이 옮겨간다", async () => {
     const user = userEvent.setup();
     renderTab();
     await screen.findByText("서울특별시 강남구 학동로 343");
 
-    await user.click(
-      screen.getByRole("button", { name: "기본 배송지로 설정" }),
-    );
+    await user.click(screen.getByText("기본 주소지로 설정"));
 
     await waitFor(() => {
       const secondCard = screen
         .getByText("경기도 성남시 분당구 판교역로 235")
         .closest('[data-slot="address-card"]');
       expect(
-        within(secondCard as HTMLElement).getByText("기본 배송지"),
+        within(secondCard as HTMLElement).getByText("기본 주소지"),
       ).toBeInTheDocument();
     });
   });

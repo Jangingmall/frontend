@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 
-import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
 import { AddressCard } from "@/components/member/AddressCard";
 import { AddressFormModal } from "@/components/member/AddressFormModal";
 import { Button } from "@/components/ui/button";
+import { PlusIcon } from "@/components/ui/icons";
+import { RadioGroup } from "@/components/ui/radio-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import { ApiError } from "@/lib/http/api-error";
@@ -19,9 +20,11 @@ import { useAddressesQuery } from "@/queries/member/queries";
 import type { Address, AddressInput } from "@/types/member";
 
 /**
- * "배송지" 탭. 목록 조회는 `useAddressesQuery`, 추가/수정은 공용 `AddressFormModal`
- * (`components/member/`)을 재사용한다 — 이 모달은 `queries/`에 의존하지 않으므로 mutation
- * 훅 연결은 이 화면 조합 코드가 책임진다(architecture.md §6).
+ * "배송지" 탭(Figma ID-3). 카드를 가로로 나열하고 끝에 "주소지 추가하기" 점선 카드를
+ * 붙인다 — Figma가 세로 리스트가 아니라 가로 스크롤 카드 행으로 그렸다(2026-09-17
+ * `get_design_context` 대조). 목록 조회는 `useAddressesQuery`, 추가/수정은 공용
+ * `AddressFormModal`(`components/member/`)을 재사용한다 — 이 모달은 `queries/`에 의존하지
+ * 않으므로 mutation 훅 연결은 이 화면 조합 코드가 책임진다(architecture.md §6).
  */
 function AddressesTab() {
   const [modalState, setModalState] = useState<
@@ -36,9 +39,9 @@ function AddressesTab() {
 
   if (addressesQuery.isPending) {
     return (
-      <div className="space-y-4 py-6">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
+      <div className="flex gap-4 py-6">
+        <Skeleton className="h-80 w-64" />
+        <Skeleton className="h-80 w-64" />
       </div>
     );
   }
@@ -55,6 +58,7 @@ function AddressesTab() {
   }
 
   const addresses = addressesQuery.data;
+  const defaultAddress = addresses.find((address) => address.isDefault);
 
   async function handleSubmit(input: AddressInput) {
     setModalError(null);
@@ -81,9 +85,10 @@ function AddressesTab() {
     await deleteMutation.mutateAsync(address.id);
   }
 
-  async function handleSetDefault(address: Address) {
+  async function handleSetDefault(addressId: number) {
+    if (addressId === defaultAddress?.id) return;
     await updateMutation.mutateAsync({
-      addressId: address.id,
+      addressId,
       input: { isDefault: true },
     });
   }
@@ -93,11 +98,11 @@ function AddressesTab() {
   return (
     <div className="space-y-6 py-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-title-s text-font-dark">배송지</h2>
+        <h2 className="text-title-m text-font-dark">배송지</h2>
         <Button
           type="button"
           variant="outline"
-          size="s"
+          size="xs"
           onClick={() => {
             setModalError(null);
             setModalState({ mode: "add" });
@@ -107,24 +112,35 @@ function AddressesTab() {
         </Button>
       </div>
 
-      {addresses.length === 0 ? (
-        <EmptyState title="등록된 배송지가 없어요" />
-      ) : (
-        <div className="space-y-4">
-          {addresses.map((address) => (
-            <AddressCard
-              key={address.id}
-              address={address}
-              onEdit={(target) => {
-                setModalError(null);
-                setModalState({ mode: "edit", address: target });
-              }}
-              onDelete={(target) => void handleDelete(target)}
-              onSetDefault={(target) => void handleSetDefault(target)}
-            />
-          ))}
-        </div>
-      )}
+      <RadioGroup
+        value={defaultAddress?.id}
+        onValueChange={(value) => void handleSetDefault(value as number)}
+        className="flex flex-row gap-4 overflow-x-auto pb-1"
+      >
+        {addresses.map((address) => (
+          <AddressCard
+            key={address.id}
+            address={address}
+            onEdit={(target) => {
+              setModalError(null);
+              setModalState({ mode: "edit", address: target });
+            }}
+            onDelete={(target) => void handleDelete(target)}
+          />
+        ))}
+
+        <button
+          type="button"
+          onClick={() => {
+            setModalError(null);
+            setModalState({ mode: "add" });
+          }}
+          className="flex w-64 shrink-0 flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-border-jade-fill bg-bg-default p-3"
+        >
+          <PlusIcon className="size-8" />
+          <span className="text-body-s-b text-font-dark">주소지 추가하기</span>
+        </button>
+      </RadioGroup>
 
       {modalState != null && (
         <AddressFormModal
