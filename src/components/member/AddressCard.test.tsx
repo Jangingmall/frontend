@@ -34,7 +34,7 @@ describe("AddressCard", () => {
   it("배송지 정보를 표시한다", () => {
     renderCard(ADDRESS);
     expect(screen.getByText("김미담")).toBeInTheDocument();
-    expect(screen.getByText("01011112222")).toBeInTheDocument();
+    expect(screen.getByText("010-1111-2222")).toBeInTheDocument();
     expect(
       screen.getByText("서울특별시 강남구 학동로 343"),
     ).toBeInTheDocument();

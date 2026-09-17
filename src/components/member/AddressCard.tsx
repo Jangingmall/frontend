@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Radio } from "@/components/ui/radio-button";
+import { formatPhone } from "@/constants/phone";
 import { cn } from "@/lib/utils";
 import type { Address } from "@/types/member";
 
@@ -43,7 +44,7 @@ function AddressCard({ address, onEdit, onDelete }: AddressCardProps) {
 
       <div className="flex flex-col gap-4 p-4">
         <AddressField label="받는 사람" value={address.recipientName} />
-        <AddressField label="연락처" value={address.phone} />
+        <AddressField label="연락처" value={formatPhone(address.phone)} />
         <AddressField label="주소" value={address.address1} />
         <AddressField label="상세주소" value={address.address2} reserveLines />
 
