@@ -1,10 +1,10 @@
 "use client";
 
+import { canUseProductCrafts } from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { publicEnv } from "@/lib/env";
 import type {
   ProductCategory,
   ProductCraft,
@@ -61,13 +61,13 @@ export function ProductFilters({
         onReset={onReset}
         multiple
         defaultValue={
-          publicEnv.apiMocking && isSubcategory && query.crafts?.length
+          canUseProductCrafts() && isSubcategory && query.crafts?.length
             ? ["craft"]
             : []
         }
         className="[&>div:first-child]:px-2 [&>div:first-child]:pt-2 [&>div:first-child>button]:underline"
       >
-        {isSubcategory && publicEnv.apiMocking && (
+        {isSubcategory && canUseProductCrafts() && (
           <AccordionItem title={category.name} value="craft">
             <ProductCraftFilter
               crafts={crafts}

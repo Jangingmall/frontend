@@ -7,6 +7,28 @@ import { productListPage1 } from "@/api/products/mock/fixtures";
 import { ProductCard } from "./ProductCard";
 
 describe("ProductCard", () => {
+  it("BE 단일 이미지를 사용하고 미제공 장인명·후기 수를 만들지 않는다", () => {
+    const { container } = render(
+      <ProductCard
+        product={{
+          ...mapProductSummary(productListPage1.items[0]),
+          thumbnail: null,
+          thumbnailUrl: "https://images.example.com/cup.jpg",
+          artisan: { id: 8, name: null },
+          rating: 4.5,
+          reviewCount: null,
+          primaryBadge: null,
+        }}
+      />,
+    );
+    expect(container.querySelector("img")).toHaveAttribute(
+      "src",
+      "https://images.example.com/cup.jpg",
+    );
+    expect(screen.getByLabelText("평점 4.5")).toBeInTheDocument();
+    expect(screen.queryByLabelText(/후기/)).not.toBeInTheDocument();
+    expect(screen.queryByText("김도예")).not.toBeInTheDocument();
+  });
   it("응답에 제공된 색상만 접근 가능한 이름으로 표시한다", () => {
     render(
       <ProductCard

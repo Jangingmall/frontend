@@ -2,6 +2,8 @@ import { publicEnv } from "@/lib/env";
 import { type GiftThemeId, toGiftThemeApi } from "@/types/gift-theme";
 import { type ProductListSort, toProductListSortApi } from "@/types/sort";
 
+import { canUseProductCrafts } from "./integration";
+
 /**
  * 상품 목록 조회 파라미터. PL-2·PL-3·홈 선물 섹션의 공개 필터를 담는다.
  * (docs/api-contract.md §5 목록 필터, docs/routing-and-auth.md §3)
@@ -15,7 +17,7 @@ export interface ProductListQuery {
   sort?: ProductListSort;
   keyword?: string;
   category?: string;
-  /** 공예 종목. BE 다중 필터 지원 전까지 MSW 모드에서만 사용한다. */
+  /** 공예 종목. MSW 또는 검증 후 활성화한 준비용 API에서 사용한다. */
   crafts?: string[];
   materials?: string[];
   minPrice?: number;
@@ -60,21 +62,21 @@ export function resolveProductListPaging(query: ProductListQuery): {
 }
 
 /**
- * 목록 파라미터 → BE 쿼리스트링. BE 페이지네이션 파라미터명(`page`+`size` vs
- * `offset`+`limit`)이 확정되면 이 함수만 고친다.
+ * 화면/캐시 쿼리 → 요청 파라미터. 실제 BE의 Spring Pageable만 0-based로 변환한다.
+ * TODO 분류·종목/소재 복수 값·6개 정렬은 준비용 계약이다. 현재 BE Pageable은 정렬 enum을
+ * 처리하지 않는다. BE 확인 전 integration.ts의 운영 제한을 해제하지 않는다.
  */
 export function toProductListSearchParams(
   query: ProductListQuery,
 ): URLSearchParams {
   const { page, size } = resolveProductListPaging(query);
   const params = new URLSearchParams();
-  params.set("page", String(page));
+  params.set("page", String(publicEnv.apiMocking ? page : page - 1));
   params.set("size", String(size));
   params.set("sort", toProductListSortApi(query.sort));
   if (query.keyword) params.set("keyword", query.keyword);
   if (query.category) params.set("category", query.category);
-  // TODO BE가 반복 subcategory의 OR 조건을 지원하면 운영 모드도 활성화한다.
-  if (publicEnv.apiMocking) {
+  if (canUseProductCrafts()) {
     for (const craft of [...new Set(query.crafts)].filter(Boolean).sort()) {
       params.append("subcategory", craft);
     }
@@ -90,7 +92,7 @@ export function toProductListSearchParams(
   }
   if (query.giftTheme) params.set("giftTheme", toGiftThemeApi(query.giftTheme));
   if (query.hasGiftWrap) params.set("hasGiftWrap", "true");
-  // BE 기본값이 true이므로 체크 해제 상태도 명시적으로 보낸다.
+  // 명세의 기본값과 무관하게 체크 해제 상태도 명시한다. 실제 BE의 조건 처리는 확인 대기다.
   params.set("excludeSoldOut", String(query.excludeSoldOut ?? false));
   return params;
 }

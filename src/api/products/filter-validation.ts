@@ -18,7 +18,7 @@ export const productMaterialsDto = z.array(
   z.object({ id: z.string(), name: z.string() }),
 );
 
-// BE develop CategoryResponse.SubcategoryItem의 실제 공개 응답.
+// MSW 종목 fixture용. 구조는 기존 BE 품목 DTO와 같지만 공예 종목의 운영 계약이 아니다.
 export const productCraftsDto = z.array(
   z.object({
     subcategoryId: z.number().int().positive(),

@@ -68,9 +68,15 @@ export function ProductListPage({
     hasInitialQuery ? initialData : undefined,
   );
   const categories = useProductCategories(isReady, initialCategories);
-  const materials = useProductMaterials(isReady && Boolean(query.category));
+  const materials = useProductMaterials(
+    isReady && Boolean(query.category),
+    query.category,
+  );
   const category = categories.data?.find((item) => item.id === query.category);
-  const crafts = useProductCrafts(isReady && category?.parentId != null);
+  const crafts = useProductCrafts(
+    isReady && category?.parentId != null,
+    query.category,
+  );
   const parent = categories.data?.find(
     (item) => item.id === category?.parentId,
   );

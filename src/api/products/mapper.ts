@@ -39,7 +39,9 @@ export function mapProductCrafts(dto: ProductCraftsDto): ProductCraft[] {
   }));
 }
 
-export function mapProductSummary(dto: ProductSummaryDto): ProductSummary {
+export function mapProductSummary(
+  dto: ProductSummaryDto,
+): ProductSummary & { thumbnail: ProductSummaryDto["thumbnail"] } {
   return {
     id: dto.id,
     name: dto.name,

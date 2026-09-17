@@ -1,11 +1,13 @@
 import { http } from "msw";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { fetchProductList } from "@/api/products/api";
 import { ApiError } from "@/lib/http/api-error";
 
 import { mockError } from "./envelope";
 import { server } from "./server";
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 /**
  * 목업 배선이 실제로 물리는지 한 경로로 증명한다:

@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { http } from "msw";
 import type { ReactElement } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { mapProductListPage } from "@/api/products/mapper";
 import { productListPage1 } from "@/api/products/mock/fixtures";
@@ -10,6 +10,8 @@ import { mockPaged } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 
 import { GiftSection } from "./GiftSection";
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 function renderWithClient(ui: ReactElement) {
   const client = new QueryClient({

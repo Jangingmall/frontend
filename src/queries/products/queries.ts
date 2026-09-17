@@ -8,6 +8,7 @@ import {
   fetchProductListClient,
   fetchProductMaterials,
 } from "@/api/products/client";
+import { canUseProductCrafts } from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { publicEnv } from "@/lib/env";
 import type { Page } from "@/types/api";
@@ -44,20 +45,23 @@ export function useProductCategories(
   });
 }
 
-export function useProductMaterials(enabled: boolean) {
+export function useProductMaterials(enabled: boolean, category?: string) {
   return useQuery({
-    queryKey: productKeys.materials,
-    queryFn: ({ signal }) => fetchProductMaterials(signal),
-    enabled,
+    queryKey: productKeys.materials(category),
+    queryFn: ({ signal }) => fetchProductMaterials(category, signal),
+    enabled: enabled && (publicEnv.apiMocking || Boolean(category)),
     staleTime: 3600000,
   });
 }
 
-export function useProductCrafts(enabled: boolean) {
+export function useProductCrafts(enabled: boolean, category?: string) {
   return useQuery({
-    queryKey: productKeys.crafts,
-    queryFn: ({ signal }) => fetchProductCrafts(signal),
-    enabled: enabled && publicEnv.apiMocking,
+    queryKey: productKeys.crafts(category),
+    queryFn: ({ signal }) => fetchProductCrafts(category, signal),
+    enabled:
+      enabled &&
+      canUseProductCrafts() &&
+      (publicEnv.apiMocking || Boolean(category)),
     staleTime: 3600000,
   });
 }

@@ -7,6 +7,8 @@
 
 ## 1. 사용 원칙
 
+> 2026-09-17 상품 목록 후속: [PL-2·PL-3 실제 API 연결 준비](product-list-api-integration.md). Spring Page 변환과 운영 활성화 조건은 이 후속 문서를 따른다. BE·인프라 실서버 검증은 미완료다.
+
 - 이 문서는 원본 명세를 대체하지 않는 FE용 파생 문서다. **엔드포인트 맵과 횡단 규칙**을 담고, 개별 요청/응답 필드 DTO는 BE REST Docs / `api-spec/openapi.json` / BE↔FE 계약서를 기준으로 한다.
 - 컴포넌트는 백엔드 DTO에 직접 의존하지 않는다. `api/{domain}/` 계층이 응답을 검증(Zod)하고 camelCase FE 도메인 모델로 변환한다. 자세한 계층 규칙은 [data-layer.md](data-layer.md).
 - 숫자·날짜·nullable의 의미가 불명확하면 추측해 보정하지 않고 §9 확인 항목으로 남긴다.

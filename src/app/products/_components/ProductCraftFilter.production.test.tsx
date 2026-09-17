@@ -10,7 +10,6 @@ import {
   productCategories,
   productMaterials,
 } from "@/api/products/mock/catalogue";
-import { productListPage1 } from "@/api/products/mock/fixtures";
 import { toProductListSearchParams } from "@/api/products/query";
 import {
   parseProductSearchParams,
@@ -36,21 +35,21 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
     );
   });
 
-  it("서버 초기 조회와 브라우저 조회 모두 종목을 전송하지 않는다", async () => {
+  it("연동 준비 설정이 꺼져 있으면 서버와 브라우저의 실제 목록 요청을 막는다", async () => {
     const requests: URLSearchParams[] = [];
     server.use(
       http.get("*/api/products", ({ request }) => {
         requests.push(new URL(request.url).searchParams);
-        return mockOk(productListPage1);
+        return mockOk({});
       }),
     );
-    await fetchProductList(query);
-    await fetchProductListClient(query);
-    expect(requests).toHaveLength(2);
-    for (const params of requests) {
-      expect(params.has("subcategory")).toBe(false);
-      expect(params.get("category")).toBe(query.category);
-    }
+    await expect(fetchProductList(query)).rejects.toMatchObject({
+      code: "PRODUCT_LIST_API_NOT_READY",
+    });
+    await expect(fetchProductListClient(query)).rejects.toMatchObject({
+      code: "PRODUCT_LIST_API_NOT_READY",
+    });
+    expect(requests).toHaveLength(0);
   });
 
   it("직접 입력한 URL의 종목을 비활성 상태로 읽고 URL 갱신에서도 제거한다", () => {
