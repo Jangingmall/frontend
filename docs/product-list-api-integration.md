@@ -1,82 +1,56 @@
-# PL-2·PL-3 실제 API 연결 준비 (#52)
+# PL-2·PL-3·PD-1 현재 BE API 연동 (#55)
 
-2026-09-17 기준. 이 문서는 #48 / #49의 연동 보류 결정 이후 **FE 연결 코드의 준비 범위**를 기록한다. 실제 BE·배포 인프라에 접속하여 검증한 결과가 아니다. 기존 GNB·메가패널·PD 분류·URL과 AI 상세페이지는 변경하지 않는다.
+2026-09-17. [이슈 #55](https://github.com/Jangingmall/frontend/issues/55)의 결정에 따라 기존 BE API에 FE를 맞춘다. #48/#52의 목록 전체 보류 및 별도 활성화 설정은 폐기한다. 디자인의 모든 기능을 구현하기 위한 BE 확장은 이 작업의 전제 조건이 아니다.
 
-확인 소스: [FE dev 0858acb](https://github.com/Jangingmall/frontend/tree/0858acb1f0542bf8bbef44fb81ee0d4d6b7d9636), [BE develop abd42e3](https://github.com/Jangingmall/backend/tree/abd42e32b6f4e7ccc1faa6cc58452b44cbedf43f), [Notion API](https://app.notion.com/p/API-3c29e3e335cc80d08a26e8b864d43f7f).
+기준: [BE develop ad6b630](https://github.com/Jangingmall/backend/tree/ad6b630bd1f12e9487df5768bb9ad706e818af71), [Notion API](https://app.notion.com/p/API-3c29e3e335cc80d08a26e8b864d43f7f). 명세와 코드가 다르면 현재 컨트롤러·응답 DTO를 따른다. 아래 구현 검증은 MSW에 실제 DTO를 넣은 계약 테스트이며, 운영 BE 접속 검증과 구분한다.
 
-## 완료 범위와 기본 동작
+## 실행
 
-- MSW 모드에서는 기존 UI·요청·응답 및 모의 데이터를 유지한다.
-- 실제 API 모드에서는 `NEXT_PUBLIC_PRODUCT_LIST_API`를 비워 두는 것이 기본이다. 이때 목록·분류·소재·종목 API 함수는 네트워크 요청 전에 `PRODUCT_LIST_API_NOT_READY` 오류를 반환한다. 화면은 기존 오류 상태를 사용한다. 같은 목록 API를 사용하는 홈 상품 섹션에도 적용된다.
-- BE·인프라 준비 후 검증 환경에서 `NEXT_PUBLIC_API_MOCKING`을 비우고 `NEXT_PUBLIC_PRODUCT_LIST_API=enabled`로 **다시 빌드**하면 목록·분류 조회를 허용한다. 아래 계약 점검과 실서버 검증 전 운영 환경에는 활성화하지 않는다.
-- **목록 설정을 켜도 실제 모드의 소재·종목 기능은 비활성이다.** `canUseProductMaterials` / `canUseProductCrafts`가 UI·선택지 조회·URL 복원·요청·캐시·SEO를 함께 제한한다. 직접 API 함수를 호출해도 각각 `PRODUCT_MATERIALS_NOT_READY` / `PRODUCT_CRAFTS_NOT_READY`로 네트워크 요청 전에 중단한다. 현재 두 기능은 MSW에서만 제공한다.
-- 선택지의 TanStack Query key에는 현재 분류가 함께 들어간다. 소재 조회가 비활성인 경우 해당 조회를 기다리지 않고 가격 등 나머지 필터를 표시한다.
-- 서버는 기존 `API_BASE_URL` 및 ISR 태그를, 브라우저는 기존 same-origin `/api` 프록시와 `AbortSignal`을 사용한다. 새 프록시·인증·배포 구조는 만들지 않는다.
+- 시연: `NEXT_PUBLIC_API_MOCKING=enabled`. 기존 확장 MSW 데이터로 화면을 확인한다.
+- 실제 연결: 위 값을 비우고 `API_BASE_URL`을 실제 BE 주소로 지정한 후 다시 빌드한다. 서버 전용 ISR 환경 변수와 same-origin rewrite는 기존 설정을 사용한다.
+- `NEXT_PUBLIC_PRODUCT_LIST_API`는 제거했다. 목록 전체를 막는 별도 설정이 없다.
+- 이 작업 폴더에는 실제 BE 주소/인증 계정이 설정된 환경 파일이 없다. 문서에 기재된 `https://api.midam.store/api/health`, `https://api.stg.midam.store/api/health`에 2026-09-17 접속을 시도했으나 두 호스트 모두 DNS 조회에 실패했다. 운영 조회·로그인·찜 저장·문의 저장·장바구니 성공은 미검증 상태다.
 
-## 실제 BE 코드에 맞춰 구현한 부분
+## 목록
 
-| 항목          | 처리                                                                                                               |
-| ------------- | ------------------------------------------------------------------------------------------------------------------ |
-| 페이지 요청   | 화면/URL은 1부터, 실제 요청은 `page - 1`부터. 기존 `size` 유지                                                     |
-| 페이지 응답   | Spring Page의 `content`, `number`, `size`, `totalElements`, `totalPages` 검증. 화면 정보는 요청값 대신 응답값 사용 |
-| 상품          | `productId → id`, `title → name`, `price`, `status` 변환. 공개 상태 `ON_SALE` / `SOLD_OUT`만 수용                  |
-| 이미지        | `thumbnailUrl`을 직접 표시. 임의 imageId·320/640/1280 variant를 생성하지 않음                                      |
-| 미제공 데이터 | 장인명·평점·후기 수·배지는 `null`. 미제공 후기 수를 0건으로 읽어 주지 않음                                         |
-| 선택지 형태   | 분류는 명세의 `{code,name}`와 기존 `{categoryId,name}` 모두 수용. 소재는 `{code,name}`와 기존 `string[]` 모두 수용 |
+| 기능                     | 현재 연결 방법                                                                              |
+| ------------------------ | ------------------------------------------------------------------------------------------- |
+| 목록                     | `GET /api/products`, Spring Page. URL 페이지는 1부터, BE는 0부터                            |
+| 정렬                     | 최신 `createdAt,desc`, 가격 `price,asc/desc`, `id` 보조 정렬                                |
+| 검색·가격·분류·선물 테마 | 해당 조건이 있으면 전체 페이지를 수집한 뒤 FE 필터 → 정렬 → 페이지 나누기                   |
+| 검색 범위                | 제목·설명에 대한 대소문자 구분 없는 포함 검색                                               |
+| 카테고리                 | `GET /api/products/categories`의 `categoryId,name`                                          |
+| 하위 품목                | `GET /api/products/subcategories`의 `subcategoryId,categoryId,name`                         |
+| 실제 분류 URL            | `category-N` / `subcategory-N`; 상품의 같은 ID와 비교. 목록의 실제 분류 내비게이션으로 진입 |
 
-`artisanName`, `rating`, `reviewCount`, `primaryBadge`는 제공되는 경우에만 표시하는 준비용 선택 필드다. 현재 BE 목록 DTO는 이 필드를 제공하지 않는다. 카드에 공예 종목명을 추가할 필요는 없다. 현재 BE의 `colors: string[]`에는 화면용 HEX가 없으며, 코드별 색상 팔레트가 합의되지 않아 실제 모드의 색상 칩은 보류한다. 기존 MSW 색상 칩은 유지한다.
+필터 없는 목록은 서버의 한 페이지만 조회한다. 전체 조회는 페이지 번호·크기·총건수·예상 길이·중복 ID를 확인하며, 일부 페이지만 받아 전체 결과처럼 표시하지 않는다. 데이터가 달라지면 오류/재시도로 처리한다. 동시 수정에 대한 BE 스냅샷 토큰은 없어 총건수가 같은 변경까지 원자적으로 검증할 수는 없다. 상품 수에 비례한 전체 조회 비용이 발생한다.
 
-페이지 조회 API를 새로 추가하거나, FE의 임시 필드 이름·중첩 형태에 맞춰 BE DTO를 전부 바꾸도록 요청하지 않는다. 목록 찜 mutation과 판매자 등록/수정 API 확장은 이 작업에 포함하지 않는다.
+기존 GNB의 쓰임별 URL을 BE 공예 분류와 임의로 연결하지 않는다. 해당 경로는 지원하지 않는 분류임을 안내한다. 소재, 공예 종목 다중 선택, 선물 포장, 품절 포함 토글, 인기·판매·찜순은 실제 모드에서 숨긴다. BE 목록은 `ON_SALE`만 반환한다. 숫자 분류에 매칭되는 하위 품목 선택과 기존 공예 종목 필터는 다른 기능이다.
 
-## BE와 확인할 준비용 계약
+현재 목록에 없는 장인명·평점·후기 수·배지는 null로 유지한다. 색상 이름만으로 HEX를 추정하지 않는다. 캐시 키는 서버 Pageable과 별개로 FE 필터를 포함하며, 초기화는 선물 테마까지 해제한다.
 
-아래는 구현 완료된 BE 계약이 아니다. 현재 코드와 명세의 차이를 남기고, FE의 변경 위치를 좁혀 놓은 것이다.
+## 상세와 상호작용
 
-| API                               | 현재 BE                                                                  | 준비한 FE 경로 / 남은 확인                                                                                                                                                                    |
-| --------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/products`               | Pageable을 받아 `ON_SALE`만 조회. 화면용 필터 및 6개 정렬 enum 처리 없음 | `category`, `minPrice`, `maxPrice`, `hasGiftWrap`, `excludeSoldOut`, 6개 정렬 enum을 준비. 반복 `subcategory`·`material`은 현재 실제 요청에서 제외. BE 처리와 OR/AND 의미·전체 건수 확인 필요 |
-| `GET /api/products/categories`    | 도자기·옹기 등 기존 공예 분류                                            | GNB URL ID → BE 코드/ID의 확정 매핑만 사용. 이름이 같아도 연결하지 않음. 현재 매핑 표는 비어 있으며 대분류와 소분류 각각의 확정 코드 제공 방식 확인 필요                                      |
-| `GET /api/products/subcategories` | 다완·찻잔 등 **품목**을 전체 조회                                        | 현재 경로의 `category` 조건과 `{code,name}` 공예 **종목** 응답은 준비용 가정. 실제 호출은 차단. endpoint와 종목 의미·목록 필터 계약 구현 후 별도 활성화                                       |
-| `GET /api/products/materials`     | 숫자 `subcategoryId`를 받고 소재 이름 배열 반환. 조건 없으면 빈 배열     | `category` 조건은 준비용 가정이며 실제 호출은 차단. 최종 PD 분류 파라미터와 목록 필터를 맞춘 뒤 별도 활성화. 이름 배열은 유지 가능                                                            |
+| 기능            | 현재 연결 / 제한                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------ |
+| 상품 기본 정보  | `GET /api/products/{id}`: 제목·설명·가격·재고·썸네일·상태·제작 기간                                    |
+| 장인 소개       | `GET /api/member/artisans/{artisanId}`: 공개 이름·사진·소개·공예 분류. 요약 실패 시 기본 상품 유지     |
+| 후기            | `GET /api/products/{id}/reviews`: 5개씩 Spring Page, 최신/별점 정렬, 전체 건수                         |
+| 찜 상태         | 인증된 `GET /api/member/me/wishes`의 cursor 페이지를 확인                                              |
+| 찜 등록/취소    | `POST/DELETE /api/products/{id}/wish`; null 성공 응답 허용, 성공 후 UI 반영                            |
+| 공개 문의 등록  | `POST /api/products/{id}/questions`, `{content, secret:false}`, 최대 1000자. 유형·제목 입력 제거       |
+| 장바구니 어댑터 | `POST /api/payments/cart/items`, productId/quantity/selectedOptions/textInputs. 실제 숫자 옵션 ID 검증 |
 
-종목끼리 OR, 소재끼리 OR, 분류·종목·소재·가격·포장·품절 조건 사이 AND를 기대한다. FE가 여러 단일 필터 요청의 결과를 합쳐 정렬·페이지·전체 건수를 대신하지 않는다. PL-2는 하위 분류 단일 이동, 가격은 하나의 최소/최대 구간이다.
+실제 후기에는 이미지·닉네임·옵션·전체 평균이 없다. 사진 필터·평균·옵션 문구는 숨기며 작성자는 일반 표기인 ‘구매자’를 쓴다. 한 페이지의 평균을 상품 전체 평점으로 표시하지 않는다.
 
-현재 Spring 기본 `sort`가 존재한다고 해서 `POPULAR`, `SALES_COUNT`, `WISHLIST_COUNT` 등이 구현된 것은 아니다. 실제 확인 전 enum을 보내는 설정을 켜지 않는다. 소재·포장 조건에 사용할 상품 데이터의 저장/공급 경로도 확인하되, 판매자 API 변경을 자동으로 요구하지 않는다.
+장바구니 어댑터는 한 옵션 조합만 처리한다. 여러 요청의 부분 성공 후 재시도로 중복 담기가 발생하지 않도록 여러 줄 입력을 사전에 거부한다. 중복 여부는 BE가 반환하지 않아 추측하지 않는다. 실제 상품 응답에는 옵션 유무·필수 옵션·배송비가 없어 장바구니/구매 UI는 비활성화한다. 옵션 누락을 ‘옵션 없는 상품’으로 해석하지 않는다. 재입고 알림은 API가 없으므로 실제 모드에서 비활성화한다.
 
-### PD 분류 연결
+공개 상품/장인 조회만 ISR 캐시를 사용한다. 찜은 사용자별 query key와 인증 fetcher를 사용하며 성공 전 완료로 표시하지 않는다. 문의 목록도 사용자별 캐시를 유지하는 MSW 시연과 분리한다.
 
-- 화면의 계층과 URL은 `GNB_CATEGORIES` / `toGnbCategoryCode`에서 가져온다. 그 파일을 수정하지 않는다.
-- `src/api/products/category-mapping.ts`의 `PRODUCT_CATEGORY_API_CODES`에 합의된 GNB URL ID → BE `code` 또는 문자열로 변환한 `categoryId`를 등록한다. **현재 확정된 매핑이 없어 빈 표로 둔다.**
-- 표시 이름이 같거나 가운데점·공백을 제거한 결과가 같아도 분류 축이 같다는 근거로 사용하지 않는다. 같은 PD 쓰임 분류라는 합의 후에만 매핑을 등록한다.
-- 등록한 값이 실제 분류 응답에도 존재할 때만 `ProductCategory.apiCode`로 보관하고 요청 시 변환한다. MSW의 `kitchen`·`kitchen-1` 또는 예시 숫자 ID는 운영 매핑에 쓰지 않는다.
-- 매핑되지 않은 분류는 `PRODUCT_CATEGORY_NOT_MAPPED`로 중단한다. 조건을 지운 전체 상품 조회로 대체하지 않는다. 대분류 아래 상품을 포함시키는 조회는 BE가 담당한다.
-- 설명은 미제공 시 생략한다. 계층은 GNB 정의, 가격 슬라이더 범위는 FE의 1천~999만 원 표시 범위를 사용한다. `description`·`parentId`·가격 집계 필드를 BE에 새로 요구하지 않는다.
+## 개별 보류 및 서버 확인 사항
 
-## 최종 계약에 따라 수정할 위치
+- **비밀문의**: 현재 `ProductQnaResponse.QuestionView.of`는 비작성자의 질문 본문을 가리지만 답변은 항상 직렬화한다. FE에서 가리는 것으로 해결되지 않는다. 실제 문의 목록 GET과 비밀문의 등록을 보류하고 공개 문의 작성만 제공한다. 서버 접근 제어가 수정·검증된 후 재개한다.
+- **장바구니**: 현재 checkout 조회 SQL이 상품 title 스키마와 다른 name/배송 컬럼 및 옵션 테이블을 참조한다. 제공된 마이그레이션과 일치하지 않아 운영 DB 상태 확인이 필요하다. FE 어댑터 구현을 실서버 성공으로 간주하지 않는다.
+- **비공개 상품**: BE 상세는 상태별 접근 제한이 없다. FE는 DRAFT/HIDDEN을 404로 처리하지만 직접 BE 접근 차단은 서버에서 확인해야 한다.
 
-| 변경                                        | 파일                                                                    |
-| ------------------------------------------- | ----------------------------------------------------------------------- |
-| 분류·복수 필터·정렬·페이지 파라미터         | `src/api/products/query.ts`                                             |
-| 종목 endpoint / 소재의 분류 조건            | `src/api/products/client.ts`의 `fetchProductCrafts` / `getOptionSearch` |
-| 응답 필드 형태                              | `src/api/products/backend-validation.ts`                                |
-| 상품 표시 / 분류 응답 확인                  | `src/api/products/backend-mapper.ts`                                    |
-| 확정된 GNB URL ID → BE 코드/ID 표           | `src/api/products/category-mapping.ts`                                  |
-| 목록 준비 제한 / 소재·종목 개별 활성화 조건 | `src/api/products/integration.ts`, `src/lib/env.ts`                     |
-
-환경 변수만 채우면 현재 BE에 바로 연동 완료된다는 의미가 아니다. 위 준비용 계약이 BE 확정안과 다르면 이 위치에서 맞춘 후 검증한다.
-
-## 인프라 준비 후 확인
-
-1. BE의 실제 base URL을 서버 환경 변수 `API_BASE_URL`에 설정하고, 브라우저 `/api` 프록시와 서버의 직접 요청이 같은 BE를 가리키는지 확인한다. 실제 토큰·시크릿은 커밋하지 않는다.
-2. PD 분류 코드·상품 매핑, 종목 endpoint의 의미, 소재 분류 조건, 복수 필터·정렬을 확인하여 준비용 계약과 다른 부분을 맞춘다. 같은 PD 분류 축임을 확인한 코드/ID만 매핑 표에 등록한다.
-3. 소재·종목은 각각 선택지와 목록 필터 계약을 구현한 뒤 `integration.ts`의 해당 기능을 별도로 활성화하고 회귀 검사를 수행한다. 목록 환경 변수만으로 두 기능을 활성화하지 않는다. 검증 환경에서 MSW를 끄고 상품 목록 설정을 켠 뒤 다시 빌드한다.
-4. GNB에서 PL-2·PL-3 진입, 대분류 하위 포함, 종목/소재 복수 조합, 가격·포장·품절, 6개 정렬을 확인한다.
-5. 첫/중간/마지막/빈 페이지와 전체 건수, 서버 초기 조회와 브라우저 조회의 일치를 확인한다.
-6. 선택지의 분류 전환·요청 취소, 초기화, 직접 URL·새로고침·뒤로/앞으로 가기를 확인한다.
-7. 실제 상품 이미지·장인명·평점·색상 누락 정책을 확인한다. 통과 후 운영 배포를 별도로 진행한다.
-
-## 로컬 검증의 의미
-
-`backend.test.ts`는 실제 BE DTO 형태의 **로컬 샘플**을 MSW로 전달하여 서버·브라우저 fetch → 응답 봉투 → 검증 → 변환을 검사한다. 같은 이름의 미확정 분류 요청 차단, 목록 설정과 독립적인 소재·종목 비활성, 나머지 필터 표시도 테스트한다. BE의 필터 SQL·배포 인프라가 동작한다는 증거가 아니다. 실제 BE 검증은 위 체크리스트로 남겨 둔다.
-
-검증 명령과 최종 결과는 [PR #53](https://github.com/Jangingmall/frontend/pull/53)에 기록한다. 실제 BE 호출 없이 수행하는 로컬·CI 검사와 인프라 준비 후의 실서버 검증을 구분한다.
+위는 개별 기능의 기존 오류/미제공 데이터다. 목록 필터 API 추가나 FE 시연 DTO에 맞춘 일괄 BE 변경을 요구하지 않는다.

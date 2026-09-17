@@ -12,6 +12,7 @@ import {
 import { ErrorState } from "@/components/common/error-state";
 import { FloatingActions } from "@/components/common/floating-actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { publicEnv } from "@/lib/env";
 import { startMockWorker } from "@/mocks/start-browser";
 import { productKeys } from "@/queries/products/keys";
 import {
@@ -97,6 +98,7 @@ export function ProductListPage({
 
   function handleReset() {
     handleChange({
+      giftTheme: undefined,
       crafts: [],
       materials: [],
       minPrice: undefined,
@@ -108,6 +110,28 @@ export function ProductListPage({
 
   return (
     <main className="mx-auto w-full max-w-desktop px-4 pt-16 pb-24 sm:px-8 lg:px-12">
+      {!publicEnv.apiMocking && categories.data && (
+        <nav aria-label="실제 상품 분류" className="mb-6 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => handleChange({ category: undefined })}
+          >
+            전체 상품
+          </button>
+          {categories.data
+            .filter((item) => item.parentId === null)
+            .map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-current={query.category === item.id ? "page" : undefined}
+                onClick={() => handleChange({ category: item.id })}
+              >
+                {item.name}
+              </button>
+            ))}
+        </nav>
+      )}
       {hasStartupError ? (
         <ErrorState
           title="상품을 불러오지 못했어요"
@@ -150,7 +174,10 @@ export function ProductListPage({
                 <Skeleton className="h-48 w-full lg:w-51 lg:shrink-0" />
               ) : (
                 <div className="lg:w-51 lg:shrink-0">
-                  <p className="text-body-m">존재하지 않는 상품 분류예요.</p>
+                  <p className="text-body-m">
+                    현재 상품 분류와 연결되지 않은 주소예요. 위 분류에서 다시
+                    선택해 주세요.
+                  </p>
                 </div>
               )}
             </>
@@ -159,7 +186,7 @@ export function ProductListPage({
             <ProductToolbar
               category={category}
               parent={parent}
-              sort={query.sort ?? "popular"}
+              sort={query.sort ?? (publicEnv.apiMocking ? "popular" : "newest")}
               onSortChange={(sort) => handleChange({ sort })}
             />
             <ProductResults

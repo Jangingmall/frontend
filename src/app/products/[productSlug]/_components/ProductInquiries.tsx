@@ -47,10 +47,6 @@ export function ProductInquiries({
       onRequireLogin();
       return;
     }
-    if (!isMock) {
-      onNotify("상품 문의 등록을 준비 중입니다.");
-      return;
-    }
     setListOpen(false);
     setFormOpen(true);
   }
@@ -84,7 +80,7 @@ export function ProductInquiries({
         </div>
       </div>
       {!isMock ? (
-        <EmptyState title="상품 문의를 준비 중입니다." />
+        <EmptyState title="문의 목록 조회는 일시 중단되었습니다. 공개 문의 등록은 가능합니다." />
       ) : query.isPending ? (
         <Skeleton
           role="status"

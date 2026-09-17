@@ -15,6 +15,7 @@ import { useAuthStore } from "@/stores/auth";
 import type { ProductDetail, ProductNotify } from "@/types/product-detail";
 
 import {
+  backendInquiryFormSchema,
   inquiryFormSchema,
   type InquiryFormValues,
 } from "./inquiry-form-schema";
@@ -43,8 +44,15 @@ export function InquiryFormDialog({
   const titleId = useId();
   const bodyId = useId();
   const form = useForm<InquiryFormValues>({
-    resolver: zodResolver(inquiryFormSchema),
-    defaultValues: { title: "", body: "", isSecret: false },
+    resolver: zodResolver(
+      isMock ? inquiryFormSchema : backendInquiryFormSchema,
+    ),
+    defaultValues: {
+      ...(isMock ? {} : { type: "상품 상세문의" as const }),
+      title: "",
+      body: "",
+      isSecret: false,
+    },
   });
   const type = useWatch({ control: form.control, name: "type" });
   const body = useWatch({ control: form.control, name: "body" });
@@ -141,51 +149,53 @@ export function InquiryFormDialog({
             {form.formState.errors.root.message}
           </p>
         )}
-        <Field.Root
-          invalid={Boolean(form.formState.errors.type)}
-          className="space-y-2"
-        >
-          <p className="text-body-s-b">
-            문의 유형 <span className="text-red-font">*</span>
-          </p>
-          <Controller
-            name="type"
-            control={form.control}
-            render={({ field }) => (
-              <Select
-                ariaLabel="문의 유형"
-                inputRef={field.ref}
-                name={field.name}
-                required
-                className="aria-invalid:border-red-border aria-invalid:focus-visible:outline-red-border"
-                items={TYPES.map((value) => ({ value, label: value }))}
-                value={field.value ?? null}
-                onValueChange={field.onChange}
-                onOpenChange={(isOpen) => {
-                  if (!isOpen) field.onBlur();
-                }}
-                placeholder="선택해주세요."
-                disabled={mutation.isPending}
+        {isMock && (
+          <Field.Root
+            invalid={Boolean(form.formState.errors.type)}
+            className="space-y-2"
+          >
+            <p className="text-body-s-b">
+              문의 유형 <span className="text-red-font">*</span>
+            </p>
+            <Controller
+              name="type"
+              control={form.control}
+              render={({ field }) => (
+                <Select
+                  ariaLabel="문의 유형"
+                  inputRef={field.ref}
+                  name={field.name}
+                  required
+                  className="aria-invalid:border-red-border aria-invalid:focus-visible:outline-red-border"
+                  items={TYPES.map((value) => ({ value, label: value }))}
+                  value={field.value ?? null}
+                  onValueChange={field.onChange}
+                  onOpenChange={(isOpen) => {
+                    if (!isOpen) field.onBlur();
+                  }}
+                  placeholder="선택해주세요."
+                  disabled={mutation.isPending}
+                >
+                  {TYPES.map((value) => (
+                    <SelectItem value={value} key={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
+                </Select>
+              )}
+            />
+            {form.formState.errors.type && (
+              <Field.Error
+                match
+                role="alert"
+                className="text-caption text-red-font"
               >
-                {TYPES.map((value) => (
-                  <SelectItem value={value} key={value}>
-                    {value}
-                  </SelectItem>
-                ))}
-              </Select>
+                {form.formState.errors.type.message}
+              </Field.Error>
             )}
-          />
-          {form.formState.errors.type && (
-            <Field.Error
-              match
-              role="alert"
-              className="text-caption text-red-font"
-            >
-              {form.formState.errors.type.message}
-            </Field.Error>
-          )}
-        </Field.Root>
-        {type === "기타" && (
+          </Field.Root>
+        )}
+        {isMock && type === "기타" && (
           <div className="space-y-2">
             <label htmlFor={titleId} className="block text-body-s-b">
               문의 제목 <span className="text-red-font">*</span>
@@ -216,7 +226,7 @@ export function InquiryFormDialog({
             <textarea
               id={bodyId}
               placeholder="문의할 내용을 작성해주세요."
-              maxLength={2000}
+              maxLength={isMock ? 2000 : 1000}
               aria-invalid={Boolean(form.formState.errors.body)}
               aria-describedby={
                 form.formState.errors.body ? `${bodyId}-error` : undefined
@@ -227,7 +237,7 @@ export function InquiryFormDialog({
               {...form.register("body")}
             />
             <p className="text-right text-caption text-font-dark-weak">
-              {body?.length ?? 0} / 2000 자
+              {body?.length ?? 0} / {isMock ? 2000 : 1000} 자
             </p>
           </div>
           {form.formState.errors.body && (
@@ -240,28 +250,35 @@ export function InquiryFormDialog({
             </p>
           )}
         </div>
-        <Controller
-          name="isSecret"
-          control={form.control}
-          render={({ field }) => (
-            <Checkbox
-              checked={field.value}
-              onCheckedChange={field.onChange}
-              disabled={mutation.isPending}
-            >
-              비밀글 설정
-            </Checkbox>
-          )}
-        />
+        {isMock && (
+          <Controller
+            name="isSecret"
+            control={form.control}
+            render={({ field }) => (
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                disabled={mutation.isPending}
+              >
+                비밀글 설정
+              </Checkbox>
+            )}
+          />
+        )}
         <Accordion className="bg-fill-neutral-weak">
           <AccordionItem title="작성 시 유의사항" value="notice">
             <p className="text-body-s">
-              상품과 관련된 내용을 남겨주세요. 주문번호, 연락처 등 개인정보가
-              포함된 문의는 비밀글로 설정해주세요. 욕설이나 광고 등 관련 없는
-              내용은 삭제될 수 있습니다.
+              {isMock
+                ? "상품과 관련된 내용을 남겨주세요. 주문번호, 연락처 등 개인정보가 포함된 문의는 비밀글로 설정해주세요. 욕설이나 광고 등 관련 없는 내용은 삭제될 수 있습니다."
+                : "현재 공개 문의만 등록할 수 있습니다. 주문번호, 연락처 등 개인정보를 입력하지 마세요."}
             </p>
           </AccordionItem>
         </Accordion>
+        {!isMock && (
+          <p className="text-body-s text-font-dark-weak">
+            공개 문의로 등록됩니다. 개인정보를 입력하지 마세요.
+          </p>
+        )}
       </form>
     </Dialog>
   );

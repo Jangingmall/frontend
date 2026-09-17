@@ -46,16 +46,13 @@ export function ProductPurchasePanel({
 }: ProductPurchasePanelProps) {
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const userId = useAuthStore((state) => state.user?.id ?? null);
-  const actions = useProductActions(
-    product.id,
-    userId,
-    isAuthenticated && product.isMock,
-  );
+  const actions = useProductActions(product.id, userId, isAuthenticated);
   const [choices, setChoices] = useState<ProductChoices>({});
   const [lines, setLines] = useState<PurchaseSelection[]>(() => {
-    const initial = product.optionGroups.length
-      ? null
-      : createSelection(product, {});
+    const initial =
+      !product.isMock || product.optionGroups.length
+        ? null
+        : createSelection(product, {});
     return initial ? [initial] : [];
   });
   const [lastSelectionKey, setLastSelectionKey] = useState<string | null>(
@@ -134,11 +131,8 @@ export function ProductPurchasePanel({
   }
 
   function handleCart() {
+    if (!product.isMock) return;
     if (!validatePurchase(true) || busy) return;
-    if (!product.isMock) {
-      onNotify("장바구니 기능은 준비 중입니다.");
-      return;
-    }
     actions.cart.mutate(
       lines.map(({ choices, quantity }) => ({ choices, quantity })),
       {
@@ -163,8 +157,10 @@ export function ProductPurchasePanel({
       onRequireLogin(true);
       return;
     }
-    if (!product.isMock) {
-      onNotify("찜 기능은 준비 중입니다.");
+    if (actions.wishlist.isPending || actions.state.isFetching) return;
+    if (!actions.state.data || actions.state.isError) {
+      void actions.state.refetch();
+      onNotify("찜 상태를 다시 확인하고 있습니다. 잠시 후 다시 시도해 주세요.");
       return;
     }
     actions.wishlist.mutate(!wished, {
@@ -177,6 +173,7 @@ export function ProductPurchasePanel({
   }
 
   function handleRestock() {
+    if (!product.isMock) return;
     if (!isAuthenticated) {
       onRequireLogin(false);
       return;
@@ -227,7 +224,10 @@ export function ProductPurchasePanel({
                 className="size-10 p-1"
                 aria-label={wished ? "찜 취소" : "찜하기"}
                 aria-pressed={wished}
-                disabled={actions.wishlist.isPending}
+                disabled={
+                  actions.wishlist.isPending ||
+                  (isAuthenticated && actions.state.isFetching)
+                }
                 onClick={handleWishlist}
               >
                 {wished ? (
@@ -383,18 +383,22 @@ export function ProductPurchasePanel({
           </div>
         )}
       </div>
-      {!groups.length && !lines.length && !soldOut && !unknownStock && (
-        <Button
-          variant="outline"
-          size="s"
-          onClick={() => {
-            const selection = createSelection(product, {});
-            if (selection) setLines([selection]);
-          }}
-        >
-          작품 추가
-        </Button>
-      )}
+      {product.isMock &&
+        !groups.length &&
+        !lines.length &&
+        !soldOut &&
+        !unknownStock && (
+          <Button
+            variant="outline"
+            size="s"
+            onClick={() => {
+              const selection = createSelection(product, {});
+              if (selection) setLines([selection]);
+            }}
+          >
+            작품 추가
+          </Button>
+        )}
       {lines.length > 0 && (
         <div
           className="flex flex-col gap-2 border-t border-border-neutral-weak pt-6"
@@ -477,12 +481,19 @@ export function ProductPurchasePanel({
             재고를 확인 중입니다.
           </p>
         )}
+        {!product.isMock && (
+          <p className="text-body-s text-font-dark-weak">
+            {soldOut
+              ? "재입고 알림은 아직 지원하지 않습니다."
+              : "구매 옵션을 확인 중입니다. 장바구니와 구매는 준비 중입니다."}
+          </p>
+        )}
         <div className="flex gap-2">
           <Button
             variant="outline"
             size="xl"
             className="w-2/5 min-w-0 border-border-neutral-solid px-3 xl:w-50"
-            disabled={unknownStock && !soldOut}
+            disabled={!product.isMock || (unknownStock && !soldOut)}
             loading={busy}
             onClick={soldOut ? handleRestock : handleCart}
           >
@@ -491,7 +502,7 @@ export function ProductPurchasePanel({
           <Button
             size="xl"
             className="min-w-0 flex-1 px-3"
-            disabled={soldOut || unknownStock}
+            disabled={!product.isMock || soldOut || unknownStock}
             onClick={() => {
               if (validatePurchase())
                 onNotify("주문·결제 기능은 준비 중입니다.");

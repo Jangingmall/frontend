@@ -19,7 +19,14 @@ export function mapProductDetail(dto: ProductDetailDto): ProductDetail | null {
     artisan: null,
     rating: null,
     reviewCount: 0,
-    shipping: null,
+    shipping:
+      dto.productionPeriodDays == null
+        ? null
+        : {
+            fee: null,
+            freeAbove: null,
+            productionDays: `${dto.productionPeriodDays}일`,
+          },
     optionGroups: [],
     variants: null,
     content: [],

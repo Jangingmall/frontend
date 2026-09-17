@@ -22,3 +22,20 @@ export const inquiryFormSchema = z
       });
   });
 export type InquiryFormValues = z.infer<typeof inquiryFormSchema>;
+
+export const backendInquiryFormSchema = inquiryFormSchema.superRefine(
+  (value, ctx) => {
+    if (value.body.length > 1000)
+      ctx.addIssue({
+        code: "custom",
+        path: ["body"],
+        message: "내용은 1000자 이내로 입력해주세요.",
+      });
+    if (value.isSecret)
+      ctx.addIssue({
+        code: "custom",
+        path: ["isSecret"],
+        message: "현재 공개 문의만 등록할 수 있습니다.",
+      });
+  },
+);

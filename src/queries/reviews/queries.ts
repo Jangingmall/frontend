@@ -17,7 +17,6 @@ export function useProductReviews(
       await startMockWorker();
       return fetchReviews(id, filters, isMock);
     },
-    enabled: isMock,
     placeholderData: keepPreviousData,
   });
 }

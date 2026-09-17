@@ -2,6 +2,7 @@
 
 import { Breadcrumb, BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Select, SelectItem } from "@/components/ui/select";
+import { publicEnv } from "@/lib/env";
 import type { ProductCategory } from "@/types/product-filter";
 import type { ProductListSort } from "@/types/sort";
 
@@ -28,6 +29,11 @@ export function ProductToolbar({
   onSortChange,
 }: ProductToolbarProps) {
   const rootCategory = parent ?? category;
+  const options = publicEnv.apiMocking
+    ? SORT_OPTIONS
+    : SORT_OPTIONS.filter((option) =>
+        ["newest", "price-asc", "price-desc"].includes(option.value),
+      );
   return (
     <div>
       <Breadcrumb className="flex-wrap">
@@ -59,13 +65,13 @@ export function ProductToolbar({
         <Select
           ariaLabel="상품 정렬"
           value={sort}
-          items={SORT_OPTIONS}
+          items={options}
           onValueChange={(value) => {
             if (value) onSortChange(value as ProductListSort);
           }}
           className="w-25"
         >
-          {SORT_OPTIONS.map((option) => (
+          {options.map((option) => (
             <SelectItem key={option.value} value={option.value}>
               {option.label}
             </SelectItem>
