@@ -14,6 +14,7 @@ import { ApiError } from "@/lib/http/api-error";
 import { useUpdateProfileMutation } from "@/queries/member/mutations";
 import type { MemberProfile } from "@/types/member";
 
+import { FieldRow } from "./FieldRow";
 import { ProviderBadge } from "./ProviderBadge";
 
 /**
@@ -84,21 +85,27 @@ function ProfileEditForm({
         </p>
       )}
 
-      <InputField
-        label="이름"
-        placeholder="홍길동"
-        error={errors.name?.message}
-        {...register("name")}
-      />
+      <FieldRow label="이름">
+        <InputField
+          aria-label="이름"
+          placeholder="홍길동"
+          error={errors.name?.message}
+          {...register("name")}
+        />
+      </FieldRow>
 
-      <InputField label="이메일" value={profile.email} disabled readOnly />
+      <FieldRow label="이메일">
+        <InputField
+          aria-label="이메일"
+          value={profile.email}
+          disabled
+          readOnly
+        />
+      </FieldRow>
 
-      <div className="space-y-1">
-        <p className="px-2 py-1 text-caption text-font-dark">
-          휴대전화 <span className="text-red-font">*</span>
-        </p>
+      <FieldRow label="휴대전화" required>
         <div className="flex items-center gap-2">
-          <div className="w-32">
+          <div className="w-40">
             <Controller
               control={control}
               name="phonePrefix"
@@ -119,14 +126,18 @@ function ProfileEditForm({
           </div>
           <span className="text-font-dark">-</span>
           <InputField
+            aria-label="휴대전화 가운데 4자리"
             inputMode="numeric"
             placeholder="0000"
+            className="w-40"
             {...register("phoneMiddle")}
           />
           <span className="text-font-dark">-</span>
           <InputField
+            aria-label="휴대전화 마지막 4자리"
             inputMode="numeric"
             placeholder="0000"
+            className="w-40"
             {...register("phoneLast")}
           />
         </div>
@@ -135,21 +146,20 @@ function ProfileEditForm({
             {errors.phoneMiddle?.message ?? errors.phoneLast?.message}
           </p>
         )}
-      </div>
+      </FieldRow>
 
       {profile.authProvider !== "local" && (
-        <div className="space-y-1">
-          <p className="px-2 py-1 text-caption text-font-dark">간편로그인</p>
+        <FieldRow label="간편로그인">
           <ProviderBadge provider={profile.authProvider} variant="pill" />
-        </div>
+        </FieldRow>
       )}
 
       <div className="flex gap-2.5 pt-2">
         <Button
           type="button"
-          variant="jade"
+          variant="outline"
           size="xl"
-          className="min-w-0 flex-1"
+          className="max-w-40 min-w-0 flex-1"
           disabled={mutation.isPending}
           onClick={onCancel}
         >
