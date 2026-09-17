@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { type ReactNode, useState } from "react";
 
 import { MypageShell } from "@/app/(protected)/mypage/_components/MypageShell";
-import { MypageSidebar } from "@/app/(protected)/mypage/_components/MypageSidebar";
+import { MypageSidebarSection } from "@/app/(protected)/mypage/_components/MypageSidebarSection";
 import { ErrorState } from "@/components/common/error-state";
 import { ApiError } from "@/lib/http/api-error";
 import { useMemberProfileQuery } from "@/queries/member/queries";
@@ -39,7 +39,7 @@ export default function MypageAccountLayout({
     return (
       <MypageShell
         title={<h1 className="text-title-xl text-font-dark">마이페이지</h1>}
-        sidebar={<MypageSidebar />}
+        sidebar={<MypageSidebarSection />}
       >
         <output
           aria-live="polite"
@@ -56,7 +56,7 @@ export default function MypageAccountLayout({
     return (
       <MypageShell
         title={<h1 className="text-title-xl text-font-dark">마이페이지</h1>}
-        sidebar={<MypageSidebar />}
+        sidebar={<MypageSidebarSection />}
       >
         <ErrorState
           code={error instanceof ApiError ? error.code : undefined}
@@ -71,7 +71,7 @@ export default function MypageAccountLayout({
     return (
       <MypageShell
         title={<h1 className="text-title-xl text-font-dark">마이페이지</h1>}
-        sidebar={<MypageSidebar />}
+        sidebar={<MypageSidebarSection />}
       >
         <PasswordReconfirmGate
           email={profileQuery.data.email}

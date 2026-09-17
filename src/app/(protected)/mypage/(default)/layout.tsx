@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { MypageShell } from "@/app/(protected)/mypage/_components/MypageShell";
-import { MypageSidebar } from "@/app/(protected)/mypage/_components/MypageSidebar";
+import { MypageSidebarSection } from "@/app/(protected)/mypage/_components/MypageSidebarSection";
 
 /**
  * 마이페이지 일반 페이지 셸 — 8항목 사이드바 + "마이페이지" 제목(Figma MY-6 기준).
@@ -16,7 +16,7 @@ export default function MypageDefaultLayout({
   return (
     <MypageShell
       title={<h1 className="text-title-xl text-font-dark">마이페이지</h1>}
-      sidebar={<MypageSidebar />}
+      sidebar={<MypageSidebarSection />}
     >
       {children}
     </MypageShell>
