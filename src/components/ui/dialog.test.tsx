@@ -49,7 +49,9 @@ describe("Dialog", () => {
       expect(screen.getByRole("button", { name: "닫기" })).toHaveFocus(),
     );
     await user.click(screen.getByRole("combobox", { name: "문의 유형" }));
-    await user.click(screen.getByRole("option", { name: "배송 문의" }));
+    // Select 팝업이 열리는 트랜지션이 끝나기 전엔 옵션이 `hidden`이라 접근성 트리에서
+    // 안 잡힌다 — 즉시 조회하는 getByRole 대신 findByRole로 트랜지션 종료를 기다린다.
+    await user.click(await screen.findByRole("option", { name: "배송 문의" }));
     expect(
       screen.getByRole("combobox", { name: "문의 유형" }),
     ).toHaveTextContent("배송 문의");
