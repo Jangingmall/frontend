@@ -19,28 +19,18 @@ describe("fetchOrdersList", () => {
     expect(second.items[0]!.orderId).not.toBe(first.items[0]!.orderId);
   });
 
-  it("상태 그룹으로 필터링한다", async () => {
-    const expectedCount = orderFixtures.filter((order) =>
-      order.items.some((item) => item.status === "SHIPPING"),
+  it("상태 그룹으로 필터링한다(SHIPPING → BE IN_DELIVERY)", async () => {
+    const expectedCount = orderFixtures.filter(
+      (order) => order.status === "IN_DELIVERY",
     ).length;
     const result = await fetchOrdersList({ status: "SHIPPING", size: 100 });
     expect(result.totalCount).toBe(expectedCount);
     expect(result.totalCount).toBeGreaterThan(0);
   });
 
-  it("교환·환불 그룹은 세부 7개 상태를 전부 묶어서 필터링한다", async () => {
-    const expectedCount = orderFixtures.filter((order) =>
-      order.items.some((item) =>
-        [
-          "EXCHANGE_REQUESTED",
-          "EXCHANGE_REJECTED",
-          "EXCHANGE_APPROVED",
-          "REFUND_REQUESTED",
-          "REFUND_REJECTED",
-          "REFUND_APPROVED",
-          "REFUND_COMPLETED",
-        ].includes(item.status),
-      ),
+  it("교환·환불 그룹은 BE RETURN_REQUESTED 하나로 조회한다(계약서 §4)", async () => {
+    const expectedCount = orderFixtures.filter(
+      (order) => order.status === "RETURN_REQUESTED",
     ).length;
     const result = await fetchOrdersList({
       status: "EXCHANGE_REFUND",
@@ -67,8 +57,8 @@ describe("fetchOrdersList", () => {
     const to = dayjs().format("YYYY-MM-DD");
     const expectedCount = orderFixtures.filter(
       (order) =>
-        !dayjs(order.orderedAt).isBefore(dayjs(from), "day") &&
-        !dayjs(order.orderedAt).isAfter(dayjs(to), "day"),
+        !dayjs(order.createdAt).isBefore(dayjs(from), "day") &&
+        !dayjs(order.createdAt).isAfter(dayjs(to), "day"),
     ).length;
     const result = await fetchOrdersList({ from, to, size: 100 });
     expect(result.totalCount).toBe(expectedCount);

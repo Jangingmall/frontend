@@ -104,11 +104,10 @@ function OrdersList({
               />
               <OrderProductCard
                 variant="detailed"
-                thumbnail={item.thumbnail}
+                thumbnail={item.thumbnailUrl}
                 productName={item.productName}
                 price={item.price}
                 status={item.status}
-                reason={item.reason}
                 showStatusBadge={false}
               />
             </div>
@@ -129,18 +128,17 @@ function OrdersList({
                 <OrderProductCard
                   key={`${order.orderId}-${index}`}
                   variant="detailed"
-                  thumbnail={item.thumbnail}
+                  thumbnail={item.thumbnailUrl}
                   productName={item.productName}
                   price={item.price}
                   status={item.status}
-                  reason={item.reason}
                   showStatusBadge
                 />
               ))
             ) : (
               <OrderProductCard
                 variant="compact"
-                thumbnail={representative.thumbnail}
+                thumbnail={representative.thumbnailUrl}
                 productName={representative.productName}
                 price={representative.price}
               />

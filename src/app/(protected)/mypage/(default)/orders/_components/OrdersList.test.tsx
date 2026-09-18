@@ -2,7 +2,6 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { seedImageRef } from "@/mocks/seed";
 import type { Page } from "@/types/api";
 import type { OrderGroup } from "@/types/order";
 
@@ -16,11 +15,11 @@ function order(overrides: Partial<OrderGroup> = {}): OrderGroup {
     items: [
       {
         productId: 10,
-        thumbnail: seedImageRef(1),
+        thumbnailUrl: "https://cdn.midam.store/products/1.jpg",
         productName: "백자 달항아리",
         price: 320000,
+        quantity: 1,
         status: "DELIVERED",
-        artisanName: "김도예",
       },
     ],
     ...overrides,
@@ -108,19 +107,19 @@ describe("OrdersList", () => {
       items: [
         {
           productId: 10,
-          thumbnail: seedImageRef(1),
+          thumbnailUrl: "https://cdn.midam.store/products/1.jpg",
           productName: "백자 달항아리",
           price: 320000,
+          quantity: 1,
           status: "PREPARING",
-          artisanName: "김도예",
         },
         {
           productId: 11,
-          thumbnail: seedImageRef(2),
+          thumbnailUrl: "https://cdn.midam.store/products/2.jpg",
           productName: "옻칠 3단 찬합",
           price: 189000,
+          quantity: 1,
           status: "DELIVERED",
-          artisanName: "이나전",
         },
       ],
     });

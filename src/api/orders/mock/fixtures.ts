@@ -1,15 +1,18 @@
 import dayjs from "dayjs";
 
-import type { OrderListResponseDto } from "@/api/orders/validation";
-import { ORDER_STATUS, type OrderStatus } from "@/constants/order";
-import { seedImageRef } from "@/mocks/seed";
+import type {
+  OrderItemDto,
+  OrderStatusDto,
+  ReturnInfoDto,
+} from "@/api/orders/validation";
 
-type OrderItemFixture = OrderListResponseDto["items"][number]["items"][number];
-type OrderGroupFixture = OrderListResponseDto["items"][number];
-
-/** 순환 참조용 상품·장인 이름 풀. 상태·기간 다양성을 보여주는 데 목적이 있어 실제 카탈로그와
- * 겹치지 않는다. */
-const PRODUCT_POOL: { name: string; artisanName: string; price: number }[] = [
+/** 순환 참조용 상품·장인 이름 풀. 장인 이름은 계약서에 없는 필드라 DTO엔 안 실리지만,
+ * 목업 핸들러가 `artisanName` 검색(서버사이드 검색을 흉내)을 걸러낼 때만 내부적으로 쓴다. */
+const PRODUCT_POOL: {
+  name: string;
+  artisanName: string;
+  price: number;
+}[] = [
   { name: "백자 달항아리", artisanName: "김도예", price: 320000 },
   { name: "옻칠 3단 찬합", artisanName: "이나전", price: 189000 },
   { name: "유기 반상기 세트", artisanName: "박유기", price: 450000 },
@@ -23,68 +26,99 @@ const PRODUCT_POOL: { name: string; artisanName: string; price: number }[] = [
 ];
 
 function pool(seq: number) {
-  return PRODUCT_POOL[seq % PRODUCT_POOL.length];
+  return PRODUCT_POOL[seq % PRODUCT_POOL.length]!;
 }
 
 function orderNumber(orderId: number): string {
-  return `JJ${String(orderId).padStart(6, "0")}`;
+  return `ORD${String(orderId).padStart(11, "0")}`;
 }
 
 /** 오늘부터 `daysAgo`일 전 ISO datetime — 기간 프리셋(오늘~12개월)이 서로 다른 결과를 내도록
  * 실행 시점 기준 상대값으로 둔다(랜덤은 아님 — 오프셋은 고정 배열). */
-function orderedAt(daysAgo: number): string {
+function createdAt(daysAgo: number): string {
   return dayjs().subtract(daysAgo, "day").toISOString();
 }
 
-function item(
-  seq: number,
-  status: OrderStatus,
-  reason?: string,
-): OrderItemFixture {
+/** `artisanName`은 계약(`OrderItemDto`)엔 없는 목업 전용 확장 필드 — 핸들러의 검색 필터용. */
+type OrderItemFixture = OrderItemDto & { artisanName: string };
+
+function item(seq: number, quantity = 1): OrderItemFixture {
   const p = pool(seq);
   return {
+    orderItemId: 9000 + seq,
     productId: 1000 + seq,
-    thumbnail: seedImageRef(seq),
     productName: p.name,
     price: p.price,
-    status,
-    ...(reason ? { reason } : {}),
+    quantity,
+    thumbnailUrl: `https://cdn.midam.store/products/${1000 + seq}.jpg`,
     artisanName: p.artisanName,
   };
 }
 
-// 14개 상태 각각 최소 1건(단일 상품) — 기간을 0~350일 전으로 분산.
+/**
+ * `OrderGroupDto`에서 직접 `Omit`하지 않고 여기서 새로 선언한다 — 그 타입은 zod
+ * `.passthrough()` 인덱스 시그니처(`[x: string]: unknown`)를 가진 채로 추론돼 있어,
+ * `Omit<OrderGroupDto, "items">`을 쓰면 `createdAt` 같은 명시 필드까지 `unknown`으로
+ * 넓어지는 TS 알려진 동작(Omit + 인덱스 시그니처)이 있다.
+ */
+interface OrderGroupFixture {
+  orderId: number;
+  orderNumber: string;
+  status: OrderStatusDto;
+  totalAmount: number;
+  createdAt: string;
+  returnInfo?: ReturnInfoDto;
+  items: OrderItemFixture[];
+}
+
+// 단일 상품 주문 — BE 원본 상태(§3-1) + returnInfo(§4) 조합별로 최소 1건.
+// "주문 확인 중"(ORDER_PENDING)·"구매 확정"(PURCHASE_CONFIRMED)은 대응하는 BE 값이 없어
+// 별도 시나리오를 못 만든다(design.md §9 — PAID/DELIVERED로 흡수됨).
 const SINGLE_STATUS_ORDERS: {
-  status: OrderStatus;
+  status: OrderStatusDto;
   daysAgo: number;
-  reason?: string;
+  returnInfo?: ReturnInfoDto;
 }[] = [
-  { status: ORDER_STATUS.PAYMENT_PENDING, daysAgo: 0 },
-  { status: ORDER_STATUS.ORDER_PENDING, daysAgo: 2 },
-  { status: ORDER_STATUS.PREPARING, daysAgo: 5 },
-  { status: ORDER_STATUS.SHIPPING, daysAgo: 6 },
-  { status: ORDER_STATUS.DELIVERED, daysAgo: 20 },
-  { status: ORDER_STATUS.PURCHASE_CONFIRMED, daysAgo: 40 },
+  { status: "CREATED", daysAgo: 0 },
+  { status: "PAID", daysAgo: 5 },
+  { status: "IN_DELIVERY", daysAgo: 6 },
+  { status: "DELIVERED", daysAgo: 20 },
+  { status: "CANCELED", daysAgo: 45 },
   {
-    status: ORDER_STATUS.CANCELED,
-    daysAgo: 45,
-    reason: "주문 승인 거절 ( 작업 불가 )",
+    status: "RETURN_REQUESTED",
+    daysAgo: 75,
+    returnInfo: { type: "EXCHANGE", status: "REQUESTED" },
   },
-  { status: ORDER_STATUS.EXCHANGE_REQUESTED, daysAgo: 75 },
   {
-    status: ORDER_STATUS.EXCHANGE_REJECTED,
+    status: "RETURN_REQUESTED",
     daysAgo: 80,
-    reason: "상품 사용에 따른 파손",
+    returnInfo: { type: "EXCHANGE", status: "REJECTED" },
   },
-  { status: ORDER_STATUS.EXCHANGE_APPROVED, daysAgo: 100 },
-  { status: ORDER_STATUS.REFUND_REQUESTED, daysAgo: 140 },
   {
-    status: ORDER_STATUS.REFUND_REJECTED,
-    daysAgo: 170,
-    reason: "상품 사용에 따른 파손",
+    status: "RETURN_REQUESTED",
+    daysAgo: 100,
+    returnInfo: { type: "EXCHANGE", status: "APPROVED" },
   },
-  { status: ORDER_STATUS.REFUND_APPROVED, daysAgo: 200 },
-  { status: ORDER_STATUS.REFUND_COMPLETED, daysAgo: 230 },
+  {
+    status: "RETURN_REQUESTED",
+    daysAgo: 140,
+    returnInfo: { type: "RETURN", status: "REQUESTED" },
+  },
+  {
+    status: "RETURN_REQUESTED",
+    daysAgo: 170,
+    returnInfo: { type: "RETURN", status: "REJECTED" },
+  },
+  {
+    status: "RETURN_REQUESTED",
+    daysAgo: 200,
+    returnInfo: { type: "RETURN", status: "APPROVED" },
+  },
+  {
+    status: "RETURN_REQUESTED",
+    daysAgo: 230,
+    returnInfo: { type: "RETURN", status: "COMPLETED" },
+  },
 ];
 
 const singleOrders: OrderGroupFixture[] = SINGLE_STATUS_ORDERS.map(
@@ -93,63 +127,50 @@ const singleOrders: OrderGroupFixture[] = SINGLE_STATUS_ORDERS.map(
     return {
       orderId,
       orderNumber: orderNumber(orderId),
-      orderedAt: orderedAt(spec.daysAgo),
-      items: [item(index, spec.status, spec.reason)],
+      status: spec.status,
+      totalAmount: pool(index).price,
+      createdAt: createdAt(spec.daysAgo),
+      returnInfo: spec.returnInfo,
+      items: [item(index)],
     };
   },
 );
 
-// 다중 상품 주문 4건 — 아이템별로 다른 상태 조합(T-21 §0-1 실측 예시 그대로).
-const MULTI_ITEM_ORDERS: {
-  daysAgo: number;
-  statuses: OrderStatus[];
-}[] = [
-  { daysAgo: 10, statuses: [ORDER_STATUS.PREPARING, ORDER_STATUS.DELIVERED] },
-  {
-    daysAgo: 90,
-    statuses: [
-      ORDER_STATUS.PREPARING,
-      ORDER_STATUS.DELIVERED,
-      ORDER_STATUS.PREPARING,
-    ],
-  },
-  {
-    daysAgo: 260,
-    statuses: [ORDER_STATUS.DELIVERED, ORDER_STATUS.PURCHASE_CONFIRMED],
-  },
-  {
-    daysAgo: 320,
-    statuses: [
-      ORDER_STATUS.SHIPPING,
-      ORDER_STATUS.SHIPPING,
-      ORDER_STATUS.PREPARING,
-    ],
-  },
+// 다중 상품 주문 4건 — 계약상 상태는 주문 전체에 하나뿐이라 아이템은 전부 같은 상태를 공유한다.
+const MULTI_ITEM_ORDERS: { status: OrderStatusDto; daysAgo: number }[] = [
+  { status: "PAID", daysAgo: 10 },
+  { status: "PAID", daysAgo: 90 },
+  { status: "DELIVERED", daysAgo: 260 },
+  { status: "IN_DELIVERY", daysAgo: 320 },
 ];
 
 const multiOrders: OrderGroupFixture[] = MULTI_ITEM_ORDERS.map(
   (spec, index) => {
     const orderId = 5101 + index;
+    const itemCount = 2 + (index % 2);
+    const items = Array.from({ length: itemCount }, (_, itemIndex) =>
+      item(20 + index * 3 + itemIndex, 1 + (itemIndex % 2)),
+    );
     return {
       orderId,
       orderNumber: orderNumber(orderId),
-      orderedAt: orderedAt(spec.daysAgo),
-      items: spec.statuses.map((status, itemIndex) =>
-        item(20 + index * 3 + itemIndex, status),
-      ),
+      status: spec.status,
+      totalAmount: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      createdAt: createdAt(spec.daysAgo),
+      items,
     };
   },
 );
 
-// size=10 기준 3페이지 이상 나오도록 흔한 상태(배송완료 등)로 패딩.
-const PADDING_STATUSES: { status: OrderStatus; daysAgo: number }[] = [
-  { status: ORDER_STATUS.DELIVERED, daysAgo: 15 },
-  { status: ORDER_STATUS.PURCHASE_CONFIRMED, daysAgo: 30 },
-  { status: ORDER_STATUS.PAYMENT_PENDING, daysAgo: 1 },
-  { status: ORDER_STATUS.SHIPPING, daysAgo: 8 },
-  { status: ORDER_STATUS.DELIVERED, daysAgo: 55 },
-  { status: ORDER_STATUS.PREPARING, daysAgo: 4 },
-  { status: ORDER_STATUS.PURCHASE_CONFIRMED, daysAgo: 110 },
+// size=10 기준 3페이지 이상 나오도록 흔한 상태(결제완료 등)로 패딩.
+const PADDING_STATUSES: { status: OrderStatusDto; daysAgo: number }[] = [
+  { status: "DELIVERED", daysAgo: 15 },
+  { status: "PAID", daysAgo: 30 },
+  { status: "CREATED", daysAgo: 1 },
+  { status: "IN_DELIVERY", daysAgo: 8 },
+  { status: "DELIVERED", daysAgo: 55 },
+  { status: "PAID", daysAgo: 4 },
+  { status: "DELIVERED", daysAgo: 110 },
 ];
 
 const paddingOrders: OrderGroupFixture[] = PADDING_STATUSES.map(
@@ -158,8 +179,10 @@ const paddingOrders: OrderGroupFixture[] = PADDING_STATUSES.map(
     return {
       orderId,
       orderNumber: orderNumber(orderId),
-      orderedAt: orderedAt(spec.daysAgo),
-      items: [item(40 + index, spec.status)],
+      status: spec.status,
+      totalAmount: pool(40 + index).price,
+      createdAt: createdAt(spec.daysAgo),
+      items: [item(40 + index)],
     };
   },
 );
@@ -169,4 +192,4 @@ export const orderFixtures: OrderGroupFixture[] = [
   ...singleOrders,
   ...multiOrders,
   ...paddingOrders,
-].sort((a, b) => (a.orderedAt < b.orderedAt ? 1 : -1));
+].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));

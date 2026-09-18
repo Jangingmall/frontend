@@ -1,76 +1,97 @@
 import { z } from "zod";
 
-import { ORDER_STATUS, type OrderStatus } from "@/constants/order";
-
 /**
- * `GET /api/member/me/orders` 응답 검증 스키마. (design.md §5.1 — BE에 아직 없는 목업 계약)
- * item 스키마만 명시하고 `.passthrough()`로 나머지는 흡수한다.
+ * `GET /api/member/me/orders` 응답 검증 스키마.
+ * (`장인몰 주문 이력 API 계약서` v1.0, 2026-09-18 BE 확정 — 강정훈)
+ *
+ * Spring `Pageable` 응답 그대로(`content`/`totalElements`/`number`(0-base) 등) —
+ * `api/products`의 실제 BE 연동 경로와 같은 형태. `.passthrough()`로 문서에 없는 필드는
+ * 흡수한다.
  */
 
-const orderStatusValues = Object.values(ORDER_STATUS) as [
-  OrderStatus,
-  ...OrderStatus[],
-];
-
-const imageVariantDto = z
+const returnInfoDto = z
   .object({
-    width: z.union([z.literal(320), z.literal(640), z.literal(1280)]),
-    url: z.string(),
-    format: z.literal("webp"),
-  })
-  .passthrough();
-
-const imageRefDto = z
-  .object({
-    imageId: z.string(),
-    variants: z.array(imageVariantDto),
+    type: z.enum(["EXCHANGE", "RETURN"]),
+    status: z.enum(["REQUESTED", "REJECTED", "APPROVED", "COMPLETED"]),
   })
   .passthrough();
 
 const orderItemDto = z
   .object({
+    orderItemId: z.number().int(),
     productId: z.number().int(),
-    thumbnail: imageRefDto,
     productName: z.string(),
     price: z.number().int(),
-    // 지금은 100% 목업(design.md §5.3 — BE는 이 14종을 아직 표현 못함)이라 우리 픽스처가
-    // 유일한 데이터 출처다. `ORDER_STATUS` 14종으로 엄격 검증해 픽스처 오타를 여기서 잡는다 —
-    // 실제 BE 연동 시 이 스키마 자체를 교체해야 한다(unknown-safe로 되돌릴 수 있음).
-    status: z.enum(orderStatusValues),
-    reason: z.string().nullish(),
-    artisanName: z.string(),
+    quantity: z.number().int(),
+    thumbnailUrl: z.string().nullable(),
   })
   .passthrough();
+
+/**
+ * 계약서 §3-1은 `CREATED·PAID·PAYMENT_FAILED·CANCELED·DELIVERED·RETURN_REQUESTED` 6종만
+ * 문서화했지만, §3-3 요약 집계 매핑 표엔 `IN_DELIVERY`가 등장한다("배송 중" 필터가 실제로
+ * 동작하려면 이 값이 있어야 한다 — BE 확인 요청함, design.md §9). 확인 전까지는 존재한다고
+ * 가정하고 검증 목록에 포함해둔다.
+ */
+const orderStatusDto = z.enum([
+  "CREATED",
+  "PAID",
+  "PAYMENT_FAILED",
+  "CANCELED",
+  "DELIVERED",
+  "RETURN_REQUESTED",
+  "IN_DELIVERY",
+]);
 
 const orderGroupDto = z
   .object({
     orderId: z.number().int(),
     orderNumber: z.string(),
-    orderedAt: z.string(),
+    status: orderStatusDto,
+    totalAmount: z.number().int(),
+    createdAt: z.string(),
+    returnInfo: returnInfoDto.nullish(),
     items: z.array(orderItemDto).min(1),
   })
   .passthrough();
 
 export const orderListResponseDto = z
   .object({
-    items: z.array(orderGroupDto),
-    totalCount: z.number(),
+    content: z.array(orderGroupDto),
+    totalElements: z.number().int(),
+    totalPages: z.number().int(),
+    size: z.number().int(),
+    /** 0-base 현재 페이지. */
+    number: z.number().int(),
+    first: z.boolean(),
+    last: z.boolean(),
+    empty: z.boolean(),
   })
   .passthrough();
 
+export type OrderStatusDto = z.infer<typeof orderStatusDto>;
+export type ReturnInfoDto = z.infer<typeof returnInfoDto>;
 export type OrderItemDto = z.infer<typeof orderItemDto>;
 export type OrderGroupDto = z.infer<typeof orderGroupDto>;
 export type OrderListResponseDto = z.infer<typeof orderListResponseDto>;
 
-/** `GET /api/member/me/orders/summary` 응답 검증 스키마. (design.md §5.2 — 신규 엔드포인트 가정) */
+/** `GET /api/member/me/orders/summary` 응답 검증 스키마. (계약서 §3-3) */
 export const orderStatusSummaryDto = z
   .object({
-    paymentPending: z.number().int(),
-    preparing: z.number().int(),
-    shipping: z.number().int(),
-    delivered: z.number().int(),
-    exchangeRefund: z.number().int(),
-    canceled: z.number().int(),
+    inProgress: z
+      .object({
+        awaitingPayment: z.number().int(),
+        preparing: z.number().int(),
+        inDelivery: z.number().int(),
+        delivered: z.number().int(),
+      })
+      .passthrough(),
+    closedCount: z
+      .object({
+        returnOrExchange: z.number().int(),
+        canceled: z.number().int(),
+      })
+      .passthrough(),
   })
   .passthrough();
 
