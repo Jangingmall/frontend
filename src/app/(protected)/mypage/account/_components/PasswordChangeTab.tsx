@@ -60,7 +60,7 @@ function PasswordChangeTab() {
 
   if (profileQuery.isPending) {
     return (
-      <div className="space-y-3 py-6">
+      <div className="space-y-3 pb-6">
         <Skeleton className="h-6 w-40" />
         <Skeleton className="h-6 w-60" />
       </div>
@@ -135,7 +135,7 @@ function PasswordChangeForm() {
   }
 
   return (
-    <div className="space-y-6 py-6">
+    <div className="space-y-6 pb-6">
       <h2 className="px-3 text-title-m text-font-dark">비밀번호 변경</h2>
 
       <form

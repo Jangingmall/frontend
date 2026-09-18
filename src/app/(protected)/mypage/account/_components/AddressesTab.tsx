@@ -39,7 +39,7 @@ function AddressesTab() {
 
   if (addressesQuery.isPending) {
     return (
-      <div className="flex gap-4 py-6">
+      <div className="flex gap-4 pb-6">
         <Skeleton className="h-80 w-64" />
         <Skeleton className="h-80 w-64" />
       </div>
@@ -96,7 +96,7 @@ function AddressesTab() {
   const submitting = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <div className="space-y-6 py-6">
+    <div className="space-y-6 pb-6">
       <div className="flex items-center justify-between">
         <h2 className="text-title-m text-font-dark">배송지</h2>
         <Button
