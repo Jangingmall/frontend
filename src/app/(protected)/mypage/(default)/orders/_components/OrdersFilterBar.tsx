@@ -71,15 +71,14 @@ function OrdersFilterBar({
         <span className="w-20 shrink-0 text-body-s text-font-dark">
           검색 기간
         </span>
-        <div role="radiogroup" aria-label="검색 기간" className="flex gap-1">
+        <div role="group" aria-label="검색 기간" className="flex gap-1">
           {PERIOD_PRESETS.map((preset) => (
             <Button
               key={preset}
               type="button"
               variant={period === preset ? "solid" : "outline"}
               size="xs"
-              role="radio"
-              aria-checked={period === preset}
+              aria-pressed={period === preset}
               onClick={() => onPeriodChange(preset)}
               className={chipClassName(period === preset)}
             >
@@ -101,7 +100,7 @@ function OrdersFilterBar({
           주문 처리 상태
         </span>
         <div
-          role="radiogroup"
+          role="group"
           aria-label="주문 처리 상태"
           className="flex flex-wrap gap-1"
         >
@@ -111,8 +110,7 @@ function OrdersFilterBar({
               type="button"
               variant={status === tab.key ? "solid" : "outline"}
               size="xs"
-              role="radio"
-              aria-checked={status === tab.key}
+              aria-pressed={status === tab.key}
               onClick={() => onStatusChange(tab.key)}
               className={chipClassName(status === tab.key)}
             >

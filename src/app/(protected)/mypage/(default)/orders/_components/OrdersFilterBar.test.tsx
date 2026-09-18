@@ -55,31 +55,31 @@ describe("OrdersFilterBar", () => {
   it("현재 선택된 기간 프리셋이 표시된다", () => {
     renderBar({ period: "MONTH_3" });
     expect(
-      screen.getByRole("radio", { name: "3개월", checked: true }),
+      screen.getByRole("button", { name: "3개월", pressed: true }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("radio", { name: "1개월", checked: false }),
+      screen.getByRole("button", { name: "1개월", pressed: false }),
     ).toBeInTheDocument();
   });
 
   it("기간 프리셋 버튼을 클릭하면 onPeriodChange를 호출한다", async () => {
     const user = userEvent.setup();
     const props = renderBar();
-    await user.click(screen.getByRole("radio", { name: "1개월" }));
+    await user.click(screen.getByRole("button", { name: "1개월" }));
     expect(props.onPeriodChange).toHaveBeenCalledWith("MONTH_1");
   });
 
   it("주문 처리 상태 탭을 클릭하면 onStatusChange를 호출한다", async () => {
     const user = userEvent.setup();
     const props = renderBar();
-    await user.click(screen.getByRole("radio", { name: "배송 중" }));
+    await user.click(screen.getByRole("button", { name: "배송 중" }));
     expect(props.onStatusChange).toHaveBeenCalledWith("SHIPPING");
   });
 
   it("현재 선택된 상태 탭이 표시된다", () => {
     renderBar({ status: "DELIVERED" });
     expect(
-      screen.getByRole("radio", { name: "배송 완료", checked: true }),
+      screen.getByRole("button", { name: "배송 완료", pressed: true }),
     ).toBeInTheDocument();
   });
 

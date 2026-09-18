@@ -45,7 +45,7 @@ describe("MypageOrdersPage", () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findAllByText("주문번호 :");
-    await user.click(screen.getByRole("radio", { name: "배송 중" }));
+    await user.click(screen.getByRole("button", { name: "배송 중" }));
     expect(new URLSearchParams(window.location.search).get("status")).toBe(
       "SHIPPING",
     );
