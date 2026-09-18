@@ -1,6 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { getOrderCardActions, orderStatusLabel } from "./order";
+import {
+  getOrderCardActions,
+  ORDER_STATUS,
+  ORDER_STATUS_FILTER_TABS,
+  ORDER_STATUS_GROUP,
+  orderStatusLabel,
+  resolveOrderPeriod,
+} from "./order";
 
 describe("orderStatusLabel", () => {
   it("알려진 상태값을 라벨로 변환한다", () => {
@@ -99,5 +106,64 @@ describe("getOrderCardActions", () => {
       { action: "refundInfo" },
       { action: "inquiry" },
     ]);
+  });
+});
+
+describe("ORDER_STATUS_GROUP", () => {
+  it("14개 상태값이 정확히 한 그룹에만 속한다", () => {
+    const grouped = Object.values(ORDER_STATUS_GROUP).flat();
+    expect(grouped.sort()).toEqual(Object.values(ORDER_STATUS).sort());
+    expect(new Set(grouped).size).toBe(grouped.length);
+  });
+
+  it("필터 탭 순서가 Figma 실측(전체 포함 8종)과 일치한다", () => {
+    expect(ORDER_STATUS_FILTER_TABS.map((tab) => tab.label)).toEqual([
+      "전체",
+      "입금 확인 중",
+      "상품 준비 중",
+      "배송 중",
+      "배송 완료",
+      "구매 확정",
+      "교환 · 환불",
+      "주문 취소",
+    ]);
+  });
+});
+
+describe("resolveOrderPeriod", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-18T00:00:00+09:00"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("오늘은 오늘 하루만 반환한다", () => {
+    expect(resolveOrderPeriod("TODAY")).toEqual({
+      from: "2026-09-18",
+      to: "2026-09-18",
+    });
+  });
+
+  it("3개월은 오늘부터 3개월 전까지 반환한다", () => {
+    expect(resolveOrderPeriod("MONTH_3")).toEqual({
+      from: "2026-06-18",
+      to: "2026-09-18",
+    });
+  });
+
+  it("커스텀은 넘겨준 범위를 그대로 반환한다", () => {
+    expect(
+      resolveOrderPeriod("CUSTOM", { from: "2026-01-01", to: "2026-01-31" }),
+    ).toEqual({ from: "2026-01-01", to: "2026-01-31" });
+  });
+
+  it("커스텀인데 범위가 없으면 오늘 하루로 폴백한다", () => {
+    expect(resolveOrderPeriod("CUSTOM")).toEqual({
+      from: "2026-09-18",
+      to: "2026-09-18",
+    });
   });
 });
