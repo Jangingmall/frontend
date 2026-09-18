@@ -18,6 +18,13 @@ export const accessTokenResponseDto = z
   .object({ accessToken: z.string().min(1) })
   .passthrough();
 
+/**
+ * 로그인 방식. **BE 계약 미확정 — 이 작업에서 가정 추가**(design.md 참고). `MemberProfileResponse`엔
+ * 아직 이 필드가 없다 — DB(`MemberSocialAccount`)엔 연동 정보가 있으나 응답에 노출되지 않아
+ * 필드 추가를 요청한 상태. `null`은 `LOCAL`과 동일하게 취급한다.
+ */
+const authProviderSchema = z.enum(["LOCAL", "NAVER", "KAKAO"]).nullable();
+
 export const memberProfileResponseDto = z
   .object({
     // ID는 Long 계약이라 정수만. (docs/api-contract.md §2.2)
@@ -30,6 +37,9 @@ export const memberProfileResponseDto = z
     // 판매자는 "ARTISAN" 단일 값. 배열이 아니다. (docs/api-contract.md §3)
     role: roleSchema,
     profileImageUrl: z.string().nullable(),
+    // 회원가입이 필수로 받는 값이라 항상 존재한다고 가정(BE `Member.phone` non-null 컬럼).
+    phone: z.string(),
+    authProvider: authProviderSchema,
   })
   .passthrough();
 
@@ -92,3 +102,26 @@ export const oauthCompleteProfileResponseDto = z
 export type OAuthCompleteProfileResponseDto = z.infer<
   typeof oauthCompleteProfileResponseDto
 >;
+
+/**
+ * 배송지 응답. `GET|POST /api/member/me/addresses`, `PATCH .../{addressId}` 공유 —
+ * BE `AddressData(addressId, recipientName, phone, zipCode, address1, address2, isDefault)`를
+ * 직접 대조해 확정한 필드명.
+ */
+export const addressResponseDto = z
+  .object({
+    addressId: z.number().int(),
+    recipientName: z.string(),
+    phone: z.string(),
+    zipCode: z.string(),
+    address1: z.string(),
+    address2: z.string(),
+    isDefault: z.boolean(),
+  })
+  .passthrough();
+
+/** `GET /api/member/me/addresses` 목록 응답 — BE가 `PagedResponse` 없이 배열을 그대로 준다. */
+export const addressListResponseDto = z.array(addressResponseDto);
+
+export type AddressResponseDto = z.infer<typeof addressResponseDto>;
+export type AddressListResponseDto = z.infer<typeof addressListResponseDto>;

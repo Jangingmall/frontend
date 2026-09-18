@@ -7,6 +7,8 @@ import {
 } from "./mock/fixtures";
 import {
   accessTokenResponseDto,
+  addressListResponseDto,
+  addressResponseDto,
   emailVerificationResponseDto,
   loginResponseDto,
   memberProfileResponseDto,
@@ -66,6 +68,82 @@ describe("memberProfileResponseDto", () => {
         profileImageUrl: null,
       }).success,
     ).toBe(true);
+  });
+
+  it("authProvider는 LOCAL·NAVER·KAKAO·null을 허용한다", () => {
+    for (const authProvider of ["LOCAL", "NAVER", "KAKAO", null]) {
+      expect(
+        memberProfileResponseDto.safeParse({ ...memberMeUser, authProvider })
+          .success,
+      ).toBe(true);
+    }
+  });
+
+  it("authProvider가 알 수 없는 값이면 거부한다", () => {
+    expect(
+      memberProfileResponseDto.safeParse({
+        ...memberMeUser,
+        authProvider: "GOOGLE",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("phone 누락은 거부한다", () => {
+    const withoutPhone: Record<string, unknown> = { ...memberMeUser };
+    delete withoutPhone.phone;
+    expect(memberProfileResponseDto.safeParse(withoutPhone).success).toBe(
+      false,
+    );
+  });
+});
+
+describe("addressResponseDto", () => {
+  const validAddress = {
+    addressId: 1,
+    recipientName: "김미담",
+    phone: "01011112222",
+    zipCode: "06035",
+    address1: "서울특별시 강남구 학동로 343",
+    address2: "더 피나클 강남 15층",
+    isDefault: true,
+  };
+
+  it("배송지 필드를 통과시킨다", () => {
+    expect(addressResponseDto.parse(validAddress)).toEqual(validAddress);
+  });
+
+  it("addressId 소수는 거부한다 (Long 계약)", () => {
+    expect(
+      addressResponseDto.safeParse({ ...validAddress, addressId: 1.5 }).success,
+    ).toBe(false);
+  });
+
+  it("isDefault가 boolean이 아니면 거부한다", () => {
+    expect(
+      addressResponseDto.safeParse({ ...validAddress, isDefault: "true" })
+        .success,
+    ).toBe(false);
+  });
+});
+
+describe("addressListResponseDto", () => {
+  it("배열(페이지네이션 없음)을 그대로 통과시킨다", () => {
+    const list = [
+      {
+        addressId: 1,
+        recipientName: "김미담",
+        phone: "01011112222",
+        zipCode: "06035",
+        address1: "서울특별시 강남구 학동로 343",
+        address2: "",
+        isDefault: true,
+      },
+    ];
+    expect(addressListResponseDto.parse(list)).toEqual(list);
+  });
+
+  it("빈 배열도 허용한다", () => {
+    expect(addressListResponseDto.parse([])).toEqual([]);
   });
 });
 

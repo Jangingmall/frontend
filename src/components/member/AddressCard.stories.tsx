@@ -1,0 +1,61 @@
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import { fn } from "storybook/test";
+
+import { RadioGroup } from "@/components/ui/radio-button";
+
+import { AddressCard } from "./AddressCard";
+
+// AddressCard 안의 기본 배송지 selecter는 `Radio`(value 필수 + RadioGroup 컨텍스트 필요)라
+// 스토리에서도 RadioGroup으로 감싼다(radio-button.stories.tsx와 같은 이유).
+const meta = {
+  title: "Member/AddressCard",
+  component: AddressCard,
+  decorators: [
+    (Story, context) => (
+      <RadioGroup
+        className="w-64"
+        value={
+          context.args.address.isDefault ? context.args.address.id : undefined
+        }
+      >
+        <Story />
+      </RadioGroup>
+    ),
+  ],
+  args: {
+    onEdit: fn(),
+    onDelete: fn(),
+  },
+} satisfies Meta<typeof AddressCard>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: {
+    address: {
+      id: 1,
+      recipientName: "김미담",
+      phone: "01011112222",
+      zipCode: "06035",
+      address1: "서울특별시 강남구 학동로 343",
+      address2: "더 피나클 강남 15층",
+      isDefault: false,
+    },
+  },
+};
+
+export const DefaultAddress: Story = {
+  name: "기본 배송지",
+  args: {
+    address: {
+      id: 2,
+      recipientName: "김미담",
+      phone: "01011112222",
+      zipCode: "13529",
+      address1: "경기도 성남시 분당구 판교역로 235",
+      address2: "H스퀘어 N동 3층",
+      isDefault: true,
+    },
+  },
+};

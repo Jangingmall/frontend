@@ -14,6 +14,8 @@ const VALID_MEMBER = {
   nickname: null,
   role: "USER" as const,
   profileImageUrl: null,
+  phone: "01099998888",
+  authProvider: "LOCAL" as const,
 };
 
 beforeEach(() => {

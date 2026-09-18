@@ -10,9 +10,14 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { InputField } from "@/components/ui/input-field";
-import { ProgressBar, type ProgressState } from "@/components/ui/progress-bar";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { Select, SelectItem } from "@/components/ui/select";
 import { resolveErrorMessage } from "@/constants/error-messages";
+import {
+  countPasswordClasses,
+  passwordStrengthState,
+} from "@/constants/password";
+import { PHONE_PREFIXES } from "@/constants/phone";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useCompleteOAuthProfileMutation,
@@ -35,33 +40,6 @@ import { TermsAgreementFields } from "./TermsAgreementFields";
  *
  * 이메일 인증은 실제 BE 계약이 아니라 placeholder다(design.md §0.1·§7-2).
  */
-
-const PHONE_PREFIXES = ["010", "011", "016", "017", "018", "019"] as const;
-
-const PASSWORD_SPECIAL_CHARS = "!@#$%";
-
-function countPasswordClasses(value: string): number {
-  let count = 0;
-  if (/[A-Z]/.test(value)) count += 1;
-  if (/[a-z]/.test(value)) count += 1;
-  if (/\d/.test(value)) count += 1;
-  if (new RegExp(`[${PASSWORD_SPECIAL_CHARS}]`).test(value)) count += 1;
-  return count;
-}
-
-function passwordStrengthState(password: string): {
-  state: ProgressState;
-  label: string;
-} {
-  if (password.length === 0) return { state: "default", label: "" };
-  const classes = countPasswordClasses(password);
-  if (password.length < 8 || classes <= 1) {
-    return { state: "alert", label: "매우낮음" };
-  }
-  if (classes === 2) return { state: "caution", label: "낮음" };
-  if (classes === 3) return { state: "good", label: "보통" };
-  return { state: "perfect", label: "높음" };
-}
 
 const nameSchema = z
   .string()
@@ -501,7 +479,8 @@ export function SignupInfoForm({
         <FieldRow label="휴대전화">
           {/* 행 안의 개별 InputField에 error를 주면(에러 텍스트가 그 필드만 키를 키워) items-center
               정렬 기준이 바뀌어 Select·나머지 입력이 위아래로 밀린다 — 행 자체는 항상 같은
-              높이를 유지하도록 에러 텍스트를 행 밖으로 뺐다. */}
+              높이를 유지하도록 에러 텍스트를 행 밖으로 뺐다. Select 기본 높이(h-9)도
+              InputField 고정 높이(h-11)와 달라 className="h-11"로 맞춘다. */}
           <div className="flex items-center gap-2">
             <div className="w-36">
               <Controller
@@ -512,6 +491,7 @@ export function SignupInfoForm({
                     value={field.value}
                     onValueChange={field.onChange}
                     ariaLabel="통신사 접두사"
+                    className="h-11"
                   >
                     {PHONE_PREFIXES.map((prefix) => (
                       <SelectItem key={prefix} value={prefix}>

@@ -1,8 +1,10 @@
 import { publicEnv } from "@/lib/env";
+import { ApiError } from "@/lib/http/api-error";
 import { clientFetch, refreshAccessToken } from "@/lib/http/client";
 import type { AuthUser, OAuthProvider } from "@/types/auth";
+import type { Address, AddressInput, MemberProfile } from "@/types/member";
 
-import { mapMemberProfile } from "./mapper";
+import { mapAddress, mapMemberDetail, mapMemberProfile } from "./mapper";
 import { SEED_OAUTH_ACCESS_TOKEN } from "./mock/fixtures";
 import {
   getMockOAuthLinkedMember,
@@ -11,6 +13,8 @@ import {
 } from "./mock/mock-identity";
 import {
   accessTokenResponseDto,
+  addressListResponseDto,
+  addressResponseDto,
   emailVerificationResponseDto,
   loginResponseDto,
   memberProfileResponseDto,
@@ -220,4 +224,109 @@ export async function completeOAuthProfile(
     accessToken,
     user: { id: memberId, name: body.name, role },
   };
+}
+
+/** `GET /api/member/me` → 마이페이지 상세 모델. `fetchMe()`(auth 부팅용)와 같은 엔드포인트를
+ * 다른 매퍼로 호출한다 — 상태 경계가 달라(store vs Query 캐시) 독립적으로 조회한다. */
+export async function fetchMemberProfile(): Promise<MemberProfile> {
+  const data = await clientFetch<unknown>("/api/member/me");
+  return mapMemberDetail(memberProfileResponseDto.parse(data));
+}
+
+export interface UpdateMemberProfileRequest {
+  name: string;
+  phone: string;
+}
+
+/** `PATCH /api/member/me` → 이름·휴대전화만 갱신한다. 이메일은 BE에 변경 API가 없어 요청에
+ * 넣지 않는다(`MemberAccountRequests.Profile`엔 email 필드 자체가 없음). */
+export async function updateMemberProfile(
+  body: UpdateMemberProfileRequest,
+): Promise<MemberProfile> {
+  const data = await clientFetch<unknown>("/api/member/me", {
+    method: "PATCH",
+    body,
+  });
+  return mapMemberDetail(memberProfileResponseDto.parse(data));
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+/**
+ * `PATCH /api/member/me/password`. BE 요청 바디엔 `newPasswordConfirm`이 없다 — 새 비밀번호
+ * 확인은 클라이언트 Zod로만 검증하고 API엔 보내지 않는다.
+ *
+ * `retryOn401: false` — 이 엔드포인트의 401은 토큰 만료가 아니라 현재 비밀번호 불일치일
+ * 가능성이 크다(실제 백엔드가 API 명세의 `400 MISMATCH` 대신 `401`을 반환하는 상태,
+ * CodeRabbit 리뷰로 발견). 기본 401 처리를 그대로 두면 비밀번호 오타 하나로 불필요한
+ * refresh가 돌고, 실패 시 세션까지 끊긴다 — 호출부(`PasswordChangeTab`)가 401과
+ * `MISMATCH`를 모두 "현재 비밀번호 불일치"로 다뤄, 백엔드가 나중에 명세대로 고쳐져도
+ * 그대로 맞는다.
+ */
+export async function changePassword(
+  body: ChangePasswordRequest,
+): Promise<void> {
+  await clientFetch<null>("/api/member/me/password", {
+    method: "PATCH",
+    body,
+    retryOn401: false,
+  });
+}
+
+/**
+ * 비밀번호 재확인. 전용 엔드포인트가 없어 `login()`을 재사용해 검증만 하고 응답(새 토큰)은
+ * 버린다(세션 갱신 안 함) — 401이면 불일치로 판단해 `false`, 그 외 실패는 그대로 전파한다.
+ */
+export async function verifyPassword(
+  email: string,
+  password: string,
+): Promise<boolean> {
+  try {
+    await login({ email, password });
+    return true;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return false;
+    throw error;
+  }
+}
+
+/** `GET /api/member/me/addresses` → 페이지네이션 없는 배열(BE `AddressController.list()` 대조 확인). */
+export async function fetchAddresses(): Promise<Address[]> {
+  const data = await clientFetch<unknown>("/api/member/me/addresses");
+  return addressListResponseDto.parse(data).map(mapAddress);
+}
+
+/** `POST /api/member/me/addresses` → 생성된 배송지. */
+export async function createAddress(input: AddressInput): Promise<Address> {
+  const data = await clientFetch<unknown>("/api/member/me/addresses", {
+    method: "POST",
+    body: input,
+  });
+  return mapAddress(addressResponseDto.parse(data));
+}
+
+/**
+ * `PATCH /api/member/me/addresses/{addressId}` → 갱신된 배송지. 부분 업데이트라
+ * `input`은 일부 필드만 담을 수 있다 — 목록 카드의 "기본 배송지로 설정" 액션도
+ * `{ isDefault: true }`만 담아 이 함수로 호출한다.
+ */
+export async function updateAddress(
+  addressId: number,
+  input: Partial<AddressInput>,
+): Promise<Address> {
+  const data = await clientFetch<unknown>(
+    `/api/member/me/addresses/${addressId}`,
+    { method: "PATCH", body: input },
+  );
+  return mapAddress(addressResponseDto.parse(data));
+}
+
+/** `DELETE /api/member/me/addresses/{addressId}`. */
+export async function deleteAddress(addressId: number): Promise<void> {
+  await clientFetch<null>(`/api/member/me/addresses/${addressId}`, {
+    method: "DELETE",
+  });
 }
