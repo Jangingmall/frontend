@@ -21,6 +21,10 @@ interface ProviderBadgeProps {
  * circle은 로그인 버튼과 동일한 48px viewBox 원형 배지를 36px로 축소해 그린 것이고, pill은
  * signup 버튼의 flat glyph(원형 배경 없는 순수 마크)를 재사용한 별개 asset이다(같은
  * 마크라도 Figma가 배경 유무로 다른 컴포넌트를 쓴다).
+ *
+ * pill에 `self-start`가 필요하다 — `ProfileEditForm`이 이걸 `FieldRow`(`flex flex-col`,
+ * 기본 `align-items: stretch`) 안에 놓아서, `inline-flex`인데도 너비가 auto라 부모 폭까지
+ * 늘어났었다(사용자 피드백으로 확인).
  */
 function ProviderBadge({ provider, variant }: ProviderBadgeProps) {
   if (variant === "circle") {
@@ -61,7 +65,7 @@ function ProviderBadge({ provider, variant }: ProviderBadgeProps) {
       role="img"
       aria-label={`${PROVIDER_LABEL[provider]} 계정 연동계정`}
       className={cn(
-        "inline-flex shrink-0 items-center gap-3 rounded-sm px-5 py-2",
+        "inline-flex shrink-0 items-center gap-3 self-start rounded-sm px-5 py-2",
         provider === "naver" ? "bg-[#03A94D]" : "bg-[#FEE500]",
       )}
     >
