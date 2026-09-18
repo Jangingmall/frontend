@@ -19,7 +19,12 @@ import type { Money } from "@/types/money";
 import { pickThumbnailVariant } from "@/utils/image";
 
 interface OrderProductCardBaseProps {
-  thumbnail: ImageRef;
+  /**
+   * 상품 도메인(`ProductCard` 등)은 3-variant `ImageRef`를 쓰지만, 주문 목록 API는
+   * 단일 CDN URL 문자열만 준다(BE 계약 확정 — `장인몰 주문 이력 API 계약서` §3-1
+   * `thumbnailUrl`). 둘 다 받아 어느 쪽이든 렌더링한다.
+   */
+  thumbnail: ImageRef | string | null;
   productName: string;
   price: Money;
   onViewDetail?: () => void;
@@ -54,7 +59,12 @@ type OrderProductCardProps =
 /** 마이페이지 주문 목록·상세에서 상품 한 줄을 보여주는 순수 프레젠테이션 컴포넌트. */
 export function OrderProductCard(props: OrderProductCardProps) {
   const [hasImageError, setHasImageError] = useState(false);
-  const thumbnailVariant = pickThumbnailVariant(props.thumbnail, 320);
+  const thumbnailUrl =
+    typeof props.thumbnail === "string"
+      ? props.thumbnail
+      : props.thumbnail
+        ? pickThumbnailVariant(props.thumbnail, 320)?.url
+        : undefined;
   const isDetailed = props.variant !== "compact";
 
   return (
@@ -66,9 +76,9 @@ export function OrderProductCard(props: OrderProductCardProps) {
         <div className="relative size-22.5 shrink-0 overflow-hidden bg-fill-jade-weak">
           <Image
             src={
-              hasImageError || !thumbnailVariant
+              hasImageError || !thumbnailUrl
                 ? "/images/product-placeholder.png"
-                : thumbnailVariant.url
+                : thumbnailUrl
             }
             alt=""
             fill
