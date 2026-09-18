@@ -6,6 +6,7 @@ import { type ReactNode, useState } from "react";
 import { MypageShell } from "@/app/(protected)/mypage/_components/MypageShell";
 import { MypageSidebarSection } from "@/app/(protected)/mypage/_components/MypageSidebarSection";
 import { ErrorState } from "@/components/common/error-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ApiError } from "@/lib/http/api-error";
 import { useMemberProfileQuery } from "@/queries/member/queries";
 
@@ -41,11 +42,10 @@ export default function MypageAccountLayout({
         title={<h1 className="text-title-xl text-font-dark">마이페이지</h1>}
         sidebar={<MypageSidebarSection />}
       >
-        <output
-          aria-live="polite"
-          className="block py-16 text-center text-body-s"
-        >
-          불러오는 중…
+        <output aria-live="polite" className="flex flex-col gap-6 py-16">
+          <span className="sr-only">불러오는 중…</span>
+          <Skeleton className="mx-auto h-6 w-40" />
+          <Skeleton className="mx-auto h-6 w-60" />
         </output>
       </MypageShell>
     );
