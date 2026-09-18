@@ -16,6 +16,13 @@ const returnInfoDto = z
   })
   .passthrough();
 
+/**
+ * BE는 이미지를 `docs/api-contract.md` §2.2의 `ImageRef`(variants 배열) 계약이 아니라,
+ * 원본 URL 하나를 담은 배열로 내려준다(`MemberReadRepositoryImpl#thumbnail` 직접 확인,
+ * 이미지 없으면 `[]`). CodeRabbit 리뷰로 발견 — 이 계약 괴리 자체는 BE에 별도 확인 요청함.
+ */
+const orderThumbnailDto = z.array(z.object({ url: z.string() }).passthrough());
+
 const orderItemDto = z
   .object({
     orderItemId: z.number().int(),
@@ -23,7 +30,7 @@ const orderItemDto = z
     productName: z.string(),
     price: z.number().int(),
     quantity: z.number().int(),
-    thumbnailUrl: z.string().nullable(),
+    thumbnail: orderThumbnailDto,
   })
   .passthrough();
 

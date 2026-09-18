@@ -17,7 +17,7 @@ function orderDto(overrides: Record<string, unknown> = {}) {
         productName: "백자 달항아리",
         price: 320000,
         quantity: 1,
-        thumbnailUrl: "https://cdn.midam.store/products/abc.jpg",
+        thumbnail: [{ url: "https://cdn.midam.store/products/abc.jpg" }],
       },
     ],
     ...overrides,
@@ -49,6 +49,38 @@ describe("mapOrderListPage — BE 원본 상태 → FE 14종 매핑(계약서 §
     expect(page.items[0]!.items[0]!.status).toBe("PREPARING");
   });
 
+  it("thumbnail 배열의 첫 URL을 꺼내고, 빈 배열이면 null(CodeRabbit 리뷰)", () => {
+    const page = mapOrderListPage(
+      parseList([
+        orderDto({
+          items: [
+            {
+              orderItemId: 1,
+              productId: 1,
+              productName: "A",
+              price: 1000,
+              quantity: 1,
+              thumbnail: [{ url: "https://cdn.midam.store/products/1.jpg" }],
+            },
+            {
+              orderItemId: 2,
+              productId: 2,
+              productName: "B",
+              price: 2000,
+              quantity: 1,
+              thumbnail: [],
+            },
+          ],
+        }),
+      ]),
+    );
+    const items = page.items[0]!.items;
+    expect(items[0]!.thumbnailUrl).toBe(
+      "https://cdn.midam.store/products/1.jpg",
+    );
+    expect(items[1]!.thumbnailUrl).toBeNull();
+  });
+
   it("IN_DELIVERY → SHIPPING", () => {
     const page = mapOrderListPage(
       parseList([orderDto({ status: "IN_DELIVERY" })]),
@@ -68,7 +100,7 @@ describe("mapOrderListPage — BE 원본 상태 → FE 14종 매핑(계약서 §
               productName: "A",
               price: 1000,
               quantity: 1,
-              thumbnailUrl: null,
+              thumbnail: [],
             },
             {
               orderItemId: 2,
@@ -76,7 +108,7 @@ describe("mapOrderListPage — BE 원본 상태 → FE 14종 매핑(계약서 §
               productName: "B",
               price: 2000,
               quantity: 2,
-              thumbnailUrl: null,
+              thumbnail: [],
             },
           ],
         }),

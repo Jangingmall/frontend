@@ -87,7 +87,8 @@ function mapOrderItem(dto: OrderItemDto, status: OrderStatus): OrderListItem {
     productName: dto.productName,
     price: dto.price,
     quantity: dto.quantity,
-    thumbnailUrl: dto.thumbnailUrl,
+    // BE는 단일 URL을 배열로 감싸 내려준다(variants 없음) — 첫 항목만 쓴다.
+    thumbnailUrl: dto.thumbnail[0]?.url ?? null,
     status,
   };
 }

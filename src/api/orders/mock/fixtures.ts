@@ -50,7 +50,7 @@ function item(seq: number, quantity = 1): OrderItemFixture {
     productName: p.name,
     price: p.price,
     quantity,
-    thumbnailUrl: `https://cdn.midam.store/products/${1000 + seq}.jpg`,
+    thumbnail: [{ url: `https://cdn.midam.store/products/${1000 + seq}.jpg` }],
     artisanName: p.artisanName,
   };
 }

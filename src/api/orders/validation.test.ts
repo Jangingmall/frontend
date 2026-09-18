@@ -9,7 +9,7 @@ describe("orderListResponseDto", () => {
     productName: "백자 달항아리",
     price: 320000,
     quantity: 1,
-    thumbnailUrl: "https://cdn.midam.store/products/abc.jpg",
+    thumbnail: [{ url: "https://cdn.midam.store/products/abc.jpg" }],
   };
 
   function listWith(order: Record<string, unknown>) {
@@ -39,10 +39,10 @@ describe("orderListResponseDto", () => {
     expect(() => orderListResponseDto.parse(listWith({}))).not.toThrow();
   });
 
-  it("thumbnailUrl이 null이어도 통과한다", () => {
+  it("thumbnail이 빈 배열이어도 통과한다(이미지 없는 상품)", () => {
     expect(() =>
       orderListResponseDto.parse(
-        listWith({ items: [{ ...validItem, thumbnailUrl: null }] }),
+        listWith({ items: [{ ...validItem, thumbnail: [] }] }),
       ),
     ).not.toThrow();
   });
