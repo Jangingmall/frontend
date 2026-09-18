@@ -76,17 +76,17 @@ function OrdersList({
     );
   }
 
-  if (!data.items.length) {
-    return (
-      <EmptyState
-        title="조건에 맞는 주문이 없어요"
-        description="다른 조건으로 다시 찾아보세요."
-      />
-    );
-  }
-
   return (
     <div aria-busy={isFetching} className="flex flex-col gap-4">
+      {!data.items.length && (
+        // 페이지네이션은 아래에서 항상 별도로 그린다 — 이번 페이지가 우연히 전부 걸러진
+        // 주문(예: 결제 실패)으로 채워졌을 때도 다른 페이지로 이동할 수 있어야 한다
+        // (Codex 리뷰 F1).
+        <EmptyState
+          title="조건에 맞는 주문이 없어요"
+          description="다른 조건으로 다시 찾아보세요."
+        />
+      )}
       {data.items.map((order) => {
         const orderDate = formatOrderDate(order.orderedAt);
         const isMulti = order.items.length > 1;

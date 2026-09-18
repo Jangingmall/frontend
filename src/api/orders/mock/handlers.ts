@@ -46,6 +46,12 @@ export const orderHandlers = [
     const artisanName = params.get("artisanName");
 
     const filtered = orderFixtures.filter((order) => {
+      // 결제 실패 주문은 마이페이지 목록에 노출하지 않기로 확정(design.md §10.3) — 페이지네이션
+      // 계산 전에 걸러낸다. `mapper.ts`가 이 값을 다시 걸러내는 건 실제 BE가 이 규칙을 안
+      // 지켰을 때를 대비한 방어적 안전망일 뿐, 정상 경로에서 페이지 메타데이터와 화면에 보이는
+      // 목록의 모집합이 어긋나면 안 된다(Codex 리뷰 F1 — 제외 주문만 든 페이지가 빈 목록으로
+      // 보이고 페이지네이션까지 숨는 문제).
+      if (order.status === "PAYMENT_FAILED") return false;
       if (from && dayjs(order.createdAt).isBefore(dayjs(from), "day"))
         return false;
       if (to && dayjs(order.createdAt).isAfter(dayjs(to), "day")) return false;

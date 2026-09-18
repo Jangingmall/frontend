@@ -81,6 +81,24 @@ describe("OrdersList", () => {
     expect(screen.getByText("조건에 맞는 주문이 없어요")).toBeInTheDocument();
   });
 
+  it("이번 페이지가 비어도 다른 페이지가 있으면 페이지네이션을 계속 보여준다(Codex 리뷰 F1)", async () => {
+    const user = userEvent.setup();
+    const handlePageChange = vi.fn();
+    render(
+      <OrdersList
+        data={page([], { page: 3, totalPages: 3, totalCount: 25 })}
+        isPending={false}
+        isFetching={false}
+        hasError={false}
+        onRetry={vi.fn()}
+        onPageChange={handlePageChange}
+      />,
+    );
+    expect(screen.getByText("조건에 맞는 주문이 없어요")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "1 페이지" }));
+    expect(handlePageChange).toHaveBeenCalledWith(1);
+  });
+
   it("단일 상품 주문은 자기 배지를 숨기고 info bar에만 상태를 보여준다", () => {
     render(
       <OrdersList
