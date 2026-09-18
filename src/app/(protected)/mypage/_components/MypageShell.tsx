@@ -16,6 +16,16 @@ import { cn } from "@/lib/utils";
  * 쓰므로(2026-09-17 `get_design_context` 대조), 그 화면 하나만 `contentClassName`으로
  * cap을 풀어준다 — 셸 레벨 기본값을 아예 없애면 폭 기준이 없는 다른 화면들까지 같이
  * 넓어지는 회귀가 난다(사용자 피드백으로 확인).
+ *
+ * `mx-auto`는 `flex-1`·`max-w-165`와 같은 요소에 있어야 한다 — flex item에 auto 마진을
+ * 주면 flex-grow가 max-width에 막혀 남긴 여유 공간을 마진이 흡수해 가운데 정렬된다(CSS
+ * flexbox 스펙). 이 클래스를 빠뜨리면 660px 박스가 사이드바 옆에 왼쪽 정렬로 붙어버린다
+ * (사용자 피드백으로 재확인한 회귀 — 폭 cap을 화면별로 나누며 재작성하다 빠졌었다).
+ *
+ * 제목과 2단 행 사이 간격은 48px(`gap-12`)다 — Figma ID-3에 "여백 48px" 주석이 내비게이션
+ * 바 밑(→제목)과 제목 밑(→2단 행)에 각각 하나씩, 총 두 번 나온다(2026-09-17
+ * `get_design_context` 대조). `py-12`(navbar↔제목)만 맞추고 이 gap을 24px로 둔 채
+ * 넘어갔던 걸 정정.
  */
 interface MypageShellProps {
   title: ReactNode;
@@ -32,11 +42,13 @@ function MypageShell({
   contentClassName,
 }: MypageShellProps) {
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-col gap-6 px-8 py-12">
+    <div className="mx-auto flex w-full max-w-360 flex-col gap-12 px-8 py-12">
       {title}
       <div className="flex gap-6">
         {sidebar}
-        <div className={cn("max-w-165 min-w-0 flex-1", contentClassName)}>
+        <div
+          className={cn("mx-auto max-w-165 min-w-0 flex-1", contentClassName)}
+        >
           {children}
         </div>
       </div>
