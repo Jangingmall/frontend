@@ -52,6 +52,16 @@ describe("fetchOrdersList", () => {
     expect(result.totalCount).toBeGreaterThan(0);
   });
 
+  it("검색 결과가 없으면 totalPages도 0을 반환한다(Codex 리뷰)", async () => {
+    const result = await fetchOrdersList({
+      artisanName: "존재하지-않는-장인",
+      size: 100,
+    });
+    expect(result.totalCount).toBe(0);
+    expect(result.totalPages).toBe(0);
+    expect(result.items).toHaveLength(0);
+  });
+
   it("기간으로 필터링한다", async () => {
     const from = dayjs().subtract(10, "day").format("YYYY-MM-DD");
     const to = dayjs().format("YYYY-MM-DD");

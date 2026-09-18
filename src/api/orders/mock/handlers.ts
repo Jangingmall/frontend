@@ -66,7 +66,9 @@ export const orderHandlers = [
 
     const offset = page * size;
     const content = filtered.slice(offset, offset + size);
-    const totalPages = Math.max(1, Math.ceil(filtered.length / size));
+    // 실제 Spring `PageImpl.getTotalPages()`는 결과가 0건이면 0을 반환한다(하한을 1로
+    // 두지 않는다) — 목업도 그 계산을 그대로 흉내낸다(Codex 리뷰).
+    const totalPages = Math.ceil(filtered.length / size);
 
     return mockOk({
       content,
