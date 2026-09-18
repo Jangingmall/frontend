@@ -32,6 +32,34 @@ describe("OrdersFilterBar", () => {
     expect(props.onSearch).toHaveBeenCalledWith("김도예");
   });
 
+  it("검색 확정 후 같은 값의 artisanName이 내려와도 입력창이 리마운트되지 않아 포커스를 유지한다(Codex 리뷰 F2 재발 방지)", async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderBar({ artisanName: undefined });
+    const input = screen.getByLabelText("장인 이름 검색");
+    await user.type(input, "김도예{Enter}");
+    expect(input).toHaveFocus();
+
+    // 실제 통합에서는 onSearch → URL 갱신 → 같은 값의 artisanName prop이 내려온다.
+    rerender(
+      <OrdersFilterBar
+        period="MONTH_3"
+        from="2026-06-18"
+        to="2026-09-18"
+        status="ALL"
+        artisanName="김도예"
+        onPeriodChange={vi.fn()}
+        onCustomRangeChange={vi.fn()}
+        onStatusChange={vi.fn()}
+        onSearch={vi.fn()}
+      />,
+    );
+
+    const inputAfter = screen.getByLabelText("장인 이름 검색");
+    expect(inputAfter).toBe(input);
+    expect(inputAfter).toHaveValue("김도예");
+    expect(inputAfter).toHaveFocus();
+  });
+
   it("artisanName이 외부에서 바뀌면(뒤로가기 등) 입력창도 갱신된다(Codex 리뷰 F2)", () => {
     const { rerender } = renderBar({ artisanName: "김도예" });
     expect(screen.getByLabelText("장인 이름 검색")).toHaveValue("김도예");

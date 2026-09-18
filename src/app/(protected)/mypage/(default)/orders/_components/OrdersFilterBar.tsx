@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { DateRangeField } from "@/components/ui/date-range-field";
 import { SearchField } from "@/components/ui/search-field";
@@ -54,15 +56,29 @@ function OrdersFilterBar({
   onStatusChange,
   onSearch,
 }: OrdersFilterBarProps) {
+  // `SearchField`를 controlled로 두고, `artisanName`이 "바깥"에서 바뀔 때만(뒤로가기 등)
+  // draft를 다시 동기화한다. 검색 자신의 커밋으로 인한 변경은 `lastCommitted` state로 걸러내
+  // 리마운트하지 않는다 — `key` 리마운트 방식은 검색 확정 직후 입력이 통째로 사라져
+  // 포커스를 잃는 회귀를 냈다(Codex 리뷰 F2 재발). `DateRangeField`의 draft 패턴과 동일한 결.
+  // (렌더 중 ref 접근·갱신은 `react-hooks/refs`가 막아서 ref 대신 state로 이전 값을 추적한다.)
+  const [searchDraft, setSearchDraft] = useState(artisanName ?? "");
+  const [lastCommitted, setLastCommitted] = useState(artisanName);
+  if (artisanName !== lastCommitted) {
+    setLastCommitted(artisanName);
+    setSearchDraft(artisanName ?? "");
+  }
+
+  function handleSearch(value: string) {
+    setLastCommitted(value);
+    onSearch(value);
+  }
+
   return (
     <div className="flex flex-col gap-2 p-3">
       <SearchField
-        // `artisanName`이 바뀔 때만 리마운트해 `defaultValue`를 다시 적용한다 —
-        // `SearchField`는 비제어 컴포넌트라 URL 뒤로가기 등으로 prop이 외부에서 바뀌어도
-        // 리렌더링만으로는 입력창에 반영되지 않는다(Codex 리뷰 F2).
-        key={artisanName}
-        defaultValue={artisanName}
-        onSearch={onSearch}
+        value={searchDraft}
+        onValueChange={setSearchDraft}
+        onSearch={handleSearch}
         aria-label="장인 이름 검색"
         placeholder="검색어를 입력해주세요."
       />
