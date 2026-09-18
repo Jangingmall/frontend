@@ -156,6 +156,22 @@ export function getOrderCardActions(
 }
 
 /**
+ * 주문 상세 화면(`/mypage/orders/[orderId]`) 전용 — `getOrderCardActions`(목록 기준)에
+ * "1:1 문의"가 없는 상태만 추가로 붙인다. Figma 주석 시트(`2080:112091`) 실측 결과, 목록
+ * 5개 상태(입금확인중/주문확인중/상품준비중/배송중/배송완료)는 `getOrderCardActions`와
+ * 정확히 일치했지만, 상세 화면에서 유일하게 확인 가능했던 예시(배송완료)는 여기에 1:1 문의가
+ * 하나 더 붙어 있었다 — design.md §2, T-28.
+ */
+export function getOrderDetailActions(
+  status: OrderStatus,
+  hasReason: boolean,
+): OrderCardActionItem[] {
+  const base = getOrderCardActions(status, hasReason);
+  if (base.some((item) => item.action === "inquiry")) return base;
+  return [...base, { action: "inquiry" }];
+}
+
+/**
  * MY-1(`/mypage/orders`) "주문 처리 상태" 필터 탭 8종 + "내 주문 현황" 요약 스트립의 그룹 키.
  * Figma 실측 탭 라벨 그대로. `ORDER_PENDING`("주문 확인 중")은 필터 탭에 별도 항목이 없어
  * `PREPARING` 그룹에 합친다 — 확정(design.md §9).

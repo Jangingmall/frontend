@@ -1,12 +1,19 @@
 import { ORDER_STATUS, type OrderStatus } from "@/constants/order";
 import type { Page } from "@/types/api";
 import type {
+  OrderDelivery,
+  OrderDetail,
+  OrderDetailArtisanGroup,
+  OrderDetailItem,
   OrderGroup,
   OrderListItem,
   OrderStatusSummary,
 } from "@/types/order";
 
 import type {
+  OrderDeliveryResponseDto,
+  OrderDetailItemDto,
+  OrderDetailResponseDto,
   OrderGroupDto,
   OrderItemDto,
   OrderListResponseDto,
@@ -115,6 +122,96 @@ export function mapOrderListPage(dto: OrderListResponseDto): Page<OrderGroup> {
     pageSize: dto.size,
     totalCount: dto.totalElements,
     totalPages: dto.totalPages,
+  };
+}
+
+function mapOrderDetailItem(
+  dto: OrderDetailItemDto,
+  status: OrderStatus,
+): OrderDetailItem {
+  return {
+    orderItemId: dto.orderItemId,
+    productId: dto.productId,
+    productName: dto.productName,
+    price: dto.price,
+    quantity: dto.quantity,
+    thumbnailUrl: dto.thumbnail[0]?.url ?? null,
+    options: dto.options ?? [],
+    status,
+    artisanName: dto.artisanName ?? null,
+  };
+}
+
+/** 아이템을 `artisanName` 기준으로 묶는다 — 처음 등장한 순서를 유지한다. */
+function groupByArtisan(items: OrderDetailItem[]): OrderDetailArtisanGroup[] {
+  const groups: OrderDetailArtisanGroup[] = [];
+  const indexByArtisan = new Map<string | null, number>();
+  for (const item of items) {
+    const existingIndex = indexByArtisan.get(item.artisanName);
+    if (existingIndex === undefined) {
+      indexByArtisan.set(item.artisanName, groups.length);
+      groups.push({ artisanName: item.artisanName, items: [item] });
+    } else {
+      groups[existingIndex]!.items.push(item);
+    }
+  }
+  return groups;
+}
+
+/**
+ * `GET /api/member/me/orders/{orderId}` 응답 → 화면용 모델.
+ *
+ * 상태 해석은 목록과 같은 `mapRawOrderStatus`/`mapReturnStatus`를 재사용한다 — 목록에서
+ * 걸러내는 상태(결제 실패, `returnInfo` 없는 비정상 반품)는 상세 진입 자체가 불가능해야
+ * 하므로, 여기서는 필터링 대신 던진다(호출부가 오류 화면으로 처리 — 실제로는 그런 주문의
+ * 상세 링크 자체를 노출하지 않아 도달할 일이 없다).
+ */
+export function mapOrderDetail(dto: OrderDetailResponseDto): OrderDetail {
+  const status =
+    (dto.purchaseConfirmed ? ORDER_STATUS.PURCHASE_CONFIRMED : null) ??
+    mapRawOrderStatus(dto.status, dto.returnInfo);
+  if (!status) {
+    throw new Error(`주문 상태를 표시할 수 없습니다 (orderId: ${dto.orderId})`);
+  }
+
+  const items = dto.items.map((item) => mapOrderDetailItem(item, status));
+  const productAmount = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const shippingAmount = dto.shippingAmount ?? 0;
+  const discountAmount = dto.discountAmount ?? 0;
+  const pointsUsed = dto.pointsUsed ?? 0;
+
+  return {
+    orderId: dto.orderId,
+    orderNumber: dto.orderNumber,
+    orderedAt: dto.createdAt,
+    groups: groupByArtisan(items),
+    shippingAddress: {
+      recipientName: dto.address.recipientName,
+      phone: dto.address.phone,
+      zipCode: dto.address.zipCode,
+      address1: dto.address.address1,
+      address2: dto.address.address2,
+    },
+    payment: {
+      productAmount,
+      shippingAmount,
+      discountAmount,
+      pointsUsed,
+      totalAmount: productAmount + shippingAmount - discountAmount - pointsUsed,
+      paymentMethod: dto.paymentMethod ?? null,
+    },
+  };
+}
+
+export function mapOrderDelivery(dto: OrderDeliveryResponseDto): OrderDelivery {
+  return {
+    orderId: dto.orderId,
+    carrier: dto.carrier,
+    trackingNumber: dto.trackingNumber,
+    status: dto.status,
   };
 }
 
