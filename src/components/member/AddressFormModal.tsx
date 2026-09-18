@@ -30,6 +30,12 @@ import type { Address, AddressInput } from "@/types/member";
  * 아니라 solid 검정이고, `Dialog`의 `variant="form"` 기본 548px 스크롤 영역을 이 짧은
  * 폼에 그대로 쓰면 내용 아래로 빈 공간이 크게 남아 `scrollableContent={false}`로 뺐다
  * (사용자 피드백).
+ *
+ * 2026-09-18 같은 노드 재대조: 이 모달의 모든 필드(이름·전화·우편번호·기본주소·상세주소)가
+ * Figma에서 전부 36px(`h-9`) — `InputField`의 전역 기본 44px(`h-11`, 회원정보 수정 페이지
+ * 기준)이 아니다. 전 수정에서 `Select`를 44px로 올린 게 반대 방향이었다 — `Select`의 기본
+ * 36px가 맞고, `InputField` 쪽을 이 모달에서만 36px로 낮춰야 한다(`className="h-9"`).
+ * "주소검색" 버튼도 Figma가 `min-h-36`이라 `size="s"`(44px) 대신 `className="h-9"`로 맞춘다.
  */
 
 const addressFormSchema = z.object({
@@ -197,6 +203,7 @@ function AddressFormModal({
           <InputField
             aria-label="이름"
             placeholder="홍길동"
+            className="h-9"
             error={errors.recipientName?.message}
             {...register("recipientName")}
           />
@@ -207,9 +214,8 @@ function AddressFormModal({
               칸을 균등 분배(Figma 3칸 모두 `flex-1`)하려면 바깥에 `flex-1` div로 한 번 더
               감싸야 한다. `min-w-0`도 같이 줘야 한다 — flex item 기본 `min-width:auto`가
               내용 크기(문자+아이콘)로 최소폭을 강제해 접두사 칸만 좁게 눌러앉는다
-              (사용자 피드백으로 확인). `Select` 기본 높이(`h-9`, 36px)도 `InputField`
-              고정 높이(`h-11`, 44px)와 달라 `className="h-11"`로 맞춘다 — Select 전역
-              기본값은 다른 화면(정렬·필터 드롭다운)엔 그대로 맞아 여기서 로컬로만 덮는다. */}
+              (사용자 피드백으로 확인). 이 모달은 Figma상 전부 36px(`h-9`) 행이라 `Select`는
+              전역 기본값(36px) 그대로 두고, `InputField`만 `className="h-9"`로 낮춘다. */}
           <div className="flex items-center gap-2">
             <div className="min-w-0 flex-1">
               <Controller
@@ -220,7 +226,6 @@ function AddressFormModal({
                     value={field.value}
                     onValueChange={field.onChange}
                     ariaLabel="통신사 접두사"
-                    className="h-11"
                   >
                     {PHONE_PREFIXES.map((prefix) => (
                       <SelectItem key={prefix} value={prefix}>
@@ -237,6 +242,7 @@ function AddressFormModal({
                 aria-label="휴대전화 가운데 4자리"
                 inputMode="numeric"
                 placeholder="0000"
+                className="h-9"
                 {...register("phoneMiddle")}
               />
             </div>
@@ -246,6 +252,7 @@ function AddressFormModal({
                 aria-label="휴대전화 마지막 4자리"
                 inputMode="numeric"
                 placeholder="0000"
+                className="h-9"
                 {...register("phoneLast")}
               />
             </div>
@@ -264,6 +271,7 @@ function AddressFormModal({
               <InputField
                 aria-label="우편번호"
                 placeholder="우편번호"
+                className="h-9"
                 readOnly
                 error={errors.zipCode?.message ?? errors.address1?.message}
                 {...register("zipCode")}
@@ -272,7 +280,7 @@ function AddressFormModal({
             <Button
               type="button"
               size="s"
-              className="shrink-0"
+              className="h-9 shrink-0"
               onClick={handleSearchAddress}
             >
               주소검색
@@ -281,12 +289,14 @@ function AddressFormModal({
           <InputField
             aria-label="기본주소"
             placeholder="기본주소"
+            className="h-9"
             readOnly
             {...register("address1")}
           />
           <InputField
             aria-label="상세주소"
             placeholder="상세주소"
+            className="h-9"
             error={errors.address2?.message}
             {...register("address2")}
           />
