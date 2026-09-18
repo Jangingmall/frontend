@@ -50,21 +50,26 @@ function LocalGate({
   onVerified: () => void;
 }) {
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  // 비밀번호 불일치(정상 케이스, 필드 오류)와 서버 오류(429·5xx 등, 비밀번호와 무관)는
+  // 다른 자리에 보여준다 — 전자를 `InputField.error`, 후자를 폼 레벨 `role="alert"`로
+  // 분리한다. 하나로 합쳐 두면 서버 장애도 "비밀번호가 틀렸다"처럼 보인다(사용자 피드백).
+  const [fieldError, setFieldError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const mutation = useVerifyPasswordMutation();
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    setError(null);
+    setFieldError(null);
+    setFormError(null);
     try {
       const verified = await mutation.mutateAsync({ email, password });
       if (verified) {
         onVerified();
       } else {
-        setError("비밀번호가 일치하지 않습니다.");
+        setFieldError("비밀번호가 일치하지 않습니다.");
       }
     } catch (err) {
-      setError(
+      setFormError(
         err instanceof ApiError
           ? resolveErrorMessage(err.code, err.status)
           : resolveErrorMessage(),
@@ -83,12 +88,17 @@ function LocalGate({
           소중한 개인정보 보호를 위해 비밀번호를 다시 입력해주세요.
         </p>
       </div>
+      {formError != null && (
+        <p role="alert" className="text-body-s text-red-font">
+          {formError}
+        </p>
+      )}
       <InputField
         type="password"
         placeholder="비밀번호"
         value={password}
         onValueChange={setPassword}
-        error={error ?? undefined}
+        error={fieldError ?? undefined}
       />
       <Button
         type="submit"

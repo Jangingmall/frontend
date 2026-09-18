@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http } from "msw";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -10,6 +11,8 @@ import {
   __clearMockOAuthLinkedMembers,
   setMockOAuthLinkedMember,
 } from "@/api/member/mock/mock-identity";
+import { mockError } from "@/mocks/envelope";
+import { server } from "@/mocks/server";
 
 import { PasswordReconfirmGate } from "./PasswordReconfirmGate";
 
@@ -63,6 +66,25 @@ describe("PasswordReconfirmGate", () => {
     expect(
       await screen.findByText("비밀번호가 일치하지 않습니다."),
     ).toBeInTheDocument();
+    expect(onVerified).not.toHaveBeenCalled();
+  });
+
+  it("LOCAL: 서버 오류(5xx)는 필드 오류가 아니라 폼 레벨 알림으로 보여준다", async () => {
+    server.use(
+      http.post("*/api/member/login", () => mockError(500, "INTERNAL_ERROR")),
+    );
+    const user = userEvent.setup();
+    const onVerified = vi.fn();
+    renderGate({ email: SEED_LOGIN.email, authProvider: "local", onVerified });
+
+    await user.type(screen.getByPlaceholderText("비밀번호"), "아무값");
+    await user.click(screen.getByRole("button", { name: "확인" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).not.toHaveTextContent("비밀번호가 일치하지 않습니다.");
+    expect(
+      screen.queryByText("비밀번호가 일치하지 않습니다."),
+    ).not.toBeInTheDocument();
     expect(onVerified).not.toHaveBeenCalled();
   });
 
