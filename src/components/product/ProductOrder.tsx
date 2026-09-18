@@ -63,7 +63,11 @@ export function ProductOrder({
               : "flex min-w-0 flex-1 items-end justify-between gap-4"
           }
         >
-          <div className={layout === "stacked" ? "min-w-0 pr-22" : "min-w-0"}>
+          <div
+            className={
+              layout === "stacked" && actions ? "min-w-0 pr-22" : "min-w-0"
+            }
+          >
             <p className="truncate text-body-s-b">{productName}</p>
             {!!options?.length && (
               <ul className="mt-2 flex flex-col gap-1">
