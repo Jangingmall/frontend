@@ -1,7 +1,7 @@
 import { beforeEach, expect, it } from "vitest";
 
 import { usePurchasePreviewStore } from "./purchase-preview";
-const line = {
+const createLine = () => ({
   lineId: "a",
   productId: 1,
   artisanId: 1,
@@ -14,8 +14,12 @@ const line = {
   maxQuantity: 3,
   soldOut: false,
   selected: true,
-};
-beforeEach(() => usePurchasePreviewStore.getState().resetPreview());
+});
+let line = createLine();
+beforeEach(() => {
+  line = createLine();
+  usePurchasePreviewStore.getState().resetPreview();
+});
 it("checkout copies only selected purchasable lines without sharing nested data", () => {
   const lines = [
     line,
