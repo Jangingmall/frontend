@@ -203,8 +203,13 @@ function AddressFormModal({
         </AddressFieldRow>
 
         <AddressFieldRow label="휴대전화" required>
+          {/* `InputField`/`Select`는 `className`을 안쪽 박스에만 꽂는다 — 이 행처럼 여러
+              칸을 균등 분배(Figma 3칸 모두 `flex-1`)하려면 바깥에 `flex-1` div로 한 번 더
+              감싸야 한다. `min-w-0`도 같이 줘야 한다 — flex item 기본 `min-width:auto`가
+              내용 크기(문자+아이콘)로 최소폭을 강제해 접두사 칸만 좁게 눌러앉는다
+              (사용자 피드백으로 확인). */}
           <div className="flex items-center gap-2">
-            <div className="w-32">
+            <div className="min-w-0 flex-1">
               <Controller
                 control={control}
                 name="phonePrefix"
@@ -224,19 +229,23 @@ function AddressFormModal({
               />
             </div>
             <span className="text-font-dark">-</span>
-            <InputField
-              aria-label="휴대전화 가운데 4자리"
-              inputMode="numeric"
-              placeholder="0000"
-              {...register("phoneMiddle")}
-            />
+            <div className="min-w-0 flex-1">
+              <InputField
+                aria-label="휴대전화 가운데 4자리"
+                inputMode="numeric"
+                placeholder="0000"
+                {...register("phoneMiddle")}
+              />
+            </div>
             <span className="text-font-dark">-</span>
-            <InputField
-              aria-label="휴대전화 마지막 4자리"
-              inputMode="numeric"
-              placeholder="0000"
-              {...register("phoneLast")}
-            />
+            <div className="min-w-0 flex-1">
+              <InputField
+                aria-label="휴대전화 마지막 4자리"
+                inputMode="numeric"
+                placeholder="0000"
+                {...register("phoneLast")}
+              />
+            </div>
           </div>
           {(errors.phoneMiddle?.message ?? errors.phoneLast?.message) !=
             null && (
@@ -248,14 +257,15 @@ function AddressFormModal({
 
         <AddressFieldRow label="주소" required>
           <div className="flex items-center gap-2">
-            <InputField
-              aria-label="우편번호"
-              placeholder="우편번호"
-              readOnly
-              className="flex-1"
-              error={errors.zipCode?.message ?? errors.address1?.message}
-              {...register("zipCode")}
-            />
+            <div className="min-w-0 flex-1">
+              <InputField
+                aria-label="우편번호"
+                placeholder="우편번호"
+                readOnly
+                error={errors.zipCode?.message ?? errors.address1?.message}
+                {...register("zipCode")}
+              />
+            </div>
             <Button
               type="button"
               size="s"
