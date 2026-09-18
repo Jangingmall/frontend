@@ -36,6 +36,11 @@ function AddressesTab() {
   const addressesQuery = useAddressesQuery();
   const createMutation = useCreateAddressMutation();
   const updateMutation = useUpdateAddressMutation();
+  // 기본 배송지 설정은 `AddressFormModal`의 폼 제출과 무관한 별도 동작이라 mutation
+  // 인스턴스를 분리한다 — 같은 `updateMutation`을 쓰면 기본 배송지 설정 요청이 아직
+  // 끝나기 전에 다른 카드의 수정 모달을 열었을 때 그 모달이 로딩 상태로 보이고 취소·닫기가
+  // 막힌다(사용자 피드백으로 재현). `submitting`엔 이 mutation을 넣지 않는다.
+  const setDefaultMutation = useUpdateAddressMutation();
   const deleteMutation = useDeleteAddressMutation();
 
   if (addressesQuery.isPending) {
@@ -99,7 +104,7 @@ function AddressesTab() {
     if (addressId === defaultAddress?.id) return;
     setCardActionError(null);
     try {
-      await updateMutation.mutateAsync({
+      await setDefaultMutation.mutateAsync({
         addressId,
         input: { isDefault: true },
       });

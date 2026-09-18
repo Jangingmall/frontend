@@ -135,6 +135,40 @@ describe("AddressesTab", () => {
     ).toBeInTheDocument();
   });
 
+  it("기본 배송지 설정이 진행 중이어도 다른 카드의 수정 모달은 로딩 상태가 되지 않는다", async () => {
+    let releaseSetDefault: () => void = () => {};
+    const setDefaultStarted = new Promise<void>((resolveStarted) => {
+      server.use(
+        http.patch("*/api/member/me/addresses/:addressId", async () => {
+          resolveStarted();
+          await new Promise<void>((resolve) => {
+            releaseSetDefault = resolve;
+          });
+          return new Response(null, { status: 204 });
+        }),
+      );
+    });
+    const user = userEvent.setup();
+    renderTab();
+    await screen.findByText("서울특별시 강남구 학동로 343");
+
+    await user.click(screen.getByText("기본 주소지로 설정"));
+    await setDefaultStarted;
+
+    const secondCard = screen
+      .getByText("경기도 성남시 분당구 판교역로 235")
+      .closest('[data-slot="address-card"]') as HTMLElement;
+    await user.click(
+      within(secondCard).getByRole("button", { name: "주소지 수정하기" }),
+    );
+
+    const submitButton = await screen.findByRole("button", { name: "수정" });
+    expect(submitButton).not.toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("button", { name: "취소" })).toBeEnabled();
+
+    releaseSetDefault();
+  });
+
   it("기본 배송지 설정이 네트워크 오류로 실패하면 오류 메시지를 보여주고 기본 배송지는 그대로 둔다", async () => {
     server.use(
       http.patch("*/api/member/me/addresses/:addressId", () =>
