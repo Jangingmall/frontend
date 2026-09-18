@@ -89,6 +89,7 @@ function ProfileEditForm({
         <InputField
           aria-label="이름"
           placeholder="홍길동"
+          className="h-9"
           error={errors.name?.message}
           {...register("name")}
         />
@@ -98,16 +99,23 @@ function ProfileEditForm({
         <InputField
           aria-label="이메일"
           value={profile.email}
+          className="h-9"
           disabled
           readOnly
         />
       </FieldRow>
 
       <FieldRow label="휴대전화" required>
-        {/* Select 기본 높이(h-9)가 InputField 고정 높이(h-11)와 달라 className="h-11"로
-            맞춘다 — 전역 기본값은 다른 화면(정렬·필터)엔 맞아 로컬로만 덮는다. */}
+        {/* Figma(ID-1-edit, node 1394:95216 `Phone Input Group`) 재대조(2026-09-18):
+            이 행은 44px가 아니라 36px(`h-9`) — 이름·이메일 행과 같은 높이다. 세 칸이 똑같이
+            `max-w-40`인 게 아니다 — 접두사만 `max-w-[160px]`로 캡이 있고, 나머지 두 자리
+            입력칸(중간·마지막 4자리)은 캡 없는 `flex-[1_0_0]`라 남는 폭을 그 둘이 나눠 채운다
+            (세 칸을 똑같이 캡 씌웠더니 뒤에 빈 공간이 남았다 — 사용자 피드백). `InputField`/
+            `Select`는 `className`이 안쪽 박스에만 꽂혀 바깥 growth를 못 받으므로 `flex-1
+            min-w-0` wrapper로 감싼다(배송지 모달과 동일 패턴). `Select` 기본 높이(36px)는
+            그대로 두고 `InputField`만 `h-9`로 맞춘다. */}
         <div className="flex items-center gap-2">
-          <div className="w-40">
+          <div className="max-w-40 min-w-0 flex-1">
             <Controller
               control={control}
               name="phonePrefix"
@@ -116,7 +124,6 @@ function ProfileEditForm({
                   value={field.value}
                   onValueChange={field.onChange}
                   ariaLabel="통신사 접두사"
-                  className="h-11"
                 >
                   {PHONE_PREFIXES.map((prefix) => (
                     <SelectItem key={prefix} value={prefix}>
@@ -128,21 +135,25 @@ function ProfileEditForm({
             />
           </div>
           <span className="text-font-dark">-</span>
-          <InputField
-            aria-label="휴대전화 가운데 4자리"
-            inputMode="numeric"
-            placeholder="0000"
-            className="w-40"
-            {...register("phoneMiddle")}
-          />
+          <div className="min-w-0 flex-1">
+            <InputField
+              aria-label="휴대전화 가운데 4자리"
+              inputMode="numeric"
+              placeholder="0000"
+              className="h-9"
+              {...register("phoneMiddle")}
+            />
+          </div>
           <span className="text-font-dark">-</span>
-          <InputField
-            aria-label="휴대전화 마지막 4자리"
-            inputMode="numeric"
-            placeholder="0000"
-            className="w-40"
-            {...register("phoneLast")}
-          />
+          <div className="min-w-0 flex-1">
+            <InputField
+              aria-label="휴대전화 마지막 4자리"
+              inputMode="numeric"
+              placeholder="0000"
+              className="h-9"
+              {...register("phoneLast")}
+            />
+          </div>
         </div>
         {(errors.phoneMiddle?.message ?? errors.phoneLast?.message) != null && (
           <p className="px-2 py-1 text-caption text-red-font">
