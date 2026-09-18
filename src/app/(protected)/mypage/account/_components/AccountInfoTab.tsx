@@ -64,7 +64,7 @@ function AccountInfoTab() {
   }
 
   return (
-    <div className="max-w-165 space-y-6 py-6">
+    <div className="space-y-6 py-6">
       <div className="flex items-center justify-between">
         <h2 className="text-title-m text-font-dark">내 정보</h2>
         <Button

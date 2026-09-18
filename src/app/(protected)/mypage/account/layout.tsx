@@ -86,6 +86,7 @@ export default function MypageAccountLayout({
     <MypageShell
       title={<AccountPageTitle />}
       sidebar={<AccountSubNav activeTab={activeTab} />}
+      contentClassName={activeTab === "addresses" ? "max-w-none" : undefined}
     >
       {children}
     </MypageShell>
