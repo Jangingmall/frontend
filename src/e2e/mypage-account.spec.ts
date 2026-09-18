@@ -61,15 +61,15 @@ test("로그인 → 회원정보 수정 게이트 통과 → 이름 수정 → �
   await expect(page.getByRole("heading", { name: "내 정보" })).toBeVisible();
 
   // 내 정보 수정
-  await page.getByRole("button", { name: "회원 정보 수정" }).click();
+  await page.getByRole("button", { name: "수정하기" }).click();
   const nameInput = page.getByRole("textbox", { name: "이름" });
   await nameInput.fill("이수정");
   await page.getByRole("button", { name: "수정 완료하기" }).click();
   await expect(page.getByText("이수정")).toBeVisible();
 
   // 배송지 탭 → 추가
-  await page.getByRole("tab", { name: "배송지" }).click();
-  await page.getByRole("button", { name: "추가하기" }).click();
+  await page.getByRole("link", { name: "배송지" }).click();
+  await page.getByRole("button", { name: "추가하기", exact: true }).click();
   await page.getByPlaceholder("홍길동").fill("새배송지");
   const phoneInputs = page.getByPlaceholder("0000");
   await phoneInputs.nth(0).fill("5555");
@@ -84,7 +84,7 @@ test("로그인 → 회원정보 수정 게이트 통과 → 이름 수정 → �
   const newCard = page
     .locator('[data-slot="address-card"]')
     .filter({ hasText: "서울특별시 종로구 세종대로 1" });
-  await newCard.getByRole("button", { name: "배송지 삭제하기" }).click();
+  await newCard.getByRole("button", { name: "주소지 삭제하기" }).click();
 
   await expect(
     page.getByText("서울특별시 종로구 세종대로 1"),
