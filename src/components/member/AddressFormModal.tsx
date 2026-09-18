@@ -52,7 +52,13 @@ const addressFormSchema = z.object({
 type AddressFormValues = z.infer<typeof addressFormSchema>;
 
 /** 배송지 폼 전용 행 — 라벨(56px, 좌측) + 48px 간격 + 입력(나머지 폭). Figma ID-3-add
- * 실측(2026-09-17) — `FieldRow`(회원정보 수정, 90px/24px)와는 폭·간격이 달라 같이 안 쓴다. */
+ * 실측(2026-09-17) — `FieldRow`(회원정보 수정, 90px/24px)와는 폭·간격이 달라 같이 안 쓴다.
+ *
+ * content wrapper에 `min-w-0`이 필요하다(2026-09-18, 사용자 피드백) — 휴대전화 행처럼
+ * children이 그 안에서 또 flex row(select+input 여러 칸)를 이루면, 이 wrapper도 flex item
+ * 이라 기본 `min-width:auto`가 자기 몫(flex-basis 0%로 나뉜 폭)보다 넓게 그 flex row의
+ * preferred 폭까지 부풀린다 — 그 결과 휴대전화 행만 다른 행(이름·주소)보다 오른쪽으로
+ * 12px 더 튀어나갔다. `min-w-0`으로 자기 몫만큼만 쓰도록 막는다. */
 function AddressFieldRow({
   label,
   required = false,
@@ -68,7 +74,7 @@ function AddressFieldRow({
         {label}
         {required && <span className="font-normal text-red-font">*</span>}
       </span>
-      <div className="flex flex-1 flex-col gap-2">{children}</div>
+      <div className="flex min-w-0 flex-1 flex-col gap-2">{children}</div>
     </div>
   );
 }
