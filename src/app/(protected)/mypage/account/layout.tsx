@@ -85,7 +85,12 @@ export default function MypageAccountLayout({
   return (
     <MypageShell
       title={<AccountPageTitle />}
-      sidebar={<AccountSubNav activeTab={activeTab} />}
+      sidebar={
+        <AccountSubNav
+          activeTab={activeTab}
+          authProvider={profileQuery.data.authProvider}
+        />
+      }
       contentClassName={activeTab === "addresses" ? "max-w-none" : undefined}
     >
       {children}
