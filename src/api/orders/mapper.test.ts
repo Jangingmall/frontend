@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
 
-import { mapOrderListPage, mapOrderStatusSummary } from "./mapper";
-import { orderListResponseDto, orderStatusSummaryDto } from "./validation";
+import {
+  mapOrderDelivery,
+  mapOrderDetail,
+  mapOrderListPage,
+  mapOrderStatusSummary,
+} from "./mapper";
+import {
+  orderDeliveryResponseDto,
+  orderDetailResponseDto,
+  orderListResponseDto,
+  orderStatusSummaryDto,
+} from "./validation";
 
 function orderDto(overrides: Record<string, unknown> = {}) {
   return {
@@ -180,6 +190,173 @@ describe("mapOrderListPage — BE 원본 상태 → FE 14종 매핑(계약서 §
     expect(page.pageSize).toBe(10);
     expect(page.totalCount).toBe(25);
     expect(page.totalPages).toBe(3);
+  });
+});
+
+function orderDetailDto(overrides: Record<string, unknown> = {}) {
+  return {
+    orderId: 1,
+    orderNumber: "ORD00000000001",
+    status: "DELIVERED",
+    totalAmount: 323000,
+    createdAt: "2026-09-01T00:00:00.000Z",
+    items: [
+      {
+        orderItemId: 10,
+        productId: 100,
+        productName: "백자 달항아리",
+        price: 320000,
+        quantity: 1,
+        thumbnail: [{ url: "https://cdn.midam.store/products/abc.jpg" }],
+        artisanName: "김도예",
+        options: ["색상: 백자색"],
+      },
+    ],
+    address: {
+      addressId: 900,
+      recipientName: "홍길동",
+      phone: "01012345678",
+      zipCode: "06236",
+      address1: "서울특별시 강남구 테헤란로 123",
+      address2: "미담빌딩 5층",
+    },
+    shippingAmount: 3000,
+    paymentMethod: "CARD",
+    discountAmount: 0,
+    pointsUsed: 0,
+    ...overrides,
+  };
+}
+
+describe("mapOrderDetail", () => {
+  it("BE 원본 상태를 FE 상태로 매핑하고, 아이템에 그대로 복제한다", () => {
+    const detail = mapOrderDetail(
+      orderDetailResponseDto.parse(orderDetailDto({ status: "PAID" })),
+    );
+    expect(detail.groups[0]!.items[0]!.status).toBe("PREPARING");
+  });
+
+  it("purchaseConfirmed 플래그가 있으면 상태를 PURCHASE_CONFIRMED로 덮어쓴다(목업 전용, be-requests.md #6)", () => {
+    const detail = mapOrderDetail(
+      orderDetailResponseDto.parse(
+        orderDetailDto({ status: "DELIVERED", purchaseConfirmed: true }),
+      ),
+    );
+    expect(detail.groups[0]!.items[0]!.status).toBe("PURCHASE_CONFIRMED");
+  });
+
+  it("아이템을 artisanName 기준으로 그룹핑한다", () => {
+    const detail = mapOrderDetail(
+      orderDetailResponseDto.parse(
+        orderDetailDto({
+          items: [
+            {
+              orderItemId: 1,
+              productId: 1,
+              productName: "A",
+              price: 1000,
+              quantity: 1,
+              thumbnail: [],
+              artisanName: "김도예",
+            },
+            {
+              orderItemId: 2,
+              productId: 2,
+              productName: "B",
+              price: 2000,
+              quantity: 1,
+              thumbnail: [],
+              artisanName: "이나전",
+            },
+            {
+              orderItemId: 3,
+              productId: 3,
+              productName: "C",
+              price: 3000,
+              quantity: 1,
+              thumbnail: [],
+              artisanName: "김도예",
+            },
+          ],
+        }),
+      ),
+    );
+    expect(detail.groups).toHaveLength(2);
+    expect(detail.groups[0]!.artisanName).toBe("김도예");
+    expect(detail.groups[0]!.items).toHaveLength(2);
+    expect(detail.groups[1]!.artisanName).toBe("이나전");
+  });
+
+  it("결제 금액 = 상품 금액 + 배송비 - 할인 - 적립금 사용", () => {
+    const detail = mapOrderDetail(
+      orderDetailResponseDto.parse(
+        orderDetailDto({
+          items: [
+            {
+              orderItemId: 1,
+              productId: 1,
+              productName: "A",
+              price: 10000,
+              quantity: 2,
+              thumbnail: [],
+            },
+          ],
+          shippingAmount: 3000,
+          discountAmount: 1000,
+          pointsUsed: 500,
+        }),
+      ),
+    );
+    expect(detail.payment).toEqual({
+      productAmount: 20000,
+      shippingAmount: 3000,
+      discountAmount: 1000,
+      pointsUsed: 500,
+      totalAmount: 21500,
+      paymentMethod: "CARD",
+    });
+  });
+
+  it("BE 미제공 필드(paymentMethod·artisanName·options)가 없으면 안전한 기본값을 쓴다", () => {
+    const detail = mapOrderDetail(
+      orderDetailResponseDto.parse(
+        orderDetailDto({
+          paymentMethod: undefined,
+          items: [
+            {
+              orderItemId: 1,
+              productId: 1,
+              productName: "A",
+              price: 1000,
+              quantity: 1,
+              thumbnail: [],
+            },
+          ],
+        }),
+      ),
+    );
+    expect(detail.payment.paymentMethod).toBeNull();
+    expect(detail.groups[0]!.artisanName).toBeNull();
+    expect(detail.groups[0]!.items[0]!.options).toEqual([]);
+  });
+});
+
+describe("mapOrderDelivery", () => {
+  it("DTO 필드를 그대로 옮긴다", () => {
+    const delivery = mapOrderDelivery(
+      orderDeliveryResponseDto.parse({
+        orderId: 1,
+        carrier: "CJ대한통운",
+        trackingNumber: "600000000001",
+        status: "IN_TRANSIT",
+      }),
+    );
+    expect(delivery).toEqual({
+      orderId: 1,
+      carrier: "CJ대한통운",
+      trackingNumber: "600000000001",
+      status: "IN_TRANSIT",
+    });
   });
 });
 

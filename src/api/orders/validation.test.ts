@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { orderListResponseDto, orderStatusSummaryDto } from "./validation";
+import {
+  orderDeliveryResponseDto,
+  orderDetailResponseDto,
+  orderListResponseDto,
+  orderStatusSummaryDto,
+} from "./validation";
 
 describe("orderListResponseDto", () => {
   const validItem = {
@@ -66,6 +71,87 @@ describe("orderListResponseDto", () => {
 
   it("아이템이 없는 주문은 거부한다", () => {
     expect(() => orderListResponseDto.parse(listWith({ items: [] }))).toThrow();
+  });
+});
+
+describe("orderDetailResponseDto", () => {
+  const validDetail = {
+    orderId: 1,
+    orderNumber: "ORD20260101001",
+    status: "DELIVERED",
+    totalAmount: 323000,
+    createdAt: "2026-09-01T00:00:00.000Z",
+    items: [
+      {
+        orderItemId: 10,
+        productId: 1,
+        productName: "백자 달항아리",
+        price: 320000,
+        quantity: 1,
+        thumbnail: [{ url: "https://cdn.midam.store/products/abc.jpg" }],
+      },
+    ],
+    address: {
+      addressId: 900,
+      recipientName: "홍길동",
+      phone: "01012345678",
+      zipCode: "06236",
+      address1: "서울특별시 강남구 테헤란로 123",
+      address2: "미담빌딩 5층",
+    },
+  };
+
+  it("BE 미제공 필드(paymentMethod·shippingAmount·discountAmount·pointsUsed·artisanName·options) 없이도 통과한다", () => {
+    expect(() => orderDetailResponseDto.parse(validDetail)).not.toThrow();
+  });
+
+  it("BE 미제공 필드가 실려 와도(실제 계약 확정 후 대비) 통과한다", () => {
+    expect(() =>
+      orderDetailResponseDto.parse({
+        ...validDetail,
+        paymentMethod: "CARD",
+        shippingAmount: 3000,
+        discountAmount: 0,
+        pointsUsed: 0,
+        purchaseConfirmed: false,
+        items: [
+          {
+            ...validDetail.items[0],
+            artisanName: "김도예",
+            options: ["색상: 백자색"],
+          },
+        ],
+      }),
+    ).not.toThrow();
+  });
+
+  it("아이템이 없는 주문은 거부한다", () => {
+    expect(() =>
+      orderDetailResponseDto.parse({ ...validDetail, items: [] }),
+    ).toThrow();
+  });
+});
+
+describe("orderDeliveryResponseDto", () => {
+  it("올바른 응답을 검증한다", () => {
+    const dto = {
+      orderId: 1,
+      carrier: "CJ대한통운",
+      trackingNumber: "600000000001",
+      status: "IN_TRANSIT",
+    };
+    expect(orderDeliveryResponseDto.parse(dto)).toMatchObject(dto);
+  });
+
+  it("알 수 없는 상태값은 거부한다", () => {
+    expect(() =>
+      orderDeliveryResponseDto.parse({
+        orderId: 1,
+        carrier: "CJ대한통운",
+        trackingNumber: "600000000001",
+        status: "UNKNOWN",
+      }),
+    ).toThrow();
   });
 });
 
