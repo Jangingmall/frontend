@@ -333,13 +333,17 @@ describe("member profile·password api", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("changePassword: 현재 비밀번호가 틀리면 ApiError 400", async () => {
+  it("changePassword: 현재 비밀번호가 틀리면 ApiError 400 MISMATCH", async () => {
     await expect(
       changePassword({
         currentPassword: "wrong-password",
         newPassword: "NewPassw0rd!",
       }),
-    ).rejects.toMatchObject({ name: "ApiError", status: 400 });
+    ).rejects.toMatchObject({
+      name: "ApiError",
+      status: 400,
+      code: "MISMATCH",
+    });
   });
 
   it("verifyPassword: 올바른 비밀번호면 true", async () => {

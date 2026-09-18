@@ -156,7 +156,7 @@ describe("useChangePasswordMutation", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
   });
 
-  it("실패: 현재 비밀번호가 틀리면 ApiError 400", async () => {
+  it("실패: 현재 비밀번호가 틀리면 ApiError 400 MISMATCH", async () => {
     useAuthStore.setState({ accessToken: SEED_ACCESS_TOKEN });
     const { result } = renderHook(() => useChangePasswordMutation(), {
       wrapper: createWrapper(),
@@ -168,7 +168,10 @@ describe("useChangePasswordMutation", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error).toMatchObject({ status: 400 });
+    expect(result.current.error).toMatchObject({
+      status: 400,
+      code: "MISMATCH",
+    });
   });
 });
 

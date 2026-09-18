@@ -376,12 +376,15 @@ export const memberHandlers = [
       }
       // mock엔 신원별 실제 비밀번호가 없어 `SEED_LOGIN.password` 하나로 통일 검증한다
       // (design.md — LOCAL 사용자만 이 화면에 도달하므로 충분).
+      //
+      // 현재 비밀번호 불일치는 `INVALID_INPUT`이 아니라 `MISMATCH`다 — API
+      // 명세(`장인몰_API_명세_v1.csv`)가 `{status:400, errorCode:"MISMATCH"}`로 정의한다.
+      // 실제 백엔드(`MemberAccountService.changePassword`)는 현재 401 `UNAUTHORIZED`를
+      // 던져 자기 명세를 어기고 있다(2026-09-18 확인) — `clientFetch`가 모든 401에서 토큰
+      // 갱신을 시도하므로, 그 상태로 그대로 연동하면 비밀번호 오타만으로 세션이 끊길 수
+      // 있다. mock·FE는 명세를 기준으로 두고, 백엔드가 명세대로 고쳐지길 기다린다.
       if (body.currentPassword !== SEED_LOGIN.password) {
-        return mockError(
-          400,
-          "INVALID_INPUT",
-          "현재 비밀번호가 일치하지 않습니다.",
-        );
+        return mockError(400, "MISMATCH", "현재 비밀번호가 일치하지 않습니다.");
       }
       return mockOk(null);
     },

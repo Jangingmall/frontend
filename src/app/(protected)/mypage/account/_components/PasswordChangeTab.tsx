@@ -122,7 +122,7 @@ function PasswordChangeForm() {
       reset();
       setSuccessMessage("비밀번호가 변경되었습니다.");
     } catch (error) {
-      if (error instanceof ApiError && error.code === "INVALID_INPUT") {
+      if (error instanceof ApiError && error.code === "MISMATCH") {
         setFormError("현재 비밀번호가 일치하지 않습니다.");
       } else {
         setFormError(
