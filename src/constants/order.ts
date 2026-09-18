@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 /**
  * 주문 상태 값 → 한글 라벨 + 상태별 액션 버튼 매트릭스. (Figma GUI 파일 마이페이지
  * "6번 항목 설명(주문 상태 별 정리)" 주석 스펙 시트 + 실제 화면 인스턴스 대조로 확정)
@@ -150,5 +152,112 @@ export function getOrderCardActions(
       return [{ action: "guideReturnAddress" }, { action: "inquiry" }];
     case "REFUND_COMPLETED":
       return [{ action: "refundInfo" }, { action: "inquiry" }];
+  }
+}
+
+/**
+ * MY-1(`/mypage/orders`) "주문 처리 상태" 필터 탭 8종 + "내 주문 현황" 요약 스트립의 그룹 키.
+ * Figma 실측 탭 라벨 그대로. `ORDER_PENDING`("주문 확인 중")은 필터 탭에 별도 항목이 없어
+ * `PREPARING` 그룹에 합친다 — 확정(design.md §9).
+ */
+export const ORDER_STATUS_GROUP = {
+  PAYMENT_PENDING: ["PAYMENT_PENDING"],
+  PREPARING: ["ORDER_PENDING", "PREPARING"],
+  SHIPPING: ["SHIPPING"],
+  DELIVERED: ["DELIVERED"],
+  PURCHASE_CONFIRMED: ["PURCHASE_CONFIRMED"],
+  EXCHANGE_REFUND: [
+    "EXCHANGE_REQUESTED",
+    "EXCHANGE_REJECTED",
+    "EXCHANGE_APPROVED",
+    "REFUND_REQUESTED",
+    "REFUND_REJECTED",
+    "REFUND_APPROVED",
+    "REFUND_COMPLETED",
+  ],
+  CANCELED: ["CANCELED"],
+} as const satisfies Record<string, OrderStatus[]>;
+
+export type OrderStatusGroupKey = keyof typeof ORDER_STATUS_GROUP;
+
+export const ORDER_STATUS_FILTER_TABS: {
+  key: "ALL" | OrderStatusGroupKey;
+  label: string;
+}[] = [
+  { key: "ALL", label: "전체" },
+  { key: "PAYMENT_PENDING", label: "입금 확인 중" },
+  { key: "PREPARING", label: "상품 준비 중" },
+  { key: "SHIPPING", label: "배송 중" },
+  { key: "DELIVERED", label: "배송 완료" },
+  { key: "PURCHASE_CONFIRMED", label: "구매 확정" },
+  { key: "EXCHANGE_REFUND", label: "교환 · 환불" },
+  { key: "CANCELED", label: "주문 취소" },
+];
+
+/** 요약 스트립 4단계(진행 현황) — `PURCHASE_CONFIRMED`는 Figma대로 제외(확정, design.md §9). */
+export const ORDER_STAGE_SUMMARY_KEYS = [
+  "PAYMENT_PENDING",
+  "PREPARING",
+  "SHIPPING",
+  "DELIVERED",
+] as const satisfies readonly OrderStatusGroupKey[];
+
+/** MY-1 기간 필터 — 프리셋 6종 + 커스텀. */
+export const ORDER_PERIOD_PRESET = {
+  TODAY: "TODAY",
+  WEEK: "WEEK",
+  MONTH_1: "MONTH_1",
+  MONTH_3: "MONTH_3",
+  MONTH_6: "MONTH_6",
+  MONTH_12: "MONTH_12",
+  CUSTOM: "CUSTOM",
+} as const;
+
+export type OrderPeriodPreset =
+  (typeof ORDER_PERIOD_PRESET)[keyof typeof ORDER_PERIOD_PRESET];
+
+export const ORDER_PERIOD_PRESET_LABEL: Record<
+  Exclude<OrderPeriodPreset, "CUSTOM">,
+  string
+> = {
+  TODAY: "오늘",
+  WEEK: "일주일",
+  MONTH_1: "1개월",
+  MONTH_3: "3개월",
+  MONTH_6: "6개월",
+  MONTH_12: "12개월",
+};
+
+export interface OrderPeriodRange {
+  from: string;
+  to: string;
+}
+
+/**
+ * 프리셋 → `{ from, to }` ISO 날짜(`YYYY-MM-DD`). `CUSTOM`은 `custom`을 그대로 돌려준다
+ * (없으면 오늘 하루로 폴백). Day.js 최초 실사용처 — 화면 표시 포맷팅(`2026.09.07`)은 호출측이
+ * 담당한다(이 함수는 쿼리 파라미터용 ISO 형식만 돌려준다).
+ */
+export function resolveOrderPeriod(
+  preset: OrderPeriodPreset,
+  custom?: OrderPeriodRange,
+): OrderPeriodRange {
+  const today = dayjs();
+  const to = today.format("YYYY-MM-DD");
+  switch (preset) {
+    case "TODAY":
+      return { from: to, to };
+    case "WEEK":
+      return { from: today.subtract(1, "week").format("YYYY-MM-DD"), to };
+    case "MONTH_1":
+      return { from: today.subtract(1, "month").format("YYYY-MM-DD"), to };
+    case "MONTH_3":
+      return { from: today.subtract(3, "month").format("YYYY-MM-DD"), to };
+    case "MONTH_6":
+      return { from: today.subtract(6, "month").format("YYYY-MM-DD"), to };
+    case "MONTH_12":
+      return { from: today.subtract(12, "month").format("YYYY-MM-DD"), to };
+    case "CUSTOM":
+      return custom ?? { from: to, to };
   }
 }

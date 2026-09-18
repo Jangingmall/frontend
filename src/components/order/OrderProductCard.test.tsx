@@ -214,4 +214,33 @@ describe("OrderProductCard", () => {
     fireEvent.error(img);
     expect(img).toHaveAttribute("src", "/images/product-placeholder.png");
   });
+
+  it("thumbnail이 URL 문자열이면 그대로 렌더한다(주문 목록 API 계약)", () => {
+    const { container } = render(
+      <OrderProductCard
+        thumbnail="https://cdn.midam.store/products/abc.jpg"
+        productName="상품명"
+        price={10000}
+        status="SHIPPING"
+      />,
+    );
+    expect(container.querySelector("img")).toHaveAttribute(
+      "src",
+      "https://cdn.midam.store/products/abc.jpg",
+    );
+  });
+
+  it("thumbnail이 null이면 placeholder를 보여준다", () => {
+    const { container } = render(
+      <OrderProductCard
+        thumbnail={null}
+        productName="상품명"
+        price={10000}
+        status="SHIPPING"
+      />,
+    );
+    expect(container.querySelector("img")?.getAttribute("src")).toContain(
+      "/images/product-placeholder.png",
+    );
+  });
 });
