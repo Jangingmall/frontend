@@ -11,8 +11,13 @@ const meta = {
   title: "Member/AddressCard",
   component: AddressCard,
   decorators: [
-    (Story) => (
-      <RadioGroup className="w-64">
+    (Story, context) => (
+      <RadioGroup
+        className="w-64"
+        value={
+          context.args.address.isDefault ? context.args.address.id : undefined
+        }
+      >
         <Story />
       </RadioGroup>
     ),
