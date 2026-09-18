@@ -70,7 +70,9 @@ export function OrderProductCard(props: OrderProductCardProps) {
   return (
     <div className="flex flex-col gap-3 p-3 text-font-dark">
       {isDetailed && props.showStatusBadge && (
-        <Badge variant="plain">{ORDER_STATUS_LABEL[props.status]}</Badge>
+        <Badge variant="plain" className="self-start">
+          {ORDER_STATUS_LABEL[props.status]}
+        </Badge>
       )}
       <div className="flex items-center gap-3">
         <div className="relative size-22.5 shrink-0 overflow-hidden bg-fill-jade-weak">
