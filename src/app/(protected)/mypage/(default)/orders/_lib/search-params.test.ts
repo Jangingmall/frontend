@@ -42,6 +42,29 @@ describe("parseOrdersSearchParams", () => {
       parseOrdersSearchParams(new URLSearchParams("status=SHIPPING")).status,
     ).toBe("SHIPPING");
   });
+
+  it("형식이 잘못된 날짜는 무시하고 기본 프리셋으로 되돌린다(Codex 리뷰 F3)", () => {
+    const state = parseOrdersSearchParams(
+      new URLSearchParams("period=CUSTOM&from=invalid&to=invalid"),
+    );
+    expect(state.period).toBe("MONTH_3");
+    expect(state.to).toBe(dayjs().format("YYYY-MM-DD"));
+    expect(state.from).toBe(dayjs().subtract(3, "month").format("YYYY-MM-DD"));
+  });
+
+  it("실존하지 않는 달력 날짜(2월 30일)는 무시한다", () => {
+    const state = parseOrdersSearchParams(
+      new URLSearchParams("period=CUSTOM&from=2026-02-30&to=2026-03-01"),
+    );
+    expect(state.period).toBe("MONTH_3");
+  });
+
+  it("역순 범위(from > to)는 무시한다", () => {
+    const state = parseOrdersSearchParams(
+      new URLSearchParams("period=CUSTOM&from=2026-02-10&to=2026-01-01"),
+    );
+    expect(state.period).toBe("MONTH_3");
+  });
 });
 
 describe("toOrdersListQuery", () => {

@@ -1,3 +1,5 @@
+import dayjs from "dayjs";
+
 import type { OrdersListQuery } from "@/api/orders/query";
 import {
   ORDER_PERIOD_PRESET,
@@ -32,16 +34,42 @@ function isStatusGroupKey(value: string | null): value is OrderStatusGroupKey {
   return value !== null && STATUS_GROUP_KEYS.has(value);
 }
 
+/**
+ * 엄격한 `YYYY-MM-DD` 형식 + 실존하는 달력 날짜인지 확인한다(예: `2026-02-30`은 정규식은
+ * 통과해도 라운드트립 포맷 비교에서 걸러진다). URL은 외부 입력이라 검증 없이 API·달력에
+ * 그대로 넘기면 안 된다(Codex 리뷰 F3).
+ */
+function isValidDateString(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = dayjs(value);
+  return parsed.isValid() && parsed.format("YYYY-MM-DD") === value;
+}
+
 export function parseOrdersSearchParams(
   params: URLSearchParams,
 ): OrdersFilterState {
   const page = Number(params.get("page"));
-  const period = isPeriodPreset(params.get("period"))
+  const periodParam = isPeriodPreset(params.get("period"))
     ? (params.get("period") as OrderPeriodPreset)
     : ORDER_PERIOD_PRESET.MONTH_3;
   const from = params.get("from");
   const to = params.get("to");
-  const range = from && to ? { from, to } : resolveOrderPeriod(period);
+  const hasValidCustomRange = Boolean(
+    from &&
+    to &&
+    isValidDateString(from) &&
+    isValidDateString(to) &&
+    from <= to,
+  );
+  // `period=CUSTOM`인데 범위가 유효하지 않으면(형식 오류·역순 등) 기본 프리셋으로 되돌린다 —
+  // 나머지 프리셋은 원래도 from/to가 있으면 그 값을 우선했으므로(유효할 때만) 그대로 둔다.
+  const period =
+    periodParam === "CUSTOM" && !hasValidCustomRange
+      ? ORDER_PERIOD_PRESET.MONTH_3
+      : periodParam;
+  const range = hasValidCustomRange
+    ? { from: from!, to: to! }
+    : resolveOrderPeriod(period);
   const statusParam = params.get("status");
   const status: "ALL" | OrderStatusGroupKey =
     statusParam === "ALL"
