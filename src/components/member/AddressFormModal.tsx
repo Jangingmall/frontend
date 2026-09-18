@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { ReactNode } from "react";
 import { useId } from "react";
 import { useKakaoPostcodePopup } from "react-daum-postcode";
 import { Controller, useForm } from "react-hook-form";
@@ -11,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog } from "@/components/ui/dialog";
 import { InputField } from "@/components/ui/input-field";
 import { Select, SelectItem } from "@/components/ui/select";
-import { PHONE_PREFIXES, type PhonePrefix } from "@/constants/phone";
+import { PHONE_PREFIXES, splitPhone } from "@/constants/phone";
 import type { Address, AddressInput } from "@/types/member";
 
 /**
@@ -23,6 +24,12 @@ import type { Address, AddressInput } from "@/types/member";
  * Figma `ID-2-edit`/`ID-2-add`에 있던 비밀번호 입력 필드 2개는 배제했다 — 해당 레이어가
  * `visible: false`로 숨겨진 채 남아 있었고(디자이너가 이미 안 쓰기로 한 것), 배송지 CRUD에
  * 비밀번호가 필요할 도메인적 이유도 없다.
+ *
+ * 2026-09-17 `get_design_context`(ID-3-add, node `1271:59014`) 재대조로 세 가지 정정:
+ * 라벨이 입력창 위가 아니라 왼쪽(56px 폭 + 48px 간격)에 있고, "주소검색" 버튼은 outline이
+ * 아니라 solid 검정이고, `Dialog`의 `variant="form"` 기본 548px 스크롤 영역을 이 짧은
+ * 폼에 그대로 쓰면 내용 아래로 빈 공간이 크게 남아 `scrollableContent={false}`로 뺐다
+ * (사용자 피드백).
  */
 
 const addressFormSchema = z.object({
@@ -38,20 +45,26 @@ const addressFormSchema = z.object({
 
 type AddressFormValues = z.infer<typeof addressFormSchema>;
 
-function splitPhone(phone: string): {
-  phonePrefix: PhonePrefix;
-  phoneMiddle: string;
-  phoneLast: string;
-} {
-  const prefix = PHONE_PREFIXES.find((candidate) =>
-    phone.startsWith(candidate),
+/** 배송지 폼 전용 행 — 라벨(56px, 좌측) + 48px 간격 + 입력(나머지 폭). Figma ID-3-add
+ * 실측(2026-09-17) — `FieldRow`(회원정보 수정, 90px/24px)와는 폭·간격이 달라 같이 안 쓴다. */
+function AddressFieldRow({
+  label,
+  required = false,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-12">
+      <span className="flex w-14 shrink-0 items-center gap-0.5 pt-2 text-body-s-b text-font-dark">
+        {label}
+        {required && <span className="font-normal text-red-font">*</span>}
+      </span>
+      <div className="flex flex-1 flex-col gap-2">{children}</div>
+    </div>
   );
-  const rest = prefix ? phone.slice(prefix.length) : phone.slice(3);
-  return {
-    phonePrefix: prefix ?? "010",
-    phoneMiddle: rest.slice(0, 4),
-    phoneLast: rest.slice(4, 8),
-  };
 }
 
 function toDefaultValues(address?: Address): AddressFormValues {
@@ -143,13 +156,14 @@ function AddressFormModal({
       onOpenChange={close}
       title={mode === "add" ? "배송지 추가하기" : "배송지 수정하기"}
       variant="form"
+      scrollableContent={false}
       footer={
         <div className="flex gap-2.5">
           <Button
             type="button"
-            variant="jade"
+            variant="outline"
             size="xl"
-            className="min-w-0 flex-1"
+            className="max-w-40 min-w-0 flex-1"
             disabled={submitting}
             onClick={() => close(false)}
           >
@@ -171,7 +185,7 @@ function AddressFormModal({
         id={formId}
         onSubmit={(event) => void handleSubmit(submit)(event)}
         noValidate
-        className="space-y-4"
+        className="space-y-3"
       >
         {submitError != null && (
           <p role="alert" className="text-body-s text-red-font">
@@ -179,14 +193,16 @@ function AddressFormModal({
           </p>
         )}
 
-        <InputField
-          label="받는 사람"
-          placeholder="홍길동"
-          error={errors.recipientName?.message}
-          {...register("recipientName")}
-        />
+        <AddressFieldRow label="이름" required>
+          <InputField
+            aria-label="이름"
+            placeholder="홍길동"
+            error={errors.recipientName?.message}
+            {...register("recipientName")}
+          />
+        </AddressFieldRow>
 
-        <div className="space-y-1">
+        <AddressFieldRow label="휴대전화" required>
           <div className="flex items-center gap-2">
             <div className="w-32">
               <Controller
@@ -209,12 +225,14 @@ function AddressFormModal({
             </div>
             <span className="text-font-dark">-</span>
             <InputField
+              aria-label="휴대전화 가운데 4자리"
               inputMode="numeric"
               placeholder="0000"
               {...register("phoneMiddle")}
             />
             <span className="text-font-dark">-</span>
             <InputField
+              aria-label="휴대전화 마지막 4자리"
               inputMode="numeric"
               placeholder="0000"
               {...register("phoneLast")}
@@ -226,38 +244,40 @@ function AddressFormModal({
               {errors.phoneMiddle?.message ?? errors.phoneLast?.message}
             </p>
           )}
-        </div>
+        </AddressFieldRow>
 
-        <div className="space-y-1">
-          <div className="flex items-start gap-2">
-            <div className="flex-1">
-              <InputField
-                placeholder="우편번호"
-                readOnly
-                error={errors.zipCode?.message ?? errors.address1?.message}
-                {...register("zipCode")}
-              />
-            </div>
+        <AddressFieldRow label="주소" required>
+          <div className="flex items-center gap-2">
+            <InputField
+              aria-label="우편번호"
+              placeholder="우편번호"
+              readOnly
+              className="flex-1"
+              error={errors.zipCode?.message ?? errors.address1?.message}
+              {...register("zipCode")}
+            />
             <Button
               type="button"
-              variant="outline"
               size="s"
+              className="shrink-0"
               onClick={handleSearchAddress}
             >
               주소검색
             </Button>
           </div>
           <InputField
+            aria-label="기본주소"
             placeholder="기본주소"
             readOnly
             {...register("address1")}
           />
           <InputField
+            aria-label="상세주소"
             placeholder="상세주소"
             error={errors.address2?.message}
             {...register("address2")}
           />
-        </div>
+        </AddressFieldRow>
 
         <Controller
           name="isDefault"
