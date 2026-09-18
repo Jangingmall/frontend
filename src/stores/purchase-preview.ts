@@ -13,7 +13,7 @@ const copyLines = (lines: CartPreviewLine[]) =>
       variants: line.thumbnail.variants.map((variant) => ({ ...variant })),
     },
   }));
-/** UI-only memory; never persists personal data or server responses. */
+/** 구매 화면 검토용 메모리 상태. 개인정보와 서버 응답을 영구 저장하지 않는다. */
 export const usePurchasePreviewStore = create<PurchasePreviewState>((set) => ({
   lines: [],
   checkoutLines: [],
