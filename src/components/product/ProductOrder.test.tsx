@@ -81,3 +81,20 @@ describe("ProductOrder", () => {
     expect(image).toHaveAttribute("src", "/images/product-placeholder.png");
   });
 });
+it("stacked slots preserve accessible interactive controls and replace quantity text", () => {
+  render(
+    <ProductOrder
+      thumbnail={thumbnail}
+      productName="백자"
+      quantity={2}
+      price={3000}
+      variant="stacked"
+      actions={<button>옵션 변경</button>}
+      quantityControl={<button>수량 조절</button>}
+      thumbnailOverlay={<span>품절</span>}
+    />,
+  );
+  expect(screen.getByRole("button", { name: "수량 조절" })).toBeInTheDocument();
+  expect(screen.getByText("품절")).toBeInTheDocument();
+  expect(screen.queryByText("2개 / 3,000원")).not.toBeInTheDocument();
+});
