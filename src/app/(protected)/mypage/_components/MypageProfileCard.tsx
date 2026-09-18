@@ -1,6 +1,8 @@
 "use client";
 
+import { ErrorState } from "@/components/common/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ApiError } from "@/lib/http/api-error";
 import { useMemberProfileQuery } from "@/queries/member/queries";
 
 /**
@@ -23,7 +25,16 @@ function MypageProfileCard() {
   }
 
   if (profileQuery.isError) {
-    return null;
+    const error = profileQuery.error;
+    return (
+      <ErrorState
+        code={error instanceof ApiError ? error.code : undefined}
+        status={error instanceof ApiError ? error.status : undefined}
+        onRetry={() => void profileQuery.refetch()}
+        title="불러오지 못했어요"
+        className="w-51 gap-2 rounded-sm bg-fill-neutral-weak px-4 py-4"
+      />
+    );
   }
 
   return (
