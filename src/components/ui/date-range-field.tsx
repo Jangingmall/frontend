@@ -64,7 +64,11 @@ function DateRangeField({
           className,
         )}
       >
-        <span>{dayjs(from).format("YYYY.MM.DD")}</span>
+        <span>
+          {from === to
+            ? dayjs(from).format("YYYY.MM.DD")
+            : `${dayjs(from).format("YYYY.MM.DD")} – ${dayjs(to).format("YYYY.MM.DD")}`}
+        </span>
         <CalendarIcon aria-hidden className="size-4 shrink-0 text-font-dark" />
       </PopoverPrimitive.Trigger>
 
