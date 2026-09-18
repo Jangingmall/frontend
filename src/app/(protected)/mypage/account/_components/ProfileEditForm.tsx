@@ -25,7 +25,10 @@ import { ProviderBadge } from "./ProviderBadge";
 const profileFormSchema = z.object({
   name: z.string().trim().min(1, "이름을 입력해주세요."),
   phonePrefix: z.enum(PHONE_PREFIXES),
-  phoneMiddle: z.string().regex(/^\d{4}$/, "숫자 4자리를 입력해주세요."),
+  // 끝 4자리는 `splitPhone`이 문자열 끝에서 고정으로 떼어내므로 항상 정확히 4자리다.
+  // 중간은 10자리 전체번호(접두사+7자리)의 기존 회원도 수정 가능해야 해서 3~4자리를
+  // 허용한다(`constants/phone.ts`의 `splitPhone` 주석 참고, CodeRabbit 리뷰로 발견).
+  phoneMiddle: z.string().regex(/^\d{3,4}$/, "숫자 3~4자리를 입력해주세요."),
   phoneLast: z.string().regex(/^\d{4}$/, "숫자 4자리를 입력해주세요."),
 });
 

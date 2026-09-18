@@ -90,6 +90,29 @@ describe("AddressFormModal", () => {
     expect(screen.getByRole("button", { name: "수정" })).toBeInTheDocument();
   });
 
+  it("edit 모드: 10자리 전체번호(중간 3자리)인 기존 배송지도 전화번호를 안 건드리면 그대로 제출된다", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <AddressFormModal
+        open
+        mode="edit"
+        initialValue={{ ...EXISTING_ADDRESS, phone: "0111234567" }}
+        onOpenChange={vi.fn()}
+        onSubmit={onSubmit}
+      />,
+    );
+
+    expect(screen.getByDisplayValue("123")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("4567")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "수정" }));
+
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ phone: "0111234567" }),
+    );
+  });
+
   it("submitError가 있으면 폼 상단에 표시한다", () => {
     render(
       <AddressFormModal

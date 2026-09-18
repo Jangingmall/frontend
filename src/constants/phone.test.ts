@@ -24,6 +24,14 @@ describe("splitPhone", () => {
       phoneLast: "2222",
     });
   });
+
+  it("접두사 뒤가 7자리인 10자리 전체번호는 끝 4자리를 고정으로 떼고 중간은 3자리다", () => {
+    expect(splitPhone("0111234567")).toEqual({
+      phonePrefix: "011",
+      phoneMiddle: "123",
+      phoneLast: "4567",
+    });
+  });
 });
 
 describe("formatPhone", () => {
