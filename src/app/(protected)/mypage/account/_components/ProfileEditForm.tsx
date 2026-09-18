@@ -104,6 +104,8 @@ function ProfileEditForm({
       </FieldRow>
 
       <FieldRow label="휴대전화" required>
+        {/* Select 기본 높이(h-9)가 InputField 고정 높이(h-11)와 달라 className="h-11"로
+            맞춘다 — 전역 기본값은 다른 화면(정렬·필터)엔 맞아 로컬로만 덮는다. */}
         <div className="flex items-center gap-2">
           <div className="w-40">
             <Controller
@@ -114,6 +116,7 @@ function ProfileEditForm({
                   value={field.value}
                   onValueChange={field.onChange}
                   ariaLabel="통신사 접두사"
+                  className="h-11"
                 >
                   {PHONE_PREFIXES.map((prefix) => (
                     <SelectItem key={prefix} value={prefix}>

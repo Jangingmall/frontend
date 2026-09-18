@@ -479,7 +479,8 @@ export function SignupInfoForm({
         <FieldRow label="휴대전화">
           {/* 행 안의 개별 InputField에 error를 주면(에러 텍스트가 그 필드만 키를 키워) items-center
               정렬 기준이 바뀌어 Select·나머지 입력이 위아래로 밀린다 — 행 자체는 항상 같은
-              높이를 유지하도록 에러 텍스트를 행 밖으로 뺐다. */}
+              높이를 유지하도록 에러 텍스트를 행 밖으로 뺐다. Select 기본 높이(h-9)도
+              InputField 고정 높이(h-11)와 달라 className="h-11"로 맞춘다. */}
           <div className="flex items-center gap-2">
             <div className="w-36">
               <Controller
@@ -490,6 +491,7 @@ export function SignupInfoForm({
                     value={field.value}
                     onValueChange={field.onChange}
                     ariaLabel="통신사 접두사"
+                    className="h-11"
                   >
                     {PHONE_PREFIXES.map((prefix) => (
                       <SelectItem key={prefix} value={prefix}>

@@ -207,7 +207,9 @@ function AddressFormModal({
               칸을 균등 분배(Figma 3칸 모두 `flex-1`)하려면 바깥에 `flex-1` div로 한 번 더
               감싸야 한다. `min-w-0`도 같이 줘야 한다 — flex item 기본 `min-width:auto`가
               내용 크기(문자+아이콘)로 최소폭을 강제해 접두사 칸만 좁게 눌러앉는다
-              (사용자 피드백으로 확인). */}
+              (사용자 피드백으로 확인). `Select` 기본 높이(`h-9`, 36px)도 `InputField`
+              고정 높이(`h-11`, 44px)와 달라 `className="h-11"`로 맞춘다 — Select 전역
+              기본값은 다른 화면(정렬·필터 드롭다운)엔 그대로 맞아 여기서 로컬로만 덮는다. */}
           <div className="flex items-center gap-2">
             <div className="min-w-0 flex-1">
               <Controller
@@ -218,6 +220,7 @@ function AddressFormModal({
                     value={field.value}
                     onValueChange={field.onChange}
                     ariaLabel="통신사 접두사"
+                    className="h-11"
                   >
                     {PHONE_PREFIXES.map((prefix) => (
                       <SelectItem key={prefix} value={prefix}>
