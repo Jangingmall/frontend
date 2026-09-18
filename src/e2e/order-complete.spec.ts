@@ -60,3 +60,21 @@ test("취소 결과와 다른 주문 ID는 완료 화면을 표시하지 않는�
   await page.goto("/checkout/real-order/complete?result=success");
   await expect(page.getByText("페이지를 찾을 수 없어요")).toBeVisible();
 });
+
+test("좁은 화면에서도 완료 버튼 라벨이 잘리지 않는다", async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await loginAsCustomer(page);
+  await page.goto("/checkout/ui-preview-order/complete?result=success");
+
+  for (const name of ["주문 내역 보기", "계속 둘러보기"]) {
+    const button = page.getByRole("button", { name });
+    await expect(button).toBeVisible();
+    const dimensions = await button.evaluate((element) => ({
+      clientWidth: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(
+      dimensions.clientWidth + 1,
+    );
+  }
+});

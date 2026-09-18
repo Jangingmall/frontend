@@ -62,14 +62,14 @@ export function OrderCompletePage({
           ) : null}
 
           <div
-            className={`flex w-full max-w-[424px] gap-2 ${
+            className={`flex w-full max-w-[424px] gap-2 max-sm:flex-col ${
               isBankPending ? "mt-10" : "mt-16"
             }`}
           >
             <Button
               type="button"
               size="l"
-              className="min-w-0 flex-1"
+              className="min-w-0 flex-1 max-sm:w-full max-sm:flex-none"
               onClick={onViewOrders}
             >
               주문 내역 보기
@@ -77,7 +77,7 @@ export function OrderCompletePage({
             <Button
               type="button"
               size="l"
-              className="min-w-0 flex-1"
+              className="min-w-0 flex-1 max-sm:w-full max-sm:flex-none"
               onClick={onContinueBrowsing}
             >
               계속 둘러보기
