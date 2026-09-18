@@ -19,8 +19,8 @@ function renderBar(
     onSearch: vi.fn(),
     ...overrides,
   };
-  render(<OrdersFilterBar {...props} />);
-  return props;
+  const view = render(<OrdersFilterBar {...props} />);
+  return { ...props, rerender: view.rerender };
 }
 
 describe("OrdersFilterBar", () => {
@@ -30,6 +30,26 @@ describe("OrdersFilterBar", () => {
     const input = screen.getByLabelText("장인 이름 검색");
     await user.type(input, "김도예{Enter}");
     expect(props.onSearch).toHaveBeenCalledWith("김도예");
+  });
+
+  it("artisanName이 외부에서 바뀌면(뒤로가기 등) 입력창도 갱신된다(Codex 리뷰 F2)", () => {
+    const { rerender } = renderBar({ artisanName: "김도예" });
+    expect(screen.getByLabelText("장인 이름 검색")).toHaveValue("김도예");
+
+    rerender(
+      <OrdersFilterBar
+        period="MONTH_3"
+        from="2026-06-18"
+        to="2026-09-18"
+        status="ALL"
+        artisanName={undefined}
+        onPeriodChange={vi.fn()}
+        onCustomRangeChange={vi.fn()}
+        onStatusChange={vi.fn()}
+        onSearch={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText("장인 이름 검색")).toHaveValue("");
   });
 
   it("현재 선택된 기간 프리셋이 표시된다", () => {

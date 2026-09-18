@@ -57,6 +57,10 @@ function OrdersFilterBar({
   return (
     <div className="flex flex-col gap-2 p-3">
       <SearchField
+        // `artisanName`이 바뀔 때만 리마운트해 `defaultValue`를 다시 적용한다 —
+        // `SearchField`는 비제어 컴포넌트라 URL 뒤로가기 등으로 prop이 외부에서 바뀌어도
+        // 리렌더링만으로는 입력창에 반영되지 않는다(Codex 리뷰 F2).
+        key={artisanName}
         defaultValue={artisanName}
         onSearch={onSearch}
         aria-label="장인 이름 검색"
