@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http } from "msw";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -9,6 +10,8 @@ import {
   setDynamicMember,
   setMockIdentity,
 } from "@/api/member/mock/mock-identity";
+import { mockError } from "@/mocks/envelope";
+import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
 import { PasswordChangeTab } from "./PasswordChangeTab";
@@ -130,6 +133,42 @@ describe("PasswordChangeTab", () => {
     expect(
       await screen.findByText("현재 비밀번호가 일치하지 않습니다."),
     ).toBeInTheDocument();
+  });
+
+  it("실제 백엔드처럼 401을 반환해도 refresh·로그아웃 없이 같은 안내를 보여준다", async () => {
+    // 실제 백엔드(`MemberAccountService.changePassword`)는 아직 API 명세의
+    // `400 MISMATCH`가 아니라 `401 UNAUTHORIZED`를 반환한다(2026-09-18 확인) — mock을
+    // 명세대로 유지하는 대신, 이 테스트가 그 현재 상태를 직접 재현해 `changePassword`의
+    // `retryOn401: false`가 실제로 refresh·세션정리를 막는지 검증한다.
+    let refreshCalls = 0;
+    server.use(
+      http.post("*/api/member/token/refresh", () => {
+        refreshCalls += 1;
+        return mockError(401, "UNAUTHORIZED");
+      }),
+      http.patch("*/api/member/me/password", () =>
+        mockError(401, "UNAUTHORIZED"),
+      ),
+    );
+    const user = userEvent.setup();
+    renderTab();
+
+    await user.type(
+      await screen.findByPlaceholderText("현재 비밀번호"),
+      "wrong-password",
+    );
+    await user.type(screen.getByPlaceholderText("새 비밀번호"), "NewPassw0rd!");
+    await user.type(
+      screen.getByPlaceholderText("비밀번호 확인"),
+      "NewPassw0rd!",
+    );
+    await user.click(screen.getByRole("button", { name: "변경하기" }));
+
+    expect(
+      await screen.findByText("현재 비밀번호가 일치하지 않습니다."),
+    ).toBeInTheDocument();
+    expect(refreshCalls).toBe(0);
+    expect(useAuthStore.getState().accessToken).toBe(SEED_ACCESS_TOKEN);
   });
 
   it("소셜 계정이면 폼 대신 안내 문구를 보여준다", async () => {

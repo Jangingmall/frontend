@@ -66,6 +66,29 @@ describe("clientFetch — 인증 헤더", () => {
     expect(refreshCalls).toBe(0);
   });
 
+  it("retryOn401:false면 토큰은 주입하되 401이어도 refresh·세션정리를 하지 않는다", async () => {
+    let refreshCalls = 0;
+    let receivedAuthorization: string | null = null;
+    server.use(
+      http.post("*/api/member/token/refresh", () => {
+        refreshCalls += 1;
+        return mockOk({ accessToken: REFRESHED });
+      }),
+      http.get("*/api/echo", ({ request }) => {
+        receivedAuthorization = request.headers.get("Authorization");
+        return mockError(401, "UNAUTHORIZED");
+      }),
+    );
+    useAuthStore.setState({ accessToken: "tok-1" });
+
+    await expect(
+      clientFetch("/api/echo", { retryOn401: false }),
+    ).rejects.toMatchObject({ name: "ApiError", status: 401 });
+    expect(receivedAuthorization).toBe("Bearer tok-1");
+    expect(refreshCalls).toBe(0);
+    expect(useAuthStore.getState().accessToken).toBe("tok-1");
+  });
+
   it("same-origin '/api' 밖 경로는 요청 전에 거부한다", async () => {
     useAuthStore.setState({ accessToken: "tok-1" });
 

@@ -122,7 +122,14 @@ function PasswordChangeForm() {
       reset();
       setSuccessMessage("비밀번호가 변경되었습니다.");
     } catch (error) {
-      if (error instanceof ApiError && error.code === "MISMATCH") {
+      // `changePassword`가 `retryOn401: false`라 이 401은 refresh를 이미 거치지 않은
+      // 원본 응답이다 — 실제 백엔드가 API 명세의 400/MISMATCH 대신 401을 반환하는 상태라
+      // 둘 다 "현재 비밀번호 불일치"로 다룬다(CodeRabbit 리뷰로 발견, 2026-09-18). 백엔드가
+      // 나중에 명세대로 400/MISMATCH로 고쳐져도 이 처리는 그대로 맞는다.
+      if (
+        error instanceof ApiError &&
+        (error.code === "MISMATCH" || error.status === 401)
+      ) {
         setFormError("현재 비밀번호가 일치하지 않습니다.");
       } else {
         setFormError(

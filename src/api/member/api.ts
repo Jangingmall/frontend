@@ -255,14 +255,24 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
-/** `PATCH /api/member/me/password`. BE 요청 바디엔 `newPasswordConfirm`이 없다 — 새 비밀번호
- * 확인은 클라이언트 Zod로만 검증하고 API엔 보내지 않는다. */
+/**
+ * `PATCH /api/member/me/password`. BE 요청 바디엔 `newPasswordConfirm`이 없다 — 새 비밀번호
+ * 확인은 클라이언트 Zod로만 검증하고 API엔 보내지 않는다.
+ *
+ * `retryOn401: false` — 이 엔드포인트의 401은 토큰 만료가 아니라 현재 비밀번호 불일치일
+ * 가능성이 크다(실제 백엔드가 API 명세의 `400 MISMATCH` 대신 `401`을 반환하는 상태,
+ * CodeRabbit 리뷰로 발견). 기본 401 처리를 그대로 두면 비밀번호 오타 하나로 불필요한
+ * refresh가 돌고, 실패 시 세션까지 끊긴다 — 호출부(`PasswordChangeTab`)가 401과
+ * `MISMATCH`를 모두 "현재 비밀번호 불일치"로 다뤄, 백엔드가 나중에 명세대로 고쳐져도
+ * 그대로 맞는다.
+ */
 export async function changePassword(
   body: ChangePasswordRequest,
 ): Promise<void> {
   await clientFetch<null>("/api/member/me/password", {
     method: "PATCH",
     body,
+    retryOn401: false,
   });
 }
 
