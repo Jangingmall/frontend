@@ -1,12 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http } from "msw";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SEED_ACCESS_TOKEN } from "@/api/member/mock/fixtures";
 import { resetAddressMock } from "@/api/member/mock/handlers";
 import { setMockIdentity } from "@/api/member/mock/mock-identity";
+import { mockError } from "@/mocks/envelope";
+import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
 import { AddressesTab } from "./AddressesTab";
@@ -111,5 +114,45 @@ describe("AddressesTab", () => {
         within(secondCard as HTMLElement).getByText("기본 주소지"),
       ).toBeInTheDocument();
     });
+  });
+
+  it("삭제가 404로 실패하면 오류 메시지를 보여주고 목록은 그대로 둔다", async () => {
+    server.use(
+      http.delete("*/api/member/me/addresses/:addressId", () =>
+        mockError(404, "NOT_FOUND"),
+      ),
+    );
+    const user = userEvent.setup();
+    renderTab();
+    await screen.findByText("서울특별시 강남구 학동로 343");
+
+    const cards = screen.getAllByText("주소지 삭제하기");
+    await user.click(cards[1]);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/./);
+    expect(
+      screen.getByText("경기도 성남시 분당구 판교역로 235"),
+    ).toBeInTheDocument();
+  });
+
+  it("기본 배송지 설정이 네트워크 오류로 실패하면 오류 메시지를 보여주고 기본 배송지는 그대로 둔다", async () => {
+    server.use(
+      http.patch("*/api/member/me/addresses/:addressId", () =>
+        mockError(500, "INTERNAL_ERROR"),
+      ),
+    );
+    const user = userEvent.setup();
+    renderTab();
+    await screen.findByText("서울특별시 강남구 학동로 343");
+
+    await user.click(screen.getByText("기본 주소지로 설정"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/./);
+    const firstCard = screen
+      .getByText("서울특별시 강남구 학동로 343")
+      .closest('[data-slot="address-card"]');
+    expect(
+      within(firstCard as HTMLElement).getByText("기본 주소지"),
+    ).toBeInTheDocument();
   });
 });

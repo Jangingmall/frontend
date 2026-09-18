@@ -31,6 +31,7 @@ function AddressesTab() {
     { mode: "add" } | { mode: "edit"; address: Address } | null
   >(null);
   const [modalError, setModalError] = useState<string | null>(null);
+  const [cardActionError, setCardActionError] = useState<string | null>(null);
 
   const addressesQuery = useAddressesQuery();
   const createMutation = useCreateAddressMutation();
@@ -82,15 +83,33 @@ function AddressesTab() {
   }
 
   async function handleDelete(address: Address) {
-    await deleteMutation.mutateAsync(address.id);
+    setCardActionError(null);
+    try {
+      await deleteMutation.mutateAsync(address.id);
+    } catch (error) {
+      setCardActionError(
+        error instanceof ApiError
+          ? resolveErrorMessage(error.code, error.status)
+          : resolveErrorMessage(),
+      );
+    }
   }
 
   async function handleSetDefault(addressId: number) {
     if (addressId === defaultAddress?.id) return;
-    await updateMutation.mutateAsync({
-      addressId,
-      input: { isDefault: true },
-    });
+    setCardActionError(null);
+    try {
+      await updateMutation.mutateAsync({
+        addressId,
+        input: { isDefault: true },
+      });
+    } catch (error) {
+      setCardActionError(
+        error instanceof ApiError
+          ? resolveErrorMessage(error.code, error.status)
+          : resolveErrorMessage(),
+      );
+    }
   }
 
   const submitting = createMutation.isPending || updateMutation.isPending;
@@ -111,6 +130,12 @@ function AddressesTab() {
           추가하기
         </Button>
       </div>
+
+      {cardActionError != null && (
+        <p role="alert" className="text-body-s text-red-font">
+          {cardActionError}
+        </p>
+      )}
 
       <RadioGroup
         value={defaultAddress?.id}
