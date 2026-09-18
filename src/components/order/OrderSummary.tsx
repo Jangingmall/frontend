@@ -4,6 +4,8 @@ export interface OrderSummaryProps {
   shippingAmount: number;
   totalAmount: number;
   totalLabel?: string;
+  shippingLabel?: string;
+  headingSize?: "m" | "l";
   children?: ReactNode;
 }
 export function OrderSummary({
@@ -12,6 +14,8 @@ export function OrderSummary({
   totalAmount,
   totalLabel = "결제예정금액",
   children,
+  shippingLabel,
+  headingSize = "l",
 }: OrderSummaryProps) {
   const money = (amount: number) => `${amount.toLocaleString("ko-KR")}원`;
   return (
@@ -19,7 +23,9 @@ export function OrderSummary({
       aria-label="결제 정보"
       className="rounded-xs bg-bg-default p-6 text-font-dark shadow-floating"
     >
-      <h2 className="text-title-l">결제 정보</h2>
+      <h2 className={headingSize === "m" ? "text-title-m" : "text-title-l"}>
+        결제 정보
+      </h2>
       <dl className="mt-6 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <dt className="text-body-m font-bold">총 상품금액</dt>
@@ -28,7 +34,7 @@ export function OrderSummary({
         <div className="flex items-center justify-between">
           <dt className="text-body-m font-bold">총 배송비</dt>
           <dd className="text-body-l">
-            {shippingAmount ? money(shippingAmount) : "-"}
+            {shippingLabel ?? (shippingAmount ? money(shippingAmount) : "-")}
           </dd>
         </div>
         <div className="flex items-center justify-between border-t border-border-neutral-weak pt-3">
