@@ -1,7 +1,9 @@
 "use client";
 
 import { Gnb } from "@/components/common/gnb";
+import { publicEnv } from "@/lib/env";
 import { useAuthStore } from "@/stores/auth";
+import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 
 /**
  * `Gnb`와 `stores/auth`를 잇는 접합부. (docs/architecture.md §6)
@@ -21,5 +23,11 @@ import { useAuthStore } from "@/stores/auth";
  */
 export function SiteGnb() {
   const status = useAuthStore((state) => state.status);
-  return <Gnb authStatus={status} />;
+  const cartCount = usePurchasePreviewStore((state) => state.lines.length);
+  return (
+    <Gnb
+      authStatus={status}
+      cartCount={publicEnv.apiMocking ? cartCount : undefined}
+    />
+  );
 }
