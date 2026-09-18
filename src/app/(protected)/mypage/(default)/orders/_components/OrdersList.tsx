@@ -27,6 +27,14 @@ function formatOrderDate(orderedAt: string): string {
 }
 
 /**
+ * 주문 카드(정보바+상품카드) 바깥 래퍼 — `get_design_context`(node `1271:52718`) 실측:
+ * 흰 배경 + `rounded-[4px]` + `shadow-[0px_4px_12px_rgba(0,0,0,0.08)]` + `overflow-clip`
+ * (정보바의 각진 모서리를 부모의 둥근 모서리에 맞춰 잘라낸다).
+ */
+const ORDER_CARD_CLASS =
+  "flex flex-col overflow-clip rounded-xs bg-bg-default shadow-[0px_4px_12px_0px_rgba(0,0,0,0.08)]";
+
+/**
  * 주문 목록 — 단일/다중 상품 그룹 렌더링 + 그룹별 독립 펼침·접힘(design.md §6.3, T-21 §0-1).
  * 액션 버튼(주문 상세보기·주문 취소 등)은 의도적으로 연결하지 않는다 — 이 화면은 조회·필터만
  * 담당하고, 실제 내비게이션·mutation은 후속 작업(주문 상세·취소/교환/환불)이 배선한다.
@@ -78,7 +86,7 @@ function OrdersList({
   }
 
   return (
-    <div aria-busy={isFetching} className="flex flex-col gap-6">
+    <div aria-busy={isFetching} className="flex flex-col gap-4">
       {data.items.map((order) => {
         const orderDate = formatOrderDate(order.orderedAt);
         const isMulti = order.items.length > 1;
@@ -87,7 +95,7 @@ function OrdersList({
         if (!isMulti) {
           const item = order.items[0]!;
           return (
-            <div key={order.orderId} className="flex flex-col">
+            <div key={order.orderId} className={ORDER_CARD_CLASS}>
               <OrderInfoBar
                 variant="single"
                 status={item.status}
@@ -109,7 +117,7 @@ function OrdersList({
 
         const representative = order.items[0]!;
         return (
-          <div key={order.orderId} className="flex flex-col">
+          <div key={order.orderId} className={ORDER_CARD_CLASS}>
             <OrderInfoBar
               variant="multi"
               itemCount={order.items.length}
@@ -137,11 +145,13 @@ function OrdersList({
                 price={representative.price}
               />
             )}
-            <OrderExpandToggle
-              itemCount={order.items.length}
-              isExpanded={isExpanded}
-              onToggle={() => toggle(order.orderId)}
-            />
+            <div className="px-3 pb-3">
+              <OrderExpandToggle
+                itemCount={order.items.length}
+                isExpanded={isExpanded}
+                onToggle={() => toggle(order.orderId)}
+              />
+            </div>
           </div>
         );
       })}

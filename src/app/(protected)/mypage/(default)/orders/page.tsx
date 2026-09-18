@@ -51,32 +51,34 @@ export default function MypageOrdersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <OrdersStatusSummary
-        data={summaryQuery.data}
-        isPending={summaryQuery.isPending}
-        hasError={summaryQuery.isError}
-        onRetry={() => void summaryQuery.refetch()}
-      />
-      <OrdersFilterBar
-        period={filterState.period}
-        from={filterState.from}
-        to={filterState.to}
-        status={filterState.status}
-        artisanName={filterState.artisanName}
-        onPeriodChange={(preset: OrderPeriodPreset) => {
-          const range = resolveOrderPeriod(preset);
-          updateUrl({ period: preset, from: range.from, to: range.to });
-        }}
-        onCustomRangeChange={(range) =>
-          updateUrl({ period: "CUSTOM", from: range.from, to: range.to })
-        }
-        onStatusChange={(status: "ALL" | OrderStatusGroupKey) =>
-          updateUrl({ status })
-        }
-        onSearch={(artisanName) =>
-          updateUrl({ artisanName: artisanName || undefined })
-        }
-      />
+      <div className="flex flex-col gap-4">
+        <OrdersStatusSummary
+          data={summaryQuery.data}
+          isPending={summaryQuery.isPending}
+          hasError={summaryQuery.isError}
+          onRetry={() => void summaryQuery.refetch()}
+        />
+        <OrdersFilterBar
+          period={filterState.period}
+          from={filterState.from}
+          to={filterState.to}
+          status={filterState.status}
+          artisanName={filterState.artisanName}
+          onPeriodChange={(preset: OrderPeriodPreset) => {
+            const range = resolveOrderPeriod(preset);
+            updateUrl({ period: preset, from: range.from, to: range.to });
+          }}
+          onCustomRangeChange={(range) =>
+            updateUrl({ period: "CUSTOM", from: range.from, to: range.to })
+          }
+          onStatusChange={(status: "ALL" | OrderStatusGroupKey) =>
+            updateUrl({ status })
+          }
+          onSearch={(artisanName) =>
+            updateUrl({ artisanName: artisanName || undefined })
+          }
+        />
+      </div>
       <OrdersList
         data={listQuery.data}
         isPending={listQuery.isPending}

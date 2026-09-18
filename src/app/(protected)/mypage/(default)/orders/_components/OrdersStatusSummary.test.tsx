@@ -48,7 +48,9 @@ describe("OrdersStatusSummary", () => {
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText("배송 완료")).toBeInTheDocument();
     expect(screen.getByText("4")).toBeInTheDocument();
-    expect(screen.getByText("교환 · 환불")).toBeInTheDocument();
+    expect(
+      screen.getByText((_, element) => element?.textContent === "교환 · 환불"),
+    ).toBeInTheDocument();
     expect(screen.getByText("5")).toBeInTheDocument();
     expect(screen.getByText("주문취소")).toBeInTheDocument();
     expect(screen.getByText("6")).toBeInTheDocument();

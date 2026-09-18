@@ -10,6 +10,7 @@ import {
   type OrderPeriodPreset,
   type OrderStatusGroupKey,
 } from "@/constants/order";
+import { cn } from "@/lib/utils";
 
 interface OrdersFilterBarProps {
   period: OrderPeriodPreset;
@@ -28,6 +29,19 @@ const PERIOD_PRESETS = Object.values(ORDER_PERIOD_PRESET).filter(
     preset !== "CUSTOM",
 );
 
+/**
+ * 필터 칩(기간 프리셋·주문 처리 상태 공용) 클래스 — `get_design_context`(node `1271:52687`)
+ * 실측: 높이 36px·`rounded-[2px]`·최소폭 72px, 선택 시 14px bold(흰 글자+검정 배경)로
+ * 폰트까지 바뀐다(미선택은 13px). `Button`의 `size="xs"`(28px/text-body-m)는 이 칩엔 안 맞아
+ * className으로 덮어쓴다.
+ */
+function chipClassName(selected: boolean) {
+  return cn(
+    "h-9 min-w-18 rounded-[2px]",
+    selected ? "text-body-m font-bold" : "text-body-s",
+  );
+}
+
 /** 검색·기간·주문 처리 상태 필터 + 안내 문구(design.md §6.2). */
 function OrdersFilterBar({
   period,
@@ -41,7 +55,7 @@ function OrdersFilterBar({
   onSearch,
 }: OrdersFilterBarProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-xs border border-border-neutral-weak p-3">
+    <div className="flex flex-col gap-2 p-3">
       <SearchField
         defaultValue={artisanName}
         onSearch={onSearch}
@@ -50,10 +64,10 @@ function OrdersFilterBar({
       />
 
       <div className="flex items-center gap-3">
-        <span className="w-20 shrink-0 text-body-s text-font-dark-secondary">
+        <span className="w-20 shrink-0 text-body-s text-font-dark">
           검색 기간
         </span>
-        <div role="radiogroup" aria-label="검색 기간" className="flex gap-2">
+        <div role="radiogroup" aria-label="검색 기간" className="flex gap-1">
           {PERIOD_PRESETS.map((preset) => (
             <Button
               key={preset}
@@ -63,6 +77,7 @@ function OrdersFilterBar({
               role="radio"
               aria-checked={period === preset}
               onClick={() => onPeriodChange(preset)}
+              className={chipClassName(period === preset)}
             >
               {ORDER_PERIOD_PRESET_LABEL[preset]}
             </Button>
@@ -78,13 +93,13 @@ function OrdersFilterBar({
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="w-20 shrink-0 text-body-s text-font-dark-secondary">
+        <span className="w-20 shrink-0 text-body-s text-font-dark">
           주문 처리 상태
         </span>
         <div
           role="radiogroup"
           aria-label="주문 처리 상태"
-          className="flex flex-wrap gap-2"
+          className="flex flex-wrap gap-1"
         >
           {ORDER_STATUS_FILTER_TABS.map((tab) => (
             <Button
@@ -95,6 +110,7 @@ function OrdersFilterBar({
               role="radio"
               aria-checked={status === tab.key}
               onClick={() => onStatusChange(tab.key)}
+              className={chipClassName(status === tab.key)}
             >
               {tab.label}
             </Button>
@@ -102,7 +118,7 @@ function OrdersFilterBar({
         </div>
       </div>
 
-      <ul className="list-disc space-y-1 pl-5 text-caption text-font-dark-subtle">
+      <ul className="list-disc space-y-1 py-2 pl-5 text-caption text-font-label">
         <li>
           주문 번호 / 자세히 보기를 클릭하시면 해당 주문에 대한 상세 내역 확인이
           가능합니다.
