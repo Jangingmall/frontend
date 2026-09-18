@@ -59,11 +59,11 @@ export function ProductOrder({
         <div
           className={
             layout === "stacked"
-              ? "flex min-h-22.5 min-w-0 flex-1 flex-col justify-between gap-3"
+              ? "relative min-h-22.5 min-w-0 flex-1"
               : "flex min-w-0 flex-1 items-end justify-between gap-4"
           }
         >
-          <div className="min-w-0">
+          <div className={layout === "stacked" ? "min-w-0 pr-22" : "min-w-0"}>
             <p className="truncate text-body-s-b">{productName}</p>
             {!!options?.length && (
               <ul className="mt-2 flex flex-col gap-1">
@@ -83,12 +83,12 @@ export function ProductOrder({
               {quantity}개 / {price.toLocaleString("ko-KR")}원
             </p>
           ) : (
-            <div className="self-end">{actions}</div>
+            <div className="absolute right-0 bottom-0">{actions}</div>
           )}
         </div>
       </div>
       {layout === "stacked" && (
-        <div className="mt-3 flex items-center justify-end gap-6 border-t border-border-neutral-weak py-3">
+        <div className="mt-3 flex items-center justify-end gap-6 border-t border-border-jade-weak py-3">
           {quantityControl ?? <span className="text-body-s">{quantity}개</span>}
           <p className="text-body-m font-bold">
             {price.toLocaleString("ko-KR")}원

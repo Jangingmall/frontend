@@ -17,14 +17,18 @@ export function ArtisanOrderGroup({
     <section className="overflow-hidden rounded-xs bg-bg-default shadow-floating">
       <header className="flex min-h-11 items-center gap-3 bg-fill-neutral-weak px-4 py-3">
         {headerAction}
-        <button
-          type="button"
-          onClick={onArtisanClick}
-          className="flex items-center text-body-m font-bold"
-        >
-          {artisanName}
-          <ChevronRightIcon className="size-4" />
-        </button>
+        {onArtisanClick ? (
+          <button
+            type="button"
+            onClick={onArtisanClick}
+            className="flex items-center text-body-m font-bold"
+          >
+            {artisanName}
+            <ChevronRightIcon className="size-4" />
+          </button>
+        ) : (
+          <span className="text-body-m font-bold">{artisanName}</span>
+        )}
       </header>
       <div className="px-4">{children}</div>
     </section>
