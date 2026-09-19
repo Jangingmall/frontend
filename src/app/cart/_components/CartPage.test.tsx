@@ -1,4 +1,11 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
@@ -34,6 +41,29 @@ it("delete final item and undo restore empty-state transition", async () => {
     screen.getByRole("button", { name: "장바구니에 다시 추가" }),
   );
   expect(screen.getByText("백자 달항아리")).toBeInTheDocument();
+});
+it("expires the latest deletion notice without restoring removed items", () => {
+  vi.useFakeTimers();
+  try {
+    render(<CartPage initialLines={cartFixtures.base.slice(0, 2)} />);
+    fireEvent.click(screen.getByRole("button", { name: "백자 달항아리 삭제" }));
+    fireEvent.click(screen.getByRole("button", { name: "삭제하기" }));
+    act(() => vi.advanceTimersByTime(4000));
+    fireEvent.click(screen.getByRole("button", { name: "선택 삭제" }));
+    fireEvent.click(screen.getByRole("button", { name: "삭제하기" }));
+    act(() => vi.advanceTimersByTime(4000));
+    expect(screen.getByText("상품이 삭제되었습니다.")).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(4000));
+    expect(
+      screen.queryByText("상품이 삭제되었습니다."),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "장바구니에 다시 추가" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("장바구니가 비어있습니다.")).toBeInTheDocument();
+  } finally {
+    vi.useRealTimers();
+  }
 });
 it("anonymous purchase requests login and signed-in purchase gets a snapshot", async () => {
   const user = userEvent.setup();

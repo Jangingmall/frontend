@@ -20,6 +20,7 @@ import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator"
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Toast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
 import type { CartPreviewLine } from "@/types/purchase-preview";
 
 import { CartDeleteDialog } from "./CartDeleteDialog";
@@ -54,6 +55,11 @@ export function CartPage({
   useEffect(() => {
     onLinesChange?.(lines);
   }, [lines, onLinesChange]);
+  useEffect(() => {
+    if (!undo.length) return;
+    const timeout = window.setTimeout(() => setUndo([]), 8000);
+    return () => window.clearTimeout(timeout);
+  }, [undo]);
   const purchasable = getPurchasableLines(lines);
   const selected = purchasable.filter((line) => line.selected);
   const amount = getSelectedAmount(lines);
@@ -85,7 +91,10 @@ export function CartPage({
   return (
     <div className="flex-1 bg-bg-subtle">
       <div
-        className={`mx-auto w-full max-w-234 px-6 pt-16 ${lines.length ? "pb-50" : "pb-70"}`}
+        className={cn(
+          "mx-auto w-full max-w-234 px-6 pt-16",
+          lines.length ? "pb-50" : "pb-70",
+        )}
       >
         <div className="flex flex-wrap items-center justify-between gap-4">
           <h1 className="text-title-xl">장바구니</h1>
