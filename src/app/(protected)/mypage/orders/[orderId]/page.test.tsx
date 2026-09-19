@@ -1,12 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http } from "msw";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SEED_ACCESS_TOKEN } from "@/api/member/mock/fixtures";
 import { setMockIdentity } from "@/api/member/mock/mock-identity";
 import { orderFixtures } from "@/api/orders/mock/fixtures";
+import { mockError } from "@/mocks/envelope";
+import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
 import OrderDetailPage from "./page";
@@ -125,6 +128,28 @@ describe("OrderDetailPage", () => {
         screen.getByText(/서울특별시 종로구 세종대로 1/),
       ).toBeInTheDocument(),
     );
+  });
+
+  it("배송지 변경 실패 시 모달 안에만 에러를 보여주고 페이지 배너와 중복 표시하지 않는다(독립 리뷰 Nit)", async () => {
+    const user = userEvent.setup();
+    mockOrderId = String(preparingOrderId);
+    server.use(
+      http.patch("*/api/payments/orders/:orderId/address", () =>
+        mockError(422, "BUSINESS_RULE_VIOLATION", "배송지를 변경할 수 없어요"),
+      ),
+    );
+    renderPage();
+
+    await user.click(
+      (await screen.findAllByRole("button", { name: "배송지 변경" }))[0]!,
+    );
+    await user.click(screen.getByRole("button", { name: "주소검색" }));
+    await user.click(screen.getByRole("button", { name: "변경" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "요청을 완료할 수 없어요",
+    );
+    expect(screen.getAllByRole("alert")).toHaveLength(1);
   });
 
   it("입금 확인 중에는 배송지 변경 버튼을 보여주지 않는다(Figma 스펙시트 2080:112091)", async () => {

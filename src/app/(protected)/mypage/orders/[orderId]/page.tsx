@@ -56,6 +56,12 @@ export default function OrderDetailPage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  // 배송지 변경 모달 전용 에러 — `actionError`(페이지 배너)와 같은 값을 쓰면 모달이
+  // 열린 채로 변경이 실패했을 때 배너·모달 두 군데에 같은 문구가 중복 표시된다
+  // (독립 리뷰 Nit).
+  const [addressChangeError, setAddressChangeError] = useState<string | null>(
+    null,
+  );
 
   const cancelMutation = useCancelOrderMutation(orderId);
   const confirmPurchaseMutation = useConfirmPurchaseMutation(orderId);
@@ -102,12 +108,10 @@ export default function OrderDetailPage() {
   const canChangeAddress =
     overallStatus === "ORDER_PENDING" || overallStatus === "PREPARING";
 
-  function reportError(error: unknown) {
-    setActionError(
-      error instanceof ApiError
-        ? resolveErrorMessage(error.code, error.status)
-        : resolveErrorMessage(),
-    );
+  function resolveActionErrorMessage(error: unknown) {
+    return error instanceof ApiError
+      ? resolveErrorMessage(error.code, error.status)
+      : resolveErrorMessage();
   }
 
   async function handleAction(
@@ -132,17 +136,17 @@ export default function OrderDetailPage() {
           break;
       }
     } catch (error) {
-      reportError(error);
+      setActionError(resolveActionErrorMessage(error));
     }
   }
 
   async function handleChangeAddress(input: ChangeOrderAddressRequest) {
-    setActionError(null);
+    setAddressChangeError(null);
     try {
       await changeAddressMutation.mutateAsync(input);
       setIsAddressModalOpen(false);
     } catch (error) {
-      reportError(error);
+      setAddressChangeError(resolveActionErrorMessage(error));
     }
   }
 
@@ -190,7 +194,7 @@ export default function OrderDetailPage() {
           onOpenChange={setIsAddressModalOpen}
           initialValue={order.shippingAddress}
           submitting={changeAddressMutation.isPending}
-          submitError={actionError}
+          submitError={addressChangeError}
           onSubmit={(input) => void handleChangeAddress(input)}
         />
 
