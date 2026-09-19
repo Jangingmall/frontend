@@ -23,13 +23,35 @@ describe("orderStatusLabel", () => {
 });
 
 describe("getOrderCardActions", () => {
-  it("입금확인중 상태의 버튼 순서를 반환한다", () => {
+  it("입금확인중 상태의 버튼 순서를 반환한다(결제 수단 모름 → 필터 없이 노출)", () => {
     expect(getOrderCardActions("PAYMENT_PENDING", false)).toEqual([
       { action: "checkPaymentInfo" },
       { action: "cancelOrder" },
       { action: "inquiry" },
     ]);
   });
+
+  it.each(["REALTIME_TRANSFER", "BANK_TRANSFER"] as const)(
+    "결제 수단이 %s면 입금 정보 확인 버튼을 보여준다(Figma 스펙시트 2080:112091)",
+    (paymentMethod) => {
+      expect(
+        getOrderCardActions("PAYMENT_PENDING", false, paymentMethod),
+      ).toEqual([
+        { action: "checkPaymentInfo" },
+        { action: "cancelOrder" },
+        { action: "inquiry" },
+      ]);
+    },
+  );
+
+  it.each(["CARD", "TOSS_PAY", null] as const)(
+    "결제 수단이 %s면 입금 정보 확인 버튼을 숨긴다",
+    (paymentMethod) => {
+      expect(
+        getOrderCardActions("PAYMENT_PENDING", false, paymentMethod),
+      ).toEqual([{ action: "cancelOrder" }, { action: "inquiry" }]);
+    },
+  );
 
   it("주문확인중 상태의 버튼 순서를 반환한다", () => {
     expect(getOrderCardActions("ORDER_PENDING", false)).toEqual([
@@ -129,6 +151,13 @@ describe("getOrderDetailActions", () => {
   it("배송완료 외 상태는 목록과 동일한 매트릭스에 1:1 문의만 추가한다", () => {
     expect(getOrderDetailActions("CANCELED", false)).toEqual([
       ...getOrderCardActions("CANCELED", false),
+      { action: "inquiry" },
+    ]);
+  });
+
+  it("입금확인중 + 카드 결제면 입금 정보 확인 버튼 없이 보여준다", () => {
+    expect(getOrderDetailActions("PAYMENT_PENDING", false, "CARD")).toEqual([
+      { action: "cancelOrder" },
       { action: "inquiry" },
     ]);
   });

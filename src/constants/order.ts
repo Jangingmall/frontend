@@ -113,14 +113,30 @@ export interface OrderCardActionItem {
 export function getOrderCardActions(
   status: OrderStatus,
   hasReason: boolean,
+  /**
+   * "입금 정보 확인" 버튼 노출 조건(Figma 스펙시트 `2080:112091` 실측) — 실시간
+   * 계좌이체·무통장입금일 때만 보인다. 목록 화면(MY-1)은 결제 수단 자체를 안 받아서
+   * (BE 미제공, be-requests.md #3) 인자를 안 넘기면(`undefined`) 필터 없이 항상
+   * 노출한다(T-27 때부터의 기존 동작 유지) — 상세 화면(MY-1-OD)만 실제 값을 넘겨
+   * 필터링한다.
+   */
+  paymentMethod?: string | null,
 ): OrderCardActionItem[] {
   switch (status) {
-    case "PAYMENT_PENDING":
-      return [
+    case "PAYMENT_PENDING": {
+      const actions: OrderCardActionItem[] = [
         { action: "checkPaymentInfo" },
         { action: "cancelOrder" },
         { action: "inquiry" },
       ];
+      if (paymentMethod === undefined) return actions;
+      const isTransferPayment =
+        paymentMethod === "REALTIME_TRANSFER" ||
+        paymentMethod === "BANK_TRANSFER";
+      return isTransferPayment
+        ? actions
+        : actions.filter((item) => item.action !== "checkPaymentInfo");
+    }
     case "ORDER_PENDING":
       return [
         { action: "cancelOrder" },
@@ -174,6 +190,7 @@ export function getOrderCardActions(
 export function getOrderDetailActions(
   status: OrderStatus,
   hasReason: boolean,
+  paymentMethod?: string | null,
 ): OrderCardActionItem[] {
   const base =
     status === "DELIVERED"
@@ -182,7 +199,7 @@ export function getOrderDetailActions(
           { action: "requestExchangeRefund" as const },
           { action: "writeReview" as const },
         ]
-      : getOrderCardActions(status, hasReason);
+      : getOrderCardActions(status, hasReason, paymentMethod);
   if (base.some((item) => item.action === "inquiry")) return base;
   return [...base, { action: "inquiry" }];
 }

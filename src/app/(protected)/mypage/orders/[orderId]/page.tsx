@@ -173,6 +173,7 @@ export default function OrderDetailPage() {
                 group={group}
                 shippingAmount={order.payment.shippingAmount}
                 orderedAt={order.orderedAt}
+                paymentMethod={order.payment.paymentMethod}
                 onAction={(item, action) => void handleAction(item, action)}
               />
             ))}

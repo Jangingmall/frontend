@@ -13,6 +13,7 @@ interface OrderDetailArtisanGroupProps {
   group: OrderDetailArtisanGroupModel;
   shippingAmount: Money;
   orderedAt: string;
+  paymentMethod?: string | null;
   onAction: (item: OrderDetailItem, action: OrderCardActionType) => void;
 }
 
@@ -25,6 +26,7 @@ export function OrderDetailArtisanGroup({
   group,
   shippingAmount,
   orderedAt,
+  paymentMethod,
   onAction,
 }: OrderDetailArtisanGroupProps) {
   const artisanName = group.artisanName ?? "제작자 정보 준비 중";
@@ -64,6 +66,7 @@ export function OrderDetailArtisanGroup({
             item={item}
             shippingAmount={shippingAmount}
             orderedAt={orderedAt}
+            paymentMethod={paymentMethod}
             onAction={(action) => onAction(item, action)}
           />
         ))}

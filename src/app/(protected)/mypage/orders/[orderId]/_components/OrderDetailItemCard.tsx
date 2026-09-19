@@ -36,6 +36,8 @@ interface OrderDetailItemCardProps {
    */
   orderedAt: string;
   reason?: string;
+  /** "입금 정보 확인" 버튼 노출 조건 판단용(constants/order.ts 참고). */
+  paymentMethod?: string | null;
   onAction?: (action: OrderCardActionType) => void;
 }
 
@@ -48,12 +50,13 @@ export function OrderDetailItemCard({
   shippingAmount,
   orderedAt,
   reason,
+  paymentMethod,
   onAction,
 }: OrderDetailItemCardProps) {
   const [hasImageError, setHasImageError] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const actions = getOrderDetailActions(item.status, !!reason);
+  const actions = getOrderDetailActions(item.status, !!reason, paymentMethod);
   // 4개면 첫 액션을 전체 너비 단독 줄로, 나머지를 아래 한 줄로(design.md §2, Figma DELIVERED 실측).
   const isSplitLayout = actions.length === 4;
   const primaryAction = isSplitLayout ? actions[0] : null;

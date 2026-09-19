@@ -86,6 +86,34 @@ describe("OrderDetailItemCard", () => {
     expect(screen.getAllByRole("button", { name: "1:1 문의" })).toHaveLength(1);
   });
 
+  it("입금확인중 + 실시간 계좌이체면 입금 정보 확인 버튼을 보여준다", () => {
+    render(
+      <OrderDetailItemCard
+        item={item({ status: "PAYMENT_PENDING" })}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+        paymentMethod="REALTIME_TRANSFER"
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: "입금 정보 확인" }),
+    ).toBeInTheDocument();
+  });
+
+  it("입금확인중 + 카드 결제면 입금 정보 확인 버튼을 숨긴다(Figma 스펙시트 2080:112091)", () => {
+    render(
+      <OrderDetailItemCard
+        item={item({ status: "PAYMENT_PENDING" })}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+        paymentMethod="CARD"
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: "입금 정보 확인" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("사유가 있으면 사유 텍스트를 보여준다", () => {
     render(
       <OrderDetailItemCard
