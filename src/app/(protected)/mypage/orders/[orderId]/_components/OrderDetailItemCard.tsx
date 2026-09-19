@@ -70,7 +70,7 @@ export function OrderDetailItemCard({
   }
 
   return (
-    <div className="flex flex-col gap-3 border-b border-border-neutral-weak p-4 text-font-dark last:border-b-0">
+    <div className="flex flex-col gap-3 border-t border-border-neutral-weak px-4 py-3 text-font-dark">
       <div className="flex flex-col gap-1">
         <Badge variant="plain" className="self-start">
           {ORDER_STATUS_LABEL[item.status]}
@@ -136,11 +136,16 @@ export function OrderDetailItemCard({
         </div>
       )}
 
-      <div className="bg-fill-neutral-weak px-3 py-2 text-caption text-font-dark-subtle">
-        <p className="mb-1 text-caption-b text-font-dark">주문 유의사항</p>
-        {ORDER_NOTICE_LINES.map((line) => (
-          <p key={line}>- {line}</p>
-        ))}
+      <div className="flex items-start gap-10 bg-fill-jade-weak p-2 text-caption text-font-label">
+        <p className="shrink-0 font-semibold">주문 유의사항</p>
+        <div className="flex flex-col gap-1">
+          {ORDER_NOTICE_LINES.map((line) => (
+            <p key={line} className="flex gap-1">
+              <span>-</span>
+              <span>{line}</span>
+            </p>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">

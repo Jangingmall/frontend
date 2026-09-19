@@ -162,7 +162,7 @@ export default function OrderDetailPage() {
         )}
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <div className="flex min-w-0 flex-1 flex-col gap-4">
+          <div className="flex min-w-0 flex-1 flex-col gap-6">
             {order.groups.map((group) => (
               <OrderDetailArtisanGroup
                 key={group.artisanName ?? "unknown-artisan"}

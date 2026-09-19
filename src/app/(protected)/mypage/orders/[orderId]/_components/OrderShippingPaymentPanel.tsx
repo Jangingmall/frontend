@@ -26,19 +26,29 @@ interface AmountRowProps {
   label: string;
   amount: number;
   emphasis?: boolean;
+  /** "결제 금액" 행 전용 — Figma 실측 "총 57,000원" 접두어(design.md 대조, 2080:1271:52868). */
+  valuePrefix?: string;
 }
 
-function AmountRow({ label, amount, emphasis = false }: AmountRowProps) {
+function AmountRow({
+  label,
+  amount,
+  emphasis = false,
+  valuePrefix,
+}: AmountRowProps) {
   return (
     <div
       className={
         emphasis
-          ? "flex justify-between text-title-m font-bold"
-          : "flex justify-between text-body-s text-font-dark-secondary"
+          ? "flex justify-between text-title-s"
+          : "flex justify-between text-body-s text-font-dark-subtle"
       }
     >
       <span>{label}</span>
-      <span>{amount.toLocaleString("ko-KR")}원</span>
+      <span>
+        {valuePrefix}
+        {amount.toLocaleString("ko-KR")}원
+      </span>
     </div>
   );
 }
@@ -68,7 +78,7 @@ export function OrderShippingPaymentPanel({
   return (
     <aside className="flex w-full flex-col gap-6 text-font-dark lg:w-137 lg:shrink-0">
       <div className="overflow-hidden rounded-xs bg-bg-default shadow-[0px_4px_12px_0px_rgba(0,0,0,0.08)]">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between bg-fill-neutral-weak px-4 py-3">
           <h2 className="text-title-s">배송지</h2>
           {canChangeAddress && (
             <Button variant="outline" size="xs" onClick={onChangeAddress}>
@@ -76,12 +86,23 @@ export function OrderShippingPaymentPanel({
             </Button>
           )}
         </div>
-        <div className="flex flex-col gap-2 px-4 pb-4 text-body-s">
-          <p>받는 분 : {address.recipientName}</p>
-          <p>휴대전화 : {formatPhone(address.phone)}</p>
-          <p>
-            주소지 : ({address.zipCode}) {address.address1} {address.address2}
-          </p>
+        <div className="flex flex-col gap-2 px-4 pt-3 pb-6 text-body-s text-font-dark">
+          <div className="flex items-center gap-2">
+            <span>받는 분 :</span>
+            <span className="text-title-s">{address.recipientName}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span>휴대전화 :</span>
+            <span className="text-font-dark-secondary">
+              {formatPhone(address.phone)}
+            </span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span>주소지 :</span>
+            <span className="text-font-dark-secondary">
+              ({address.zipCode}) {address.address1} {address.address2}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -90,7 +111,7 @@ export function OrderShippingPaymentPanel({
           type="button"
           onClick={() => setIsPaymentExpanded((prev) => !prev)}
           aria-expanded={isPaymentExpanded}
-          className="flex w-full items-center justify-between px-4 py-3"
+          className="flex w-full items-center justify-between bg-fill-neutral-weak px-4 py-3"
         >
           <h2 className="text-title-s">결제 정보</h2>
           <ChevronDownIcon
@@ -102,18 +123,21 @@ export function OrderShippingPaymentPanel({
           />
         </button>
         {isPaymentExpanded && (
-          <div className="flex flex-col gap-2 px-4 pb-4">
-            <AmountRow label="상품 금액" amount={payment.productAmount} />
-            <AmountRow label="배송비" amount={payment.shippingAmount} />
-            <AmountRow label="할인 금액" amount={-payment.discountAmount} />
-            <AmountRow label="적립금 사용" amount={-payment.pointsUsed} />
-            <div className="mt-2 flex flex-col gap-2 border-t border-border-neutral-weak pt-3">
+          <div className="flex flex-col gap-3 px-4 pt-3 pb-6">
+            <div className="flex flex-col gap-2">
+              <AmountRow label="상품 금액" amount={payment.productAmount} />
+              <AmountRow label="배송비" amount={payment.shippingAmount} />
+              <AmountRow label="할인 금액" amount={-payment.discountAmount} />
+              <AmountRow label="적립금 사용" amount={-payment.pointsUsed} />
+            </div>
+            <div className="flex flex-col gap-2 border-t border-border-jade-fill pt-3">
               <AmountRow
                 label="결제 금액"
                 amount={payment.totalAmount}
                 emphasis
+                valuePrefix="총 "
               />
-              <div className="flex justify-between text-body-s text-font-dark-secondary">
+              <div className="flex justify-between text-body-s text-font-dark-subtle">
                 <span>결제 수단</span>
                 <span>{paymentMethodLabel}</span>
               </div>

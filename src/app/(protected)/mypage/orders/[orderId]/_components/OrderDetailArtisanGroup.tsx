@@ -31,7 +31,7 @@ export function OrderDetailArtisanGroup({
 
   return (
     <section className="overflow-hidden rounded-xs bg-bg-default shadow-[0px_4px_12px_0px_rgba(0,0,0,0.08)]">
-      <div className="flex items-center justify-between px-4 py-3">
+      <div className="flex items-center justify-between bg-fill-neutral-weak px-4 py-3">
         <Button
           variant="ghost"
           size="s"

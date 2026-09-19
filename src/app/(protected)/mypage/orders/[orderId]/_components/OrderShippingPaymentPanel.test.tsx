@@ -32,9 +32,11 @@ describe("OrderShippingPaymentPanel", () => {
         onChangeAddress={() => {}}
       />,
     );
-    expect(screen.getByText("받는 분 : 홍길동")).toBeInTheDocument();
-    expect(screen.getByText("휴대전화 : 010-1234-5678")).toBeInTheDocument();
-    expect(screen.getByText("321,500원")).toBeInTheDocument();
+    expect(screen.getByText("받는 분 :")).toBeInTheDocument();
+    expect(screen.getByText("홍길동")).toBeInTheDocument();
+    expect(screen.getByText("휴대전화 :")).toBeInTheDocument();
+    expect(screen.getByText("010-1234-5678")).toBeInTheDocument();
+    expect(screen.getByText("총 321,500원")).toBeInTheDocument();
     expect(screen.getByText("신용·체크카드")).toBeInTheDocument();
   });
 
@@ -77,15 +79,15 @@ describe("OrderShippingPaymentPanel", () => {
     );
     const toggle = screen.getByRole("button", { name: "결제 정보" });
     expect(toggle).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText("321,500원")).toBeInTheDocument();
+    expect(screen.getByText("총 321,500원")).toBeInTheDocument();
 
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "false");
-    expect(screen.queryByText("321,500원")).not.toBeInTheDocument();
+    expect(screen.queryByText("총 321,500원")).not.toBeInTheDocument();
 
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText("321,500원")).toBeInTheDocument();
+    expect(screen.getByText("총 321,500원")).toBeInTheDocument();
   });
 
   it("결제 수단이 없으면 '-'를 보여준다(BE 미제공, be-requests.md #3)", () => {
