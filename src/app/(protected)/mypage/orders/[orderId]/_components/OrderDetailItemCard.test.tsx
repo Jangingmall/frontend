@@ -91,7 +91,7 @@ describe("OrderDetailItemCard", () => {
     ).toBeInTheDocument();
   });
 
-  it("구매 확정은 후기 작성(대표) → 장바구니 담기 → 바로 구매하기 → 1:1 문의하기 순으로 보여준다", () => {
+  it("구매 확정은 후기 작성(대표) → 장바구니에 넣기 → 바로 구매하기 → 1:1 문의하기 순으로 보여준다", () => {
     render(
       <OrderDetailItemCard
         item={item({ status: "PURCHASE_CONFIRMED" })}
@@ -103,7 +103,7 @@ describe("OrderDetailItemCard", () => {
       screen.getByRole("button", { name: "후기 작성" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "장바구니 담기" }),
+      screen.getByRole("button", { name: "장바구니에 넣기" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "바로 구매하기" }),
@@ -246,7 +246,7 @@ describe("OrderDetailItemCard", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("입금확인중은 대표(주문취소하기) 뒤에 장바구니 담기·바로 구매하기도 보여준다(Figma 1718:16488)", () => {
+  it("입금확인중은 대표(주문취소하기) 뒤에 장바구니에 넣기·바로 구매하기도 보여준다(Figma 1718:16488)", () => {
     render(
       <OrderDetailItemCard
         item={item({ status: "PAYMENT_PENDING" })}
@@ -256,7 +256,7 @@ describe("OrderDetailItemCard", () => {
       />,
     );
     expect(
-      screen.getByRole("button", { name: "장바구니 담기" }),
+      screen.getByRole("button", { name: "장바구니에 넣기" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "바로 구매하기" }),
@@ -299,6 +299,25 @@ describe("OrderDetailItemCard", () => {
     );
     expect(screen.getByText("주문 취소 사유 :")).toBeInTheDocument();
     expect(screen.getByText("장인이 주문 승인을 거절함")).toBeInTheDocument();
+  });
+
+  it("소비자 취소(사유 없음)는 대표 없이 장바구니에 넣기·바로 구매하기·1:1 문의하기를 보여준다(Figma 1725:43684)", () => {
+    render(
+      <OrderDetailItemCard
+        item={item({ status: "CANCELED" })}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: "장바구니에 넣기" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "바로 구매하기" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "1:1 문의하기" }),
+    ).toBeInTheDocument();
   });
 
   it("onAction이 없으면 액션 버튼이 비활성 상태다", () => {

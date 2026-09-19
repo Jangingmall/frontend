@@ -100,13 +100,16 @@ export const ORDER_CARD_ACTION_LABEL: Record<OrderCardActionType, string> = {
 
 /**
  * 주문 상세 화면(MY-1-OD)만 목록과 문구가 다른 것들 — Figma 실측(`1718:16488`) 결과
- * "하기"를 붙인 동사형이다(목록은 명사형). 상세 전용 버튼(`cancelExchangeRequest` 등)은
- * 목록에 아예 없어 위 공용 라벨을 그대로 쓴다.
+ * "하기"를 붙인 동사형이다(목록은 명사형). `addToCart`만 예외로 동사형이 아니라
+ * 완전히 다른 표현("장바구니에 넣기")을 쓴다(주문취소·구매확정 목업 모두 동일).
+ * 상세 전용 버튼(`cancelExchangeRequest` 등)은 목록에 아예 없어 위 공용 라벨을
+ * 그대로 쓴다.
  */
 export const ORDER_DETAIL_ACTION_LABEL: Partial<
   Record<OrderCardActionType, string>
 > = {
   cancelOrder: "주문 취소하기",
+  addToCart: "장바구니에 넣기",
   inquiry: "1:1 문의하기",
 };
 
@@ -271,6 +274,10 @@ export function getOrderDetailActions(
         outline("buyAgain"),
       ]);
     case "CANCELED":
+      // 실측(`1725:43684`)엔 소비자 취소("단순 변심") 예시도 사유 배너가 있어서,
+      // `hasReason`은 "장인 취소냐 소비자 취소냐"의 완벽한 대리 신호는 아니다 — 다만
+      // BE가 `reason` 자체를 아직 안 줘서(계약에 없음, types/order.ts 참고) 더 정확한
+      // 신호(취소 주체 필드 등)가 생기기 전까진 T-27부터 써온 이 근사값을 유지한다.
       return hasReason
         ? withInquiry([])
         : withInquiry(
