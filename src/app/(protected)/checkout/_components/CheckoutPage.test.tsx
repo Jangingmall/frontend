@@ -98,7 +98,7 @@ const validValues = {
   postcode: "00000",
   address: "샘플 주소",
 };
-it("유효한 입력에서도 결제수단 누락을 안내한다", async () => {
+it("결제수단 누락을 안내하고 선택하면 경고를 제거한다", async () => {
   const user = userEvent.setup();
   render(<CheckoutPage initialValues={validValues} />);
   await user.click(
@@ -106,6 +106,11 @@ it("유효한 입력에서도 결제수단 누락을 안내한다", async () => 
   );
   await user.click(screen.getByRole("button", { name: "결제하기" }));
   expect(await screen.findByText("결제수단을 선택해 주세요.")).toBeVisible();
+  await user.click(screen.getByRole("radio", { name: "신용·체크카드" }));
+  expect(screen.getByRole("radio", { name: "신용·체크카드" })).toBeChecked();
+  expect(
+    screen.queryByText("결제수단을 선택해 주세요."),
+  ).not.toBeInTheDocument();
 });
 it.each(["CARD", "BANK_TRANSFER"] as const)(
   "%s 목업 완료 계약을 전달한다",

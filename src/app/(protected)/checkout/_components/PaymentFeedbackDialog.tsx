@@ -17,15 +17,16 @@ const COPY = {
     description: "장바구니에 담긴 상품은 그대로 보관되어 있습니다.",
   },
 };
+interface PaymentFeedbackDialogProps {
+  outcome: PaymentFailure | null;
+  onClose: () => void;
+  onCart: () => void;
+}
 export function PaymentFeedbackDialog({
   outcome,
   onClose,
   onCart,
-}: {
-  outcome: PaymentFailure | null;
-  onClose: () => void;
-  onCart: () => void;
-}) {
+}: PaymentFeedbackDialogProps) {
   const copy = COPY[outcome ?? "declined"];
   return (
     <Dialog

@@ -124,7 +124,13 @@ export function CheckoutPage({
             <hr className="border-border-jade-weak" />
             <DiscountSlots />
             <hr className="border-border-jade-weak" />
-            <PaymentsMethod value={method} onChange={setMethod} />
+            <PaymentsMethod
+              value={method}
+              onChange={(value) => {
+                setMethod(value);
+                setWarning("");
+              }}
+            />
           </div>
           <div className="space-y-4 md:pt-9">
             <OrderSummary

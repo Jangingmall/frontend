@@ -9,13 +9,14 @@ import { PURCHASE_PREVIEW_ORDER_ID } from "@/types/purchase-preview";
 
 import { CheckoutPage } from "./CheckoutPage";
 import type { PaymentFailure } from "./PaymentFeedbackDialog";
+interface CheckoutEntryProps {
+  orderId: string;
+  initialFeedback?: PaymentFailure;
+}
 export function CheckoutEntry({
   orderId,
   initialFeedback,
-}: {
-  orderId: string;
-  initialFeedback?: PaymentFailure;
-}) {
+}: CheckoutEntryProps) {
   const router = useRouter();
   const snapshot = usePurchasePreviewStore((state) => state.checkoutLines);
   const beginCheckout = usePurchasePreviewStore((state) => state.beginCheckout);

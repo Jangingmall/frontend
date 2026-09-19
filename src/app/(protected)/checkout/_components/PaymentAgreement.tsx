@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+interface PaymentAgreementProps {
+  agreed: boolean;
+  onAgreedChange: (checked: boolean) => void;
+  onDetails: () => void;
+}
 export function PaymentAgreement({
   agreed,
   onAgreedChange,
   onDetails,
-}: {
-  agreed: boolean;
-  onAgreedChange: (checked: boolean) => void;
-  onDetails: () => void;
-}) {
+}: PaymentAgreementProps) {
   return (
     <section className="space-y-3 rounded-xs bg-bg-default p-6 shadow-floating">
       <h2 className="text-title-m">이용 및 정보 제공 약관</h2>

@@ -1,13 +1,14 @@
 import { ArtisanOrderGroup } from "@/components/order/ArtisanOrderGroup";
 import { ProductOrder } from "@/components/product/ProductOrder";
 import type { CartPreviewLine } from "@/types/purchase-preview";
+interface CheckoutProductsProps {
+  lines: CartPreviewLine[];
+  onArtisanClick: () => void;
+}
 export function CheckoutProducts({
   lines,
   onArtisanClick,
-}: {
-  lines: CartPreviewLine[];
-  onArtisanClick: () => void;
-}) {
+}: CheckoutProductsProps) {
   const groups = Map.groupBy(lines, (line) => line.artisanId);
   return (
     <section className="space-y-3">

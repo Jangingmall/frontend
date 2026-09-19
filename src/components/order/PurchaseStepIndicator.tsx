@@ -1,5 +1,8 @@
 import { Breadcrumb, BreadcrumbItem } from "@/components/ui/breadcrumb";
-export function PurchaseStepIndicator({ current }: { current: 1 | 2 | 3 }) {
+interface PurchaseStepIndicatorProps {
+  current: 1 | 2 | 3;
+}
+export function PurchaseStepIndicator({ current }: PurchaseStepIndicatorProps) {
   return (
     <Breadcrumb>
       {["장바구니", "주문 결제", "주문 완료"].map((label, index) => (
