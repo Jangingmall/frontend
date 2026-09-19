@@ -7,7 +7,7 @@ export function OrderDetailBackLink() {
   return (
     <Link
       href="/mypage/orders"
-      className="flex w-fit items-center gap-1 text-title-m text-font-dark"
+      className="flex w-fit items-center gap-2 text-title-xl text-font-dark"
     >
       <ChevronLeftIcon aria-hidden className="size-8" />
       주문 상세보기

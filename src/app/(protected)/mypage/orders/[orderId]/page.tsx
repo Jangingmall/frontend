@@ -147,9 +147,10 @@ export default function OrderDetailPage() {
 
   return (
     <div className={PAGE_CONTAINER_CLASS}>
-      <div className="flex flex-col gap-6">
-        <OrderDetailBackLink />
-
+      <OrderDetailBackLink />
+      {/* Figma 실측 — 뒤로가기와 정보 바 사이 간격만 64px, 나머지 섹션 간격은 24px
+          (spacing-description 주석 대조, T-28 재실측). */}
+      <div className="mt-16 flex flex-col gap-6">
         <OrderDetailInfoBar
           orderNumber={order.orderNumber}
           orderDate={dayjs(order.orderedAt).format("YYYY.MM.DD")}

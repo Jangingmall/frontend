@@ -75,14 +75,14 @@ export function OrderDetailItemCard({
         <Badge variant="plain" className="self-start">
           {ORDER_STATUS_LABEL[item.status]}
         </Badge>
-        <div className="flex items-center justify-between text-body-s text-font-dark-secondary">
+        <div className="flex items-center justify-between text-body-s">
           <span>주문일시 : {dayjs(orderedAt).format("YYYY.MM.DD")}</span>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <span>상품 주문번호 {item.orderItemId}</span>
             <button
               type="button"
               onClick={() => void handleCopyOrderItemId()}
-              className="underline underline-offset-2"
+              className="text-caption underline underline-offset-2"
             >
               {copied ? "복사됨" : "복사"}
             </button>
@@ -118,12 +118,12 @@ export function OrderDetailItemCard({
         </div>
       </div>
 
-      <div className="flex flex-col gap-1 text-body-s">
-        <div className="flex justify-between text-font-dark-secondary">
+      <div className="flex flex-col gap-1">
+        <div className="flex justify-end gap-2 text-body-s">
           <span>배송비</span>
           <span>{shippingAmount.toLocaleString("ko-KR")}원</span>
         </div>
-        <div className="flex justify-between text-title-s">
+        <div className="flex justify-end gap-2 text-body-m font-bold">
           <span>상품 금액</span>
           <span>{(item.price * item.quantity).toLocaleString("ko-KR")}원</span>
         </div>
@@ -161,10 +161,13 @@ export function OrderDetailItemCard({
           </Button>
         )}
         <div className="flex items-center gap-2">
+          {/* Figma 실측 — 액션이 4개(배송완료)로 나뉠 때만 첫 액션이 solid 단독,
+              나머지는 outline이다. 3개 이하(분리 없음)는 상세 화면 인스턴스가
+              없어 목록과 같은 solid를 유지한다. */}
           {restActions.map(({ action }) => (
             <Button
               key={action}
-              variant="solid"
+              variant={primaryAction ? "outline" : "solid"}
               size="m"
               className="flex-1"
               disabled={!onAction}

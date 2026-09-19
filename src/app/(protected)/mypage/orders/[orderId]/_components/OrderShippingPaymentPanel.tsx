@@ -118,7 +118,7 @@ export function OrderShippingPaymentPanel({
             aria-hidden
             className={cn(
               "size-6 transition-transform",
-              isPaymentExpanded && "rotate-180",
+              !isPaymentExpanded && "rotate-180",
             )}
           />
         </button>

@@ -36,16 +36,19 @@ export function OrderDetailArtisanGroup({
           variant="ghost"
           size="s"
           disabled
-          className="h-auto gap-0.5 p-0 text-title-s"
+          className="h-auto gap-0 p-0 text-title-m"
           aria-label={`${artisanName} 상세 준비 중`}
         >
           {artisanName}
-          <ChevronRightIcon aria-hidden className="size-6" />
+          <ChevronRightIcon aria-hidden className="size-5.5" />
         </Button>
+        {/* Figma 실측 — "판매자 정보"는 테두리 없는 밑줄 텍스트 링크다("주문 영수증"·
+            "배송지 변경"과 달리 border 클래스가 없음). */}
         <Button
-          variant="outline"
+          variant="ghost"
           size="xs"
           disabled
+          className="underline underline-offset-2"
           aria-label="판매자 정보 준비 중"
         >
           판매자 정보

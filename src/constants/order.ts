@@ -96,17 +96,19 @@ export const ORDER_CARD_ACTION_LABEL: Record<OrderCardActionType, string> = {
 
 export interface OrderCardActionItem {
   action: OrderCardActionType;
+  /** `writeReview` 전용 — "적립금 +100원" 배지 표시(목록 MY-1 실측, T-27). */
+  withReward?: boolean;
 }
 
 /**
- * 상태 → 액션 버튼 매트릭스. `CANCELED`만 예외 — 사유(reason) 유무로 버튼 세트가
- * 갈리는 게 실측으로 확인됐다(소비자 취소: 장바구니 담기·바로 구매하기 / 장인 취소:
- * 1:1 문의만). 나머지 13개 상태는 `hasReason`과 무관하게 고정 매트릭스를 돌려준다.
+ * 상태 → 액션 버튼 매트릭스(목록 MY-1 기준). `CANCELED`만 예외 — 사유(reason) 유무로
+ * 버튼 세트가 갈리는 게 실측으로 확인됐다(소비자 취소: 장바구니 담기·바로 구매하기 /
+ * 장인 취소: 1:1 문의만). 나머지 13개 상태는 `hasReason`과 무관하게 고정 매트릭스를
+ * 돌려준다.
  *
- * `DELIVERED`의 버튼 순서·"적립금 +100원" 배지 유무는 원래 GUI 스펙시트 주석 기준으로
- * 확정했었으나, T-28에서 주문 상세(MY-1-OD) 실제 화면 인스턴스 5개를 다시 실측한 결과
- * 순서가 "교환·환불 신청 → 후기 작성"이고 배지는 어디에도 없어 실측대로 정정했다
- * (GUI 파일 스펙시트보다 실제 인스턴스가 SoT).
+ * `DELIVERED`의 버튼 순서·배지는 이 목록 화면(MY-1) 실측 기준. 상세 화면(MY-1-OD)은
+ * 같은 상태인데도 프레임 자체가 다르게 그려져 있어 {@link getOrderDetailActions}에서
+ * 따로 덮어쓴다(문서 불일치가 아니라 화면 인스턴스 자체의 차이 — 두 화면 모두 실측 확인).
  */
 export function getOrderCardActions(
   status: OrderStatus,
@@ -132,13 +134,13 @@ export function getOrderCardActions(
     case "DELIVERED":
       return [
         { action: "confirmPurchase" },
+        { action: "writeReview", withReward: true },
         { action: "requestExchangeRefund" },
-        { action: "writeReview" },
       ];
     case "PURCHASE_CONFIRMED":
       return [
         { action: "addToCart" },
-        { action: "writeReview" },
+        { action: "writeReview", withReward: true },
         { action: "buyAgain" },
       ];
     case "CANCELED":
@@ -159,17 +161,28 @@ export function getOrderCardActions(
 }
 
 /**
- * 주문 상세 화면(`/mypage/orders/[orderId]`) 전용 — `getOrderCardActions`(목록 기준)에
- * "1:1 문의"가 없는 상태만 추가로 붙인다. Figma 주석 시트(`2080:112091`) 실측 결과, 목록
- * 5개 상태(입금확인중/주문확인중/상품준비중/배송중/배송완료)는 `getOrderCardActions`와
- * 정확히 일치했지만, 상세 화면에서 유일하게 확인 가능했던 예시(배송완료)는 여기에 1:1 문의가
- * 하나 더 붙어 있었다 — design.md §2, T-28.
+ * 주문 상세 화면(`/mypage/orders/[orderId]`) 전용. `getOrderCardActions`(목록 MY-1 기준)와
+ * 다른 점 둘 다 두 화면을 각각 실측해서 확인한 실제 차이다(같은 상태인데 프레임 자체가
+ * 다르게 그려져 있음 — 문서 불일치가 아니라 화면 인스턴스 차이):
+ *   1. "1:1 문의"가 없는 상태는 상세에서 추가로 붙는다(목록 5개 상태 중 유일하게 상세에서도
+ *      확인 가능했던 배송완료 예시에 1:1 문의가 하나 더 붙어 있었다 — design.md §2, T-28).
+ *   2. 배송완료만 목록과 순서·배지가 다르다 — 목록은 "후기 작성(+배지) → 교환·환불 신청"
+ *      순인데, 상세 인스턴스 5개 모두 "교환·환불 신청 → 후기 작성" 순이고 배지가 없다.
+ *      (`PURCHASE_CONFIRMED`는 상세 화면에서 확인 가능한 예시가 없어 목록과 동일하다고
+ *      가정한다 — 반례 발견 시 재검토.)
  */
 export function getOrderDetailActions(
   status: OrderStatus,
   hasReason: boolean,
 ): OrderCardActionItem[] {
-  const base = getOrderCardActions(status, hasReason);
+  const base =
+    status === "DELIVERED"
+      ? [
+          { action: "confirmPurchase" as const },
+          { action: "requestExchangeRefund" as const },
+          { action: "writeReview" as const },
+        ]
+      : getOrderCardActions(status, hasReason);
   if (base.some((item) => item.action === "inquiry")) return base;
   return [...base, { action: "inquiry" }];
 }

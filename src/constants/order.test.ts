@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   getOrderCardActions,
+  getOrderDetailActions,
   ORDER_STATUS,
   ORDER_STATUS_FILTER_TABS,
   ORDER_STATUS_GROUP,
@@ -52,18 +53,18 @@ describe("getOrderCardActions", () => {
     ]);
   });
 
-  it("배송완료 상태의 버튼 순서를 반환한다(교환·환불 신청 → 후기 작성)", () => {
+  it("배송완료 상태는 후기 작성에 적립금 배지가 붙는다", () => {
     expect(getOrderCardActions("DELIVERED", false)).toEqual([
       { action: "confirmPurchase" },
+      { action: "writeReview", withReward: true },
       { action: "requestExchangeRefund" },
-      { action: "writeReview" },
     ]);
   });
 
-  it("구매확정 상태의 버튼 순서를 반환한다", () => {
+  it("구매확정 상태는 후기 작성에 적립금 배지가 붙는다", () => {
     expect(getOrderCardActions("PURCHASE_CONFIRMED", false)).toEqual([
       { action: "addToCart" },
-      { action: "writeReview" },
+      { action: "writeReview", withReward: true },
       { action: "buyAgain" },
     ]);
   });
@@ -104,6 +105,30 @@ describe("getOrderCardActions", () => {
   it("환불완료 상태는 환불 정보 · 1:1 문의를 보여준다", () => {
     expect(getOrderCardActions("REFUND_COMPLETED", false)).toEqual([
       { action: "refundInfo" },
+      { action: "inquiry" },
+    ]);
+  });
+});
+
+describe("getOrderDetailActions", () => {
+  it("배송완료는 목록과 달리 순서가 다르고 적립금 배지가 없다(상세 화면 실측)", () => {
+    expect(getOrderDetailActions("DELIVERED", false)).toEqual([
+      { action: "confirmPurchase" },
+      { action: "requestExchangeRefund" },
+      { action: "writeReview" },
+      { action: "inquiry" },
+    ]);
+  });
+
+  it("목록에 이미 1:1 문의가 있는 상태는 중복으로 추가하지 않는다", () => {
+    expect(getOrderDetailActions("PAYMENT_PENDING", false)).toEqual(
+      getOrderCardActions("PAYMENT_PENDING", false),
+    );
+  });
+
+  it("배송완료 외 상태는 목록과 동일한 매트릭스에 1:1 문의만 추가한다", () => {
+    expect(getOrderDetailActions("CANCELED", false)).toEqual([
+      ...getOrderCardActions("CANCELED", false),
       { action: "inquiry" },
     ]);
   });

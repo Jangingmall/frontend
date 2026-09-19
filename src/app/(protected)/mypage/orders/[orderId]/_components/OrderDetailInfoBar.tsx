@@ -21,7 +21,7 @@ export function OrderDetailInfoBar({
         <span>주문번호 :</span>
         <span>{orderNumber}</span>
       </div>
-      <div className="flex flex-1 items-center gap-1 truncate text-body-s">
+      <div className="flex flex-1 items-center gap-2.5 truncate text-body-s">
         <span>주문일시 :</span>
         <span>{orderDate}</span>
       </div>

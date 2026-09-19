@@ -31,7 +31,7 @@ describe("OrderProductCard", () => {
     ).toBeInTheDocument();
   });
 
-  it("배송완료 상태의 액션 버튼을 렌더한다", () => {
+  it("배송완료 상태는 후기 작성 버튼에 적립금 배지를 함께 보여준다", () => {
     render(
       <OrderProductCard
         thumbnail={thumbnail}
@@ -43,9 +43,7 @@ describe("OrderProductCard", () => {
     expect(
       screen.getByRole("button", { name: "후기 작성" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "교환 · 환불 신청" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("적립금 + 100원")).toBeInTheDocument();
   });
 
   it("구매확정 상태의 액션 버튼을 렌더한다", () => {
