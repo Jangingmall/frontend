@@ -25,10 +25,13 @@ export function OrderDetailInfoBar({
         <span>주문일시 :</span>
         <span>{orderDate}</span>
       </div>
+      {/* Figma엔 비활성 표현이 없다 — 범위 밖이라 클릭만 막고 문구·테두리는 평소처럼
+          보이도록 Button 기본 disabled:opacity-60을 덮어쓴다. */}
       <Button
         variant="outline"
         size="xs"
         disabled
+        className="disabled:opacity-100"
         aria-label="주문 영수증 준비 중"
       >
         주문 영수증

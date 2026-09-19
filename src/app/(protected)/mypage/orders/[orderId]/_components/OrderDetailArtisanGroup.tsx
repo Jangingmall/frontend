@@ -32,11 +32,14 @@ export function OrderDetailArtisanGroup({
   return (
     <section className="overflow-hidden rounded-xs bg-bg-default shadow-[0px_4px_12px_0px_rgba(0,0,0,0.08)]">
       <div className="flex items-center justify-between bg-fill-neutral-weak px-4 py-3">
+        {/* Figma엔 "비활성" 상태 표현이 없다 — 범위 밖이라 클릭만 막을 뿐 문구는
+            평소처럼 진하게 보여야 해서 Button 기본 disabled:opacity-60을
+            disabled:opacity-100으로 덮어쓴다(장인 이름·판매자 정보 공통). */}
         <Button
           variant="ghost"
           size="s"
           disabled
-          className="h-auto gap-0 p-0 text-title-m"
+          className="h-auto gap-0 p-0 text-title-m disabled:opacity-100"
           aria-label={`${artisanName} 상세 준비 중`}
         >
           {artisanName}
@@ -48,7 +51,7 @@ export function OrderDetailArtisanGroup({
           variant="ghost"
           size="xs"
           disabled
-          className="underline underline-offset-2"
+          className="underline underline-offset-2 disabled:opacity-100"
           aria-label="판매자 정보 준비 중"
         >
           판매자 정보
