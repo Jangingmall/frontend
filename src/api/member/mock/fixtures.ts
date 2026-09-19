@@ -1,4 +1,7 @@
-import type { MemberProfileResponseDto } from "@/api/member/validation";
+import type {
+  AddressResponseDto,
+  MemberProfileResponseDto,
+} from "@/api/member/validation";
 import type { Role } from "@/types/auth";
 
 /**
@@ -37,6 +40,8 @@ export const memberMeUser: MemberProfileResponseDto = {
   nickname: "미담이",
   role: "USER",
   profileImageUrl: null,
+  phone: "01011112222",
+  authProvider: "LOCAL",
 };
 
 /** 판매자 변형 — 기본 핸들러엔 안 물리고, 테스트가 `server.use`로 교체해 role 분기를 본다. */
@@ -47,6 +52,8 @@ export const memberMeArtisan: MemberProfileResponseDto = {
   nickname: "이공방",
   role: "ARTISAN",
   profileImageUrl: null,
+  phone: "01022223333",
+  authProvider: "LOCAL",
 };
 
 /** 관리자 변형 — `memberMeArtisan`과 같은 용도. */
@@ -57,6 +64,8 @@ export const memberMeAdmin: MemberProfileResponseDto = {
   nickname: "관리자",
   role: "ADMIN",
   profileImageUrl: null,
+  phone: "01033334444",
+  authProvider: "LOCAL",
 };
 
 /**
@@ -68,3 +77,27 @@ export const mockIdentityFixtures = {
   ARTISAN: memberMeArtisan,
   ADMIN: memberMeAdmin,
 } as const satisfies Record<Role, MemberProfileResponseDto>;
+
+/** 회원별 초기 배송지 시드. 첫 항목이 기본 배송지. (mypage 배송지 탭 mock) */
+export function createAddressFixtures(memberId: number): AddressResponseDto[] {
+  return [
+    {
+      addressId: memberId * 100 + 1,
+      recipientName: "김미담",
+      phone: "01011112222",
+      zipCode: "06035",
+      address1: "서울특별시 강남구 학동로 343",
+      address2: "더 피나클 강남 15층",
+      isDefault: true,
+    },
+    {
+      addressId: memberId * 100 + 2,
+      recipientName: "김미담",
+      phone: "01011112222",
+      zipCode: "13529",
+      address1: "경기도 성남시 분당구 판교역로 235",
+      address2: "H스퀘어 N동 3층",
+      isDefault: false,
+    },
+  ];
+}

@@ -50,6 +50,7 @@
 | URL 상태              | Next.js 기본 기능 (`useSearchParams`, `searchParams`), nuqs 미도입                                |
 | 날짜·시간             | Day.js                                                                                            |
 | API 모킹              | MSW                                                                                               |
+| 주소검색              | `react-daum-postcode` (카카오 우편번호 서비스, 클라이언트 전용 — BE·API 계층 없음)                |
 | 결제                  | 토스페이먼츠 SDK                                                                                  |
 | 단위 테스트           | Vitest                                                                                            |
 | 컴포넌트 확인         | Storybook (+ React Testing Library)                                                               |

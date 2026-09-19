@@ -46,6 +46,14 @@ interface ClientFetchOptions extends Omit<RequestInit, "body" | "headers"> {
   headers?: Record<string, string>;
   /** 기본 `true`. `false`면 Bearer 미주입 + 401 자동 refresh를 하지 않는다(public 요청). */
   auth?: boolean;
+  /**
+   * 기본 `true`. `false`면 Bearer는 그대로 주입하되 401에서 refresh·재시도를 하지 않고
+   * 401 응답을 그대로 던진다 — 401이 "토큰 만료"가 아니라 그 엔드포인트 고유의 비즈니스
+   * 오류일 수 있는 요청에 쓴다(예: 현재 비밀번호 확인 — 백엔드가 API 명세의 `400 MISMATCH`
+   * 대신 `401 UNAUTHORIZED`를 반환하는 상태라, 그대로 두면 오타 하나로 refresh가 돌고
+   * 실패 시 세션까지 끊긴다. CodeRabbit 리뷰로 발견, 2026-09-18).
+   */
+  retryOn401?: boolean;
 }
 
 async function doFetch(
@@ -124,8 +132,13 @@ export async function clientFetch<T>(
   const tokenAtRequest = useAuthStore.getState().accessToken;
   const response = await doFetch(path, options);
 
-  // public 요청이거나 401이 아니면 그대로 처리한다.
-  if (response.status !== 401 || options.auth === false) {
+  // public 요청이거나 401이 아니거나, 호출부가 이 요청은 refresh 대상이 아니라고
+  // 명시했으면(`retryOn401: false`) 그대로 처리한다.
+  if (
+    response.status !== 401 ||
+    options.auth === false ||
+    options.retryOn401 === false
+  ) {
     return resolveResponse<T>(response);
   }
 

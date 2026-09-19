@@ -1,18 +1,29 @@
 "use client";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import {
+  changePassword,
+  type ChangePasswordRequest,
   completeOAuthProfile,
   type CompleteOAuthProfileRequest,
+  createAddress,
+  deleteAddress,
   login,
   requestEmailVerification,
   signup,
   type SignupRequest,
   startMockOAuthLogin,
+  updateAddress,
+  updateMemberProfile,
+  type UpdateMemberProfileRequest,
   verifyEmailCode,
+  verifyPassword,
 } from "@/api/member/api";
 import type { OAuthProvider } from "@/types/auth";
+import type { AddressInput } from "@/types/member";
+
+import { memberKeys } from "./keys";
 
 /**
  * 로그인 mutation. `login()` api 함수 하나만 호출한다 — 로그인 응답에 `member`가 이미
@@ -66,5 +77,76 @@ export function useCompleteOAuthProfileMutation() {
   return useMutation({
     mutationFn: (body: CompleteOAuthProfileRequest) =>
       completeOAuthProfile(body),
+  });
+}
+
+/** 회원 정보(이름·휴대전화) 수정 mutation. 성공 시 프로필 쿼리를 무효화한다. */
+export function useUpdateProfileMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdateMemberProfileRequest) => updateMemberProfile(body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: memberKeys.profile() });
+    },
+  });
+}
+
+/** 비밀번호 변경 mutation. 응답 데이터가 없어 무효화할 캐시가 없다. */
+export function useChangePasswordMutation() {
+  return useMutation({
+    mutationFn: (body: ChangePasswordRequest) => changePassword(body),
+  });
+}
+
+/**
+ * 비밀번호 재확인 mutation(회원정보 수정 진입 게이트). 검증 결과(boolean)만 반환하고
+ * 캐시에 반영할 서버 상태가 없어 무효화하지 않는다.
+ */
+export function useVerifyPasswordMutation() {
+  return useMutation({
+    mutationFn: ({ email, password }: { email: string; password: string }) =>
+      verifyPassword(email, password),
+  });
+}
+
+/** 배송지 추가 mutation. 성공 시 배송지 목록을 무효화한다. */
+export function useCreateAddressMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: AddressInput) => createAddress(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: memberKeys.addresses() });
+    },
+  });
+}
+
+/**
+ * 배송지 수정 mutation(부분 업데이트). "기본 배송지로 설정" 액션도 `{ isDefault: true }`만
+ * 담아 이 mutation을 재사용한다.
+ */
+export function useUpdateAddressMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      addressId,
+      input,
+    }: {
+      addressId: number;
+      input: Partial<AddressInput>;
+    }) => updateAddress(addressId, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: memberKeys.addresses() });
+    },
+  });
+}
+
+/** 배송지 삭제 mutation. 성공 시 배송지 목록을 무효화한다. */
+export function useDeleteAddressMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (addressId: number) => deleteAddress(addressId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: memberKeys.addresses() });
+    },
   });
 }

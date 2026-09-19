@@ -35,6 +35,13 @@ interface DialogProps extends VariantProps<typeof dialogVariants> {
   footer?: ReactNode;
   /** form/confirmation은 하단 액션으로 닫으며, 기본 모달은 X 버튼을 표시한다. */
   showClose?: boolean;
+  /**
+   * `variant="form"` 전용. 기본(`true`)은 본문을 548px(`h-137`)로 고정해 내부 스크롤한다
+   * — 문의 폼처럼 긴 폼에 맞는 값이다. 배송지 폼처럼 짧은 폼에 그대로 적용하면 내용
+   * 아래로 빈 공간이 크게 남는다(사용자 피드백) — `false`를 주면 548px를 상한으로만 두고
+   * 내용 높이에 맞춘다.
+   */
+  scrollableContent?: boolean;
   onClick?: MouseEventHandler<HTMLDivElement>;
   children: ReactNode;
 }
@@ -50,6 +57,7 @@ export function Dialog({
   headerAction,
   footer,
   showClose = variant === "default",
+  scrollableContent = true,
   onClick,
   children,
 }: DialogProps) {
@@ -112,7 +120,10 @@ export function Dialog({
               className={cn(
                 variant === "default" && !hideTitle && "mt-6",
                 variant === "form" &&
-                  "mr-1 scrollbar-slim h-137 min-h-0 overflow-y-auto overscroll-contain pr-4 pl-6",
+                  cn(
+                    "mr-1 scrollbar-slim min-h-0 overflow-y-auto overscroll-contain pr-4 pl-6",
+                    scrollableContent ? "h-137" : "max-h-137",
+                  ),
                 variant === "confirmation" && "mt-12",
               )}
             >

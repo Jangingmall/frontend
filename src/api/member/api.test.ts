@@ -4,14 +4,22 @@ import { __resetRefreshState } from "@/lib/http/client";
 import { useAuthStore } from "@/stores/auth";
 
 import {
+  changePassword,
   completeOAuthProfile,
+  createAddress,
+  deleteAddress,
+  fetchAddresses,
   fetchMe,
+  fetchMemberProfile,
   login,
   logout,
   refreshToken,
   requestEmailVerification,
   signup,
+  updateAddress,
+  updateMemberProfile,
   verifyEmailCode,
+  verifyPassword,
 } from "./api";
 import {
   memberMeArtisan,
@@ -23,6 +31,7 @@ import {
 import {
   __resetEmailVerificationState,
   __resetLoginRateLimit,
+  resetAddressMock,
 } from "./mock/handlers";
 import { setMockIdentity } from "./mock/mock-identity";
 
@@ -31,6 +40,7 @@ beforeEach(() => {
   __resetRefreshState();
   __resetLoginRateLimit();
   __resetEmailVerificationState();
+  resetAddressMock();
   // fetchMe·refreshToken 테스트는 "이미 로그인 이력이 있다" 전제다 — 명시적으로 깐다(이전엔
   // 앞선 `login()` 테스트가 실행되며 우연히 같은 값을 남겨 통과했을 뿐이었다. §client.test.ts).
   setMockIdentity("USER");
@@ -288,6 +298,158 @@ describe("member api", () => {
       name: "ApiError",
       status: 409,
       code: "CONFLICT",
+    });
+  });
+});
+
+describe("member profile·password api", () => {
+  beforeEach(() => {
+    useAuthStore.setState({ accessToken: SEED_ACCESS_TOKEN });
+  });
+
+  it("fetchMemberProfile: email·phone·authProvider까지 포함한 상세 모델을 반환한다", async () => {
+    await expect(fetchMemberProfile()).resolves.toMatchObject({
+      id: 1,
+      name: "김미담",
+      email: SEED_LOGIN.email,
+      phone: "01011112222",
+      authProvider: "local",
+      role: "USER",
+    });
+  });
+
+  it("updateMemberProfile: 이름·휴대전화를 갱신한다", async () => {
+    await expect(
+      updateMemberProfile({ name: "새이름", phone: "01099998888" }),
+    ).resolves.toMatchObject({ name: "새이름", phone: "01099998888" });
+  });
+
+  it("changePassword: 현재 비밀번호가 맞으면 성공한다", async () => {
+    await expect(
+      changePassword({
+        currentPassword: SEED_LOGIN.password,
+        newPassword: "NewPassw0rd!",
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it("changePassword: 현재 비밀번호가 틀리면 ApiError 400 MISMATCH", async () => {
+    await expect(
+      changePassword({
+        currentPassword: "wrong-password",
+        newPassword: "NewPassw0rd!",
+      }),
+    ).rejects.toMatchObject({
+      name: "ApiError",
+      status: 400,
+      code: "MISMATCH",
+    });
+  });
+
+  it("verifyPassword: 올바른 비밀번호면 true", async () => {
+    await expect(
+      verifyPassword(SEED_LOGIN.email, SEED_LOGIN.password),
+    ).resolves.toBe(true);
+  });
+
+  it("verifyPassword: 틀린 비밀번호면 false(throw 안 함)", async () => {
+    await expect(
+      verifyPassword(SEED_LOGIN.email, "wrong-password"),
+    ).resolves.toBe(false);
+  });
+});
+
+describe("member addresses api", () => {
+  beforeEach(() => {
+    useAuthStore.setState({ accessToken: SEED_ACCESS_TOKEN });
+  });
+
+  it("fetchAddresses: 시드된 배송지 목록을 반환하고 첫 항목이 기본 배송지다", async () => {
+    const addresses = await fetchAddresses();
+    expect(addresses).toHaveLength(2);
+    expect(addresses[0]).toMatchObject({ isDefault: true });
+  });
+
+  it("createAddress: 새 배송지를 추가한다", async () => {
+    const created = await createAddress({
+      recipientName: "홍길동",
+      phone: "01055556666",
+      zipCode: "12345",
+      address1: "서울특별시 종로구 세종대로 1",
+      address2: "1층",
+      isDefault: false,
+    });
+    expect(created).toMatchObject({
+      recipientName: "홍길동",
+      isDefault: false,
+    });
+
+    const addresses = await fetchAddresses();
+    expect(addresses).toHaveLength(3);
+  });
+
+  it("createAddress: isDefault로 만들면 기존 기본 배송지가 해제된다", async () => {
+    const [first] = await fetchAddresses();
+    const created = await createAddress({
+      recipientName: "홍길동",
+      phone: "01055556666",
+      zipCode: "12345",
+      address1: "서울특별시 종로구 세종대로 1",
+      address2: "1층",
+      isDefault: true,
+    });
+    expect(created.isDefault).toBe(true);
+
+    const addresses = await fetchAddresses();
+    expect(addresses.find((a) => a.id === first.id)?.isDefault).toBe(false);
+  });
+
+  it("updateAddress: 부분 필드만 갱신한다", async () => {
+    const [first] = await fetchAddresses();
+    const updated = await updateAddress(first.id, { address2: "새 상세주소" });
+    expect(updated).toMatchObject({
+      id: first.id,
+      recipientName: first.recipientName,
+      address2: "새 상세주소",
+    });
+  });
+
+  it("updateAddress: 존재하지 않는 id면 ApiError 404", async () => {
+    await expect(
+      updateAddress(999999, { address2: "x" }),
+    ).rejects.toMatchObject({ name: "ApiError", status: 404 });
+  });
+
+  it("updateAddress: 마지막 기본 배송지를 해제하려 하면 ApiError 422", async () => {
+    const addresses = await fetchAddresses();
+    // 시드가 2건이라 하나를 지워 "마지막 1건" 상태를 만든다.
+    await deleteAddress(addresses[1].id);
+    const [remaining] = await fetchAddresses();
+
+    await expect(
+      updateAddress(remaining.id, { isDefault: false }),
+    ).rejects.toMatchObject({
+      name: "ApiError",
+      status: 422,
+      code: "BUSINESS_RULE_VIOLATION",
+    });
+  });
+
+  it("deleteAddress: 삭제 후 목록에서 사라지고, 기본 배송지였으면 다음 항목이 승격된다", async () => {
+    const [first] = await fetchAddresses();
+    expect(first.isDefault).toBe(true);
+
+    await deleteAddress(first.id);
+
+    const addresses = await fetchAddresses();
+    expect(addresses).toHaveLength(1);
+    expect(addresses[0].isDefault).toBe(true);
+  });
+
+  it("deleteAddress: 존재하지 않는 id면 ApiError 404", async () => {
+    await expect(deleteAddress(999999)).rejects.toMatchObject({
+      name: "ApiError",
+      status: 404,
     });
   });
 });
