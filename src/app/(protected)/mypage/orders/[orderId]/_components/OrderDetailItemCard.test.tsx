@@ -320,6 +320,42 @@ describe("OrderDetailItemCard", () => {
     ).toBeInTheDocument();
   });
 
+  it("주문 취소는 사유가 있어도 소비자(단순 변심)면 장바구니에 넣기 등을 보여준다", () => {
+    render(
+      <OrderDetailItemCard
+        item={item({ status: "CANCELED" })}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+        reason="단순 변심"
+        cancelInitiator="consumer"
+      />,
+    );
+    expect(screen.getByText("주문 취소 사유 :")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "장바구니에 넣기" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "바로 구매하기" }),
+    ).toBeInTheDocument();
+  });
+
+  it("주문 취소는 사유가 없어도 장인 거절이면 1:1 문의만 보여준다", () => {
+    render(
+      <OrderDetailItemCard
+        item={item({ status: "CANCELED" })}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+        cancelInitiator="artisan"
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: "장바구니에 넣기" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "1:1 문의하기" }),
+    ).toBeInTheDocument();
+  });
+
   it("onAction이 없으면 액션 버튼이 비활성 상태다", () => {
     render(
       <OrderDetailItemCard

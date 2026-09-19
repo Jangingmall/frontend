@@ -221,6 +221,13 @@ export function getOrderDetailActions(
   status: OrderStatus,
   hasReason: boolean,
   paymentMethod?: string | null,
+  /**
+   * `CANCELED` 전용 — 실측(`1725:43684`) 결과 취소 사유가 있어도 취소 주체에 따라
+   * 버튼 구성이 갈린다(소비자 "단순 변심": 장바구니에 넣기 등 3개 / 장인 거절: 1:1
+   * 문의만). BE가 이 값을 안 줘서(`reason` 자체도 계약에 없음) 생략하면 기존처럼
+   * `hasReason`으로 근사한다 — 알 수 있게 되면 이 값을 넘겨 정확히 분기한다.
+   */
+  cancelInitiator?: "consumer" | "artisan",
 ): OrderCardActionItem[] {
   const outline = (
     action: OrderCardActionType,
@@ -273,19 +280,23 @@ export function getOrderDetailActions(
         outline("addToCart"),
         outline("buyAgain"),
       ]);
-    case "CANCELED":
-      // 실측(`1725:43684`)엔 소비자 취소("단순 변심") 예시도 사유 배너가 있어서,
-      // `hasReason`은 "장인 취소냐 소비자 취소냐"의 완벽한 대리 신호는 아니다 — 다만
-      // BE가 `reason` 자체를 아직 안 줘서(계약에 없음, types/order.ts 참고) 더 정확한
-      // 신호(취소 주체 필드 등)가 생기기 전까진 T-27부터 써온 이 근사값을 유지한다.
-      return hasReason
+    case "CANCELED": {
+      // 실측 결과 취소 사유 배너 유무만으론 버튼 구성을 못 가른다 — 소비자("단순
+      // 변심", `1725:43684`)와 장인 거절(`1718:62706`) 모두 사유 배너가 있다.
+      // `cancelInitiator`가 없으면(BE 미제공) `hasReason`으로 근사한다.
+      const isArtisanCancel =
+        cancelInitiator === undefined
+          ? hasReason
+          : cancelInitiator === "artisan";
+      return isArtisanCancel
         ? withInquiry([])
         : withInquiry(
-            getOrderCardActions(status, hasReason).map((item) => ({
+            getOrderCardActions(status, false).map((item) => ({
               ...item,
               style: "outline" as const,
             })),
           );
+    }
     case "EXCHANGE_REQUESTED":
       return withInquiry([
         outline("cancelExchangeRequest"),

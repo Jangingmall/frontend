@@ -197,18 +197,34 @@ describe("getOrderDetailActions", () => {
     ]);
   });
 
-  it("주문취소 — 사유 있으면(장인 취소) 1:1 문의만", () => {
+  it("주문취소 — cancelInitiator 없이 사유 있으면(근사) 1:1 문의만", () => {
     expect(getOrderDetailActions("CANCELED", true)).toEqual([
       { action: "inquiry", style: "outline" },
     ]);
   });
 
-  it("주문취소 — 사유 없으면(소비자 취소) 목록 매트릭스 + 1:1 문의, 전부 outline", () => {
+  it("주문취소 — cancelInitiator 없이 사유 없으면(근사) 목록 매트릭스 + 1:1 문의, 전부 outline", () => {
     expect(getOrderDetailActions("CANCELED", false)).toEqual([
       { action: "addToCart", style: "outline" },
       { action: "buyAgain", style: "outline" },
       { action: "inquiry", style: "outline" },
     ]);
+  });
+
+  it("주문취소 — 사유가 있어도 소비자 취소(단순 변심)면 장바구니에 넣기 등을 보여준다(Figma 1725:43684)", () => {
+    expect(
+      getOrderDetailActions("CANCELED", true, undefined, "consumer"),
+    ).toEqual([
+      { action: "addToCart", style: "outline" },
+      { action: "buyAgain", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("주문취소 — 사유가 없어도 장인 거절이면 1:1 문의만 보여준다", () => {
+    expect(
+      getOrderDetailActions("CANCELED", false, undefined, "artisan"),
+    ).toEqual([{ action: "inquiry", style: "outline" }]);
   });
 
   it("교환신청 — 대표 없이 교환신청취소·배송조회·1:1문의", () => {

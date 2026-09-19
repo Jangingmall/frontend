@@ -29,6 +29,12 @@ interface OrderDetailItemCardProps {
    */
   orderedAt: string;
   reason?: string;
+  /**
+   * 주문 취소 주체 — "주문 취소" 상태에서 사유 유무만으론 소비자·장인 취소를 못
+   * 가른다(둘 다 사유 배너가 있다, constants/order.ts 참고). 생략하면 사유 유무로
+   * 근사한다.
+   */
+  cancelInitiator?: "consumer" | "artisan";
   /** "입금 정보 확인" 버튼 노출 조건 판단용(constants/order.ts 참고). */
   paymentMethod?: string | null;
   onAction?: (action: OrderCardActionType) => void;
@@ -43,13 +49,19 @@ export function OrderDetailItemCard({
   shippingAmount,
   orderedAt,
   reason,
+  cancelInitiator,
   paymentMethod,
   onAction,
 }: OrderDetailItemCardProps) {
   const [hasImageError, setHasImageError] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const actions = getOrderDetailActions(item.status, !!reason, paymentMethod);
+  const actions = getOrderDetailActions(
+    item.status,
+    !!reason,
+    paymentMethod,
+    cancelInitiator,
+  );
   // 대표 액션(있으면 solid 단독 한 줄) + 나머지(outline, 균등폭 한 줄) — Figma 실측
   // (`1718:16488`). 대표 액션은 항상 배열 맨 앞이다(constants/order.ts 참고).
   const primaryAction = actions[0]?.style === "solid" ? actions[0] : null;
