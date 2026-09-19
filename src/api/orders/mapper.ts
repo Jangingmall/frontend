@@ -227,7 +227,10 @@ export function mapOrderDetail(dto: OrderDetailResponseDto): OrderDetail {
       shippingAmount,
       discountAmount,
       pointsUsed,
-      totalAmount: productAmount + shippingAmount - discountAmount - pointsUsed,
+      // 서버 권위 값을 그대로 쓴다 — shippingAmount 등 세부 금액은 BE 미제공 시 0으로
+      // 대체되므로(위), 이걸로 재계산하면 실제 BE 연동 시 결제 금액이 배송비만큼 축소
+      // 표시될 수 있다(독립 리뷰 F1). 세부 항목은 표시용으로만 쓰고, 합계는 `dto.totalAmount`.
+      totalAmount: dto.totalAmount,
       paymentMethod: dto.paymentMethod ?? null,
     },
   };

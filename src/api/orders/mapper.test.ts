@@ -287,7 +287,7 @@ describe("mapOrderDetail", () => {
     expect(detail.groups[1]!.artisanName).toBe("이나전");
   });
 
-  it("결제 금액 = 상품 금액 + 배송비 - 할인 - 적립금 사용", () => {
+  it("세부 금액(배송비·할인·적립금)은 표시용으로 그대로 옮긴다", () => {
     const detail = mapOrderDetail(
       orderDetailResponseDto.parse(
         orderDetailDto({
@@ -304,6 +304,7 @@ describe("mapOrderDetail", () => {
           shippingAmount: 3000,
           discountAmount: 1000,
           pointsUsed: 500,
+          totalAmount: 21500,
         }),
       ),
     );
@@ -315,6 +316,34 @@ describe("mapOrderDetail", () => {
       totalAmount: 21500,
       paymentMethod: "CARD",
     });
+  });
+
+  it("결제 금액은 상품·배송비 등을 재계산하지 않고 서버가 내려준 totalAmount를 그대로 쓴다(독립 리뷰 F1)", () => {
+    // 실제 BE는 shippingAmount 등 세부 금액을 아직 안 내려준다(be-requests.md #3) — 그래도
+    // dto.totalAmount(필수 필드)는 서버가 계산한 진짜 결제 금액이라 이걸 신뢰해야 한다.
+    // 세부 금액 합계와 다르더라도(여기선 세부 금액이 전부 0 처리돼 상품 금액만 남음) 결제
+    // 금액은 서버 값을 그대로 보여줘야 한다.
+    const detail = mapOrderDetail(
+      orderDetailResponseDto.parse(
+        orderDetailDto({
+          items: [
+            {
+              orderItemId: 1,
+              productId: 1,
+              productName: "A",
+              price: 10000,
+              quantity: 2,
+              thumbnail: [],
+            },
+          ],
+          totalAmount: 23000, // 상품 금액(20000)과 다름 — 배송비 등이 이미 포함된 서버 값
+          shippingAmount: undefined,
+          discountAmount: undefined,
+          pointsUsed: undefined,
+        }),
+      ),
+    );
+    expect(detail.payment.totalAmount).toBe(23000);
   });
 
   it("BE 미제공 필드(paymentMethod·artisanName·options)가 없으면 안전한 기본값을 쓴다", () => {
