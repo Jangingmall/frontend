@@ -131,7 +131,8 @@ describe("OrderDetailItemCard", () => {
     expect(
       screen.getByRole("button", { name: "1:1 문의하기" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("교환 사유 :")).toBeInTheDocument();
+    expect(screen.getByText("교환 사유:")).toBeInTheDocument();
+    expect(screen.getByText("(승인 대기 중)")).toBeInTheDocument();
   });
 
   it("교환 승인은 상품 회수 안내(대표) → 교환 신청 취소 → 배송 조회 → 1:1 문의하기를 보여준다", () => {
@@ -162,7 +163,8 @@ describe("OrderDetailItemCard", () => {
     expect(
       screen.getByRole("button", { name: "환불 신청 취소" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("환불 사유 :")).toBeInTheDocument();
+    expect(screen.getByText("환불 사유:")).toBeInTheDocument();
+    expect(screen.getByText("(승인 대기 중)")).toBeInTheDocument();
   });
 
   it("환불 승인은 상품 회수 안내(대표) → 환불 신청 취소 → 배송 조회 → 1:1 문의하기를 보여준다", () => {
@@ -297,7 +299,7 @@ describe("OrderDetailItemCard", () => {
         reason="장인이 주문 승인을 거절함"
       />,
     );
-    expect(screen.getByText("주문 취소 사유 :")).toBeInTheDocument();
+    expect(screen.getByText("주문 취소 사유:")).toBeInTheDocument();
     expect(screen.getByText("장인이 주문 승인을 거절함")).toBeInTheDocument();
   });
 
@@ -330,7 +332,7 @@ describe("OrderDetailItemCard", () => {
         cancelInitiator="consumer"
       />,
     );
-    expect(screen.getByText("주문 취소 사유 :")).toBeInTheDocument();
+    expect(screen.getByText("주문 취소 사유:")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "장바구니에 넣기" }),
     ).toBeInTheDocument();

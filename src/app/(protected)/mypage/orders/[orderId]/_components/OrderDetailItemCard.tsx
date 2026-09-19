@@ -10,6 +10,7 @@ import {
   getOrderDetailActions,
   getOrderDetailNoticeLines,
   getOrderDetailReasonLabel,
+  getOrderDetailReasonSuffix,
   ORDER_CARD_ACTION_LABEL,
   ORDER_DETAIL_ACTION_LABEL,
   ORDER_STATUS_LABEL,
@@ -143,9 +144,14 @@ export function OrderDetailItemCard({
       </div>
 
       {reason && (
-        <div className="flex flex-wrap items-center justify-center gap-1 bg-fill-neutral-weak px-4 py-2 text-center text-body-l">
-          <span>{getOrderDetailReasonLabel(item.status)} 사유 :</span>
+        // Figma 실측 — 이 배너는 카드 자체의 좌우 padding(px-4) 안에서 이미 꽉 찬
+        // 너비라 자체 가로 padding은 없다(세로 py-2만).
+        <div className="flex flex-wrap items-center justify-center gap-1 bg-fill-neutral-weak py-2 text-center text-body-l">
+          <span>{getOrderDetailReasonLabel(item.status)}</span>
           <span>{reason}</span>
+          {getOrderDetailReasonSuffix(item.status) && (
+            <span>{getOrderDetailReasonSuffix(item.status)}</span>
+          )}
         </div>
       )}
 

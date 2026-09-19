@@ -5,6 +5,7 @@ import {
   getOrderDetailActions,
   getOrderDetailNoticeLines,
   getOrderDetailReasonLabel,
+  getOrderDetailReasonSuffix,
   ORDER_STATUS,
   ORDER_STATUS_FILTER_TABS,
   ORDER_STATUS_GROUP,
@@ -282,15 +283,38 @@ describe("getOrderDetailActions", () => {
 });
 
 describe("getOrderDetailReasonLabel", () => {
-  it("교환 신청·환불 신청은 '신청'을 뗀 축약형을 돌려준다(Figma 1718:16488)", () => {
-    expect(getOrderDetailReasonLabel("EXCHANGE_REQUESTED")).toBe("교환");
-    expect(getOrderDetailReasonLabel("REFUND_REQUESTED")).toBe("환불");
+  it("교환 신청·환불 신청은 '신청'을 뗀 축약형 + 콜론 앞 공백 없이 돌려준다(Figma 1718:16488)", () => {
+    expect(getOrderDetailReasonLabel("EXCHANGE_REQUESTED")).toBe("교환 사유:");
+    expect(getOrderDetailReasonLabel("REFUND_REQUESTED")).toBe("환불 사유:");
   });
 
-  it("그 외 상태는 ORDER_STATUS_LABEL을 그대로 돌려준다", () => {
-    expect(getOrderDetailReasonLabel("CANCELED")).toBe("주문 취소");
-    expect(getOrderDetailReasonLabel("EXCHANGE_REJECTED")).toBe("교환 불가");
-    expect(getOrderDetailReasonLabel("REFUND_REJECTED")).toBe("환불 불가");
+  it("주문취소는 전체 라벨 + 콜론 앞 공백 없이 돌려준다", () => {
+    expect(getOrderDetailReasonLabel("CANCELED")).toBe("주문 취소 사유:");
+  });
+
+  it("교환·환불 불가는 전체 라벨 + 콜론 앞 공백 있게 돌려준다", () => {
+    expect(getOrderDetailReasonLabel("EXCHANGE_REJECTED")).toBe(
+      "교환 불가 사유 :",
+    );
+    expect(getOrderDetailReasonLabel("REFUND_REJECTED")).toBe(
+      "환불 불가 사유 :",
+    );
+  });
+});
+
+describe("getOrderDetailReasonSuffix", () => {
+  it("교환 신청·환불 신청만 '(승인 대기 중)' 접미사를 돌려준다", () => {
+    expect(getOrderDetailReasonSuffix("EXCHANGE_REQUESTED")).toBe(
+      "(승인 대기 중)",
+    );
+    expect(getOrderDetailReasonSuffix("REFUND_REQUESTED")).toBe(
+      "(승인 대기 중)",
+    );
+  });
+
+  it("그 외 상태는 undefined를 돌려준다", () => {
+    expect(getOrderDetailReasonSuffix("CANCELED")).toBeUndefined();
+    expect(getOrderDetailReasonSuffix("EXCHANGE_REJECTED")).toBeUndefined();
   });
 });
 

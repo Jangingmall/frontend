@@ -334,18 +334,43 @@ export function getOrderDetailActions(
 }
 
 /**
- * 사유 배너 라벨(`{라벨} 사유 :`) — 대부분 {@link ORDER_STATUS_LABEL}과 같지만
- * "신청" 상태 둘만 실측(`1718:16488`) 결과 접미사를 뗀 축약형이었다("교환 신청 사유"가
- * 아니라 "교환 사유", "환불 신청 사유"가 아니라 "환불 사유").
+ * 사유 배너 라벨 — 콜론과 그 앞 공백 유무까지 포함한 완성 문자열이다(호출측이 더
+ * 붙이지 않는다). 실측(`1718:16488`) 결과 상태마다 미묘하게 다르다: "신청" 상태 둘은
+ * 접미사를 뗀 축약형 + 콜론 앞 공백 없음("교환 사유:", "환불 사유:" — "교환 신청
+ * 사유:"가 아니다), "불가" 상태 둘은 전체 라벨 + 콜론 앞 공백 있음("교환 불가 사유 :",
+ * "환불 불가 사유 :"), `CANCELED`는 전체 라벨 + 공백 없음("주문 취소 사유:").
  */
 export function getOrderDetailReasonLabel(status: OrderStatus): string {
   switch (status) {
     case "EXCHANGE_REQUESTED":
-      return "교환";
+      return "교환 사유:";
     case "REFUND_REQUESTED":
-      return "환불";
+      return "환불 사유:";
+    case "CANCELED":
+      return "주문 취소 사유:";
+    case "EXCHANGE_REJECTED":
+      return "교환 불가 사유 :";
+    case "REFUND_REJECTED":
+      return "환불 불가 사유 :";
     default:
-      return ORDER_STATUS_LABEL[status];
+      return `${ORDER_STATUS_LABEL[status]} 사유 :`;
+  }
+}
+
+/**
+ * 사유 배너 접미사 — "교환 신청"·"환불 신청" 상태만 사유 뒤에 "(승인 대기 중)"이
+ * 추가로 붙는다(실측 `1725:43625` 등). 이 문구는 `reason`(BE 사유 텍스트)의 일부가
+ * 아니라 상태 자체가 "대기 중"임을 나타내는 고정 문구라 별도 함수로 뗐다.
+ */
+export function getOrderDetailReasonSuffix(
+  status: OrderStatus,
+): string | undefined {
+  switch (status) {
+    case "EXCHANGE_REQUESTED":
+    case "REFUND_REQUESTED":
+      return "(승인 대기 중)";
+    default:
+      return undefined;
   }
 }
 
