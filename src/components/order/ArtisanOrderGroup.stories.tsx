@@ -11,3 +11,6 @@ const meta = {
 } satisfies Meta<typeof ArtisanOrderGroup>;
 export default meta;
 export const Default: StoryObj<typeof meta> = {};
+export const WithArtisanAction: StoryObj<typeof meta> = {
+  args: { onArtisanClick: () => {} },
+};

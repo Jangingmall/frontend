@@ -48,3 +48,14 @@ describe("PaymentsMethod", () => {
     expect(onChange).toHaveBeenCalledWith("TOSS_PAY");
   });
 });
+
+it("은행 안내는 공휴일을 포함하는 기한과 원본 토스 로고를 제공한다", () => {
+  render(<PaymentsMethod value="BANK_TRANSFER" />);
+  expect(
+    screen.getByText("입금 기한은 주말 및 공휴일을 포함하여 계산됩니다."),
+  ).toBeVisible();
+  expect(screen.getByRole("img", { name: "토스페이" })).toHaveAttribute(
+    "src",
+    "/images/toss-pay.png",
+  );
+});

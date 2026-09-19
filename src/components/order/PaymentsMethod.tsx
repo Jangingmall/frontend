@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { Radio, RadioGroup } from "@/components/ui/radio-button";
 
 type PaymentMethod =
@@ -39,7 +41,8 @@ export function PaymentsMethod({
     <div className="flex flex-col gap-3 text-font-dark">
       <p className="text-title-m">결제 수단</p>
       <RadioGroup
-        value={value}
+        className="gap-0"
+        value={value ?? null}
         onValueChange={(next) => onChange?.(next as PaymentMethod)}
       >
         {(
@@ -48,9 +51,24 @@ export function PaymentsMethod({
           <Radio
             key={method}
             value={method}
-            className="border-b border-border-jade-weak py-3"
+            className="border-b border-border-jade-weak px-2 py-3 last:border-0 [&_[data-slot=radio]]:size-5 [&>span]:text-body-s"
           >
-            {PAYMENT_METHOD_LABEL[method]}
+            {method === "TOSS_PAY" ? (
+              <>
+                <Image
+                  src="/images/toss-pay.png"
+                  alt="토스페이"
+                  width={84}
+                  height={16}
+                  unoptimized
+                />
+                <span className="sr-only" aria-hidden>
+                  토스페이
+                </span>
+              </>
+            ) : (
+              PAYMENT_METHOD_LABEL[method]
+            )}
           </Radio>
         ))}
       </RadioGroup>
@@ -61,6 +79,7 @@ export function PaymentsMethod({
             {bankAccountInfo.accountHolder})
           </p>
           <p>주문 완료 후 24시간 이내 입금해 주세요.</p>
+          <p>입금 기한은 주말 및 공휴일을 포함하여 계산됩니다.</p>
           <p>입금 기한 내 미입금 시 주문이 자동 취소됩니다.</p>
         </div>
       )}
