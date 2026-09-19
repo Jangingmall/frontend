@@ -38,7 +38,16 @@ import { OrderShippingPaymentPanel } from "./_components/OrderShippingPaymentPan
  * 로컬 확인 중 `use(params)` + 존재하지 않는 주문(404) 조합에서 페이지가 계속 재요청되는
  * 현상을 봤다. 재현 도중 이 세션의 MSW 서비스워커도 같이 깨져 있어 원인을 `use(params)`
  * 자체로 확정하진 못했지만, `useParams()`가 더 안전한 선택지라 이걸 쓴다.
+ *
+ * Figma MY-1-OD는 마이페이지 사이드바가 없는 별도 화면이다(design.md §0 실측) — 그래서
+ * `mypage/orders/(list)/layout.tsx`(`MypageShell`, 사이드바 포함) 밖의 형제 라우트로 뒀다
+ * (사용자 피드백으로 발견 — 원래 그 레이아웃 안에 있었음). `MypageShell`이 주던 페이지
+ * 컨테이너(최대폭·좌우 여백)를 여기서 직접 진다 — 상품 상세(`ProductDetailPage`)와 같은
+ * "GNB 아래 독립 페이지" 패턴이라 그 컨테이너 클래스를 그대로 재사용한다.
  */
+const PAGE_CONTAINER_CLASS =
+  "mx-auto w-full max-w-desktop px-4 pt-8 pb-24 sm:px-6 lg:px-12 lg:pt-12";
+
 export default function OrderDetailPage() {
   const params = useParams<{ orderId: string }>();
   const orderId = Number(params.orderId);
@@ -62,21 +71,25 @@ export default function OrderDetailPage() {
     // 결과가 똑같은 404는 재시도 버튼을 보여주지 않는다.
     const isNotFound = error instanceof ApiError && error.status === 404;
     return (
-      <ErrorState
-        title={isNotFound ? "주문을 찾을 수 없어요" : undefined}
-        code={error instanceof ApiError ? error.code : undefined}
-        status={error instanceof ApiError ? error.status : undefined}
-        onRetry={isNotFound ? undefined : () => void detailQuery.refetch()}
-      />
+      <div className={PAGE_CONTAINER_CLASS}>
+        <ErrorState
+          title={isNotFound ? "주문을 찾을 수 없어요" : undefined}
+          code={error instanceof ApiError ? error.code : undefined}
+          status={error instanceof ApiError ? error.status : undefined}
+          onRetry={isNotFound ? undefined : () => void detailQuery.refetch()}
+        />
+      </div>
     );
   }
 
   if (detailQuery.isPending) {
     return (
-      <div className="flex flex-col gap-4">
-        <Skeleton className="h-8 w-40" />
-        <Skeleton className="h-11 w-full" />
-        <Skeleton className="h-80 w-full" />
+      <div className={PAGE_CONTAINER_CLASS}>
+        <div className="flex flex-col gap-4">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-11 w-full" />
+          <Skeleton className="h-80 w-full" />
+        </div>
       </div>
     );
   }
@@ -133,61 +146,63 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <OrderDetailBackLink />
+    <div className={PAGE_CONTAINER_CLASS}>
+      <div className="flex flex-col gap-6">
+        <OrderDetailBackLink />
 
-      {overallStatus && (
-        <OrderInfoBar
-          variant="single"
-          status={overallStatus}
-          orderNumber={order.orderNumber}
-          orderDate={dayjs(order.orderedAt).format("YYYY.MM.DD")}
-        />
-      )}
+        {overallStatus && (
+          <OrderInfoBar
+            variant="single"
+            status={overallStatus}
+            orderNumber={order.orderNumber}
+            orderDate={dayjs(order.orderedAt).format("YYYY.MM.DD")}
+          />
+        )}
 
-      {actionError != null && (
-        <p role="alert" className="text-body-s text-red-font">
-          {actionError}
-        </p>
-      )}
+        {actionError != null && (
+          <p role="alert" className="text-body-s text-red-font">
+            {actionError}
+          </p>
+        )}
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="flex min-w-0 flex-1 flex-col gap-4">
-          {order.groups.map((group) => (
-            <OrderDetailArtisanGroup
-              key={group.artisanName ?? "unknown-artisan"}
-              group={group}
-              shippingAmount={order.payment.shippingAmount}
-              onAction={(item, action) => void handleAction(item, action)}
-            />
-          ))}
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          <div className="flex min-w-0 flex-1 flex-col gap-4">
+            {order.groups.map((group) => (
+              <OrderDetailArtisanGroup
+                key={group.artisanName ?? "unknown-artisan"}
+                group={group}
+                shippingAmount={order.payment.shippingAmount}
+                onAction={(item, action) => void handleAction(item, action)}
+              />
+            ))}
+          </div>
+
+          <OrderShippingPaymentPanel
+            address={order.shippingAddress}
+            payment={order.payment}
+            canChangeAddress={canChangeAddress}
+            onChangeAddress={() => setIsAddressModalOpen(true)}
+          />
         </div>
 
-        <OrderShippingPaymentPanel
-          address={order.shippingAddress}
-          payment={order.payment}
-          canChangeAddress={canChangeAddress}
-          onChangeAddress={() => setIsAddressModalOpen(true)}
+        <OrderAddressChangeModal
+          open={isAddressModalOpen}
+          onOpenChange={setIsAddressModalOpen}
+          initialValue={order.shippingAddress}
+          submitting={changeAddressMutation.isPending}
+          submitError={actionError}
+          onSubmit={(input) => void handleChangeAddress(input)}
+        />
+
+        <DeliveryTrackingModal
+          open={isDeliveryModalOpen}
+          onOpenChange={setIsDeliveryModalOpen}
+          data={deliveryQuery.data}
+          isPending={deliveryQuery.isPending}
+          hasError={deliveryQuery.isError}
+          onRetry={() => void deliveryQuery.refetch()}
         />
       </div>
-
-      <OrderAddressChangeModal
-        open={isAddressModalOpen}
-        onOpenChange={setIsAddressModalOpen}
-        initialValue={order.shippingAddress}
-        submitting={changeAddressMutation.isPending}
-        submitError={actionError}
-        onSubmit={(input) => void handleChangeAddress(input)}
-      />
-
-      <DeliveryTrackingModal
-        open={isDeliveryModalOpen}
-        onOpenChange={setIsDeliveryModalOpen}
-        data={deliveryQuery.data}
-        isPending={deliveryQuery.isPending}
-        hasError={deliveryQuery.isError}
-        onRetry={() => void deliveryQuery.refetch()}
-      />
     </div>
   );
 }
