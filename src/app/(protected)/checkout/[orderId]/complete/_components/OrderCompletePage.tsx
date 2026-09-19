@@ -9,6 +9,7 @@ import type { OrderCompleteOutcome } from "./order-complete-state";
 interface OrderCompletePageProps {
   outcome: OrderCompleteOutcome;
   totalAmount?: number;
+  orderNumber?: string;
   onViewOrders: () => void;
   onContinueBrowsing: () => void;
 }
@@ -18,6 +19,7 @@ const wonFormatter = new Intl.NumberFormat("ko-KR");
 export function OrderCompletePage({
   outcome,
   totalAmount = ORDER_COMPLETE_FIXTURE.fallbackTotalAmount,
+  orderNumber = ORDER_COMPLETE_FIXTURE.orderNumber,
   onViewOrders,
   onContinueBrowsing,
 }: OrderCompletePageProps) {
@@ -47,7 +49,7 @@ export function OrderCompletePage({
               주문이 완료되었습니다
             </h2>
             <p className="text-body text-font-dark-subtle">
-              주문번호: {ORDER_COMPLETE_FIXTURE.orderNumber}
+              주문번호: {orderNumber}
             </p>
           </div>
 

@@ -18,11 +18,7 @@ export const accessTokenResponseDto = z
   .object({ accessToken: z.string().min(1) })
   .passthrough();
 
-/**
- * 로그인 방식. **BE 계약 미확정 — 이 작업에서 가정 추가**(design.md 참고). `MemberProfileResponse`엔
- * 아직 이 필드가 없다 — DB(`MemberSocialAccount`)엔 연동 정보가 있으나 응답에 노출되지 않아
- * 필드 추가를 요청한 상태. `null`은 `LOCAL`과 동일하게 취급한다.
- */
+/** 기존 목업의 authProvider와 실제 응답의 provider를 모두 지원한다. */
 const authProviderSchema = z.enum(["LOCAL", "NAVER", "KAKAO"]).nullable();
 
 export const memberProfileResponseDto = z
@@ -37,9 +33,10 @@ export const memberProfileResponseDto = z
     // 판매자는 "ARTISAN" 단일 값. 배열이 아니다. (docs/api-contract.md §3)
     role: roleSchema,
     profileImageUrl: z.string().nullable(),
-    // 회원가입이 필수로 받는 값이라 항상 존재한다고 가정(BE `Member.phone` non-null 컬럼).
-    phone: z.string(),
-    authProvider: authProviderSchema,
+    // MemberProfileResponse는 전화번호를 내려주지 않는다. 폼에서 직접 입력받는다.
+    phone: z.string().optional(),
+    authProvider: authProviderSchema.optional(),
+    provider: z.enum(["naver", "kakao"]).nullable().optional(),
   })
   .passthrough();
 

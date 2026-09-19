@@ -14,9 +14,9 @@ export function useMemberProfileQuery() {
   });
 }
 
-export function useAddressesQuery() {
+export function useAddressesQuery(memberId?: number) {
   return useQuery({
-    queryKey: memberKeys.addresses(),
+    queryKey: memberKeys.addresses(memberId),
     queryFn: fetchAddresses,
   });
 }
