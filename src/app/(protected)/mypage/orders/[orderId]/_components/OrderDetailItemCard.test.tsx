@@ -246,6 +246,23 @@ describe("OrderDetailItemCard", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("입금확인중은 대표(주문취소하기) 뒤에 장바구니 담기·바로 구매하기도 보여준다(Figma 1718:16488)", () => {
+    render(
+      <OrderDetailItemCard
+        item={item({ status: "PAYMENT_PENDING" })}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+        paymentMethod="CARD"
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: "장바구니 담기" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "바로 구매하기" }),
+    ).toBeInTheDocument();
+  });
+
   it("주문 유의사항은 상태마다 다른 문구를 보여준다(Figma 1718:16488)", () => {
     render(
       <OrderDetailItemCard

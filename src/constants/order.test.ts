@@ -142,20 +142,26 @@ describe("getOrderDetailActions", () => {
     expect(getOrderDetailActions("PAYMENT_PENDING", false)).toEqual([
       { action: "cancelOrder", style: "solid" },
       { action: "checkPaymentInfo", style: "outline" },
+      { action: "addToCart", style: "outline" },
+      { action: "buyAgain", style: "outline" },
       { action: "inquiry", style: "outline" },
     ]);
   });
 
-  it("입금확인중 + 카드 결제면 입금정보확인 없이 대표(주문취소)+1:1문의만", () => {
+  it("입금확인중 + 카드 결제면 입금정보확인 없이 나머지만", () => {
     expect(getOrderDetailActions("PAYMENT_PENDING", false, "CARD")).toEqual([
       { action: "cancelOrder", style: "solid" },
+      { action: "addToCart", style: "outline" },
+      { action: "buyAgain", style: "outline" },
       { action: "inquiry", style: "outline" },
     ]);
   });
 
-  it("주문확인중 — 대표(주문취소) + 1:1 문의", () => {
+  it("주문확인중 — 대표(주문취소) + 장바구니 담기 + 바로 구매하기 + 1:1 문의", () => {
     expect(getOrderDetailActions("ORDER_PENDING", false)).toEqual([
       { action: "cancelOrder", style: "solid" },
+      { action: "addToCart", style: "outline" },
+      { action: "buyAgain", style: "outline" },
       { action: "inquiry", style: "outline" },
     ]);
   });

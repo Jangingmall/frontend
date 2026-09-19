@@ -206,11 +206,10 @@ export function getOrderCardActions(
  * "1:1 문의"가 없는 조합엔 항상 자동으로 붙는다("클릭 시 문의하기 모달 활성화" 콜아웃이
  * 거의 모든 상태에 반복 등장 — 상세 화면 공통 기본 액션으로 취급).
  *
- * `PAYMENT_PENDING`/`ORDER_PENDING`의 실측 목업엔 "장바구니 담기·바로 구매하기"가 2열에
- * 같이 그려져 있었지만, 두 상태에 토씨 하나 안 틀리고 동일하게 반복되고(같은 문구가
- * "구매확정" 목업에선 "장바구니에 넣기"로 다르게 쓰여 있어 워딩 불일치) 콜아웃 설명도
- * 이 두 버튼을 전혀 언급하지 않아, 예전 목록형 스펙시트를 지우지 않고 복붙한 흔적으로
- * 판단해 제외했다 — 반례(실제로 저 두 버튼이 있다는 추가 근거) 나오면 재검토.
+ * `PAYMENT_PENDING`/`ORDER_PENDING`은 대표 액션(주문취소하기) 뒤에 "장바구니 담기·바로
+ * 구매하기"가 그대로 실측된다(사용자 확인, T-28) — 기다리지 않고 같은 상품을 바로 다시
+ * 살 수 있게 하는 상세 화면 전용 숏컷으로 보인다. `PAYMENT_PENDING`의 "입금 정보 확인"은
+ * 이 두 버튼과 별개로 결제 수단 조건(실시간계좌이체/무통장입금)에 따라 추가된다.
  *
  * `CANCELED`(사유 없음, 소비자 취소)·`REFUND_COMPLETED`는 이 실측 자료에 예시가 없어
  * 목록 매트릭스 + "1:1 문의" 자동 추가로 대체한다(다른 상태들과 같은 보수적 기본값).
@@ -238,14 +237,23 @@ export function getOrderDetailActions(
       const isTransferPayment =
         paymentMethod === "REALTIME_TRANSFER" ||
         paymentMethod === "BANK_TRANSFER";
-      const secondary =
+      const checkPaymentInfoActions =
         paymentMethod === undefined || isTransferPayment
           ? [outline("checkPaymentInfo")]
           : [];
-      return withInquiry([solid("cancelOrder"), ...secondary]);
+      return withInquiry([
+        solid("cancelOrder"),
+        ...checkPaymentInfoActions,
+        outline("addToCart"),
+        outline("buyAgain"),
+      ]);
     }
     case "ORDER_PENDING":
-      return withInquiry([solid("cancelOrder")]);
+      return withInquiry([
+        solid("cancelOrder"),
+        outline("addToCart"),
+        outline("buyAgain"),
+      ]);
     case "PREPARING":
       return withInquiry([]);
     case "SHIPPING":
