@@ -1,3 +1,4 @@
+import { Collapsible } from "@base-ui/react/collapsible";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -106,13 +107,12 @@ export function OrderShippingPaymentPanel({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xs bg-bg-default shadow-[0px_4px_12px_0px_rgba(0,0,0,0.08)]">
-        <button
-          type="button"
-          onClick={() => setIsPaymentExpanded((prev) => !prev)}
-          aria-expanded={isPaymentExpanded}
-          className="flex w-full items-center justify-between bg-fill-neutral-weak px-4 py-3"
-        >
+      <Collapsible.Root
+        open={isPaymentExpanded}
+        onOpenChange={setIsPaymentExpanded}
+        className="overflow-hidden rounded-xs bg-bg-default shadow-[0px_4px_12px_0px_rgba(0,0,0,0.08)]"
+      >
+        <Collapsible.Trigger className="flex w-full items-center justify-between bg-fill-neutral-weak px-4 py-3">
           <h2 className="text-title-s">결제 정보</h2>
           <ChevronDownIcon
             aria-hidden
@@ -121,8 +121,10 @@ export function OrderShippingPaymentPanel({
               !isPaymentExpanded && "rotate-180",
             )}
           />
-        </button>
-        {isPaymentExpanded && (
+        </Collapsible.Trigger>
+        {/* Base UI Collapsible — 패널 높이를 `--collapsible-panel-height`에 바인딩해
+            열고 닫을 때 부드럽게 트랜지션한다(시작/종료 순간만 0으로). */}
+        <Collapsible.Panel className="h-(--collapsible-panel-height) overflow-hidden transition-[height] duration-200 ease-out data-[ending-style]:h-0 data-[starting-style]:h-0">
           <div className="flex flex-col gap-3 px-4 pt-3 pb-6">
             <div className="flex flex-col gap-2">
               <AmountRow label="상품 금액" amount={payment.productAmount} />
@@ -143,8 +145,8 @@ export function OrderShippingPaymentPanel({
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </Collapsible.Panel>
+      </Collapsible.Root>
     </aside>
   );
 }
