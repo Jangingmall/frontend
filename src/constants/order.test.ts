@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getOrderCardActions,
   getOrderDetailActions,
+  getOrderDetailNoticeLines,
+  getOrderDetailReasonLabel,
   ORDER_STATUS,
   ORDER_STATUS_FILTER_TABS,
   ORDER_STATUS_GROUP,
@@ -133,33 +135,161 @@ describe("getOrderCardActions", () => {
 });
 
 describe("getOrderDetailActions", () => {
-  it("배송완료는 목록과 달리 순서가 다르고 적립금 배지가 없다(상세 화면 실측)", () => {
-    expect(getOrderDetailActions("DELIVERED", false)).toEqual([
-      { action: "confirmPurchase" },
-      { action: "requestExchangeRefund" },
-      { action: "writeReview" },
-      { action: "inquiry" },
+  // Figma "상태별 설명"(1718:16488) 실측 — 목록(getOrderCardActions)과 완전히
+  // 별개 매트릭스. 대표 액션이 있으면 style: "solid" 단독, 나머지는 "outline".
+
+  it("입금확인중 — 대표(주문취소), 결제수단 모르면 입금정보확인도 노출", () => {
+    expect(getOrderDetailActions("PAYMENT_PENDING", false)).toEqual([
+      { action: "cancelOrder", style: "solid" },
+      { action: "checkPaymentInfo", style: "outline" },
+      { action: "inquiry", style: "outline" },
     ]);
   });
 
-  it("목록에 이미 1:1 문의가 있는 상태는 중복으로 추가하지 않는다", () => {
-    expect(getOrderDetailActions("PAYMENT_PENDING", false)).toEqual(
-      getOrderCardActions("PAYMENT_PENDING", false),
-    );
-  });
-
-  it("배송완료 외 상태는 목록과 동일한 매트릭스에 1:1 문의만 추가한다", () => {
-    expect(getOrderDetailActions("CANCELED", false)).toEqual([
-      ...getOrderCardActions("CANCELED", false),
-      { action: "inquiry" },
-    ]);
-  });
-
-  it("입금확인중 + 카드 결제면 입금 정보 확인 버튼 없이 보여준다", () => {
+  it("입금확인중 + 카드 결제면 입금정보확인 없이 대표(주문취소)+1:1문의만", () => {
     expect(getOrderDetailActions("PAYMENT_PENDING", false, "CARD")).toEqual([
-      { action: "cancelOrder" },
-      { action: "inquiry" },
+      { action: "cancelOrder", style: "solid" },
+      { action: "inquiry", style: "outline" },
     ]);
+  });
+
+  it("주문확인중 — 대표(주문취소) + 1:1 문의", () => {
+    expect(getOrderDetailActions("ORDER_PENDING", false)).toEqual([
+      { action: "cancelOrder", style: "solid" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("상품준비중 — 대표 없이 1:1 문의만(배송지 변경은 패널 버튼이 담당)", () => {
+    expect(getOrderDetailActions("PREPARING", false)).toEqual([
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("배송중 — 대표(배송조회) + 1:1 문의", () => {
+    expect(getOrderDetailActions("SHIPPING", false)).toEqual([
+      { action: "checkDelivery", style: "solid" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("배송완료 — 대표(구매확정) → 교환·환불 신청 → 후기 작성 → 1:1 문의", () => {
+    expect(getOrderDetailActions("DELIVERED", false)).toEqual([
+      { action: "confirmPurchase", style: "solid" },
+      { action: "requestExchangeRefund", style: "outline" },
+      { action: "writeReview", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("구매확정 — 대표(후기작성) → 장바구니 담기 → 바로 구매하기 → 1:1 문의", () => {
+    expect(getOrderDetailActions("PURCHASE_CONFIRMED", false)).toEqual([
+      { action: "writeReview", style: "solid" },
+      { action: "addToCart", style: "outline" },
+      { action: "buyAgain", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("주문취소 — 사유 있으면(장인 취소) 1:1 문의만", () => {
+    expect(getOrderDetailActions("CANCELED", true)).toEqual([
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("주문취소 — 사유 없으면(소비자 취소) 목록 매트릭스 + 1:1 문의, 전부 outline", () => {
+    expect(getOrderDetailActions("CANCELED", false)).toEqual([
+      { action: "addToCart", style: "outline" },
+      { action: "buyAgain", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("교환신청 — 대표 없이 교환신청취소·배송조회·1:1문의", () => {
+    expect(getOrderDetailActions("EXCHANGE_REQUESTED", true)).toEqual([
+      { action: "cancelExchangeRequest", style: "outline" },
+      { action: "checkDelivery", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("교환승인 — 대표(상품회수안내) → 교환신청취소 → 배송조회 → 1:1문의", () => {
+    expect(getOrderDetailActions("EXCHANGE_APPROVED", false)).toEqual([
+      { action: "guideReturnAddress", style: "solid" },
+      { action: "cancelExchangeRequest", style: "outline" },
+      { action: "checkDelivery", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("교환불가 — 대표 없이 1:1 문의만", () => {
+    expect(getOrderDetailActions("EXCHANGE_REJECTED", true)).toEqual([
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("환불신청 — 대표 없이 환불신청취소·배송조회·1:1문의", () => {
+    expect(getOrderDetailActions("REFUND_REQUESTED", true)).toEqual([
+      { action: "cancelRefundRequest", style: "outline" },
+      { action: "checkDelivery", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("환불승인 — 대표(상품회수안내) → 환불신청취소 → 배송조회 → 1:1문의", () => {
+    expect(getOrderDetailActions("REFUND_APPROVED", false)).toEqual([
+      { action: "guideReturnAddress", style: "solid" },
+      { action: "cancelRefundRequest", style: "outline" },
+      { action: "checkDelivery", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("환불불가 — 대표 없이 1:1 문의만", () => {
+    expect(getOrderDetailActions("REFUND_REJECTED", true)).toEqual([
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("환불완료 — 실측 예시가 없어 목록 매트릭스 + 1:1 문의, 전부 outline", () => {
+    expect(getOrderDetailActions("REFUND_COMPLETED", false)).toEqual([
+      { action: "refundInfo", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+});
+
+describe("getOrderDetailReasonLabel", () => {
+  it("교환 신청·환불 신청은 '신청'을 뗀 축약형을 돌려준다(Figma 1718:16488)", () => {
+    expect(getOrderDetailReasonLabel("EXCHANGE_REQUESTED")).toBe("교환");
+    expect(getOrderDetailReasonLabel("REFUND_REQUESTED")).toBe("환불");
+  });
+
+  it("그 외 상태는 ORDER_STATUS_LABEL을 그대로 돌려준다", () => {
+    expect(getOrderDetailReasonLabel("CANCELED")).toBe("주문 취소");
+    expect(getOrderDetailReasonLabel("EXCHANGE_REJECTED")).toBe("교환 불가");
+    expect(getOrderDetailReasonLabel("REFUND_REJECTED")).toBe("환불 불가");
+  });
+});
+
+describe("getOrderDetailNoticeLines", () => {
+  it("상태마다 다른 안내 문구를 돌려준다", () => {
+    expect(getOrderDetailNoticeLines("PAYMENT_PENDING")).toEqual([
+      "입금 확인은 평일 기준 NN시간 이내 처리됩니다.",
+      "입금 확인 전 취소 시 결제 금액이 자동 환불됩니다.",
+    ]);
+    expect(getOrderDetailNoticeLines("PURCHASE_CONFIRMED")).toEqual([
+      "구매 확정 후에는 교환·환불 신청이 불가합니다.",
+    ]);
+  });
+
+  it.each([
+    "CANCELED",
+    "EXCHANGE_REJECTED",
+    "REFUND_REJECTED",
+    "REFUND_COMPLETED",
+  ] as const)("%s는 안내 박스를 생략한다(undefined)", (status) => {
+    expect(getOrderDetailNoticeLines(status)).toBeUndefined();
   });
 });
 

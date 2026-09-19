@@ -8,22 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   getOrderDetailActions,
+  getOrderDetailNoticeLines,
+  getOrderDetailReasonLabel,
   ORDER_CARD_ACTION_LABEL,
+  ORDER_DETAIL_ACTION_LABEL,
   ORDER_STATUS_LABEL,
   type OrderCardActionType,
 } from "@/constants/order";
 import type { Money } from "@/types/money";
 import type { OrderDetailItem } from "@/types/order";
-
-/**
- * 주문 유의사항 — Figma 실측(`2080:116574` 등) 고정 3줄. 상품 옵션·상태와 무관하게
- * 모든 아이템 블록에 동일하게 표시된다.
- */
-const ORDER_NOTICE_LINES = [
-  "교환·환불은 배송 완료일 기준 7일 이내 신청 가능합니다.",
-  "주문제작 상품은 단순 변심에 의한 교환·환불이 불가합니다.",
-  "단순 변심 교환·환불 시 왕복 배송비가 청구됩니다.",
-];
 
 interface OrderDetailItemCardProps {
   item: OrderDetailItem;
@@ -57,10 +50,15 @@ export function OrderDetailItemCard({
   const [copied, setCopied] = useState(false);
 
   const actions = getOrderDetailActions(item.status, !!reason, paymentMethod);
-  // 4개면 첫 액션을 전체 너비 단독 줄로, 나머지를 아래 한 줄로(design.md §2, Figma DELIVERED 실측).
-  const isSplitLayout = actions.length === 4;
-  const primaryAction = isSplitLayout ? actions[0] : null;
-  const restActions = isSplitLayout ? actions.slice(1) : actions;
+  // 대표 액션(있으면 solid 단독 한 줄) + 나머지(outline, 균등폭 한 줄) — Figma 실측
+  // (`1718:16488`). 대표 액션은 항상 배열 맨 앞이다(constants/order.ts 참고).
+  const primaryAction = actions[0]?.style === "solid" ? actions[0] : null;
+  const restActions = primaryAction ? actions.slice(1) : actions;
+  const noticeLines = getOrderDetailNoticeLines(item.status);
+
+  function actionLabel(action: OrderCardActionType) {
+    return ORDER_DETAIL_ACTION_LABEL[action] ?? ORDER_CARD_ACTION_LABEL[action];
+  }
 
   async function handleCopyOrderItemId() {
     try {
@@ -134,22 +132,24 @@ export function OrderDetailItemCard({
 
       {reason && (
         <div className="flex flex-wrap items-center justify-center gap-1 bg-fill-neutral-weak px-4 py-2 text-center text-body-l">
-          <span>{ORDER_STATUS_LABEL[item.status]} 사유 :</span>
+          <span>{getOrderDetailReasonLabel(item.status)} 사유 :</span>
           <span>{reason}</span>
         </div>
       )}
 
-      <div className="flex items-start gap-10 bg-fill-jade-weak p-2 text-caption text-font-label">
-        <p className="shrink-0 font-semibold">주문 유의사항</p>
-        <div className="flex flex-col gap-1">
-          {ORDER_NOTICE_LINES.map((line) => (
-            <p key={line} className="flex gap-1">
-              <span>-</span>
-              <span>{line}</span>
-            </p>
-          ))}
+      {noticeLines && (
+        <div className="flex items-start gap-10 bg-fill-jade-weak p-2 text-caption text-font-label">
+          <p className="shrink-0 font-semibold">주문 유의사항</p>
+          <div className="flex flex-col gap-1">
+            {noticeLines.map((line) => (
+              <p key={line} className="flex gap-1">
+                <span>-</span>
+                <span>{line}</span>
+              </p>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="flex flex-col gap-2">
         {primaryAction && (
@@ -160,23 +160,20 @@ export function OrderDetailItemCard({
             disabled={!onAction}
             onClick={() => onAction?.(primaryAction.action)}
           >
-            {ORDER_CARD_ACTION_LABEL[primaryAction.action]}
+            {actionLabel(primaryAction.action)}
           </Button>
         )}
         <div className="flex items-center gap-2">
-          {/* Figma 실측 — 액션이 4개(배송완료)로 나뉠 때만 첫 액션이 solid 단독,
-              나머지는 outline이다. 3개 이하(분리 없음)는 상세 화면 인스턴스가
-              없어 목록과 같은 solid를 유지한다. */}
           {restActions.map(({ action }) => (
             <Button
               key={action}
-              variant={primaryAction ? "outline" : "solid"}
+              variant="outline"
               size="m"
               className="flex-1"
               disabled={!onAction}
               onClick={() => onAction?.(action)}
             >
-              {ORDER_CARD_ACTION_LABEL[action]}
+              {actionLabel(action)}
             </Button>
           ))}
         </div>

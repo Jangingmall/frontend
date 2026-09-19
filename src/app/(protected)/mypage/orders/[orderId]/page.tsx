@@ -123,14 +123,12 @@ export default function OrderDetailPage() {
         case "confirmPurchase":
           await confirmPurchaseMutation.mutateAsync();
           break;
-        case "changeAddress":
-          setIsAddressModalOpen(true);
-          break;
         case "checkDelivery":
           setIsDeliveryModalOpen(true);
           break;
         default:
-          // 후기 작성·교환환불신청·장바구니담기·1:1 문의 등은 후속 작업 범위 — 연결하지 않는다.
+          // 후기 작성·교환환불신청·장바구니담기·1:1 문의·교환/환불 신청 취소·상품 회수
+          // 안내 등은 후속 작업 범위 — 연결하지 않는다.
           break;
       }
     } catch (error) {

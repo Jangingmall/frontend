@@ -68,6 +68,8 @@ export function orderStatusLabel(
 export type OrderCardActionType =
   | "checkPaymentInfo" // 입금 정보 확인
   | "cancelOrder" // 주문 취소
+  | "cancelExchangeRequest" // 교환 신청 취소
+  | "cancelRefundRequest" // 환불 신청 취소
   | "changeAddress" // 배송지 변경
   | "checkDelivery" // 배송 조회
   | "confirmPurchase" // 구매 확정
@@ -75,13 +77,15 @@ export type OrderCardActionType =
   | "requestExchangeRefund" // 교환 · 환불 신청
   | "addToCart" // 장바구니 담기
   | "buyAgain" // 바로 구매하기
-  | "guideReturnAddress" // 상품 회수 주소지 안내
+  | "guideReturnAddress" // 상품 회수 안내
   | "refundInfo" // 환불 정보
   | "inquiry"; // 1:1 문의
 
 export const ORDER_CARD_ACTION_LABEL: Record<OrderCardActionType, string> = {
   checkPaymentInfo: "입금 정보 확인",
   cancelOrder: "주문 취소",
+  cancelExchangeRequest: "교환 신청 취소",
+  cancelRefundRequest: "환불 신청 취소",
   changeAddress: "배송지 변경",
   checkDelivery: "배송 조회",
   confirmPurchase: "구매 확정",
@@ -89,15 +93,33 @@ export const ORDER_CARD_ACTION_LABEL: Record<OrderCardActionType, string> = {
   requestExchangeRefund: "교환 · 환불 신청",
   addToCart: "장바구니 담기",
   buyAgain: "바로 구매하기",
-  guideReturnAddress: "상품 회수 주소지 안내",
+  guideReturnAddress: "상품 회수 안내",
   refundInfo: "환불 정보",
   inquiry: "1:1 문의",
+};
+
+/**
+ * 주문 상세 화면(MY-1-OD)만 목록과 문구가 다른 것들 — Figma 실측(`1718:16488`) 결과
+ * "하기"를 붙인 동사형이다(목록은 명사형). 상세 전용 버튼(`cancelExchangeRequest` 등)은
+ * 목록에 아예 없어 위 공용 라벨을 그대로 쓴다.
+ */
+export const ORDER_DETAIL_ACTION_LABEL: Partial<
+  Record<OrderCardActionType, string>
+> = {
+  cancelOrder: "주문 취소하기",
+  inquiry: "1:1 문의하기",
 };
 
 export interface OrderCardActionItem {
   action: OrderCardActionType;
   /** `writeReview` 전용 — "적립금 +100원" 배지 표시(목록 MY-1 실측, T-27). */
   withReward?: boolean;
+  /**
+   * 주문 상세 전용 — 버튼 스타일(목록은 항상 solid라 안 씀). Figma 실측(`1718:16488`)
+   * 결과 상태마다 "대표 액션" 하나만 solid(단독 한 줄)이고 나머지는 outline(그 아래
+   * 한 줄에 균등폭)이다 — 대표 액션이 없는 상태는 전부 outline. 생략하면 outline.
+   */
+  style?: "solid" | "outline";
 }
 
 /**
@@ -177,31 +199,184 @@ export function getOrderCardActions(
 }
 
 /**
- * 주문 상세 화면(`/mypage/orders/[orderId]`) 전용. `getOrderCardActions`(목록 MY-1 기준)와
- * 다른 점 둘 다 두 화면을 각각 실측해서 확인한 실제 차이다(같은 상태인데 프레임 자체가
- * 다르게 그려져 있음 — 문서 불일치가 아니라 화면 인스턴스 차이):
- *   1. "1:1 문의"가 없는 상태는 상세에서 추가로 붙는다(목록 5개 상태 중 유일하게 상세에서도
- *      확인 가능했던 배송완료 예시에 1:1 문의가 하나 더 붙어 있었다 — design.md §2, T-28).
- *   2. 배송완료만 목록과 순서·배지가 다르다 — 목록은 "후기 작성(+배지) → 교환·환불 신청"
- *      순인데, 상세 인스턴스 5개 모두 "교환·환불 신청 → 후기 작성" 순이고 배지가 없다.
- *      (`PURCHASE_CONFIRMED`는 상세 화면에서 확인 가능한 예시가 없어 목록과 동일하다고
- *      가정한다 — 반례 발견 시 재검토.)
+ * 주문 상세 화면(`/mypage/orders/[orderId]`) 전용 매트릭스. 목록(`getOrderCardActions`)과
+ * 공유하지 않는다 — Figma 실측(`1718:16488`, "상태별 설명") 결과 상세 화면은 목록과 버튼
+ * 구성·순서·스타일이 상태마다 다르게 설계돼 있다(같은 상태여도 별개 화면 인스턴스).
+ * 상태별 "대표 액션"(있으면 solid 단독 한 줄) + 나머지(outline, 균등폭 한 줄) 구조이고,
+ * "1:1 문의"가 없는 조합엔 항상 자동으로 붙는다("클릭 시 문의하기 모달 활성화" 콜아웃이
+ * 거의 모든 상태에 반복 등장 — 상세 화면 공통 기본 액션으로 취급).
+ *
+ * `PAYMENT_PENDING`/`ORDER_PENDING`의 실측 목업엔 "장바구니 담기·바로 구매하기"가 2열에
+ * 같이 그려져 있었지만, 두 상태에 토씨 하나 안 틀리고 동일하게 반복되고(같은 문구가
+ * "구매확정" 목업에선 "장바구니에 넣기"로 다르게 쓰여 있어 워딩 불일치) 콜아웃 설명도
+ * 이 두 버튼을 전혀 언급하지 않아, 예전 목록형 스펙시트를 지우지 않고 복붙한 흔적으로
+ * 판단해 제외했다 — 반례(실제로 저 두 버튼이 있다는 추가 근거) 나오면 재검토.
+ *
+ * `CANCELED`(사유 없음, 소비자 취소)·`REFUND_COMPLETED`는 이 실측 자료에 예시가 없어
+ * 목록 매트릭스 + "1:1 문의" 자동 추가로 대체한다(다른 상태들과 같은 보수적 기본값).
  */
 export function getOrderDetailActions(
   status: OrderStatus,
   hasReason: boolean,
   paymentMethod?: string | null,
 ): OrderCardActionItem[] {
-  const base =
-    status === "DELIVERED"
-      ? [
-          { action: "confirmPurchase" as const },
-          { action: "requestExchangeRefund" as const },
-          { action: "writeReview" as const },
-        ]
-      : getOrderCardActions(status, hasReason, paymentMethod);
-  if (base.some((item) => item.action === "inquiry")) return base;
-  return [...base, { action: "inquiry" }];
+  const outline = (
+    action: OrderCardActionType,
+    withReward?: boolean,
+  ): OrderCardActionItem => ({ action, style: "outline", withReward });
+  const solid = (action: OrderCardActionType): OrderCardActionItem => ({
+    action,
+    style: "solid",
+  });
+  const withInquiry = (actions: OrderCardActionItem[]) =>
+    actions.some((item) => item.action === "inquiry")
+      ? actions
+      : [...actions, outline("inquiry")];
+
+  switch (status) {
+    case "PAYMENT_PENDING": {
+      const isTransferPayment =
+        paymentMethod === "REALTIME_TRANSFER" ||
+        paymentMethod === "BANK_TRANSFER";
+      const secondary =
+        paymentMethod === undefined || isTransferPayment
+          ? [outline("checkPaymentInfo")]
+          : [];
+      return withInquiry([solid("cancelOrder"), ...secondary]);
+    }
+    case "ORDER_PENDING":
+      return withInquiry([solid("cancelOrder")]);
+    case "PREPARING":
+      return withInquiry([]);
+    case "SHIPPING":
+      return withInquiry([solid("checkDelivery")]);
+    case "DELIVERED":
+      return withInquiry([
+        solid("confirmPurchase"),
+        outline("requestExchangeRefund"),
+        outline("writeReview"),
+      ]);
+    case "PURCHASE_CONFIRMED":
+      return withInquiry([
+        solid("writeReview"),
+        outline("addToCart"),
+        outline("buyAgain"),
+      ]);
+    case "CANCELED":
+      return hasReason
+        ? withInquiry([])
+        : withInquiry(
+            getOrderCardActions(status, hasReason).map((item) => ({
+              ...item,
+              style: "outline" as const,
+            })),
+          );
+    case "EXCHANGE_REQUESTED":
+      return withInquiry([
+        outline("cancelExchangeRequest"),
+        outline("checkDelivery"),
+      ]);
+    case "EXCHANGE_APPROVED":
+      return withInquiry([
+        solid("guideReturnAddress"),
+        outline("cancelExchangeRequest"),
+        outline("checkDelivery"),
+      ]);
+    case "EXCHANGE_REJECTED":
+      return withInquiry([]);
+    case "REFUND_REQUESTED":
+      return withInquiry([
+        outline("cancelRefundRequest"),
+        outline("checkDelivery"),
+      ]);
+    case "REFUND_APPROVED":
+      return withInquiry([
+        solid("guideReturnAddress"),
+        outline("cancelRefundRequest"),
+        outline("checkDelivery"),
+      ]);
+    case "REFUND_REJECTED":
+      return withInquiry([]);
+    case "REFUND_COMPLETED":
+      return withInquiry(
+        getOrderCardActions(status, hasReason).map((item) => ({
+          ...item,
+          style: "outline" as const,
+        })),
+      );
+  }
+}
+
+/**
+ * 사유 배너 라벨(`{라벨} 사유 :`) — 대부분 {@link ORDER_STATUS_LABEL}과 같지만
+ * "신청" 상태 둘만 실측(`1718:16488`) 결과 접미사를 뗀 축약형이었다("교환 신청 사유"가
+ * 아니라 "교환 사유", "환불 신청 사유"가 아니라 "환불 사유").
+ */
+export function getOrderDetailReasonLabel(status: OrderStatus): string {
+  switch (status) {
+    case "EXCHANGE_REQUESTED":
+      return "교환";
+    case "REFUND_REQUESTED":
+      return "환불";
+    default:
+      return ORDER_STATUS_LABEL[status];
+  }
+}
+
+/**
+ * 주문 상세 화면의 "주문 유의사항" — 실측(`1718:16488`) 결과 고정 문구가 아니라 상태마다
+ * 다른 안내다. 이미 사유 배너를 보여주는 상태(교환·환불 불가, 주문취소-사유있음)와
+ * 근거 화면이 없는 상태(구매확정 이후의 취소·환불 완료류)는 `undefined`(박스 자체를
+ * 안 그림). "NN시간"·"약 N주"는 Figma 목업에도 숫자가 채워지지 않은 자리표시자 그대로
+ * 다 — 실제 값은 비즈니스 확정 후 채워야 한다(be-requests.md 후보).
+ */
+export function getOrderDetailNoticeLines(
+  status: OrderStatus,
+): string[] | undefined {
+  switch (status) {
+    case "PAYMENT_PENDING":
+      return [
+        "입금 확인은 평일 기준 NN시간 이내 처리됩니다.",
+        "입금 확인 전 취소 시 결제 금액이 자동 환불됩니다.",
+      ];
+    case "ORDER_PENDING":
+      return [
+        "판매자가 주문을 확인한 후 제작이 시작됩니다.",
+        "제작 시작 후 주문 취소가 어렵습니다.",
+        "제작 완료 후 판매자가 직접 배송합니다. (약 N주 소요)",
+      ];
+    case "PREPARING":
+      return [
+        "현재 제작 중으로 주문 취소가 불가합니다.",
+        "제작 완료 후 판매자가 직접 배송합니다. (약 N주 소요)",
+      ];
+    case "SHIPPING":
+      return [
+        "판매자가 직접 배송하여 배송 조회가 늦게 업데이트될 수 있습니다.",
+        "택배사 사정에 따라 배송이 지연될 수 있습니다.",
+      ];
+    case "DELIVERED":
+      return [
+        "교환·환불은 배송 완료일 기준 7일 이내 신청 가능합니다.",
+        "주문제작 상품은 단순 변심에 의한 교환·환불이 불가합니다.",
+        "단순 변심 교환·환불 시 왕복 배송비가 청구됩니다.",
+      ];
+    case "PURCHASE_CONFIRMED":
+      return ["구매 확정 후에는 교환·환불 신청이 불가합니다."];
+    case "EXCHANGE_REQUESTED":
+    case "EXCHANGE_APPROVED":
+    case "REFUND_REQUESTED":
+    case "REFUND_APPROVED":
+      return [
+        "단순 변심에 의한 교환·환불 시 왕복 배송비가 청구됩니다.",
+        "주문제작 상품의 경우 단순 변심에 의한 교환·환불 요청은 거절될 수 있습니다.",
+      ];
+    case "CANCELED":
+    case "EXCHANGE_REJECTED":
+    case "REFUND_REJECTED":
+    case "REFUND_COMPLETED":
+      return undefined;
+  }
 }
 
 /**
