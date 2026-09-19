@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import type { ImageRef } from "@/types/image";
 import type { Money } from "@/types/money";
@@ -16,6 +16,10 @@ interface ProductOrderProps {
   price: Money;
   /** "주문 유의사항" 안내문. 없으면 description 영역을 표시하지 않는다. */
   note?: string;
+  variant?: "inline" | "stacked";
+  actions?: ReactNode;
+  quantityControl?: ReactNode;
+  thumbnailOverlay?: ReactNode;
 }
 
 /** 장바구니·주문서에서 상품 한 줄을 보여주는 순수 프레젠테이션 컴포넌트. */
@@ -26,6 +30,10 @@ export function ProductOrder({
   quantity,
   price,
   note,
+  variant: layout = "inline",
+  actions,
+  quantityControl,
+  thumbnailOverlay,
 }: ProductOrderProps) {
   const [hasImageError, setHasImageError] = useState(false);
   const variant = pickThumbnailVariant(thumbnail, 320);
@@ -46,9 +54,20 @@ export function ProductOrder({
             className="object-cover"
             onError={() => setHasImageError(true)}
           />
+          {thumbnailOverlay}
         </div>
-        <div className="flex min-w-0 flex-1 items-end justify-between gap-4">
-          <div className="min-w-0">
+        <div
+          className={
+            layout === "stacked"
+              ? "relative min-h-22.5 min-w-0 flex-1"
+              : "flex min-w-0 flex-1 items-end justify-between gap-4"
+          }
+        >
+          <div
+            className={
+              layout === "stacked" && actions ? "min-w-0 pr-22" : "min-w-0"
+            }
+          >
             <p className="truncate text-body-s-b">{productName}</p>
             {!!options?.length && (
               <ul className="mt-2 flex flex-col gap-1">
@@ -63,11 +82,23 @@ export function ProductOrder({
               </ul>
             )}
           </div>
-          <p className="shrink-0 text-body-s">
-            {quantity}개 / {price.toLocaleString("ko-KR")}원
-          </p>
+          {layout === "inline" ? (
+            <p className="shrink-0 text-body-s">
+              {quantity}개 / {price.toLocaleString("ko-KR")}원
+            </p>
+          ) : (
+            <div className="absolute right-0 bottom-0">{actions}</div>
+          )}
         </div>
       </div>
+      {layout === "stacked" && (
+        <div className="mt-3 flex items-center justify-end gap-6 border-t border-border-jade-weak py-3">
+          {quantityControl ?? <span className="text-body-s">{quantity}개</span>}
+          <p className="text-body-m font-bold">
+            {price.toLocaleString("ko-KR")}원
+          </p>
+        </div>
+      )}
       {note && (
         <div className="mt-2 flex flex-wrap gap-x-10 gap-y-1 bg-bg-subtle p-2 text-caption text-font-dark-subtle">
           <span className="shrink-0 text-caption-b">주문 유의사항</span>

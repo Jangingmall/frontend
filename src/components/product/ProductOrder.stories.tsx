@@ -47,3 +47,10 @@ export const LongName: Story = {
     options: ["색상: 백자토 · 표면 유약 마감", "사이즈: 특대"],
   },
 };
+export const Stacked: Story = {
+  args: {
+    variant: "stacked",
+    actions: <button type="button">옵션 변경</button>,
+    quantityControl: <span>2개</span>,
+  },
+};
