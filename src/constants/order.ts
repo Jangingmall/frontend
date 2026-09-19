@@ -113,6 +113,19 @@ export const ORDER_DETAIL_ACTION_LABEL: Partial<
   inquiry: "1:1 문의하기",
 };
 
+/**
+ * 주문 상세 화면에서 실제로 mutation·모달이 연결된 액션 — 그 외(`inquiry`,
+ * `addToCart`, `writeReview` 등)는 버튼은 보이되 후속 작업 범위라 아직 아무 동작도
+ * 없다(`page.tsx`의 `handleAction`). 여기 없는 액션은 `onAction`이 있어도 비활성
+ * 처리해 "눌러도 반응 없는 버튼"으로 보이지 않게 한다(독립 리뷰 F2) — `handleAction`
+ * 스위치에 새 케이스를 추가하면 이 목록도 같이 갱신해야 한다.
+ */
+export const ORDER_DETAIL_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
+  "cancelOrder",
+  "confirmPurchase",
+  "checkDelivery",
+]);
+
 export interface OrderCardActionItem {
   action: OrderCardActionType;
   /** `writeReview` 전용 — "적립금 +100원" 배지 표시(목록 MY-1 실측, T-27). */

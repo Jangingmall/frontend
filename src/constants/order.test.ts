@@ -6,6 +6,7 @@ import {
   getOrderDetailNoticeLines,
   getOrderDetailReasonLabel,
   getOrderDetailReasonSuffix,
+  ORDER_DETAIL_IMPLEMENTED_ACTIONS,
   ORDER_STATUS,
   ORDER_STATUS_FILTER_TABS,
   ORDER_STATUS_GROUP,
@@ -336,6 +337,20 @@ describe("getOrderDetailNoticeLines", () => {
     "REFUND_COMPLETED",
   ] as const)("%s는 안내 박스를 생략한다(undefined)", (status) => {
     expect(getOrderDetailNoticeLines(status)).toBeUndefined();
+  });
+});
+
+describe("ORDER_DETAIL_IMPLEMENTED_ACTIONS", () => {
+  it("실제로 연결된 액션(주문취소·구매확정·배송조회)만 포함한다(독립 리뷰 F2)", () => {
+    expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("cancelOrder")).toBe(true);
+    expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("confirmPurchase")).toBe(true);
+    expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("checkDelivery")).toBe(true);
+  });
+
+  it("아직 연결 안 된 액션은 포함하지 않는다", () => {
+    expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("inquiry")).toBe(false);
+    expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("addToCart")).toBe(false);
+    expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("writeReview")).toBe(false);
   });
 });
 

@@ -385,6 +385,18 @@ describe("OrderDetailItemCard", () => {
     expect(onAction).toHaveBeenCalledWith("checkDelivery");
   });
 
+  it("onAction이 있어도 아직 연결 안 된 액션(1:1 문의 등)은 비활성 상태다(독립 리뷰 F2)", () => {
+    render(
+      <OrderDetailItemCard
+        item={item()}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+        onAction={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("button", { name: "1:1 문의하기" })).toBeDisabled();
+  });
+
   it("복사 버튼 클릭 시 클립보드에 아이템 주문번호를 복사한다", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, { clipboard: { writeText } });

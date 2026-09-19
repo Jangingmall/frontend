@@ -13,6 +13,7 @@ import {
   getOrderDetailReasonSuffix,
   ORDER_CARD_ACTION_LABEL,
   ORDER_DETAIL_ACTION_LABEL,
+  ORDER_DETAIL_IMPLEMENTED_ACTIONS,
   ORDER_STATUS_LABEL,
   type OrderCardActionType,
 } from "@/constants/order";
@@ -71,6 +72,12 @@ export function OrderDetailItemCard({
 
   function actionLabel(action: OrderCardActionType) {
     return ORDER_DETAIL_ACTION_LABEL[action] ?? ORDER_CARD_ACTION_LABEL[action];
+  }
+
+  // 눌러도 반응 없는 버튼으로 보이지 않도록 구현 안 된 액션은 onAction 유무와
+  // 무관하게 비활성 처리한다(독립 리뷰 F2).
+  function isActionDisabled(action: OrderCardActionType) {
+    return !onAction || !ORDER_DETAIL_IMPLEMENTED_ACTIONS.has(action);
   }
 
   async function handleCopyOrderItemId() {
@@ -177,7 +184,7 @@ export function OrderDetailItemCard({
             variant="solid"
             size="m"
             className="w-full text-button-xl"
-            disabled={!onAction}
+            disabled={isActionDisabled(primaryAction.action)}
             onClick={() => onAction?.(primaryAction.action)}
           >
             {actionLabel(primaryAction.action)}
@@ -190,7 +197,7 @@ export function OrderDetailItemCard({
               variant="outline"
               size="m"
               className="flex-1 text-button-xl"
-              disabled={!onAction}
+              disabled={isActionDisabled(action)}
               onClick={() => onAction?.(action)}
             >
               {actionLabel(action)}
