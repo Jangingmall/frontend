@@ -96,8 +96,11 @@ export default function OrderDetailPage() {
 
   const order = detailQuery.data;
   const overallStatus = order.groups[0]?.items[0]?.status;
+  // Figma 스펙시트(2080:112091, 상태별 버튼 정리) 재확인 결과 "배송지 변경"은
+  // 주문 확인 중·상품 준비 중에만 노출된다 — 입금 확인 중은 대상이 아니다(설계 당시
+  // 가정이 틀렸었다, design.md §4.3 정정 필요).
   const canChangeAddress =
-    overallStatus === "PAYMENT_PENDING" || overallStatus === "PREPARING";
+    overallStatus === "ORDER_PENDING" || overallStatus === "PREPARING";
 
   function reportError(error: unknown) {
     setActionError(

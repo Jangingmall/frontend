@@ -20,7 +20,12 @@ const deliveredOrderId = orderFixtures.find(
 const inDeliveryOrderId = orderFixtures.find(
   (order) => order.status === "IN_DELIVERY",
 )!.orderId;
-const createdOrderId = orderFixtures.find(
+// "배송지 변경"은 상품 준비 중(BE `PAID`)에만 노출된다 — 입금 확인 중(`CREATED`)은
+// Figma 스펙시트(2080:112091) 재확인 결과 대상이 아니다(page.tsx canChangeAddress 참고).
+const preparingOrderId = orderFixtures.find(
+  (order) => order.status === "PAID",
+)!.orderId;
+const paymentPendingOrderId = orderFixtures.find(
   (order) => order.status === "CREATED",
 )!.orderId;
 
@@ -106,7 +111,7 @@ describe("OrderDetailPage", () => {
 
   it("배송지 변경 → 제출하면 배송지 패널에 반영된다", async () => {
     const user = userEvent.setup();
-    mockOrderId = String(createdOrderId);
+    mockOrderId = String(preparingOrderId);
     renderPage();
 
     await user.click(
@@ -120,5 +125,15 @@ describe("OrderDetailPage", () => {
         screen.getByText(/서울특별시 종로구 세종대로 1/),
       ).toBeInTheDocument(),
     );
+  });
+
+  it("입금 확인 중에는 배송지 변경 버튼을 보여주지 않는다(Figma 스펙시트 2080:112091)", async () => {
+    mockOrderId = String(paymentPendingOrderId);
+    renderPage();
+
+    expect(await screen.findByText("입금 확인 중")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "배송지 변경" }),
+    ).not.toBeInTheDocument();
   });
 });
