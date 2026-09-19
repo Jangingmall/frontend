@@ -153,10 +153,12 @@ export function OrderDetailItemCard({
 
       <div className="flex flex-col gap-2">
         {primaryAction && (
+          // Figma 실측 — 상세 화면 액션 버튼 글자는 항상 16px/Medium(500)("body-l-btn"
+          // 텍스트 스타일), size="m"의 기본 text-body-m(14px)보다 크다.
           <Button
             variant="solid"
             size="m"
-            className="w-full"
+            className="w-full text-button-xl"
             disabled={!onAction}
             onClick={() => onAction?.(primaryAction.action)}
           >
@@ -169,7 +171,7 @@ export function OrderDetailItemCard({
               key={action}
               variant="outline"
               size="m"
-              className="flex-1"
+              className="flex-1 text-button-xl"
               disabled={!onAction}
               onClick={() => onAction?.(action)}
             >
