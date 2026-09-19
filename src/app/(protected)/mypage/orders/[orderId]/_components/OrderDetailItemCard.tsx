@@ -1,5 +1,6 @@
 "use client";
 
+import dayjs from "dayjs";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -28,6 +29,12 @@ interface OrderDetailItemCardProps {
   item: OrderDetailItem;
   /** 주문 전체 배송비를 그대로 복제해서 표시한다(T-28 design.md §9-B). */
   shippingAmount: Money;
+  /**
+   * Figma 실측 — 헤더 좌측에 "주문일시 / 구매확정일 / 배송예정일 등 표시"라고 돼 있어
+   * 상태별로 다른 날짜를 보여줘야 함을 알 수 있다. `OrderDetail`엔 주문일시(`orderedAt`)
+   * 밖에 없어(구매확정일·배송예정일 필드는 BE에 없음) 우선 주문일시로만 채운다.
+   */
+  orderedAt: string;
   reason?: string;
   onAction?: (action: OrderCardActionType) => void;
 }
@@ -39,6 +46,7 @@ interface OrderDetailItemCardProps {
 export function OrderDetailItemCard({
   item,
   shippingAmount,
+  orderedAt,
   reason,
   onAction,
 }: OrderDetailItemCardProps) {
@@ -63,17 +71,22 @@ export function OrderDetailItemCard({
 
   return (
     <div className="flex flex-col gap-3 border-b border-border-neutral-weak p-4 text-font-dark last:border-b-0">
-      <div className="flex items-center justify-between">
-        <Badge variant="plain">{ORDER_STATUS_LABEL[item.status]}</Badge>
-        <div className="flex items-center gap-1.5 text-body-s text-font-dark-secondary">
-          <span>상품 주문번호 {item.orderItemId}</span>
-          <button
-            type="button"
-            onClick={() => void handleCopyOrderItemId()}
-            className="underline underline-offset-2"
-          >
-            {copied ? "복사됨" : "복사"}
-          </button>
+      <div className="flex flex-col gap-1">
+        <Badge variant="plain" className="self-start">
+          {ORDER_STATUS_LABEL[item.status]}
+        </Badge>
+        <div className="flex items-center justify-between text-body-s text-font-dark-secondary">
+          <span>주문일시 : {dayjs(orderedAt).format("YYYY.MM.DD")}</span>
+          <div className="flex items-center gap-1.5">
+            <span>상품 주문번호 {item.orderItemId}</span>
+            <button
+              type="button"
+              onClick={() => void handleCopyOrderItemId()}
+              className="underline underline-offset-2"
+            >
+              {copied ? "복사됨" : "복사"}
+            </button>
+          </div>
         </div>
       </div>
 

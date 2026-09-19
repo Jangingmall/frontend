@@ -66,6 +66,28 @@ describe("OrderShippingPaymentPanel", () => {
     expect(onChangeAddress).toHaveBeenCalledTimes(1);
   });
 
+  it("결제 정보는 기본 펼침 상태고, 제목 클릭 시 접혔다 펴진다(Figma chevron-down 실측)", () => {
+    render(
+      <OrderShippingPaymentPanel
+        address={address}
+        payment={payment}
+        canChangeAddress={false}
+        onChangeAddress={() => {}}
+      />,
+    );
+    const toggle = screen.getByRole("button", { name: "결제 정보" });
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("321,500원")).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText("321,500원")).not.toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByText("321,500원")).toBeInTheDocument();
+  });
+
   it("결제 수단이 없으면 '-'를 보여준다(BE 미제공, be-requests.md #3)", () => {
     render(
       <OrderShippingPaymentPanel

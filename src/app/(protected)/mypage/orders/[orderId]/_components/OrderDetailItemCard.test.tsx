@@ -21,13 +21,20 @@ function item(overrides: Partial<OrderDetailItem> = {}): OrderDetailItem {
 }
 
 describe("OrderDetailItemCard", () => {
-  it("상품 정보·옵션·배송비·상품 금액을 보여준다", () => {
-    render(<OrderDetailItemCard item={item()} shippingAmount={3000} />);
+  it("상품 정보·옵션·배송비·상품 금액·주문일시를 보여준다", () => {
+    render(
+      <OrderDetailItemCard
+        item={item()}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+      />,
+    );
     expect(screen.getByText("백자 달항아리")).toBeInTheDocument();
     expect(screen.getByText("- 색상: 백자색")).toBeInTheDocument();
     expect(screen.getByText("3,000원")).toBeInTheDocument();
     expect(screen.getByText("320,000원")).toBeInTheDocument();
     expect(screen.getByText(/상품 주문번호 9001/)).toBeInTheDocument();
+    expect(screen.getByText(/주문일시 : 2026\.09\.01/)).toBeInTheDocument();
   });
 
   it("3개 이하 액션은 균등폭 한 줄로 렌더한다(배송 중)", () => {
@@ -35,6 +42,7 @@ describe("OrderDetailItemCard", () => {
       <OrderDetailItemCard
         item={item({ status: "SHIPPING" })}
         shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
       />,
     );
     expect(
@@ -50,6 +58,7 @@ describe("OrderDetailItemCard", () => {
       <OrderDetailItemCard
         item={item({ status: "DELIVERED" })}
         shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
       />,
     );
     expect(
@@ -71,6 +80,7 @@ describe("OrderDetailItemCard", () => {
       <OrderDetailItemCard
         item={item({ status: "PAYMENT_PENDING" })}
         shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
       />,
     );
     expect(screen.getAllByRole("button", { name: "1:1 문의" })).toHaveLength(1);
@@ -81,6 +91,7 @@ describe("OrderDetailItemCard", () => {
       <OrderDetailItemCard
         item={item({ status: "CANCELED" })}
         shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
         reason="장인이 주문 승인을 거절함"
       />,
     );
@@ -89,7 +100,13 @@ describe("OrderDetailItemCard", () => {
   });
 
   it("onAction이 없으면 액션 버튼이 비활성 상태다", () => {
-    render(<OrderDetailItemCard item={item()} shippingAmount={3000} />);
+    render(
+      <OrderDetailItemCard
+        item={item()}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+      />,
+    );
     expect(screen.getByRole("button", { name: "배송 조회" })).toBeDisabled();
   });
 
@@ -99,6 +116,7 @@ describe("OrderDetailItemCard", () => {
       <OrderDetailItemCard
         item={item()}
         shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
         onAction={onAction}
       />,
     );
@@ -109,7 +127,13 @@ describe("OrderDetailItemCard", () => {
   it("복사 버튼 클릭 시 클립보드에 아이템 주문번호를 복사한다", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, { clipboard: { writeText } });
-    render(<OrderDetailItemCard item={item()} shippingAmount={3000} />);
+    render(
+      <OrderDetailItemCard
+        item={item()}
+        shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
+      />,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "복사" }));
     expect(writeText).toHaveBeenCalledWith("9001");

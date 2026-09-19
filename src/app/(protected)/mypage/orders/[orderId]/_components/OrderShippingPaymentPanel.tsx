@@ -1,4 +1,8 @@
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
+import { ChevronDownIcon } from "@/components/ui/icons";
+import { cn } from "@/lib/utils";
 import type { OrderPaymentSummary, OrderShippingAddress } from "@/types/order";
 
 /**
@@ -57,6 +61,9 @@ export function OrderShippingPaymentPanel({
   const paymentMethodLabel = payment.paymentMethod
     ? (PAYMENT_METHOD_LABEL[payment.paymentMethod] ?? payment.paymentMethod)
     : "-";
+  // Figma 실측 — "결제 정보" 제목 옆에 chevron-down이 있어 접기/펼치기 토글이다
+  // (`배송지` 제목엔 없음, 이 섹션만). 기본은 펼침(Figma 프레임이 펼쳐진 상태로 그려짐).
+  const [isPaymentExpanded, setIsPaymentExpanded] = useState(true);
 
   return (
     <aside className="flex w-full flex-col gap-6 text-font-dark lg:w-137 lg:shrink-0">
@@ -79,24 +86,40 @@ export function OrderShippingPaymentPanel({
       </div>
 
       <div className="overflow-hidden rounded-xs bg-bg-default shadow-[0px_4px_12px_0px_rgba(0,0,0,0.08)]">
-        <h2 className="px-4 py-3 text-title-s">결제 정보</h2>
-        <div className="flex flex-col gap-2 px-4 pb-4">
-          <AmountRow label="상품 금액" amount={payment.productAmount} />
-          <AmountRow label="배송비" amount={payment.shippingAmount} />
-          <AmountRow label="할인 금액" amount={-payment.discountAmount} />
-          <AmountRow label="적립금 사용" amount={-payment.pointsUsed} />
-          <div className="mt-2 flex flex-col gap-2 border-t border-border-neutral-weak pt-3">
-            <AmountRow
-              label="결제 금액"
-              amount={payment.totalAmount}
-              emphasis
-            />
-            <div className="flex justify-between text-body-s text-font-dark-secondary">
-              <span>결제 수단</span>
-              <span>{paymentMethodLabel}</span>
+        <button
+          type="button"
+          onClick={() => setIsPaymentExpanded((prev) => !prev)}
+          aria-expanded={isPaymentExpanded}
+          className="flex w-full items-center justify-between px-4 py-3"
+        >
+          <h2 className="text-title-s">결제 정보</h2>
+          <ChevronDownIcon
+            aria-hidden
+            className={cn(
+              "size-6 transition-transform",
+              isPaymentExpanded && "rotate-180",
+            )}
+          />
+        </button>
+        {isPaymentExpanded && (
+          <div className="flex flex-col gap-2 px-4 pb-4">
+            <AmountRow label="상품 금액" amount={payment.productAmount} />
+            <AmountRow label="배송비" amount={payment.shippingAmount} />
+            <AmountRow label="할인 금액" amount={-payment.discountAmount} />
+            <AmountRow label="적립금 사용" amount={-payment.pointsUsed} />
+            <div className="mt-2 flex flex-col gap-2 border-t border-border-neutral-weak pt-3">
+              <AmountRow
+                label="결제 금액"
+                amount={payment.totalAmount}
+                emphasis
+              />
+              <div className="flex justify-between text-body-s text-font-dark-secondary">
+                <span>결제 수단</span>
+                <span>{paymentMethodLabel}</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );

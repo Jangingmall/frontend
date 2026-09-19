@@ -33,6 +33,7 @@ describe("OrderDetailArtisanGroup", () => {
       <OrderDetailArtisanGroup
         group={group()}
         shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
         onAction={() => {}}
       />,
     );
@@ -50,6 +51,7 @@ describe("OrderDetailArtisanGroup", () => {
       <OrderDetailArtisanGroup
         group={group({ artisanName: null })}
         shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
         onAction={() => {}}
       />,
     );
@@ -86,6 +88,7 @@ describe("OrderDetailArtisanGroup", () => {
           ],
         })}
         shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
         onAction={() => {}}
       />,
     );
@@ -100,6 +103,7 @@ describe("OrderDetailArtisanGroup", () => {
       <OrderDetailArtisanGroup
         group={testGroup}
         shippingAmount={3000}
+        orderedAt="2026-09-01T00:00:00.000Z"
         onAction={onAction}
       />,
     );

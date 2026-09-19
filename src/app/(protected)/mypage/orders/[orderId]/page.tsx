@@ -6,7 +6,6 @@ import { useState } from "react";
 
 import type { ChangeOrderAddressRequest } from "@/api/orders/api";
 import { ErrorState } from "@/components/common/error-state";
-import { OrderInfoBar } from "@/components/order/OrderInfoBar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import type { OrderCardActionType } from "@/constants/order";
@@ -26,6 +25,7 @@ import { DeliveryTrackingModal } from "./_components/DeliveryTrackingModal";
 import { OrderAddressChangeModal } from "./_components/OrderAddressChangeModal";
 import { OrderDetailArtisanGroup } from "./_components/OrderDetailArtisanGroup";
 import { OrderDetailBackLink } from "./_components/OrderDetailBackLink";
+import { OrderDetailInfoBar } from "./_components/OrderDetailInfoBar";
 import { OrderShippingPaymentPanel } from "./_components/OrderShippingPaymentPanel";
 
 /**
@@ -150,14 +150,10 @@ export default function OrderDetailPage() {
       <div className="flex flex-col gap-6">
         <OrderDetailBackLink />
 
-        {overallStatus && (
-          <OrderInfoBar
-            variant="single"
-            status={overallStatus}
-            orderNumber={order.orderNumber}
-            orderDate={dayjs(order.orderedAt).format("YYYY.MM.DD")}
-          />
-        )}
+        <OrderDetailInfoBar
+          orderNumber={order.orderNumber}
+          orderDate={dayjs(order.orderedAt).format("YYYY.MM.DD")}
+        />
 
         {actionError != null && (
           <p role="alert" className="text-body-s text-red-font">
@@ -172,6 +168,7 @@ export default function OrderDetailPage() {
                 key={group.artisanName ?? "unknown-artisan"}
                 group={group}
                 shippingAmount={order.payment.shippingAmount}
+                orderedAt={order.orderedAt}
                 onAction={(item, action) => void handleAction(item, action)}
               />
             ))}

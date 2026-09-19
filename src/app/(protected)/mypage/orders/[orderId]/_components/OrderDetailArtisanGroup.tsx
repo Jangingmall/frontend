@@ -12,6 +12,7 @@ import { OrderDetailItemCard } from "./OrderDetailItemCard";
 interface OrderDetailArtisanGroupProps {
   group: OrderDetailArtisanGroupModel;
   shippingAmount: Money;
+  orderedAt: string;
   onAction: (item: OrderDetailItem, action: OrderCardActionType) => void;
 }
 
@@ -23,6 +24,7 @@ interface OrderDetailArtisanGroupProps {
 export function OrderDetailArtisanGroup({
   group,
   shippingAmount,
+  orderedAt,
   onAction,
 }: OrderDetailArtisanGroupProps) {
   const artisanName = group.artisanName ?? "제작자 정보 준비 중";
@@ -55,6 +57,7 @@ export function OrderDetailArtisanGroup({
             key={item.orderItemId}
             item={item}
             shippingAmount={shippingAmount}
+            orderedAt={orderedAt}
             onAction={(action) => onAction(item, action)}
           />
         ))}
