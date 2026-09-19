@@ -52,18 +52,18 @@ describe("getOrderCardActions", () => {
     ]);
   });
 
-  it("배송완료 상태는 후기 작성에 적립금 배지가 붙는다", () => {
+  it("배송완료 상태의 버튼 순서를 반환한다(교환·환불 신청 → 후기 작성)", () => {
     expect(getOrderCardActions("DELIVERED", false)).toEqual([
       { action: "confirmPurchase" },
-      { action: "writeReview", withReward: true },
       { action: "requestExchangeRefund" },
+      { action: "writeReview" },
     ]);
   });
 
-  it("구매확정 상태는 후기 작성에 적립금 배지가 붙는다", () => {
+  it("구매확정 상태의 버튼 순서를 반환한다", () => {
     expect(getOrderCardActions("PURCHASE_CONFIRMED", false)).toEqual([
       { action: "addToCart" },
-      { action: "writeReview", withReward: true },
+      { action: "writeReview" },
       { action: "buyAgain" },
     ]);
   });

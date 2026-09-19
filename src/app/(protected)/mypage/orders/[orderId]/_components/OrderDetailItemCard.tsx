@@ -161,23 +161,17 @@ export function OrderDetailItemCard({
           </Button>
         )}
         <div className="flex items-center gap-2">
-          {restActions.map(({ action, withReward }) => (
-            <div key={action} className="relative flex-1">
-              <Button
-                variant="solid"
-                size="m"
-                className="w-full"
-                disabled={!onAction}
-                onClick={() => onAction?.(action)}
-              >
-                {ORDER_CARD_ACTION_LABEL[action]}
-              </Button>
-              {withReward && (
-                <span className="absolute -top-2.5 right-0 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b text-font-dark">
-                  적립금 + 100원
-                </span>
-              )}
-            </div>
+          {restActions.map(({ action }) => (
+            <Button
+              key={action}
+              variant="solid"
+              size="m"
+              className="flex-1"
+              disabled={!onAction}
+              onClick={() => onAction?.(action)}
+            >
+              {ORDER_CARD_ACTION_LABEL[action]}
+            </Button>
           ))}
         </div>
       </div>

@@ -96,14 +96,17 @@ export const ORDER_CARD_ACTION_LABEL: Record<OrderCardActionType, string> = {
 
 export interface OrderCardActionItem {
   action: OrderCardActionType;
-  /** `writeReview` 전용 — "적립금 +100원" 배지 표시 */
-  withReward?: boolean;
 }
 
 /**
  * 상태 → 액션 버튼 매트릭스. `CANCELED`만 예외 — 사유(reason) 유무로 버튼 세트가
  * 갈리는 게 실측으로 확인됐다(소비자 취소: 장바구니 담기·바로 구매하기 / 장인 취소:
  * 1:1 문의만). 나머지 13개 상태는 `hasReason`과 무관하게 고정 매트릭스를 돌려준다.
+ *
+ * `DELIVERED`의 버튼 순서·"적립금 +100원" 배지 유무는 원래 GUI 스펙시트 주석 기준으로
+ * 확정했었으나, T-28에서 주문 상세(MY-1-OD) 실제 화면 인스턴스 5개를 다시 실측한 결과
+ * 순서가 "교환·환불 신청 → 후기 작성"이고 배지는 어디에도 없어 실측대로 정정했다
+ * (GUI 파일 스펙시트보다 실제 인스턴스가 SoT).
  */
 export function getOrderCardActions(
   status: OrderStatus,
@@ -129,13 +132,13 @@ export function getOrderCardActions(
     case "DELIVERED":
       return [
         { action: "confirmPurchase" },
-        { action: "writeReview", withReward: true },
         { action: "requestExchangeRefund" },
+        { action: "writeReview" },
       ];
     case "PURCHASE_CONFIRMED":
       return [
         { action: "addToCart" },
-        { action: "writeReview", withReward: true },
+        { action: "writeReview" },
         { action: "buyAgain" },
       ];
     case "CANCELED":

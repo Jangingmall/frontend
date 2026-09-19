@@ -121,23 +121,17 @@ export function OrderProductCard(props: OrderProductCardProps) {
       {isDetailed && (
         <div className="flex items-center gap-2">
           {getOrderCardActions(props.status, !!props.reason).map(
-            ({ action, withReward }) => (
-              <div key={action} className="relative flex-1">
-                <Button
-                  variant="solid"
-                  size="m"
-                  className="w-full"
-                  disabled={!props.onAction}
-                  onClick={() => props.onAction?.(action)}
-                >
-                  {ORDER_CARD_ACTION_LABEL[action]}
-                </Button>
-                {withReward && (
-                  <span className="absolute -top-2.5 right-0 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b text-font-dark">
-                    적립금 + 100원
-                  </span>
-                )}
-              </div>
+            ({ action }) => (
+              <Button
+                key={action}
+                variant="solid"
+                size="m"
+                className="flex-1"
+                disabled={!props.onAction}
+                onClick={() => props.onAction?.(action)}
+              >
+                {ORDER_CARD_ACTION_LABEL[action]}
+              </Button>
             ),
           )}
           <button
