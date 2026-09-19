@@ -1,6 +1,7 @@
 "use client";
 
 import dayjs from "dayjs";
+import { useRouter } from "next/navigation";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import { EmptyState } from "@/components/common/empty-state";
@@ -40,6 +41,7 @@ interface MultiItemOrderCardProps {
   orderDate: string;
   isExpanded: boolean;
   onToggle: () => void;
+  onViewDetail: () => void;
 }
 
 /**
@@ -61,6 +63,7 @@ function MultiItemOrderCard({
   orderDate,
   isExpanded,
   onToggle,
+  onViewDetail,
 }: MultiItemOrderCardProps) {
   const detailRef = useRef<HTMLDivElement>(null);
   const [detailHeight, setDetailHeight] = useState(0);
@@ -95,6 +98,7 @@ function MultiItemOrderCard({
           thumbnail={representative.thumbnailUrl}
           productName={representative.productName}
           price={representative.price}
+          onViewDetail={onViewDetail}
         />
       </div>
       <div
@@ -118,6 +122,7 @@ function MultiItemOrderCard({
               price={item.price}
               status={item.status}
               showStatusBadge
+              onViewDetail={onViewDetail}
             />
           ))}
         </div>
@@ -135,8 +140,9 @@ function MultiItemOrderCard({
 
 /**
  * 주문 목록 — 단일/다중 상품 그룹 렌더링 + 그룹별 독립 펼침·접힘(design.md §6.3, T-21 §0-1).
- * 액션 버튼(주문 상세보기·주문 취소 등)은 의도적으로 연결하지 않는다 — 이 화면은 조회·필터만
- * 담당하고, 실제 내비게이션·mutation은 후속 작업(주문 상세·취소/교환/환불)이 배선한다.
+ * "주문 상세보기"는 주문 상세 화면(`/mypage/orders/[orderId]`, T-28)으로 연결한다 —
+ * T-27 design.md가 이 배선을 T-28 몫으로 남겨뒀던 것. 상태별 액션 버튼(주문 취소 등)은
+ * 여전히 연결하지 않는다 — 그건 주문 상세 화면 자체의 몫이라 목록에서 중복으로 안 만든다.
  */
 function OrdersList({
   data,
@@ -146,9 +152,14 @@ function OrdersList({
   onRetry,
   onPageChange,
 }: OrdersListProps) {
+  const router = useRouter();
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<number>>(
     new Set(),
   );
+
+  function viewDetail(orderId: number) {
+    router.push(`/mypage/orders/${orderId}`);
+  }
 
   function toggle(orderId: number) {
     setExpandedOrderIds((prev) => {
@@ -208,6 +219,7 @@ function OrdersList({
                 price={item.price}
                 status={item.status}
                 showStatusBadge={false}
+                onViewDetail={() => viewDetail(order.orderId)}
               />
             </div>
           );
@@ -220,6 +232,7 @@ function OrdersList({
             orderDate={orderDate}
             isExpanded={isExpanded}
             onToggle={() => toggle(order.orderId)}
+            onViewDetail={() => viewDetail(order.orderId)}
           />
         );
       })}

@@ -1,11 +1,20 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Page } from "@/types/api";
 import type { OrderGroup } from "@/types/order";
 
 import { OrdersList } from "./OrdersList";
+
+const mockPush = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush }),
+}));
+
+beforeEach(() => {
+  mockPush.mockClear();
+});
 
 function order(overrides: Partial<OrderGroup> = {}): OrderGroup {
   return {
@@ -215,6 +224,63 @@ describe("OrdersList", () => {
     expect(detailRow.style.maxHeight).toBe("1200px");
 
     scrollHeightSpy.mockRestore();
+  });
+
+  it("단일 상품 주문의 주문 상세보기 클릭 시 상세 화면으로 이동한다(T-28)", async () => {
+    const user = userEvent.setup();
+    render(
+      <OrdersList
+        data={page([order({ orderId: 42 })])}
+        isPending={false}
+        isFetching={false}
+        hasError={false}
+        onRetry={vi.fn()}
+        onPageChange={vi.fn()}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: /주문 상세보기/ }));
+    expect(mockPush).toHaveBeenCalledWith("/mypage/orders/42");
+  });
+
+  it("다중 상품 주문의 주문 상세보기 클릭 시 상세 화면으로 이동한다(T-28)", async () => {
+    const user = userEvent.setup();
+    const multi = order({
+      orderId: 7,
+      items: [
+        {
+          productId: 10,
+          thumbnailUrl: null,
+          productName: "백자 달항아리",
+          price: 320000,
+          quantity: 1,
+          status: "DELIVERED",
+        },
+        {
+          productId: 11,
+          thumbnailUrl: null,
+          productName: "옻칠 3단 찬합",
+          price: 189000,
+          quantity: 1,
+          status: "DELIVERED",
+        },
+      ],
+    });
+    render(
+      <OrdersList
+        data={page([multi])}
+        isPending={false}
+        isFetching={false}
+        hasError={false}
+        onRetry={vi.fn()}
+        onPageChange={vi.fn()}
+      />,
+    );
+    await user.click(
+      within(screen.getByTestId("order-compact-row")).getByRole("button", {
+        name: /주문 상세보기/,
+      }),
+    );
+    expect(mockPush).toHaveBeenCalledWith("/mypage/orders/7");
   });
 
   it("페이지네이션 클릭 시 onPageChange를 호출한다", async () => {
