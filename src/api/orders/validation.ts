@@ -13,6 +13,8 @@ const returnInfoDto = z
   .object({
     type: z.enum(["EXCHANGE", "RETURN"]),
     status: z.enum(["REQUESTED", "REJECTED", "APPROVED", "COMPLETED"]),
+    /** 목업 전용 확장 — 실제 계약엔 사유 텍스트가 없다(BE 미제공). */
+    reason: z.string().nullish(),
   })
   .passthrough();
 
@@ -128,6 +130,12 @@ export const orderDetailResponseDto = z
     paymentMethod: z.string().nullish(),
     discountAmount: z.number().int().optional(),
     pointsUsed: z.number().int().optional(),
+    /**
+     * 목업 전용 필드 — `status === "CANCELED"`일 때의 취소 사유·주체. `returnInfo`와
+     * 별개다(취소는 반품/교환 흐름을 안 타고 `status`로 바로 온다). BE 미제공.
+     */
+    cancelReason: z.string().nullish(),
+    canceledBy: z.enum(["CONSUMER", "ARTISAN"]).nullish(),
     /**
      * 목업 전용 필드 — "구매 확정" 상태는 BE에 대응 상태값 자체가 없다(`be-requests.md` #6).
      * 실제 계약이 생기면 이 필드 대신 `status` 유니온에 값이 추가될 것이다.

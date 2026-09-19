@@ -59,6 +59,18 @@ export interface OrderDetailItem {
   /** 주문 단위 계산값 복제 — `OrderListItem.status`와 같은 이유(BE는 아이템별 상태가 없다). */
   status: OrderStatus;
   artisanName: string | null;
+  /**
+   * 교환/환불/취소 사유 — 실제 계약엔 없는 필드다(`returnInfo`엔 `type`·`status`만 있음,
+   * 취소도 마찬가지). BE 미제공, 목업 전용 확장(`artisanName`과 같은 패턴) — 응답에 없으면
+   * `null`, 상태별 사유 배너(Figma `1718:16488`)를 보여줄 때 쓴다.
+   */
+  reason: string | null;
+  /**
+   * 주문 취소 주체 — `CANCELED` 상태에서만 의미 있다. 사유 유무만으론 소비자·장인 취소를
+   * 못 가른다(실측 결과 둘 다 사유 배너가 있음, constants/order.ts 참고). BE 미제공,
+   * 목업 전용 확장.
+   */
+  cancelInitiator: "consumer" | "artisan" | null;
 }
 
 /** 제작자(장인) 이름 기준으로 묶은 상품 그룹 — Figma가 장인별로 섹션을 나눠 보여준다. */

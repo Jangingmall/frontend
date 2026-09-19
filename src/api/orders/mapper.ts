@@ -128,6 +128,8 @@ export function mapOrderListPage(dto: OrderListResponseDto): Page<OrderGroup> {
 function mapOrderDetailItem(
   dto: OrderDetailItemDto,
   status: OrderStatus,
+  reason: string | null,
+  cancelInitiator: "consumer" | "artisan" | null,
 ): OrderDetailItem {
   return {
     orderItemId: dto.orderItemId,
@@ -139,7 +141,23 @@ function mapOrderDetailItem(
     options: dto.options ?? [],
     status,
     artisanName: dto.artisanName ?? null,
+    reason,
+    cancelInitiator,
   };
+}
+
+/** BE `canceledBy`(대문자 enum) → FE 표기(소문자) 변환. */
+function mapCancelInitiator(
+  canceledBy: OrderDetailResponseDto["canceledBy"],
+): "consumer" | "artisan" | null {
+  switch (canceledBy) {
+    case "CONSUMER":
+      return "consumer";
+    case "ARTISAN":
+      return "artisan";
+    default:
+      return null;
+  }
 }
 
 /** 아이템을 `artisanName` 기준으로 묶는다 — 처음 등장한 순서를 유지한다. */
@@ -174,7 +192,16 @@ export function mapOrderDetail(dto: OrderDetailResponseDto): OrderDetail {
     throw new Error(`주문 상태를 표시할 수 없습니다 (orderId: ${dto.orderId})`);
   }
 
-  const items = dto.items.map((item) => mapOrderDetailItem(item, status));
+  // 사유·취소 주체는 상태에 따라 출처가 다르다 — 교환/환불류는 returnInfo, 취소는
+  // 주문 자체 필드(cancelReason/canceledBy)에서 온다(둘 다 BE 미제공, 목업 전용).
+  const reason = dto.returnInfo?.reason ?? dto.cancelReason ?? null;
+  const cancelInitiator =
+    status === ORDER_STATUS.CANCELED
+      ? mapCancelInitiator(dto.canceledBy)
+      : null;
+  const items = dto.items.map((item) =>
+    mapOrderDetailItem(item, status, reason, cancelInitiator),
+  );
   const productAmount = items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,

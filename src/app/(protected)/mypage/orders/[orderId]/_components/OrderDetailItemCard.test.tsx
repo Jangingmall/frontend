@@ -16,6 +16,8 @@ function item(overrides: Partial<OrderDetailItem> = {}): OrderDetailItem {
     options: ["색상: 백자색"],
     status: "SHIPPING",
     artisanName: "김도예",
+    reason: null,
+    cancelInitiator: null,
     ...overrides,
   };
 }

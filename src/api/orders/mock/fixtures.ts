@@ -68,6 +68,12 @@ interface OrderGroupFixture {
   totalAmount: number;
   createdAt: string;
   returnInfo?: ReturnInfoDto;
+  /**
+   * `status === "CANCELED"`일 때만 쓴다 — 상세 화면 사유 배너 목업용
+   * (`OrderDetailFixture`로 그대로 전달됨). 실제 계약엔 없는 목업 전용 필드.
+   */
+  cancelReason?: string;
+  canceledBy?: "CONSUMER" | "ARTISAN";
   items: OrderItemFixture[];
 }
 
@@ -78,21 +84,40 @@ const SINGLE_STATUS_ORDERS: {
   status: OrderStatusDto;
   daysAgo: number;
   returnInfo?: ReturnInfoDto;
+  cancelReason?: string;
+  canceledBy?: "CONSUMER" | "ARTISAN";
 }[] = [
   { status: "CREATED", daysAgo: 0 },
   { status: "PAID", daysAgo: 5 },
   { status: "IN_DELIVERY", daysAgo: 6 },
   { status: "DELIVERED", daysAgo: 20 },
-  { status: "CANCELED", daysAgo: 45 },
+  // 취소는 실측(Figma 1718:16488) 결과 소비자·장인 2가지로 갈려 각각 1건씩 둔다
+  // (constants/order.ts `getOrderDetailActions` CANCELED 분기 참고).
+  {
+    status: "CANCELED",
+    daysAgo: 40,
+    cancelReason: "단순 변심",
+    canceledBy: "CONSUMER",
+  },
+  {
+    status: "CANCELED",
+    daysAgo: 45,
+    cancelReason: "주문 승인 거절 ( 작업 불가 )",
+    canceledBy: "ARTISAN",
+  },
   {
     status: "RETURN_REQUESTED",
     daysAgo: 75,
-    returnInfo: { type: "EXCHANGE", status: "REQUESTED" },
+    returnInfo: { type: "EXCHANGE", status: "REQUESTED", reason: "제품 파손" },
   },
   {
     status: "RETURN_REQUESTED",
     daysAgo: 80,
-    returnInfo: { type: "EXCHANGE", status: "REJECTED" },
+    returnInfo: {
+      type: "EXCHANGE",
+      status: "REJECTED",
+      reason: "상품 사용에 따른 파손",
+    },
   },
   {
     status: "RETURN_REQUESTED",
@@ -102,12 +127,16 @@ const SINGLE_STATUS_ORDERS: {
   {
     status: "RETURN_REQUESTED",
     daysAgo: 140,
-    returnInfo: { type: "RETURN", status: "REQUESTED" },
+    returnInfo: { type: "RETURN", status: "REQUESTED", reason: "제품 파손" },
   },
   {
     status: "RETURN_REQUESTED",
     daysAgo: 170,
-    returnInfo: { type: "RETURN", status: "REJECTED" },
+    returnInfo: {
+      type: "RETURN",
+      status: "REJECTED",
+      reason: "상품 사용에 따른 파손",
+    },
   },
   {
     status: "RETURN_REQUESTED",
@@ -131,6 +160,8 @@ const singleOrders: OrderGroupFixture[] = SINGLE_STATUS_ORDERS.map(
       totalAmount: pool(index).price,
       createdAt: createdAt(spec.daysAgo),
       returnInfo: spec.returnInfo,
+      cancelReason: spec.cancelReason,
+      canceledBy: spec.canceledBy,
       items: [item(index)],
     };
   },
@@ -253,6 +284,8 @@ export interface OrderDetailFixture {
   orderNumber: string;
   status: OrderStatusDto;
   returnInfo?: ReturnInfoDto;
+  cancelReason?: string;
+  canceledBy?: "CONSUMER" | "ARTISAN";
   createdAt: string;
   items: (OrderItemFixture & { options: string[] })[];
   address: {
@@ -280,6 +313,8 @@ export const orderDetailFixtures = new Map<number, OrderDetailFixture>(
       orderNumber: order.orderNumber,
       status: order.status,
       returnInfo: order.returnInfo,
+      cancelReason: order.cancelReason,
+      canceledBy: order.canceledBy,
       createdAt: order.createdAt,
       items: order.items.map((item, itemIndex) => ({
         ...item,

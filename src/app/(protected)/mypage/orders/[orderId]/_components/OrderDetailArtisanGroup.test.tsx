@@ -21,6 +21,8 @@ function group(
         options: [],
         status: "SHIPPING",
         artisanName: "김도예",
+        reason: null,
+        cancelInitiator: null,
       },
     ],
     ...overrides,
@@ -73,6 +75,8 @@ describe("OrderDetailArtisanGroup", () => {
               options: [],
               status: "SHIPPING",
               artisanName: "김도예",
+              reason: null,
+              cancelInitiator: null,
             },
             {
               orderItemId: 2,
@@ -84,6 +88,8 @@ describe("OrderDetailArtisanGroup", () => {
               options: [],
               status: "SHIPPING",
               artisanName: "김도예",
+              reason: null,
+              cancelInitiator: null,
             },
           ],
         })}

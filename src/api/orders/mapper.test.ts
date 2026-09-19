@@ -339,6 +339,45 @@ describe("mapOrderDetail", () => {
     expect(detail.groups[0]!.artisanName).toBeNull();
     expect(detail.groups[0]!.items[0]!.options).toEqual([]);
   });
+
+  it("returnInfo.reason을 아이템에 그대로 옮긴다(교환·환불 사유)", () => {
+    const detail = mapOrderDetail(
+      orderDetailResponseDto.parse(
+        orderDetailDto({
+          status: "RETURN_REQUESTED",
+          returnInfo: {
+            type: "EXCHANGE",
+            status: "REQUESTED",
+            reason: "제품 파손",
+          },
+        }),
+      ),
+    );
+    expect(detail.groups[0]!.items[0]!.reason).toBe("제품 파손");
+    expect(detail.groups[0]!.items[0]!.cancelInitiator).toBeNull();
+  });
+
+  it("CANCELED는 cancelReason·canceledBy를 reason·cancelInitiator로 옮긴다", () => {
+    const detail = mapOrderDetail(
+      orderDetailResponseDto.parse(
+        orderDetailDto({
+          status: "CANCELED",
+          cancelReason: "단순 변심",
+          canceledBy: "CONSUMER",
+        }),
+      ),
+    );
+    expect(detail.groups[0]!.items[0]!.reason).toBe("단순 변심");
+    expect(detail.groups[0]!.items[0]!.cancelInitiator).toBe("consumer");
+  });
+
+  it("사유·취소 주체가 없으면 null이다", () => {
+    const detail = mapOrderDetail(
+      orderDetailResponseDto.parse(orderDetailDto({ status: "DELIVERED" })),
+    );
+    expect(detail.groups[0]!.items[0]!.reason).toBeNull();
+    expect(detail.groups[0]!.items[0]!.cancelInitiator).toBeNull();
+  });
 });
 
 describe("mapOrderDelivery", () => {

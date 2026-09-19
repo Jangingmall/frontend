@@ -106,6 +106,8 @@ export const orderHandlers = [
         totalAmount: productAmount + detail.shippingAmount,
         createdAt: detail.createdAt,
         returnInfo: detail.returnInfo,
+        cancelReason: detail.cancelReason,
+        canceledBy: detail.canceledBy,
         items: detail.items,
         address: detail.address,
         shippingAmount: detail.shippingAmount,

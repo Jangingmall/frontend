@@ -67,6 +67,8 @@ export function OrderDetailArtisanGroup({
             shippingAmount={shippingAmount}
             orderedAt={orderedAt}
             paymentMethod={paymentMethod}
+            reason={item.reason ?? undefined}
+            cancelInitiator={item.cancelInitiator ?? undefined}
             onAction={(action) => onAction(item, action)}
           />
         ))}
