@@ -1,14 +1,10 @@
 "use client";
 
-import {
-  canUseProductCrafts,
-  canUseProductMaterials,
-} from "@/api/products/integration";
+import { canUseProductCrafts } from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { publicEnv } from "@/lib/env";
 import type {
   ProductCategory,
   ProductCraft,
@@ -66,10 +62,10 @@ export function ProductFilters({
         multiple
         defaultValue={
           canUseProductCrafts() && isSubcategory && query.crafts?.length
-            ? ["craft"]
-            : []
+            ? ["craft", "price", "material"]
+            : ["category", "price", "material"]
         }
-        className="[&>div:first-child]:px-2 [&>div:first-child]:pt-2 [&>div:first-child>button]:underline"
+        className="[&_[data-slot=accordion-item]]:border-b [&_[data-slot=accordion-item]]:border-border-neutral-weak [&_[data-slot=accordion]]:space-y-1 [&_[data-slot=accordion]]:pt-1 [&>div:first-child]:py-2 [&>div:first-child]:pl-2 [&>div:first-child>button]:underline"
       >
         {isSubcategory && canUseProductCrafts() && (
           <AccordionItem title={category.name} value="craft">
@@ -83,9 +79,9 @@ export function ProductFilters({
             />
           </AccordionItem>
         )}
-        {!isSubcategory && (
+        {(!isSubcategory || !canUseProductCrafts()) && (
           <AccordionItem title={parent.name} value="category">
-            <nav aria-label="상품 분류" className="flex flex-col">
+            <nav aria-label="상품 분류" className="-mx-2 flex flex-col">
               {children.map((item) => (
                 <button
                   key={item.id}
@@ -99,7 +95,7 @@ export function ProductFilters({
                       maxPrice: undefined,
                     })
                   }
-                  className="border-b border-border-neutral-subtle py-2 text-left text-body-m text-font-dark aria-[current=page]:font-bold"
+                  className="border-b border-border-neutral-subtle px-2 py-2 text-left text-body-m text-font-dark last:border-b-0 aria-[current=page]:font-bold"
                 >
                   {item.name}
                 </button>
@@ -108,48 +104,47 @@ export function ProductFilters({
           </AccordionItem>
         )}
         <AccordionItem title="가격대" value="price">
-          <ProductPriceFilter
-            key={category.id}
-            min={category.minPrice}
-            max={category.maxPrice}
-            minPrice={query.minPrice}
-            maxPrice={query.maxPrice}
-            onChange={onChange}
-          />
+          <div className="-mx-1 pt-2 pb-1">
+            <ProductPriceFilter
+              key={category.id}
+              min={category.minPrice}
+              max={category.maxPrice}
+              minPrice={query.minPrice}
+              maxPrice={query.maxPrice}
+              onChange={onChange}
+            />
+          </div>
         </AccordionItem>
-        {canUseProductMaterials() && (
-          <AccordionItem title="소재" value="material">
-            <div className="grid grid-cols-2 gap-1">
-              {materials.map((material) => {
-                const isSelected =
-                  query.materials?.includes(material.id) ?? false;
-                return (
-                  <Button
-                    key={material.id}
-                    type="button"
-                    variant={isSelected ? "solid" : "outline"}
-                    size="xs"
-                    aria-pressed={isSelected}
-                    onClick={() => handleMaterial(material.id)}
-                  >
-                    {material.name}
-                  </Button>
-                );
-              })}
-            </div>
-          </AccordionItem>
-        )}
+        <AccordionItem title="소재" value="material">
+          <div className="grid grid-cols-2 gap-1">
+            {materials.map((material) => {
+              const isSelected =
+                query.materials?.includes(material.id) ?? false;
+              return (
+                <Button
+                  key={material.id}
+                  type="button"
+                  variant="outline"
+                  className="h-7 min-w-0 text-body-m aria-pressed:border-border-jade-fill aria-pressed:bg-states-hover"
+                  size="xs"
+                  aria-pressed={isSelected}
+                  onClick={() => handleMaterial(material.id)}
+                >
+                  {material.name}
+                </Button>
+              );
+            })}
+          </div>
+        </AccordionItem>
       </Accordion>
-      {publicEnv.apiMocking && (
-        <div className="flex min-h-9 items-center px-2">
-          <Checkbox
-            checked={query.hasGiftWrap ?? false}
-            onCheckedChange={(checked) => onChange({ hasGiftWrap: checked })}
-          >
-            선물 포장 가능
-          </Checkbox>
-        </div>
-      )}
+      <div className="flex min-h-9 items-center px-2">
+        <Checkbox
+          checked={query.hasGiftWrap ?? false}
+          onCheckedChange={(checked) => onChange({ hasGiftWrap: checked })}
+        >
+          선물 포장 가능
+        </Checkbox>
+      </div>
     </aside>
   );
 }

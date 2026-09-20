@@ -25,13 +25,13 @@ vi.mock("@/lib/env", () => ({
   publicEnv: { apiMocking: false, productListApi: true },
 }));
 
-it("목록 설정을 켜도 미지원 종목·소재는 URL·요청·캐시·SEO에 반영하지 않는다", () => {
+it("소재 선택은 URL에 보존하되 미지원 API 요청에는 반영하지 않는다", () => {
   const params = new URLSearchParams(
     "category=다기-찻잔&subcategory=SAGI&material=WOOD&page=2",
   );
   const query = parseProductSearchParams(params);
   expect(query.crafts).toEqual([]);
-  expect(query.materials).toEqual([]);
+  expect(query.materials).toEqual(["WOOD"]);
   const staleQuery = { ...query, crafts: ["SAGI"], materials: ["WOOD"] };
   const request = toProductListSearchParams(staleQuery);
   expect(request.has("subcategory")).toBe(false);
@@ -43,7 +43,7 @@ it("목록 설정을 켜도 미지원 종목·소재는 URL·요청·캐시·SEO
   ]) {
     const updated = updateProductSearchParams(params, patch);
     expect(updated.has("subcategory")).toBe(false);
-    expect(updated.has("material")).toBe(false);
+    expect(updated.has("material")).toBe(true);
   }
   expect(
     getProductSeo({
@@ -51,10 +51,10 @@ it("목록 설정을 켜도 미지원 종목·소재는 URL·요청·캐시·SEO
       subcategory: "SAGI",
       material: "WOOD",
     }).hasFilters,
-  ).toBe(false);
+  ).toBe(true);
 });
 
-it("데이터가 남아 있어도 소재·종목 UI를 숨기고 가격 필터는 유지한다", () => {
+it("실제 API 모드에서도 분류·소재·가격 필터를 표시한다", () => {
   render(
     <ProductFilters
       query={{ category: "다기-찻잔", crafts: ["SAGI"], materials: ["WOOD"] }}
@@ -73,12 +73,8 @@ it("데이터가 남아 있어도 소재·종목 UI를 숨기고 가격 필터�
       onReset={vi.fn()}
     />,
   );
-  expect(
-    screen.queryByRole("button", { name: "다기 · 찻잔" }),
-  ).not.toBeInTheDocument();
-  expect(
-    screen.queryByRole("button", { name: "소재" }),
-  ).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "다기 · 찻잔" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "소재" })).toBeVisible();
   expect(screen.getByRole("button", { name: "가격대" })).toBeVisible();
 });
 

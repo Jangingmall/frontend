@@ -8,9 +8,11 @@ import {
 } from "@/api/products/api";
 import { getQueryClient } from "@/lib/query/server";
 import { productKeys } from "@/queries/products/keys";
+import type { ProductCategory } from "@/types/product-filter";
 
 import { ProductGridSkeleton } from "./_components/ProductGridSkeleton";
 import { ProductListPage } from "./_components/ProductListPage";
+import { resolveCategoryView } from "./_lib/category-view";
 import { parseProductSearchParams } from "./_lib/search-params";
 import { getProductSeo } from "./_lib/seo";
 
@@ -42,19 +44,23 @@ export default async function ProductsPage({
   }
   const query = parseProductSearchParams(params);
   // 초기 조회 실패는 클라이언트의 재시도 가능한 상태 UI에서 처리한다. prefetchQuery는
-  // 실패를 삼키고(캐시에 에러 상태로만 남김) 절대 reject하지 않는다 — Promise.all이
-  // 이 실패 때문에 통째로 실패하지 않는다.
+  // 실패를 캐시에 남기므로 분류 응답 실패가 전체 페이지 렌더링을 막지 않는다.
   const queryClient = getQueryClient();
-  await Promise.all([
-    queryClient.prefetchQuery({
-      queryKey: productKeys.list(query),
-      queryFn: () => fetchProductList(query),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: productKeys.categories,
-      queryFn: () => fetchProductCategoriesServer(),
-    }),
-  ]);
+  await queryClient.prefetchQuery({
+    queryKey: productKeys.categories,
+    queryFn: () => fetchProductCategoriesServer(),
+  });
+  const categories =
+    queryClient.getQueryData<ProductCategory[]>(productKeys.categories) ?? [];
+  const view = resolveCategoryView(query.category, categories);
+  if (view.isMapped) {
+    const apiQuery = { ...query, category: view.apiCategory };
+    await queryClient.prefetchQuery({
+      queryKey: productKeys.list(apiQuery),
+      queryFn: () => fetchProductList(apiQuery),
+    });
+  }
+
   return (
     <Suspense
       fallback={

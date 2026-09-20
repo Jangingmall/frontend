@@ -73,7 +73,9 @@ describe("PL-3 종목 필터", () => {
         onChange={onChange}
       />,
     );
-    await user.click(screen.getByRole("button", { name: "키친 · 다이닝" }));
+    expect(
+      screen.getByRole("button", { name: "키친 · 다이닝" }),
+    ).toHaveAttribute("aria-expanded", "true");
     await user.click(screen.getByRole("button", { name: "다기 · 찻잔" }));
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ category: "kitchen-1" }),

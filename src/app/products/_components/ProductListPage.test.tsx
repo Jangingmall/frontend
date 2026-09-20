@@ -46,12 +46,13 @@ it("실제 API 모드에서 비활성 소재 조회를 기다리지 않고 가�
         "총 0개의 검색 결과",
       ),
     );
+    expect(screen.queryByRole("button", { name: "소재" })).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "소재" }),
+      screen.getByRole("checkbox", { name: "선물 포장 가능" }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole("navigation", { name: "실제 상품 분류" }),
     ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("navigation", { name: "실제 상품 분류" }),
-    ).toHaveTextContent("도자기");
     expect(fetchSpy).not.toHaveBeenCalled();
   } finally {
     unmount();
