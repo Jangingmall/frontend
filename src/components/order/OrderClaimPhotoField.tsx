@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 const MAX_PHOTOS = 5;
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
@@ -29,18 +29,25 @@ export function OrderClaimPhotoField({
   const inputRef = useRef<HTMLInputElement>(null);
   const [localError, setLocalError] = useState<string | null>(null);
 
-  // `value`(파일 추가·삭제 — 둘 다 새 배열)가 바뀔 때만 미리보기 URL을 새로 만들고,
-  // 이전 URL은 배열이 바뀌거나 언마운트될 때 해제한다(Codex 리뷰 F2 — 렌더마다 새로
-  // 만들고 해제 안 하던 누수 수정).
-  const previewUrls = useMemo(
-    () => value.map((file) => URL.createObjectURL(file)),
-    [value],
-  );
+  // 미리보기 URL은 `value`를 바꾸는 이 두 핸들러 안에서만 만들고 해제한다 — 렌더 중엔
+  // 절대 호출하지 않는다. 렌더 중 호출(`useMemo` 등)은 커밋되지 않고 버려지는 렌더에서도
+  // 실행돼 새고(Codex 리뷰 F3), `useEffect`에서 만들면 커밋 이후에야 생겨 사진을 추가할
+  // 때마다 썸네일이 한 프레임 늦게 뜬다(`react-hooks/set-state-in-effect`가 막는 이유이기도
+  // 하다). `value`와 항상 같은 길이로 맞춰 든다.
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const previewUrlsRef = useRef(previewUrls);
+  useEffect(() => {
+    previewUrlsRef.current = previewUrls;
+  }, [previewUrls]);
+
+  // 모달이 통째로 닫혀 언마운트될 때 그 시점까지 남아 있는 URL을 전부 해제한다(예: 폼
+  // `reset()`으로 `value`가 이 핸들러를 거치지 않고 바로 `[]`가 되는 경우 — 그래도 실제
+  // 상위 모달은 곧이어 언마운트되므로 여기서 정리된다).
   useEffect(() => {
     return () => {
-      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     };
-  }, [previewUrls]);
+  }, []);
 
   function handleSelect(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -53,6 +60,10 @@ export function OrderClaimPhotoField({
       return;
     }
     const next = [...value, ...files].slice(0, MAX_PHOTOS);
+    const addedUrls = next
+      .slice(value.length)
+      .map((file) => URL.createObjectURL(file));
+    setPreviewUrls((prev) => [...prev, ...addedUrls]);
     if (value.length + files.length > MAX_PHOTOS) {
       setLocalError(`사진은 최대 ${MAX_PHOTOS}장까지 첨부할 수 있습니다.`);
     } else {
@@ -63,6 +74,9 @@ export function OrderClaimPhotoField({
 
   function removeAt(index: number) {
     setLocalError(null);
+    const removedUrl = previewUrls[index];
+    if (removedUrl) URL.revokeObjectURL(removedUrl);
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
     onChange(value.filter((_, i) => i !== index));
   }
 

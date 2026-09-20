@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -51,6 +51,39 @@ describe("OrderClaimPhotoField", () => {
     await user.click(screen.getByLabelText("photo.png 삭제"));
 
     expect(revokeSpy).toHaveBeenCalled();
+    revokeSpy.mockRestore();
+  });
+
+  it("파일마다 object URL을 정확히 한 번만 만든다(Codex 리뷰 F3 — 렌더 중 생성 금지)", async () => {
+    const createSpy = vi.spyOn(URL, "createObjectURL");
+    const user = userEvent.setup();
+    render(<Wrapper />);
+
+    const input =
+      document.querySelector<HTMLInputElement>('input[type="file"]')!;
+    await user.upload(input, [file("a.png"), file("b.png")]);
+    await waitFor(() =>
+      expect(screen.getByLabelText("a.png 삭제")).toBeInTheDocument(),
+    );
+
+    expect(createSpy).toHaveBeenCalledTimes(2);
+    createSpy.mockRestore();
+  });
+
+  it("사진이 남은 채로 언마운트되면(폼 reset 등) 남은 URL도 전부 해제한다", async () => {
+    const revokeSpy = vi.spyOn(URL, "revokeObjectURL");
+    const user = userEvent.setup();
+    const { unmount } = render(<Wrapper />);
+
+    const input =
+      document.querySelector<HTMLInputElement>('input[type="file"]')!;
+    await user.upload(input, [file("a.png"), file("b.png")]);
+    await waitFor(() =>
+      expect(screen.getByLabelText("a.png 삭제")).toBeInTheDocument(),
+    );
+
+    unmount();
+    expect(revokeSpy).toHaveBeenCalledTimes(2);
     revokeSpy.mockRestore();
   });
 
