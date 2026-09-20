@@ -46,6 +46,8 @@ interface OrderProductCardDetailedProps extends OrderProductCardBaseProps {
    * `OrderInfoBar` 가 "총 N 건"이라 개별 상태를 안 보여주므로 이때만 `true`로 켠다.
    */
   showStatusBadge?: boolean;
+  /** 이미 작성한 후기가 있으면 "후기 작성" 버튼을 제외한다(`constants/order.ts` 참고). */
+  reviewId?: number | null;
   onAction?: (action: OrderCardActionType) => void;
 }
 
@@ -121,29 +123,31 @@ export function OrderProductCard(props: OrderProductCardProps) {
 
       {isDetailed && (
         <div className="flex items-center gap-2">
-          {getOrderCardActions(props.status, !!props.reason).map(
-            ({ action, withReward }) => (
-              <div key={action} className="relative flex-1">
-                <Button
-                  variant="solid"
-                  size="m"
-                  className="w-full"
-                  disabled={
-                    !props.onAction ||
-                    !ORDER_LIST_IMPLEMENTED_ACTIONS.has(action)
-                  }
-                  onClick={() => props.onAction?.(action)}
-                >
-                  {ORDER_CARD_ACTION_LABEL[action]}
-                </Button>
-                {withReward && (
-                  <span className="absolute -top-2.5 right-0 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b text-font-dark">
-                    적립금 + 100원
-                  </span>
-                )}
-              </div>
-            ),
-          )}
+          {getOrderCardActions(
+            props.status,
+            !!props.reason,
+            undefined,
+            props.reviewId != null,
+          ).map(({ action, withReward }) => (
+            <div key={action} className="relative flex-1">
+              <Button
+                variant="solid"
+                size="m"
+                className="w-full"
+                disabled={
+                  !props.onAction || !ORDER_LIST_IMPLEMENTED_ACTIONS.has(action)
+                }
+                onClick={() => props.onAction?.(action)}
+              >
+                {ORDER_CARD_ACTION_LABEL[action]}
+              </Button>
+              {withReward && (
+                <span className="absolute -top-2.5 right-0 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b text-font-dark">
+                  적립금 + 100원
+                </span>
+              )}
+            </div>
+          ))}
           <button
             type="button"
             disabled

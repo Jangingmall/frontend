@@ -136,6 +136,7 @@ function MultiItemOrderCard({
               price={item.price}
               status={item.status}
               reason={item.reason ?? undefined}
+              reviewId={item.reviewId}
               showStatusBadge
               onViewDetail={onViewDetail}
               onAction={onAction && ((action) => onAction(item, action))}
@@ -237,6 +238,7 @@ function OrdersList({
                 price={item.price}
                 status={item.status}
                 reason={item.reason ?? undefined}
+                reviewId={item.reviewId}
                 showStatusBadge={false}
                 onViewDetail={() => viewDetail(order.orderId)}
                 onAction={

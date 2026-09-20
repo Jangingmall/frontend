@@ -63,6 +63,7 @@ export function OrderDetailItemCard({
     !!reason,
     paymentMethod,
     cancelInitiator,
+    item.reviewId != null,
   );
   // 대표 액션(있으면 solid 단독 한 줄) + 나머지(outline, 균등폭 한 줄) — Figma 실측
   // (`1718:16488`). 대표 액션은 항상 배열 맨 앞이다(constants/order.ts 참고).
