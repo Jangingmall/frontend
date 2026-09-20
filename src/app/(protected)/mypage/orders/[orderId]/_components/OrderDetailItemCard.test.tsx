@@ -18,6 +18,7 @@ function item(overrides: Partial<OrderDetailItem> = {}): OrderDetailItem {
     artisanName: "김도예",
     reason: null,
     cancelInitiator: null,
+    reviewId: null,
     ...overrides,
   };
 }

@@ -125,6 +125,7 @@ export const ORDER_DETAIL_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
   "confirmPurchase",
   "checkDelivery",
   "requestExchangeRefund",
+  "writeReview",
 ]);
 
 /**
@@ -135,6 +136,7 @@ export const ORDER_DETAIL_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
 export const ORDER_LIST_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
   "cancelOrder",
   "requestExchangeRefund",
+  "writeReview",
 ]);
 
 export interface OrderCardActionItem {
@@ -169,6 +171,20 @@ export function getOrderCardActions(
    * 노출한다(T-27 때부터의 기존 동작 유지) — 상세 화면(MY-1-OD)만 실제 값을 넘겨
    * 필터링한다.
    */
+  paymentMethod?: string | null,
+  /** 이미 후기를 작성한 아이템이면 `writeReview`를 목록에서 제외한다(중복 작성 방지 —
+   * BE가 주문 아이템당 후기 1개만 허용한다). */
+  hasReview = false,
+): OrderCardActionItem[] {
+  const actions = getOrderCardActionsInternal(status, hasReason, paymentMethod);
+  return hasReview
+    ? actions.filter((item) => item.action !== "writeReview")
+    : actions;
+}
+
+function getOrderCardActionsInternal(
+  status: OrderStatus,
+  hasReason: boolean,
   paymentMethod?: string | null,
 ): OrderCardActionItem[] {
   switch (status) {
@@ -242,6 +258,26 @@ export function getOrderCardActions(
  * 목록 매트릭스 + "1:1 문의" 자동 추가로 대체한다(다른 상태들과 같은 보수적 기본값).
  */
 export function getOrderDetailActions(
+  status: OrderStatus,
+  hasReason: boolean,
+  paymentMethod?: string | null,
+  cancelInitiator?: "consumer" | "artisan",
+  /** 이미 후기를 작성한 아이템이면 `writeReview`를 목록에서 제외한다(`getOrderCardActions`와
+   * 같은 이유) — `cancelInitiator` 뒤 5번째 자리에 둔다. */
+  hasReview = false,
+): OrderCardActionItem[] {
+  const actions = getOrderDetailActionsInternal(
+    status,
+    hasReason,
+    paymentMethod,
+    cancelInitiator,
+  );
+  return hasReview
+    ? actions.filter((item) => item.action !== "writeReview")
+    : actions;
+}
+
+function getOrderDetailActionsInternal(
   status: OrderStatus,
   hasReason: boolean,
   paymentMethod?: string | null,

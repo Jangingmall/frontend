@@ -98,6 +98,24 @@ describe("getOrderCardActions", () => {
     ]);
   });
 
+  it("hasReview가 true면 이미 작성한 아이템의 후기 작성 버튼을 제외한다", () => {
+    expect(getOrderCardActions("DELIVERED", false, undefined, true)).toEqual([
+      { action: "confirmPurchase" },
+      { action: "requestExchangeRefund" },
+    ]);
+    expect(
+      getOrderCardActions("PURCHASE_CONFIRMED", false, undefined, true),
+    ).toEqual([{ action: "addToCart" }, { action: "buyAgain" }]);
+  });
+
+  it("hasReview가 false(기본값)면 후기 작성 버튼을 그대로 둔다", () => {
+    expect(getOrderCardActions("DELIVERED", false)).toEqual([
+      { action: "confirmPurchase" },
+      { action: "writeReview", withReward: true },
+      { action: "requestExchangeRefund" },
+    ]);
+  });
+
   it("주문취소 상태는 사유가 없으면 장바구니 담기·바로 구매하기를 보여준다", () => {
     expect(getOrderCardActions("CANCELED", false)).toEqual([
       { action: "addToCart" },
@@ -198,6 +216,16 @@ describe("getOrderDetailActions", () => {
       { action: "writeReview", style: "solid" },
       { action: "addToCart", style: "outline" },
       { action: "buyAgain", style: "outline" },
+      { action: "inquiry", style: "outline" },
+    ]);
+  });
+
+  it("hasReview가 true면 5번째 인자로 후기 작성 버튼을 제외한다(cancelInitiator 자리와 안 겹침)", () => {
+    expect(
+      getOrderDetailActions("DELIVERED", false, undefined, undefined, true),
+    ).toEqual([
+      { action: "confirmPurchase", style: "solid" },
+      { action: "requestExchangeRefund", style: "outline" },
       { action: "inquiry", style: "outline" },
     ]);
   });
@@ -344,28 +372,29 @@ describe("getOrderDetailNoticeLines", () => {
 });
 
 describe("ORDER_DETAIL_IMPLEMENTED_ACTIONS", () => {
-  it("실제로 연결된 액션(주문취소·구매확정·배송조회·교환환불신청)만 포함한다(독립 리뷰 F2)", () => {
+  it("실제로 연결된 액션(주문취소·구매확정·배송조회·교환환불신청·후기작성)만 포함한다(독립 리뷰 F2)", () => {
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("cancelOrder")).toBe(true);
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("confirmPurchase")).toBe(true);
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("checkDelivery")).toBe(true);
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("requestExchangeRefund")).toBe(
       true,
     );
+    expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("writeReview")).toBe(true);
   });
 
   it("아직 연결 안 된 액션은 포함하지 않는다", () => {
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("inquiry")).toBe(false);
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("addToCart")).toBe(false);
-    expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("writeReview")).toBe(false);
   });
 });
 
 describe("ORDER_LIST_IMPLEMENTED_ACTIONS", () => {
-  it("취소·교환환불 신청 모달을 여는 두 액션만 포함한다", () => {
+  it("취소·교환환불 신청·후기작성 모달을 여는 액션만 포함한다", () => {
     expect(ORDER_LIST_IMPLEMENTED_ACTIONS.has("cancelOrder")).toBe(true);
     expect(ORDER_LIST_IMPLEMENTED_ACTIONS.has("requestExchangeRefund")).toBe(
       true,
     );
+    expect(ORDER_LIST_IMPLEMENTED_ACTIONS.has("writeReview")).toBe(true);
     expect(ORDER_LIST_IMPLEMENTED_ACTIONS.has("inquiry")).toBe(false);
     expect(ORDER_LIST_IMPLEMENTED_ACTIONS.has("checkDelivery")).toBe(false);
   });
