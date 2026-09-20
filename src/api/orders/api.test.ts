@@ -1,5 +1,9 @@
 import dayjs from "dayjs";
+import { http } from "msw";
 import { describe, expect, it } from "vitest";
+
+import { mockOk } from "@/mocks/envelope";
+import { server } from "@/mocks/server";
 
 import {
   changeOrderAddress,
@@ -13,6 +17,7 @@ import {
   requestOrderExchangeRefund,
 } from "./api";
 import { orderFixtures } from "./mock/fixtures";
+import type { OrderGroupDto } from "./validation";
 
 // 상태별 주문 id를 파일 로드 시점(= 어떤 mutation 테스트도 실행되기 전)에 한 번만 캡처한다.
 // mutation 테스트가 나중에 이 배열의 `status`를 바꾸므로, 매번 `.find`로 다시 찾으면
@@ -143,6 +148,60 @@ describe("fetchCancellationOrdersList", () => {
     const orderedAts = result.items.map((o) => o.orderedAt);
     const sorted = [...orderedAts].sort((a, b) => (a < b ? 1 : -1));
     expect(orderedAts).toEqual(sorted);
+  });
+
+  it("한 상태의 건수가 100건을 넘어도 뒤쪽 페이지가 비지 않는다(CodeRabbit 리뷰)", async () => {
+    const total = 150;
+    const canceledOrders: OrderGroupDto[] = Array.from(
+      { length: total },
+      (_, i) => ({
+        orderId: 90000 + i,
+        orderNumber: `ORD-CANCEL-${String(i).padStart(3, "0")}`,
+        status: "CANCELED",
+        totalAmount: 10000,
+        createdAt: dayjs()
+          .subtract(total - i, "day")
+          .toISOString(),
+        items: [
+          {
+            orderItemId: 1,
+            productId: 1,
+            productName: "테스트 상품",
+            price: 10000,
+            quantity: 1,
+            thumbnail: [],
+          },
+        ],
+      }),
+    );
+
+    server.use(
+      http.get("*/api/member/me/orders", ({ request }) => {
+        const url = new URL(request.url);
+        const page = Number(url.searchParams.get("page") ?? "0");
+        const size = Number(url.searchParams.get("size") ?? "20");
+        const status = url.searchParams.get("status");
+        const filtered = status === "CANCELED" ? canceledOrders : [];
+        const offset = page * size;
+        const content = filtered.slice(offset, offset + size);
+        return mockOk({
+          content,
+          totalElements: filtered.length,
+          totalPages: Math.ceil(filtered.length / size),
+          size,
+          number: page,
+          first: page === 0,
+          last: offset + size >= filtered.length,
+          empty: content.length === 0,
+        });
+      }),
+    );
+
+    const result = await fetchCancellationOrdersList({ page: 2, size: 100 });
+    expect(result.totalCount).toBe(total);
+    // 이전엔 상태별 100건 상한 탓에 101건째 이후가 통째로 사라져 2페이지가 비었다.
+    expect(result.items).toHaveLength(50);
+    expect(result.items.map((o) => o.orderId)).toContain(90000);
   });
 });
 

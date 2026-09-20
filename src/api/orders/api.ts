@@ -48,16 +48,42 @@ const CANCELLATION_STATUS_GROUPS: readonly OrderStatusGroupKey[] = [
 ];
 
 /**
+ * 한 상태 그룹의 전체 페이지를 모아 온다(`fetchCancellationOrdersList` 전용). 첫 페이지로
+ * `totalPages`를 알아낸 뒤 나머지 페이지를 병렬로 마저 가져온다 — 취소·교환·환불 누적
+ * 건수는 현실적으로 수십 건 수준이라 페이지 수가 적다.
+ */
+async function fetchAllOrdersByStatus(
+  status: OrderStatusGroupKey,
+  query: OrdersListQuery,
+): Promise<{ items: OrderGroup[]; totalCount: number }> {
+  const pageSize = 100;
+  const first = await fetchOrdersList({
+    ...query,
+    status,
+    page: 1,
+    size: pageSize,
+  });
+  if (first.totalPages <= 1) {
+    return { items: first.items, totalCount: first.totalCount };
+  }
+  const rest = await Promise.all(
+    Array.from({ length: first.totalPages - 1 }, (_, i) =>
+      fetchOrdersList({ ...query, status, page: i + 2, size: pageSize }),
+    ),
+  );
+  return {
+    items: [...first.items, ...rest.flatMap((p) => p.items)],
+    totalCount: first.totalCount,
+  };
+}
+
+/**
  * 취소·교환·환불 내역(Figma MY-2) "전체" 탭 전용 목록 조회. BE `status` 쿼리 파라미터는
  * 값 하나만 받아(`MemberReadRepositoryImpl.orders` — `ALL` 아니면 단일 `o.status=:status`
  * 동등비교) "교환·환불 + 주문취소를 합친 전체"를 한 번에 요청할 방법이 없다(`be-requests.md`
- * 참고) — 두 상태를 병렬로 가져와 주문일 내림차순으로 합친 뒤 요청한 페이지 구간만
- * 잘라낸다. 개별 탭(교환·환불/주문취소)은 이미 단일 raw status라 `fetchOrdersList`로 그대로
- * 위임한다.
- *
- * 한계: 병합 페이지네이션이라 한 회원의 취소+교환·환불 누적 건수가 BE 페이지 크기 상한
- * (100)을 넘으면 그 이후 페이지는 정확하지 않다 — 실사용 규모에선 발생하지 않는다고 보고
- * 넘어간다.
+ * 참고) — 두 상태 각각의 전체 페이지를 가져와(`fetchAllOrdersByStatus`) 주문일 내림차순으로
+ * 합친 뒤 요청한 페이지 구간만 잘라낸다. 개별 탭(교환·환불/주문취소)은 이미 단일 raw
+ * status라 `fetchOrdersList`로 그대로 위임한다.
  */
 export async function fetchCancellationOrdersList(
   query: OrdersListQuery = {},
@@ -66,16 +92,15 @@ export async function fetchCancellationOrdersList(
     return fetchOrdersList(query);
   }
   const { page, size } = resolveOrdersListPaging(query);
-  const upto = Math.min(page * size, 100);
-  const pages = await Promise.all(
+  const results = await Promise.all(
     CANCELLATION_STATUS_GROUPS.map((status) =>
-      fetchOrdersList({ ...query, status, page: 1, size: upto }),
+      fetchAllOrdersByStatus(status, query),
     ),
   );
-  const merged = pages
-    .flatMap((p) => p.items)
+  const merged = results
+    .flatMap((r) => r.items)
     .sort((a, b) => (a.orderedAt < b.orderedAt ? 1 : -1));
-  const totalCount = pages.reduce((sum, p) => sum + p.totalCount, 0);
+  const totalCount = results.reduce((sum, r) => sum + r.totalCount, 0);
   return {
     items: merged.slice((page - 1) * size, page * size),
     page,
