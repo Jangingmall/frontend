@@ -26,11 +26,11 @@ interface OrdersListProps {
   /**
    * 있으면 `cancelOrder`·`requestExchangeRefund`(취소·교환·환불 신청 모달을 여는 액션)
    * 버튼이 활성화된다 — 그 외 액션은 `ORDER_LIST_IMPLEMENTED_ACTIONS`에 없어
-   * `OrderProductCard`가 계속 비활성 처리한다.
+   * `OrderProductCard`가 계속 비활성 처리한다. `order`는 그 카드가 속한 주문 전체(모달의
+   * 주문번호·구매일자 표시용).
    */
   onAction?: (
-    orderId: number,
-    orderNumber: string,
+    order: OrderGroup,
     item: OrderListItem,
     action: OrderCardActionType,
   ) => void;
@@ -240,9 +240,7 @@ function OrdersList({
                 showStatusBadge={false}
                 onViewDetail={() => viewDetail(order.orderId)}
                 onAction={
-                  onAction &&
-                  ((action) =>
-                    onAction(order.orderId, order.orderNumber, item, action))
+                  onAction && ((action) => onAction(order, item, action))
                 }
               />
             </div>
@@ -258,9 +256,7 @@ function OrdersList({
             onToggle={() => toggle(order.orderId)}
             onViewDetail={() => viewDetail(order.orderId)}
             onAction={
-              onAction &&
-              ((item, action) =>
-                onAction(order.orderId, order.orderNumber, item, action))
+              onAction && ((item, action) => onAction(order, item, action))
             }
           />
         );

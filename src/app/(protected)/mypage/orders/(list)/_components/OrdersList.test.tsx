@@ -295,7 +295,7 @@ describe("OrdersList", () => {
     expect(mockPush).toHaveBeenCalledWith("/mypage/orders/7");
   });
 
-  it("onAction이 있으면 구현된 액션 버튼이 활성화되고 orderId·orderNumber·item·action을 전달한다", async () => {
+  it("onAction이 있으면 구현된 액션 버튼이 활성화되고 order·item·action을 전달한다", async () => {
     const user = userEvent.setup();
     const handleAction = vi.fn();
     render(
@@ -328,8 +328,7 @@ describe("OrdersList", () => {
     );
     await user.click(screen.getByRole("button", { name: "주문 취소" }));
     expect(handleAction).toHaveBeenCalledWith(
-      5,
-      "JJ000005",
+      expect.objectContaining({ orderId: 5, orderNumber: "JJ000005" }),
       expect.objectContaining({ orderItemId: 100 }),
       "cancelOrder",
     );
