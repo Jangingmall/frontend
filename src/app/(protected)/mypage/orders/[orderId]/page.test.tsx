@@ -31,6 +31,12 @@ const preparingOrderId = orderFixtures.find(
 const paymentPendingOrderId = orderFixtures.find(
   (order) => order.status === "CREATED",
 )!.orderId;
+// "구매 확정" 테스트가 첫 번째 DELIVERED 주문을 상태 변경하므로, 교환·환불 신청
+// 테스트는 별개 주문을 써야 한다(위 주석과 동일한 이유).
+const deliveredOrderIds = orderFixtures
+  .filter((order) => order.status === "DELIVERED")
+  .map((order) => order.orderId);
+const secondDeliveredOrderId = deliveredOrderIds[1]!;
 
 let mockOrderId = String(deliveredOrderId);
 vi.mock("next/navigation", () => ({
@@ -185,5 +191,62 @@ describe("OrderDetailPage", () => {
     expect(
       screen.queryByRole("button", { name: "배송지 변경" }),
     ).not.toBeInTheDocument();
+  });
+
+  it("주문 취소하기 클릭 시 즉시 취소되지 않고 취소 요청 모달이 뜬다(T-29 정정)", async () => {
+    const user = userEvent.setup();
+    mockOrderId = String(paymentPendingOrderId);
+    renderPage();
+
+    await user.click(
+      await screen.findByRole("button", { name: "주문 취소하기" }),
+    );
+    expect(
+      screen.getByRole("heading", { name: "주문 취소 요청" }),
+    ).toBeInTheDocument();
+  });
+
+  it("취소 사유를 고르고 등록하면 주문이 취소되고 모달이 닫힌다", async () => {
+    const user = userEvent.setup();
+    mockOrderId = String(paymentPendingOrderId);
+    renderPage();
+
+    await user.click(
+      await screen.findByRole("button", { name: "주문 취소하기" }),
+    );
+    await user.click(screen.getByRole("combobox", { name: "취소 사유" }));
+    await user.click(await screen.findByRole("option", { name: "단순 변심" }));
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("heading", { name: "주문 취소 요청" }),
+      ).not.toBeInTheDocument(),
+    );
+    expect(await screen.findByText("주문 취소")).toBeInTheDocument();
+  });
+
+  it("교환·환불 신청 클릭 시 모달이 뜨고, 사진 없이는 제출되지 않는다(필수)", async () => {
+    const user = userEvent.setup();
+    mockOrderId = String(secondDeliveredOrderId);
+    renderPage();
+
+    await user.click(
+      await screen.findByRole("button", { name: "교환 · 환불 신청" }),
+    );
+    expect(
+      screen.getByRole("heading", { name: "교환 · 환불 신청" }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "교환" }));
+    await user.click(screen.getByRole("combobox", { name: "신청 사유" }));
+    await user.click(
+      await screen.findByRole("option", { name: "상품 파손/불량" }),
+    );
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+
+    expect(
+      await screen.findByText("사진을 1장 이상 첨부해주세요."),
+    ).toBeInTheDocument();
   });
 });

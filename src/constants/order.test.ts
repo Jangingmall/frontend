@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  CANCELLATION_STATUS_FILTER_TABS,
   getOrderCardActions,
   getOrderDetailActions,
   getOrderDetailNoticeLines,
   getOrderDetailReasonLabel,
   getOrderDetailReasonSuffix,
   ORDER_DETAIL_IMPLEMENTED_ACTIONS,
+  ORDER_LIST_IMPLEMENTED_ACTIONS,
+  ORDER_RETURN_REASON_MAP,
   ORDER_STATUS,
   ORDER_STATUS_FILTER_TABS,
   ORDER_STATUS_GROUP,
@@ -341,16 +344,59 @@ describe("getOrderDetailNoticeLines", () => {
 });
 
 describe("ORDER_DETAIL_IMPLEMENTED_ACTIONS", () => {
-  it("실제로 연결된 액션(주문취소·구매확정·배송조회)만 포함한다(독립 리뷰 F2)", () => {
+  it("실제로 연결된 액션(주문취소·구매확정·배송조회·교환환불신청)만 포함한다(독립 리뷰 F2)", () => {
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("cancelOrder")).toBe(true);
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("confirmPurchase")).toBe(true);
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("checkDelivery")).toBe(true);
+    expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("requestExchangeRefund")).toBe(
+      true,
+    );
   });
 
   it("아직 연결 안 된 액션은 포함하지 않는다", () => {
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("inquiry")).toBe(false);
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("addToCart")).toBe(false);
     expect(ORDER_DETAIL_IMPLEMENTED_ACTIONS.has("writeReview")).toBe(false);
+  });
+});
+
+describe("ORDER_LIST_IMPLEMENTED_ACTIONS", () => {
+  it("취소·교환환불 신청 모달을 여는 두 액션만 포함한다", () => {
+    expect(ORDER_LIST_IMPLEMENTED_ACTIONS.has("cancelOrder")).toBe(true);
+    expect(ORDER_LIST_IMPLEMENTED_ACTIONS.has("requestExchangeRefund")).toBe(
+      true,
+    );
+    expect(ORDER_LIST_IMPLEMENTED_ACTIONS.has("inquiry")).toBe(false);
+    expect(ORDER_LIST_IMPLEMENTED_ACTIONS.has("checkDelivery")).toBe(false);
+  });
+});
+
+describe("CANCELLATION_STATUS_FILTER_TABS", () => {
+  it("전체/교환·환불/주문취소 3종만 포함한다(MY-2)", () => {
+    expect(CANCELLATION_STATUS_FILTER_TABS.map((tab) => tab.key)).toEqual([
+      "ALL",
+      "EXCHANGE_REFUND",
+      "CANCELED",
+    ]);
+  });
+});
+
+describe("ORDER_RETURN_REASON_MAP", () => {
+  it("전용 BE enum이 있는 라벨만 매핑한다", () => {
+    expect(ORDER_RETURN_REASON_MAP["단순 변심"]).toBe("CHANGE_OF_MIND");
+    expect(ORDER_RETURN_REASON_MAP["상품 파손/불량"]).toBe("DEFECTIVE");
+    expect(ORDER_RETURN_REASON_MAP["주문한 상품과 다른 상품이 배송됨"]).toBe(
+      "WRONG_ITEM",
+    );
+    expect(ORDER_RETURN_REASON_MAP["배송 지연 및 오배송"]).toBe(
+      "WRONG_DELIVERY",
+    );
+  });
+
+  it("전용 값이 없는 라벨(구성품 누락·판매자 요청·직접 입력)은 매핑에 없다 — 호출측이 OTHER로 폴백한다", () => {
+    expect(ORDER_RETURN_REASON_MAP["구성품 누락"]).toBeUndefined();
+    expect(ORDER_RETURN_REASON_MAP["판매자 요청"]).toBeUndefined();
+    expect(ORDER_RETURN_REASON_MAP["직접 입력"]).toBeUndefined();
   });
 });
 

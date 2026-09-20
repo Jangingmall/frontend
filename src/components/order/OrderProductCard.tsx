@@ -10,6 +10,7 @@ import { ChevronRightIcon } from "@/components/ui/icons";
 import {
   getOrderCardActions,
   ORDER_CARD_ACTION_LABEL,
+  ORDER_LIST_IMPLEMENTED_ACTIONS,
   ORDER_STATUS_LABEL,
   type OrderCardActionType,
   type OrderStatus,
@@ -127,7 +128,10 @@ export function OrderProductCard(props: OrderProductCardProps) {
                   variant="solid"
                   size="m"
                   className="w-full"
-                  disabled={!props.onAction}
+                  disabled={
+                    !props.onAction ||
+                    !ORDER_LIST_IMPLEMENTED_ACTIONS.has(action)
+                  }
                   onClick={() => props.onAction?.(action)}
                 >
                   {ORDER_CARD_ACTION_LABEL[action]}

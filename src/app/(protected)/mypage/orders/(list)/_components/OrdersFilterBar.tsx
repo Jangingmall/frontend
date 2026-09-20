@@ -24,7 +24,18 @@ interface OrdersFilterBarProps {
   onCustomRangeChange: (range: { from: string; to: string }) => void;
   onStatusChange: (status: "ALL" | OrderStatusGroupKey) => void;
   onSearch: (artisanName: string) => void;
+  /** MY-2(취소·교환·환불 내역)는 3탭만 쓴다 — 기본값은 MY-1의 8탭. */
+  statusTabs?: { key: "ALL" | OrderStatusGroupKey; label: string }[];
+  /** MY-2는 이 화면 전용 안내 문구를 쓴다 — 기본값은 MY-1의 4줄. */
+  notices?: string[];
 }
+
+const DEFAULT_NOTICES = [
+  "주문 번호 / 자세히 보기를 클릭하시면 해당 주문에 대한 상세 내역 확인이 가능합니다.",
+  "취소 / 교환 / 반품 신청은 배송 완료일 기준 7일까지 가능합니다.",
+  "주문 상태 및 상품의 사용·훼손 여부에 따라 취소 / 교환 / 반품 신청이 제한될 수 있습니다.",
+  "단순 변심에 의한 교환 / 반품 시 배송비가 발생할 수 있습니다.",
+];
 
 const PERIOD_PRESETS = Object.values(ORDER_PERIOD_PRESET).filter(
   (preset): preset is Exclude<OrderPeriodPreset, "CUSTOM"> =>
@@ -55,6 +66,8 @@ function OrdersFilterBar({
   onCustomRangeChange,
   onStatusChange,
   onSearch,
+  statusTabs = ORDER_STATUS_FILTER_TABS,
+  notices = DEFAULT_NOTICES,
 }: OrdersFilterBarProps) {
   // `SearchField`를 controlled로 두고, `artisanName`이 "바깥"에서 바뀔 때만(뒤로가기 등)
   // draft를 다시 동기화한다. 검색 자신의 커밋으로 인한 변경은 `lastCommitted` state로 걸러내
@@ -120,7 +133,7 @@ function OrdersFilterBar({
           aria-label="주문 처리 상태"
           className="flex flex-wrap gap-1"
         >
-          {ORDER_STATUS_FILTER_TABS.map((tab) => (
+          {statusTabs.map((tab) => (
             <Button
               key={tab.key}
               type="button"
@@ -137,16 +150,9 @@ function OrdersFilterBar({
       </div>
 
       <ul className="list-disc space-y-1 py-2 pl-5 text-caption text-font-label">
-        <li>
-          주문 번호 / 자세히 보기를 클릭하시면 해당 주문에 대한 상세 내역 확인이
-          가능합니다.
-        </li>
-        <li>취소 / 교환 / 반품 신청은 배송 완료일 기준 7일까지 가능합니다.</li>
-        <li>
-          주문 상태 및 상품의 사용·훼손 여부에 따라 취소 / 교환 / 반품 신청이
-          제한될 수 있습니다.
-        </li>
-        <li>단순 변심에 의한 교환 / 반품 시 배송비가 발생할 수 있습니다.</li>
+        {notices.map((notice) => (
+          <li key={notice}>{notice}</li>
+        ))}
       </ul>
     </div>
   );

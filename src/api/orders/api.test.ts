@@ -1,16 +1,23 @@
 import dayjs from "dayjs";
+import { http } from "msw";
 import { describe, expect, it } from "vitest";
 
+import { mockOk } from "@/mocks/envelope";
+import { server } from "@/mocks/server";
+
 import {
-  cancelOrder,
   changeOrderAddress,
   confirmPurchase,
+  fetchCancellationOrdersList,
   fetchOrderDelivery,
   fetchOrderDetail,
   fetchOrdersList,
   fetchOrderStatusSummary,
+  requestOrderCancel,
+  requestOrderExchangeRefund,
 } from "./api";
 import { orderFixtures } from "./mock/fixtures";
+import type { OrderGroupDto } from "./validation";
 
 // 상태별 주문 id를 파일 로드 시점(= 어떤 mutation 테스트도 실행되기 전)에 한 번만 캡처한다.
 // mutation 테스트가 나중에 이 배열의 `status`를 바꾸므로, 매번 `.find`로 다시 찾으면
@@ -22,9 +29,10 @@ const createdOrderIds = orderFixtures
 const paidOrderId = orderFixtures.find(
   (order) => order.status === "PAID",
 )!.orderId;
-const deliveredOrderId = orderFixtures.find(
-  (order) => order.status === "DELIVERED",
-)!.orderId;
+const deliveredOrderIds = orderFixtures
+  .filter((order) => order.status === "DELIVERED")
+  .map((order) => order.orderId);
+const deliveredOrderId = deliveredOrderIds[0]!;
 const inDeliveryOrderId = orderFixtures.find(
   (order) => order.status === "IN_DELIVERY",
 )!.orderId;
@@ -102,6 +110,101 @@ describe("fetchOrdersList", () => {
   });
 });
 
+describe("fetchCancellationOrdersList", () => {
+  it("'전체' 탭은 교환·환불·취소 상태만 합쳐서 돌려준다(취소·교환·환불 화면 전용)", async () => {
+    const expectedCount = orderFixtures.filter(
+      (order) =>
+        order.status === "CANCELED" || order.status === "RETURN_REQUESTED",
+    ).length;
+    const result = await fetchCancellationOrdersList({ size: 100 });
+    expect(result.totalCount).toBe(expectedCount);
+    expect(result.items.length).toBe(expectedCount);
+    expect(
+      result.items.every((order) =>
+        order.items.every(
+          (item) =>
+            item.status !== "PAYMENT_PENDING" &&
+            item.status !== "PREPARING" &&
+            item.status !== "SHIPPING" &&
+            item.status !== "DELIVERED",
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("개별 상태 탭(교환·환불/주문취소)은 단일 조회 결과와 같다", async () => {
+    const [cancellation, plain] = await Promise.all([
+      fetchCancellationOrdersList({ status: "CANCELED", size: 100 }),
+      fetchOrdersList({ status: "CANCELED", size: 100 }),
+    ]);
+    expect(cancellation.totalCount).toBe(plain.totalCount);
+    expect(cancellation.items.map((o) => o.orderId)).toEqual(
+      plain.items.map((o) => o.orderId),
+    );
+  });
+
+  it("주문일 내림차순으로 병합·정렬한다", async () => {
+    const result = await fetchCancellationOrdersList({ size: 100 });
+    const orderedAts = result.items.map((o) => o.orderedAt);
+    const sorted = [...orderedAts].sort((a, b) => (a < b ? 1 : -1));
+    expect(orderedAts).toEqual(sorted);
+  });
+
+  it("한 상태의 건수가 100건을 넘어도 뒤쪽 페이지가 비지 않는다(CodeRabbit 리뷰)", async () => {
+    const total = 150;
+    const canceledOrders: OrderGroupDto[] = Array.from(
+      { length: total },
+      (_, i) => ({
+        orderId: 90000 + i,
+        orderNumber: `ORD-CANCEL-${String(i).padStart(3, "0")}`,
+        status: "CANCELED",
+        totalAmount: 10000,
+        createdAt: dayjs()
+          .subtract(total - i, "day")
+          .toISOString(),
+        items: [
+          {
+            orderItemId: 1,
+            productId: 1,
+            productName: "테스트 상품",
+            price: 10000,
+            quantity: 1,
+            thumbnail: [],
+          },
+        ],
+      }),
+    );
+
+    server.use(
+      http.get("*/api/member/me/orders", ({ request }) => {
+        const url = new URL(request.url);
+        const page = Number(url.searchParams.get("page") ?? "0");
+        const size = Number(url.searchParams.get("size") ?? "20");
+        const status = url.searchParams.get("status");
+        const filtered = status === "CANCELED" ? canceledOrders : [];
+        const offset = page * size;
+        const content = filtered.slice(offset, offset + size);
+        return mockOk({
+          content,
+          totalElements: filtered.length,
+          totalPages: Math.ceil(filtered.length / size),
+          size,
+          number: page,
+          first: page === 0,
+          last: offset + size >= filtered.length,
+          empty: content.length === 0,
+        });
+      }),
+    );
+
+    const result = await fetchCancellationOrdersList({ page: 2, size: 100 });
+    expect(result.totalCount).toBe(total);
+    // 이전엔 상태별 100건 상한 탓에 101건째 이후가 통째로 사라져 2페이지가 비었다.
+    expect(result.items).toHaveLength(50);
+    expect(result.items.map((o) => o.orderId)).toContain(90000);
+  });
+});
+
 describe("fetchOrderStatusSummary", () => {
   it("최근 3개월 기준 상태별 카운트를 돌려준다", async () => {
     const summary = await fetchOrderStatusSummary();
@@ -139,18 +242,52 @@ describe("fetchOrderDelivery", () => {
   });
 });
 
-describe("cancelOrder", () => {
-  it("입금 확인 중(CREATED) 주문을 취소하면 상세 상태가 CANCELED로 바뀐다", async () => {
+describe("requestOrderCancel", () => {
+  it("취소를 요청하면 사유가 반영되어 상세 상태가 CANCELED로 바뀐다", async () => {
     const orderId = createdOrderIds[0]!;
-    await cancelOrder(orderId);
+    await requestOrderCancel(orderId, {
+      reason: "단순 변심",
+      imageIds: [],
+    });
     const detail = await fetchOrderDetail(orderId);
     expect(detail.groups[0]!.items[0]!.status).toBe("CANCELED");
   });
 
-  it("결제 완료 주문은 취소할 수 없다(BUSINESS_RULE_VIOLATION)", async () => {
-    await expect(cancelOrder(paidOrderId)).rejects.toMatchObject({
-      status: 422,
+  it("존재하지 않는 주문은 404를 던진다", async () => {
+    await expect(
+      requestOrderCancel(999_999_999, { reason: "단순 변심", imageIds: [] }),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+});
+
+describe("requestOrderExchangeRefund", () => {
+  it("교환·환불을 신청하면 상세 상태가 RETURN_REQUESTED로 바뀐다", async () => {
+    const orderId = deliveredOrderIds[1]!;
+    const detailBefore = await fetchOrderDetail(orderId);
+    const orderItemId = detailBefore.groups[0]!.items[0]!.orderItemId;
+
+    await requestOrderExchangeRefund(orderId, {
+      type: "RETURN",
+      orderItemId,
+      reason: "CHANGE_OF_MIND",
+      description: "단순 변심",
+      imageIds: [],
     });
+
+    const detail = await fetchOrderDetail(orderId);
+    expect(detail.groups[0]!.items[0]!.status).toBe("REFUND_REQUESTED");
+    expect(detail.groups[0]!.items[0]!.reason).toBe("단순 변심");
+  });
+
+  it("존재하지 않는 주문은 404를 던진다", async () => {
+    await expect(
+      requestOrderExchangeRefund(999_999_999, {
+        type: "EXCHANGE",
+        orderItemId: 1,
+        reason: "DEFECTIVE",
+        imageIds: [],
+      }),
+    ).rejects.toMatchObject({ status: 404 });
   });
 });
 

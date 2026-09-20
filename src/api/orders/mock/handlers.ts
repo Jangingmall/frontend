@@ -142,26 +142,73 @@ export const orderHandlers = [
     },
   ),
 
-  /** `POST /api/payments/orders/{orderId}/cancel` — 목업 전용(T-28, `be-requests.md` #6). */
+  /**
+   * `POST /api/payments/orders/{orderId}/cancel-request` — 목업 전용 경로(대응 BE 엔드포인트
+   * 없음, `be-requests.md` #6). 사유·사진(imageId만, 실제 저장은 안 함)을 받아 즉시 승인
+   * 처리한다 — 승인 대기 흐름은 정책 미확정이라 로드맵 원칙대로 전부 허용한다.
+   */
   http.post<PathParams, DefaultBodyType, Envelope>(
-    "*/api/payments/orders/:orderId/cancel",
-    ({ params }) => {
+    "*/api/payments/orders/:orderId/cancel-request",
+    async ({ params, request }) => {
       const orderId = Number(params.orderId);
       const detail = orderDetailFixtures.get(orderId);
       if (!detail) return mockError(404, "NOT_FOUND");
-      if (detail.status !== "CREATED") {
-        return mockError(
-          422,
-          "BUSINESS_RULE_VIOLATION",
-          "결제 전 주문만 취소할 수 있습니다.",
-        );
-      }
+      const body = (await request.json()) as { reason?: string };
       detail.status = "CANCELED";
+      detail.cancelReason = body.reason;
+      detail.canceledBy = "CONSUMER";
       const listOrder = orderFixtures.find(
         (order) => order.orderId === orderId,
       );
-      if (listOrder) listOrder.status = "CANCELED";
+      if (listOrder) {
+        listOrder.status = "CANCELED";
+        listOrder.cancelReason = body.reason;
+        listOrder.canceledBy = "CONSUMER";
+      }
       return mockOk(null);
+    },
+  ),
+
+  /**
+   * `POST /api/payments/returns` — 실제 BE 경로 그대로(`ReturnController`/`ReturnService`,
+   * `docs/api-contract.md` §8). 승인 대기 흐름·상태 전이 제한(BE는 `PAID`/`DELIVERED`만
+   * 허용)은 목업에서 걸지 않는다 — 로드맵 원칙대로 전부 허용, 정책 확정 시 별도 반영.
+   */
+  http.post<PathParams, DefaultBodyType, Envelope>(
+    "*/api/payments/returns",
+    async ({ request }) => {
+      const body = (await request.json()) as {
+        orderId: number;
+        type: "EXCHANGE" | "RETURN";
+        reason: string;
+        description?: string;
+      };
+      const orderId = Number(body.orderId);
+      const detail = orderDetailFixtures.get(orderId);
+      if (!detail) return mockError(404, "NOT_FOUND");
+
+      const returnInfo = {
+        type: body.type,
+        status: "REQUESTED" as const,
+        reason: body.description ?? body.reason,
+      };
+      detail.status = "RETURN_REQUESTED";
+      detail.returnInfo = returnInfo;
+      const listOrder = orderFixtures.find(
+        (order) => order.orderId === orderId,
+      );
+      if (listOrder) {
+        listOrder.status = "RETURN_REQUESTED";
+        listOrder.returnInfo = returnInfo;
+      }
+
+      return mockOk({
+        returnId: Math.floor(Math.random() * 1_000_000),
+        orderId,
+        type: body.type,
+        status: "REQUESTED",
+        requestedAt: new Date().toISOString(),
+      });
     },
   ),
 

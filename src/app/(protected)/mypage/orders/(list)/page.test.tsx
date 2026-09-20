@@ -69,4 +69,44 @@ describe("MypageOrdersPage", () => {
     await user.click(screen.getByRole("button", { name: "2 페이지" }));
     expect(new URLSearchParams(window.location.search).get("page")).toBe("2");
   });
+
+  // "주문 취소" 필터 탭 버튼도 같은 접근성 이름을 써서(`aria-pressed`를 가짐) 카드
+  // 액션 버튼(`aria-pressed` 없음)과 구분해야 한다.
+  async function clickCardCancelButton() {
+    const buttons = await screen.findAllByRole("button", {
+      name: "주문 취소",
+    });
+    const actionButton = buttons.find(
+      (button) => !button.hasAttribute("aria-pressed"),
+    )!;
+    await userEvent.setup().click(actionButton);
+  }
+
+  it("입금 확인 중 주문의 주문 취소 버튼을 누르면 취소 요청 모달이 뜬다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findAllByText("주문번호 :");
+    await user.click(screen.getByRole("button", { name: "입금 확인 중" }));
+    await clickCardCancelButton();
+    expect(
+      screen.getByRole("heading", { name: "주문 취소 요청" }),
+    ).toBeInTheDocument();
+  });
+
+  it("취소 사유를 고르고 등록하면 모달이 닫힌다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findAllByText("주문번호 :");
+    await user.click(screen.getByRole("button", { name: "입금 확인 중" }));
+    await clickCardCancelButton();
+    await user.click(screen.getByRole("combobox", { name: "취소 사유" }));
+    await user.click(await screen.findByRole("option", { name: "단순 변심" }));
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("heading", { name: "주문 취소 요청" }),
+      ).not.toBeInTheDocument(),
+    );
+  });
 });

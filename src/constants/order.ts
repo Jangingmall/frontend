@@ -124,6 +124,17 @@ export const ORDER_DETAIL_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
   "cancelOrder",
   "confirmPurchase",
   "checkDelivery",
+  "requestExchangeRefund",
+]);
+
+/**
+ * 목록 화면(MY-1/MY-2)에서 실제로 mutation·모달이 연결된 액션 — {@link
+ * ORDER_DETAIL_IMPLEMENTED_ACTIONS}(상세 화면)와 같은 패턴. 여기 없는 액션은
+ * `onAction`이 있어도 `OrderProductCard`가 비활성 처리한다.
+ */
+export const ORDER_LIST_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
+  "cancelOrder",
+  "requestExchangeRefund",
 ]);
 
 export interface OrderCardActionItem {
@@ -482,6 +493,24 @@ export const ORDER_STATUS_FILTER_TABS: {
   { key: "CANCELED", label: "주문 취소" },
 ];
 
+/**
+ * MY-2(`/mypage/orders/cancellations`) 상태 필터 탭 3종 — {@link ORDER_STATUS_FILTER_TABS}의
+ * 부분집합(전체/교환·환불/주문취소). 이 화면은 나머지 상태의 카드를 아예 안 보여준다.
+ */
+export const CANCELLATION_STATUS_FILTER_TABS = ORDER_STATUS_FILTER_TABS.filter(
+  (tab) =>
+    tab.key === "ALL" ||
+    tab.key === "EXCHANGE_REFUND" ||
+    tab.key === "CANCELED",
+);
+
+/** MY-2 전용 안내 문구 — MY-1의 3·4번째 문구 대신 이 화면만의 문구가 실측됐다. */
+export const CANCELLATION_NOTICES = [
+  "주문 번호 / 자세히 보기를 클릭하시면 해당 주문에 대한 상세 내역 확인이 가능합니다.",
+  "취소 / 교환 / 반품 신청은 배송 완료일 기준 7일까지 가능합니다.",
+  "취소 완료 후 결제수단에 따라 환불까지 일정 기간이 소요될 수 있습니다.",
+];
+
 /** 요약 스트립 4단계(진행 현황) — `PURCHASE_CONFIRMED`는 Figma대로 제외(확정, design.md §9). */
 export const ORDER_STAGE_SUMMARY_KEYS = [
   "PAYMENT_PENDING",
@@ -549,3 +578,47 @@ export function resolveOrderPeriod(
       return custom ?? { from: to, to };
   }
 }
+
+/** 주문 취소 요청 모달(MY-request) 사유 옵션 — 마지막 항목("직접 입력")만 자유 텍스트 노출. */
+export const ORDER_CANCEL_REASON_OPTIONS = [
+  "단순 변심",
+  "결제수단 변경",
+  "중복 주문",
+  "상품 옵션 변경",
+  "주문 실수",
+  "직접 입력",
+] as const;
+
+/** 교환·환불 신청 모달(MY-exchange)의 "교환" 선택 시 사유 옵션. */
+export const ORDER_EXCHANGE_REASON_OPTIONS = [
+  "상품 파손/불량",
+  "주문한 상품과 다른 상품이 배송됨",
+  "구성품 누락",
+  "직접 입력",
+] as const;
+
+/** 교환·환불 신청 모달(MY-exchange)의 "환불" 선택 시 사유 옵션. */
+export const ORDER_REFUND_REASON_OPTIONS = [
+  "단순 변심",
+  "상품 파손/불량",
+  "배송 지연 및 오배송",
+  "판매자 요청",
+  "직접 입력",
+] as const;
+
+/** BE `POST /api/payments/returns`의 `reason` enum. */
+export type ReturnReason =
+  "CHANGE_OF_MIND" | "DEFECTIVE" | "WRONG_ITEM" | "WRONG_DELIVERY" | "OTHER";
+
+/**
+ * 교환·환불 신청 Figma 사유 라벨 → BE `ReturnReason` enum. 전용 값이 없는 라벨
+ * ("구성품 누락"·"판매자 요청"·"직접 입력")은 매핑에 없다 — 호출측이 `?? "OTHER"`로
+ * 폴백하고, 그 라벨(또는 직접 입력한 텍스트)을 `description`에 채워 보낸다(BE가
+ * `OTHER`면 `description` 필수).
+ */
+export const ORDER_RETURN_REASON_MAP: Partial<Record<string, ReturnReason>> = {
+  "단순 변심": "CHANGE_OF_MIND",
+  "상품 파손/불량": "DEFECTIVE",
+  "주문한 상품과 다른 상품이 배송됨": "WRONG_ITEM",
+  "배송 지연 및 오배송": "WRONG_DELIVERY",
+};

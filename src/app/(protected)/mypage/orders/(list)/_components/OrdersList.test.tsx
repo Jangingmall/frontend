@@ -23,12 +23,14 @@ function order(overrides: Partial<OrderGroup> = {}): OrderGroup {
     orderedAt: "2026-08-28T00:00:00.000Z",
     items: [
       {
+        orderItemId: 100,
         productId: 10,
         thumbnailUrl: "https://cdn.midam.store/products/1.jpg",
         productName: "백자 달항아리",
         price: 320000,
         quantity: 1,
         status: "DELIVERED",
+        reason: null,
       },
     ],
     ...overrides,
@@ -133,20 +135,24 @@ describe("OrdersList", () => {
       orderNumber: "JJ000002",
       items: [
         {
+          orderItemId: 100,
           productId: 10,
           thumbnailUrl: "https://cdn.midam.store/products/1.jpg",
           productName: "백자 달항아리",
           price: 320000,
           quantity: 1,
           status: "PREPARING",
+          reason: null,
         },
         {
+          orderItemId: 101,
           productId: 11,
           thumbnailUrl: "https://cdn.midam.store/products/2.jpg",
           productName: "옻칠 3단 찬합",
           price: 189000,
           quantity: 1,
           status: "DELIVERED",
+          reason: null,
         },
       ],
     });
@@ -194,12 +200,14 @@ describe("OrdersList", () => {
       orderId: 3,
       orderNumber: "JJ000003",
       items: Array.from({ length: 6 }, (_, i) => ({
+        orderItemId: 200 + i,
         productId: 20 + i,
         thumbnailUrl: "https://cdn.midam.store/products/1.jpg",
         productName: `상품 ${i + 1}`,
         price: 10000,
         quantity: 1,
         status: "DELIVERED" as const,
+        reason: null,
       })),
     });
 
@@ -248,20 +256,24 @@ describe("OrdersList", () => {
       orderId: 7,
       items: [
         {
+          orderItemId: 100,
           productId: 10,
           thumbnailUrl: null,
           productName: "백자 달항아리",
           price: 320000,
           quantity: 1,
           status: "DELIVERED",
+          reason: null,
         },
         {
+          orderItemId: 101,
           productId: 11,
           thumbnailUrl: null,
           productName: "옻칠 3단 찬합",
           price: 189000,
           quantity: 1,
           status: "DELIVERED",
+          reason: null,
         },
       ],
     });
@@ -281,6 +293,74 @@ describe("OrdersList", () => {
       }),
     );
     expect(mockPush).toHaveBeenCalledWith("/mypage/orders/7");
+  });
+
+  it("onAction이 있으면 구현된 액션 버튼이 활성화되고 order·item·action을 전달한다", async () => {
+    const user = userEvent.setup();
+    const handleAction = vi.fn();
+    render(
+      <OrdersList
+        data={page([
+          order({
+            orderId: 5,
+            orderNumber: "JJ000005",
+            items: [
+              {
+                orderItemId: 100,
+                productId: 10,
+                thumbnailUrl: null,
+                productName: "백자 달항아리",
+                price: 320000,
+                quantity: 1,
+                status: "PAYMENT_PENDING",
+                reason: null,
+              },
+            ],
+          }),
+        ])}
+        isPending={false}
+        isFetching={false}
+        hasError={false}
+        onRetry={vi.fn()}
+        onPageChange={vi.fn()}
+        onAction={handleAction}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "주문 취소" }));
+    expect(handleAction).toHaveBeenCalledWith(
+      expect.objectContaining({ orderId: 5, orderNumber: "JJ000005" }),
+      expect.objectContaining({ orderItemId: 100 }),
+      "cancelOrder",
+    );
+  });
+
+  it("reason이 있으면 사유 배너를 보여준다", () => {
+    render(
+      <OrdersList
+        data={page([
+          order({
+            items: [
+              {
+                orderItemId: 100,
+                productId: 10,
+                thumbnailUrl: null,
+                productName: "백자 달항아리",
+                price: 320000,
+                quantity: 1,
+                status: "REFUND_REJECTED",
+                reason: "상품 사용에 따른 파손",
+              },
+            ],
+          }),
+        ])}
+        isPending={false}
+        isFetching={false}
+        hasError={false}
+        onRetry={vi.fn()}
+        onPageChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByText("상품 사용에 따른 파손")).toBeInTheDocument();
   });
 
   it("페이지네이션 클릭 시 onPageChange를 호출한다", async () => {

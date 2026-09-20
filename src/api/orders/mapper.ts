@@ -87,9 +87,18 @@ function mapReturnStatus(returnInfo: ReturnInfoDto): OrderStatus | null {
   }
 }
 
-/** `status`는 주문 전체 계산값을 그대로 복제해 받는다(`types/order.ts` 주석 참고). */
-function mapOrderItem(dto: OrderItemDto, status: OrderStatus): OrderListItem {
+/**
+ * `status`는 주문 전체 계산값을 그대로 복제해 받는다(`types/order.ts` 주석 참고). `reason`도
+ * 마찬가지로 주문 단위 값(`returnInfo.reason`)을 그대로 복제한다 — `CANCELED`는 `returnInfo`
+ * 자체가 없어(`RETURN_REQUESTED`일 때만 옴) 자연히 `null`이 된다.
+ */
+function mapOrderItem(
+  dto: OrderItemDto,
+  status: OrderStatus,
+  reason: string | null,
+): OrderListItem {
   return {
+    orderItemId: dto.orderItemId,
     productId: dto.productId,
     productName: dto.productName,
     price: dto.price,
@@ -97,6 +106,7 @@ function mapOrderItem(dto: OrderItemDto, status: OrderStatus): OrderListItem {
     // BE는 단일 URL을 배열로 감싸 내려준다(variants 없음) — 첫 항목만 쓴다.
     thumbnailUrl: dto.thumbnail[0]?.url ?? null,
     status,
+    reason,
   };
 }
 
@@ -104,11 +114,12 @@ function mapOrderItem(dto: OrderItemDto, status: OrderStatus): OrderListItem {
 function mapOrderGroup(dto: OrderGroupDto): OrderGroup | null {
   const status = mapRawOrderStatus(dto.status, dto.returnInfo);
   if (!status) return null;
+  const reason = dto.returnInfo?.reason ?? null;
   return {
     orderId: dto.orderId,
     orderNumber: dto.orderNumber,
     orderedAt: dto.createdAt,
-    items: dto.items.map((item) => mapOrderItem(item, status)),
+    items: dto.items.map((item) => mapOrderItem(item, status, reason)),
   };
 }
 

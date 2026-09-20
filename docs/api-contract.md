@@ -56,7 +56,7 @@ type PagedResponse<T> = {
   - 예외(문자열 식별자): `imageId`(ULID, 예 `image_01HXYZ`), `sessionId`(챗봇 세션), `orderNumber`(사람이 보는 주문번호 — `orderId`와 별개)
 - **모든 금액 필드는 `Long`** (`price`, `priceDelta`, `amount`, `totalAmount` 등). 원화라 소수 단위 없음.
 - **`rating`은 소수** (`4.8`), 후기 0건이면 `null` (0 아님).
-- 이미지: `imageId`(ULID) + `variants` 배열. variant는 **320w / 640w / 1280w 고정 3종, `format: webp`**.
+- 이미지: `imageId`(ULID) + `variants` 배열. `format: webp` 고정. variant 구성은 **`purpose`마다 다르다**(§8) — 공개 이미지(`PRODUCT` 등)는 320w / 640w / 1280w 3종, `RETURN`은 1280w 1종.
 
 ### 2.3 errorCode
 
@@ -210,12 +210,12 @@ type PagedResponse<T> = {
 
 ### 장바구니 · 주문 · 결제
 
-| 구분      | 엔드포인트                                                                                                                                                                                               |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 장바구니  | `GET /api/payments/cart`, `POST /api/payments/cart/items`, `PATCH\|DELETE /api/payments/cart/items/{cartItemId}`, `PATCH /api/payments/cart/items/{cartItemId}/options`, `POST /api/payments/cart/merge` |
-| 주문·결제 | `POST /api/payments/orders`, `POST /api/payments`(결제 준비), `POST /api/payments/confirm`, `POST /api/payments/fail`, `POST /api/payments/{paymentId}/cancel`, `POST /api/payments/returns`             |
-| 배송      | `GET /api/payments/orders/{orderId}/delivery`                                                                                                                                                            |
-| 이미지    | `POST /api/images/presigned-url` — imageId별 320w/640w/1280w WebP variant 업로드 URL 발급, 5분 유효                                                                                                      |
+| 구분      | 엔드포인트                                                                                                                                                                                                                    |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 장바구니  | `GET /api/payments/cart`, `POST /api/payments/cart/items`, `PATCH\|DELETE /api/payments/cart/items/{cartItemId}`, `PATCH /api/payments/cart/items/{cartItemId}/options`, `POST /api/payments/cart/merge`                      |
+| 주문·결제 | `POST /api/payments/orders`, `POST /api/payments`(결제 준비), `POST /api/payments/confirm`, `POST /api/payments/fail`, `POST /api/payments/{paymentId}/cancel`, `POST /api/payments/returns`                                  |
+| 배송      | `GET /api/payments/orders/{orderId}/delivery`                                                                                                                                                                                 |
+| 이미지    | `POST /api/images/presigned-url` — imageId별 WebP variant 업로드 URL 발급, 5분 유효. 목적(`purpose`)마다 필요한 variant가 다르다: `PRODUCT` 등 공개 이미지는 320w/640w/1280w 3종, `RETURN`(취소·교환·환불 사진)은 1280w 1종만 |
 
 - 게스트 장바구니는 클라이언트 localStorage로 관리한다(쿠키 아님). 로그인 시 `POST /api/payments/cart/merge`에 `guestCartItems: [{ productId, quantity, selectedOptions }]` 배열을 전달해 병합한다(동일 상품 수량 합산). PHASE2-1 §5-8 기준.
 - **결제 완료는 결제 SDK 클라이언트 결과만으로 확정하지 않는다.** `POST /api/payments`로 `paymentId` + `tossClientKey`를 받아 위젯을 마운트하고, 결제 후 `paymentKey`/`orderId`/`amount`를 `POST /api/payments/confirm`에 전달한다. **결제 승인 API의 성공 응답을 기준으로** 주문 완료·주문 목록을 갱신한다.

@@ -166,6 +166,34 @@ describe("mapOrderListPage — BE 원본 상태 → FE 14종 매핑(계약서 §
     expect(page.items).toHaveLength(0);
   });
 
+  it("orderItemId를 그대로 옮긴다(T-29 — 교환·환불 신청 API에 필요)", () => {
+    const page = mapOrderListPage(parseList([orderDto()]));
+    expect(page.items[0]!.items[0]!.orderItemId).toBe(10);
+  });
+
+  it("returnInfo.reason을 아이템에 그대로 옮긴다(교환·환불 사유, T-29)", () => {
+    const page = mapOrderListPage(
+      parseList([
+        orderDto({
+          status: "RETURN_REQUESTED",
+          returnInfo: {
+            type: "RETURN",
+            status: "REJECTED",
+            reason: "상품 사용에 따른 파손",
+          },
+        }),
+      ]),
+    );
+    expect(page.items[0]!.items[0]!.reason).toBe("상품 사용에 따른 파손");
+  });
+
+  it("CANCELED는 returnInfo 자체가 없어 reason이 항상 null이다(T-29)", () => {
+    const page = mapOrderListPage(
+      parseList([orderDto({ status: "CANCELED" })]),
+    );
+    expect(page.items[0]!.items[0]!.reason).toBeNull();
+  });
+
   it("PAYMENT_FAILED 주문은 목록에서 제외한다(2026-09-18 확인)", () => {
     const page = mapOrderListPage(
       parseList([
