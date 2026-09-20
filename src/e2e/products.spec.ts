@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.beforeEach(async ({ page }) => {
   await page.goto("/products?category=kitchen");
   await expect(
-    page.getByRole("heading", { name: "키친 · 다이닝", exact: true }),
+    page.getByRole("heading", { name: "키친 · 다이닝", exact: true, level: 1 }),
   ).toBeVisible();
   await expect(
     page.getByText("총 140개의 검색 결과", { exact: true }),
@@ -11,7 +11,9 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("필터, 페이지, 뒤로가기 및 초기화", async ({ page }) => {
-  await page.getByRole("button", { name: "소재", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "소재", exact: true }),
+  ).toHaveAttribute("aria-expanded", "true");
   await page.getByRole("button", { name: "목재", exact: true }).click();
   await expect(page).toHaveURL(/material=wood/);
   await expect(
@@ -66,7 +68,9 @@ test("좁은 화면에서도 가로 스크롤 없이 필터를 쓴다", async ({
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
-  await page.getByRole("button", { name: "가격대", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "가격대", exact: true }),
+  ).toHaveAttribute("aria-expanded", "true");
   const slider = page.getByRole("slider", { name: "최소 가격" });
   await slider.focus();
   await slider.press("ArrowRight");
@@ -96,9 +100,9 @@ test("PL-3에서 경로를 따라 대분류로 복귀하고 TOP으로 이동한�
   await expect(breadcrumb.locator('[aria-current="page"]')).toHaveText(
     "전체 상품",
   );
-  await page
-    .getByRole("button", { name: "키친 · 다이닝", exact: true })
-    .click();
+  await expect(
+    page.getByRole("button", { name: "키친 · 다이닝", exact: true }),
+  ).toHaveAttribute("aria-expanded", "true");
   await page.getByRole("button", { name: "다기 · 찻잔", exact: true }).click();
   await expect(page).toHaveURL(/category=kitchen-1/);
   await expect(breadcrumb.locator('[aria-current="page"]')).toHaveText(
@@ -176,7 +180,9 @@ test("좁은 PL-3 화면에서 종목과 기존 필터를 함께 초기화한다
     "aria-pressed",
     "true",
   );
-  await page.getByRole("button", { name: "소재", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "소재", exact: true }),
+  ).toHaveAttribute("aria-expanded", "true");
   await expect(
     page.getByRole("button", { name: "도자기", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
