@@ -17,7 +17,7 @@ const informationRow = z.object({
   label: z.string(),
   content: z.string(),
   details: z
-    .array(z.object({ label: z.string(), content: z.string() }))
+    .array(z.object({ label: z.string(), content: z.string() }).passthrough())
     .optional(),
 });
 
