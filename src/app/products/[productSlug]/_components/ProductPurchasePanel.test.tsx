@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { http } from "msw";
+import { http, HttpResponse } from "msw";
 import { beforeEach, expect, it, vi } from "vitest";
 
 import {
@@ -17,9 +17,12 @@ import type { ProductDetail } from "@/types/product-detail";
 
 import { ProductPurchasePanel } from "./ProductPurchasePanel";
 
+const { push } = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 beforeEach(() => {
+  push.mockClear();
   Object.assign(publicEnv, { apiMocking: true });
   useAuthStore.getState().clear();
   resetProductDetailActionState();
@@ -66,10 +69,7 @@ it.each([true])(
   },
 );
 
-it.each([
-  [102, "장바구니"],
-  [103, "재입고 알림"],
-] as const)(
+it.each([[103, "재입고 알림"]] as const)(
   "does not start a mutation for non-mock product %s (%s)",
   async (id, button) => {
     useAuthStore.getState().setSession("mock-access-token", {
@@ -117,8 +117,8 @@ it("loads real wish state and waits for server confirmation before changing it",
     "aria-pressed",
     "false",
   );
-  expect(screen.getByRole("button", { name: "구매하기" })).toBeDisabled();
-  expect(screen.queryByLabelText("선택한 옵션")).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "구매하기" })).toBeEnabled();
+  expect(screen.getByLabelText("선택한 옵션")).toBeVisible();
 });
 
 it.each([
@@ -300,4 +300,113 @@ it("waits for all option choices and preserves completed cards when gift wrappin
   expect(screen.getByTestId("purchase-total")).toHaveTextContent("20,000원");
   await user.click(screen.getByRole("button", { name: /선택 안 함 삭제$/ }));
   expect(screen.getByTestId("purchase-total")).toHaveTextContent("0원");
+});
+
+function mockLiveCart(quantity = 1) {
+  const requests: unknown[] = [];
+  server.use(
+    http.post("*/api/payments/cart/items", async ({ request }) => {
+      requests.push(await request.json());
+      return HttpResponse.json({
+        success: true,
+        data: {
+          sections: [
+            {
+              artisanId: 1,
+              artisanName: "장인",
+              shippingFee: 0,
+              freeShippingThreshold: null,
+              items: [
+                {
+                  cartItemId: 72,
+                  productId: 102,
+                  productName: "작품",
+                  unitPrice: 10000,
+                  quantity,
+                  subtotal: 10000,
+                  thumbnail: [],
+                  isCustomOrder: false,
+                  soldOut: false,
+                  selected: true,
+                  selectedOptions: [],
+                  textInputs: [],
+                },
+              ],
+            },
+          ],
+          totalPrice: 10000,
+          totalShippingFee: 0,
+          totalCount: 1,
+        },
+      });
+    }),
+  );
+  return requests;
+}
+it("adds a live product to the guest cart and provides a real cart link", async () => {
+  const requests = mockLiveCart();
+  const { onNotify, onRequireLogin } = setup(102, { isMock: false });
+  fireEvent.click(screen.getByRole("button", { name: "장바구니" }));
+  await waitFor(() =>
+    expect(onNotify).toHaveBeenCalledWith(
+      "장바구니에 작품을 담았습니다.",
+      expect.any(Object),
+    ),
+  );
+  expect(requests).toEqual([{ productId: 102, quantity: 1 }]);
+  expect(onRequireLogin).not.toHaveBeenCalled();
+  onNotify.mock.calls.at(-1)![1].onClick();
+  expect(push).toHaveBeenCalledWith("/cart");
+});
+it("navigates to checkout using the cart ID returned by the live API", async () => {
+  mockLiveCart();
+  useAuthStore
+    .getState()
+    .setSession("mock-access-token", { id: 1, name: "구매자", role: "USER" });
+  setup(102, { isMock: false });
+  fireEvent.click(screen.getByRole("button", { name: "구매하기" }));
+  await waitFor(() =>
+    expect(push).toHaveBeenCalledWith("/checkout/new?items=72"),
+  );
+});
+it("asks guests to log in before immediate purchase without adding an item", () => {
+  const requests = mockLiveCart();
+  const { onRequireLogin } = setup(102, { isMock: false });
+  fireEvent.click(screen.getByRole("button", { name: "구매하기" }));
+  expect(onRequireLogin).toHaveBeenCalledWith(true);
+  expect(requests).toEqual([]);
+});
+it("does not navigate when adding a live product fails", async () => {
+  server.use(
+    http.post("*/api/payments/cart/items", () =>
+      HttpResponse.json(
+        { errorCode: "BUSINESS_RULE_VIOLATION" },
+        { status: 409 },
+      ),
+    ),
+  );
+  useAuthStore
+    .getState()
+    .setSession("mock-access-token", { id: 1, name: "구매자", role: "USER" });
+  const { onNotify } = setup(102, { isMock: false });
+  fireEvent.click(screen.getByRole("button", { name: "구매하기" }));
+  await waitFor(() =>
+    expect(onNotify).toHaveBeenCalledWith(
+      expect.stringContaining("담지 못했습니다"),
+    ),
+  );
+  expect(push).not.toHaveBeenCalled();
+});
+
+it("asks before ordering a quantity merged with an existing cart item", async () => {
+  mockLiveCart(3);
+  useAuthStore
+    .getState()
+    .setSession("mock-access-token", { id: 1, name: "구매자", role: "USER" });
+  setup(102, { isMock: false });
+  fireEvent.click(screen.getByRole("button", { name: "구매하기" }));
+  expect(await screen.findByRole("dialog")).toHaveTextContent("총 3개");
+  expect(push).not.toHaveBeenCalled();
+  fireEvent.click(screen.getByRole("button", { name: "주문 계속하기" }));
+  expect(push).toHaveBeenCalledWith("/checkout/new?items=72");
 });
