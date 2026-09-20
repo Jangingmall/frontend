@@ -75,7 +75,7 @@
 
 - 상품 상세 `/products/[slug]-[productId]`, 장인 상세 `/artisans/[slug]-[artisanId]` — `slug`는 표시·SEO용, API 조회 기준은 ID.
 - 한글 slug를 허용한다. 현재 이름과 slug가 다르면 ID로 조회하고 현재 slug의 canonical URL로 정규화한다(§8).
-- 주문은 `/checkout/[orderId]`와 완료 경로를 사용한다. 주문 상세·클레임은 `/mypage/orders/[orderId]`, `/mypage/orders/[orderId]/cancel`, `/mypage/orders/[orderId]/return`.
+- 주문은 `/checkout/[orderId]`와 완료 경로를 사용한다. 주문 상세는 `/mypage/orders/[orderId]`, 취소·교환·환불 내역은 `/mypage/orders/cancellations`다. 취소·교환·환불 **신청**은 라우트가 아니라 모달(MY-request·MY-exchange)로 처리한다(§2.1).
 - 상품 목록 `preset`은 목적별 큐레이션(`new` 신상품 · `best` 베스트 · `gift` 선물관)이다. 분류 이동 축인 `category`와 직교하며, `preset` 진입은 필터 없는 PL-1 상태다.
 - 상품 목록 sort URL 표현: `popular`, `newest`, `wishlist`, `sales`, `price-asc`, `price-desc` (기본 `popular`). API enum(`POPULAR` 등) 매핑은 API 계층에서 한다.
 - 장인 목록 sort URL 표현: `popular`, `most-products`, `recently-joined` (기본 `popular`) → API enum `POPULAR`, `MOST_PRODUCTS`, `RECENTLY_JOINED`.

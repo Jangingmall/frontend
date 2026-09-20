@@ -56,7 +56,7 @@ type PagedResponse<T> = {
   - 예외(문자열 식별자): `imageId`(ULID, 예 `image_01HXYZ`), `sessionId`(챗봇 세션), `orderNumber`(사람이 보는 주문번호 — `orderId`와 별개)
 - **모든 금액 필드는 `Long`** (`price`, `priceDelta`, `amount`, `totalAmount` 등). 원화라 소수 단위 없음.
 - **`rating`은 소수** (`4.8`), 후기 0건이면 `null` (0 아님).
-- 이미지: `imageId`(ULID) + `variants` 배열. variant는 **320w / 640w / 1280w 고정 3종, `format: webp`**.
+- 이미지: `imageId`(ULID) + `variants` 배열. `format: webp` 고정. variant 구성은 **`purpose`마다 다르다**(§8) — 공개 이미지(`PRODUCT` 등)는 320w / 640w / 1280w 3종, `RETURN`은 1280w 1종.
 
 ### 2.3 errorCode
 
