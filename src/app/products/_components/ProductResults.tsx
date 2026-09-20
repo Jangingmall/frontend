@@ -15,6 +15,7 @@ import { ProductGridSkeleton } from "./ProductGridSkeleton";
 
 interface ProductResultsProps {
   isCategoryList?: boolean;
+  isUnavailable?: boolean;
   data?: Page<ProductSummary>;
   isPending: boolean;
   isFetching: boolean;
@@ -28,6 +29,7 @@ interface ProductResultsProps {
 
 export function ProductResults({
   isCategoryList = false,
+  isUnavailable = false,
   data,
   isPending,
   isFetching,
@@ -42,11 +44,13 @@ export function ProductResults({
     <section aria-label="상품 목록" className="mt-12">
       <div className="mb-3 flex min-h-6 items-center justify-between gap-3">
         <p role="status" className="text-body-s text-font-dark">
-          {isFetching
-            ? "상품을 불러오는 중"
-            : hasError
-              ? "조회 실패"
-              : `총 ${(data?.totalCount ?? 0).toLocaleString("ko-KR")}개${isCategoryList ? "의 검색 결과" : ""}`}
+          {isUnavailable
+            ? ""
+            : isFetching
+              ? "상품을 불러오는 중"
+              : hasError
+                ? "조회 실패"
+                : `총 ${(data?.totalCount ?? 0).toLocaleString("ko-KR")}개${isCategoryList ? "의 검색 결과" : ""}`}
         </p>
         {publicEnv.apiMocking && (
           <Checkbox
@@ -57,7 +61,12 @@ export function ProductResults({
           </Checkbox>
         )}
       </div>
-      {hasError ? (
+      {isUnavailable ? (
+        <EmptyState
+          title="상품을 준비하고 있어요"
+          description="이 카테고리의 상품은 준비되는 대로 만나보실 수 있어요."
+        />
+      ) : hasError ? (
         <ErrorState title="상품을 불러오지 못했어요" onRetry={onRetry} />
       ) : isPending ? (
         <ProductGridSkeleton isCategoryList={isCategoryList} />
