@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { uploadClaimPhoto } from "@/api/images/api";
+import { uploadReturnPhoto } from "@/api/images/api";
 import {
   changeOrderAddress,
   type ChangeOrderAddressRequest,
@@ -33,7 +33,7 @@ export function useRequestOrderCancelMutation(orderId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: OrderCancelRequest) => {
-      const imageIds = await Promise.all(input.photos.map(uploadClaimPhoto));
+      const imageIds = await Promise.all(input.photos.map(uploadReturnPhoto));
       await requestOrderCancel(orderId, { reason: input.reason, imageIds });
     },
     onSuccess: () => {
@@ -50,7 +50,7 @@ export function useRequestOrderExchangeRefundMutation(orderId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: OrderExchangeRefundRequest) => {
-      const imageIds = await Promise.all(input.photos.map(uploadClaimPhoto));
+      const imageIds = await Promise.all(input.photos.map(uploadReturnPhoto));
       const reason = ORDER_RETURN_REASON_MAP[input.reasonLabel] ?? "OTHER";
       const description =
         reason === "OTHER"
