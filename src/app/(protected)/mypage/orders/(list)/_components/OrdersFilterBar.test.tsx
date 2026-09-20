@@ -117,4 +117,29 @@ describe("OrdersFilterBar", () => {
       screen.getByText(/취소 \/ 교환 \/ 반품 신청은 배송 완료일 기준/),
     ).toBeInTheDocument();
   });
+
+  it("statusTabs를 넘기면 그 탭만 보여준다(MY-2)", () => {
+    renderBar({
+      statusTabs: [
+        { key: "ALL", label: "전체" },
+        { key: "EXCHANGE_REFUND", label: "교환 · 환불" },
+        { key: "CANCELED", label: "주문 취소" },
+      ],
+    });
+    expect(
+      screen.getByRole("group", { name: "주문 처리 상태" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "배송 중" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "주문 취소" }),
+    ).toBeInTheDocument();
+  });
+
+  it("notices를 넘기면 그 문구만 보여준다(MY-2)", () => {
+    renderBar({ notices: ["MY-2 전용 안내 문구"] });
+    expect(screen.getByText("MY-2 전용 안내 문구")).toBeInTheDocument();
+    expect(screen.queryByText(/단순 변심에 의한 교환/)).not.toBeInTheDocument();
+  });
 });
