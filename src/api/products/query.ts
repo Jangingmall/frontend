@@ -73,6 +73,10 @@ export function toProductListSearchParams(
   params.set("page", String(publicEnv.apiMocking ? page : page - 1));
   params.set("size", String(size));
   if (!publicEnv.apiMocking) {
+    if (query.sort === "popular") {
+      params.set("sort", "POPULAR");
+      return params;
+    }
     params.append(
       "sort",
       query.sort === "price-asc"

@@ -18,7 +18,7 @@ export function parseProductSearchParams(
     params.get("sort") ?? (publicEnv.apiMocking ? "popular" : "newest");
   const sort =
     !publicEnv.apiMocking &&
-    !["newest", "price-asc", "price-desc"].includes(requestedSort)
+    !["popular", "newest", "price-asc", "price-desc"].includes(requestedSort)
       ? "newest"
       : requestedSort;
   let minPrice = parsePrice(params.get("minPrice"));

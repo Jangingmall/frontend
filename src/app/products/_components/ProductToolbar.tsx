@@ -32,8 +32,7 @@ export function ProductToolbar({
   const options = SORT_OPTIONS.map((option) => ({
     ...option,
     disabled:
-      !publicEnv.apiMocking &&
-      !["newest", "price-asc", "price-desc"].includes(option.value),
+      !publicEnv.apiMocking && ["sales", "wishlist"].includes(option.value),
   }));
   return (
     <div>
@@ -70,7 +69,7 @@ export function ProductToolbar({
           onValueChange={(value) => {
             if (value) onSortChange(value as ProductListSort);
           }}
-          className="w-35 shrink-0 whitespace-nowrap"
+          className="w-32 shrink-0 whitespace-nowrap"
           contentClassName="whitespace-nowrap"
           alignItemWithTrigger={false}
         >

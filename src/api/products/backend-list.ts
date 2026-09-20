@@ -94,15 +94,17 @@ export async function fetchBackendProductList(
       (!query.giftTheme ||
         p.giftThemes.includes(toGiftThemeApi(query.giftTheme))),
   );
-  selected.sort(
-    (a, b) =>
-      (query.sort === "price-asc"
-        ? a.price - b.price
-        : query.sort === "price-desc"
-          ? b.price - a.price
-          : b.createdAt.localeCompare(a.createdAt)) ||
-      a.productId - b.productId,
-  );
+  // 인기순은 서버가 반환한 순위를 필터링·페이지 분할 후에도 유지한다.
+  if (query.sort !== "popular")
+    selected.sort(
+      (a, b) =>
+        (query.sort === "price-asc"
+          ? a.price - b.price
+          : query.sort === "price-desc"
+            ? b.price - a.price
+            : b.createdAt.localeCompare(a.createdAt)) ||
+        a.productId - b.productId,
+    );
   return mapBackendProductList({
     ...first,
     content: selected.slice((page - 1) * size, page * size),
