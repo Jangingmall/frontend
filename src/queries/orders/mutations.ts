@@ -17,14 +17,18 @@ import { orderKeys } from "./keys";
  * 다시 그린다.
  */
 
-/** 주문 취소(입금 확인 중 상태 전용). */
+/**
+ * 주문 취소(입금 확인 중 상태 전용). 취소는 목록·상태 요약이 읽는 공유 fixture 상태도
+ * 바꾸므로(mock handler) 상세뿐 아니라 `orderKeys.all`(접두사 `["orders"]`)까지 무효화해야
+ * 목록·상태 요약이 낡은 값으로 남지 않는다(CodeRabbit 리뷰).
+ */
 export function useCancelOrderMutation(orderId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => cancelOrder(orderId),
     onSuccess: () => {
       void queryClient.invalidateQueries({
-        queryKey: orderKeys.detail(orderId),
+        queryKey: orderKeys.all,
       });
     },
   });
