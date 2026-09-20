@@ -186,19 +186,34 @@ describe("OrderProductCard", () => {
     expect(screen.getByRole("button", { name: "1:1 문의" })).toBeDisabled();
   });
 
-  it("onAction 클릭 시 올바른 action 타입을 전달한다", () => {
+  it("onAction 클릭 시 올바른 action 타입을 전달한다(구현된 액션)", () => {
     const onAction = vi.fn();
     render(
       <OrderProductCard
         thumbnail={thumbnail}
         productName="상품명"
         price={10000}
-        status="SHIPPING"
+        status="PAYMENT_PENDING"
         onAction={onAction}
       />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "배송 조회" }));
-    expect(onAction).toHaveBeenCalledWith("checkDelivery");
+    fireEvent.click(screen.getByRole("button", { name: "주문 취소" }));
+    expect(onAction).toHaveBeenCalledWith("cancelOrder");
+  });
+
+  it("onAction이 있어도 목록에서 구현 안 된 액션은 비활성 상태로 렌더된다", () => {
+    render(
+      <OrderProductCard
+        thumbnail={thumbnail}
+        productName="상품명"
+        price={10000}
+        status="SHIPPING"
+        onAction={vi.fn()}
+      />,
+    );
+    // SHIPPING = [checkDelivery, inquiry], 둘 다 ORDER_LIST_IMPLEMENTED_ACTIONS에 없다.
+    expect(screen.getByRole("button", { name: "배송 조회" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "1:1 문의" })).toBeDisabled();
   });
 
   it("이미지 로드 실패 시 placeholder로 대체한다", () => {

@@ -26,7 +26,7 @@ export function OrderInfoBar(props: OrderInfoBarProps) {
       : ORDER_STATUS_LABEL[props.status];
 
   return (
-    <div className="flex items-center gap-4 bg-fill-neutral-weak py-2 text-font-dark">
+    <div className="flex items-center gap-4 bg-fill-neutral-weak py-2 pl-3 text-font-dark">
       <Badge variant="plain" className="shrink-0">
         {badgeLabel}
       </Badge>

@@ -29,11 +29,13 @@ export function ProductToolbar({
   onSortChange,
 }: ProductToolbarProps) {
   const rootCategory = parent ?? category;
-  const options = publicEnv.apiMocking
-    ? SORT_OPTIONS
-    : SORT_OPTIONS.filter((option) =>
-        ["newest", "price-asc", "price-desc"].includes(option.value),
-      );
+  const options = SORT_OPTIONS.map((option) => ({
+    ...option,
+    // BE의 POPULAR는 아직 ID 내림차순이므로 실제 인기순 지원으로 취급하지 않는다.
+    disabled:
+      !publicEnv.apiMocking &&
+      ["popular", "sales", "wishlist"].includes(option.value),
+  }));
   return (
     <div>
       <Breadcrumb className="flex-wrap">
@@ -69,10 +71,17 @@ export function ProductToolbar({
           onValueChange={(value) => {
             if (value) onSortChange(value as ProductListSort);
           }}
-          className="w-25"
+          className="w-32 shrink-0 whitespace-nowrap"
+          contentClassName="whitespace-nowrap"
+          alignItemWithTrigger={false}
         >
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+              title={option.disabled ? "준비 중인 정렬입니다" : undefined}
+            >
               {option.label}
             </SelectItem>
           ))}

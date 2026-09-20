@@ -68,6 +68,8 @@ export function orderStatusLabel(
 export type OrderCardActionType =
   | "checkPaymentInfo" // 입금 정보 확인
   | "cancelOrder" // 주문 취소
+  | "cancelExchangeRequest" // 교환 신청 취소
+  | "cancelRefundRequest" // 환불 신청 취소
   | "changeAddress" // 배송지 변경
   | "checkDelivery" // 배송 조회
   | "confirmPurchase" // 구매 확정
@@ -75,13 +77,15 @@ export type OrderCardActionType =
   | "requestExchangeRefund" // 교환 · 환불 신청
   | "addToCart" // 장바구니 담기
   | "buyAgain" // 바로 구매하기
-  | "guideReturnAddress" // 상품 회수 주소지 안내
+  | "guideReturnAddress" // 상품 회수 안내
   | "refundInfo" // 환불 정보
   | "inquiry"; // 1:1 문의
 
 export const ORDER_CARD_ACTION_LABEL: Record<OrderCardActionType, string> = {
   checkPaymentInfo: "입금 정보 확인",
   cancelOrder: "주문 취소",
+  cancelExchangeRequest: "교환 신청 취소",
+  cancelRefundRequest: "환불 신청 취소",
   changeAddress: "배송지 변경",
   checkDelivery: "배송 조회",
   confirmPurchase: "구매 확정",
@@ -89,33 +93,99 @@ export const ORDER_CARD_ACTION_LABEL: Record<OrderCardActionType, string> = {
   requestExchangeRefund: "교환 · 환불 신청",
   addToCart: "장바구니 담기",
   buyAgain: "바로 구매하기",
-  guideReturnAddress: "상품 회수 주소지 안내",
+  guideReturnAddress: "상품 회수 안내",
   refundInfo: "환불 정보",
   inquiry: "1:1 문의",
 };
 
+/**
+ * 주문 상세 화면(MY-1-OD)만 목록과 문구가 다른 것들 — Figma 실측(`1718:16488`) 결과
+ * "하기"를 붙인 동사형이다(목록은 명사형). `addToCart`만 예외로 동사형이 아니라
+ * 완전히 다른 표현("장바구니에 넣기")을 쓴다(주문취소·구매확정 목업 모두 동일).
+ * 상세 전용 버튼(`cancelExchangeRequest` 등)은 목록에 아예 없어 위 공용 라벨을
+ * 그대로 쓴다.
+ */
+export const ORDER_DETAIL_ACTION_LABEL: Partial<
+  Record<OrderCardActionType, string>
+> = {
+  cancelOrder: "주문 취소하기",
+  addToCart: "장바구니에 넣기",
+  inquiry: "1:1 문의하기",
+};
+
+/**
+ * 주문 상세 화면에서 실제로 mutation·모달이 연결된 액션 — 그 외(`inquiry`,
+ * `addToCart`, `writeReview` 등)는 버튼은 보이되 후속 작업 범위라 아직 아무 동작도
+ * 없다(`page.tsx`의 `handleAction`). 여기 없는 액션은 `onAction`이 있어도 비활성
+ * 처리해 "눌러도 반응 없는 버튼"으로 보이지 않게 한다(독립 리뷰 F2) — `handleAction`
+ * 스위치에 새 케이스를 추가하면 이 목록도 같이 갱신해야 한다.
+ */
+export const ORDER_DETAIL_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
+  "cancelOrder",
+  "confirmPurchase",
+  "checkDelivery",
+  "requestExchangeRefund",
+]);
+
+/**
+ * 목록 화면(MY-1/MY-2)에서 실제로 mutation·모달이 연결된 액션 — {@link
+ * ORDER_DETAIL_IMPLEMENTED_ACTIONS}(상세 화면)와 같은 패턴. 여기 없는 액션은
+ * `onAction`이 있어도 `OrderProductCard`가 비활성 처리한다.
+ */
+export const ORDER_LIST_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
+  "cancelOrder",
+  "requestExchangeRefund",
+]);
+
 export interface OrderCardActionItem {
   action: OrderCardActionType;
-  /** `writeReview` 전용 — "적립금 +100원" 배지 표시 */
+  /** `writeReview` 전용 — "적립금 +100원" 배지 표시(목록 MY-1 실측, T-27). */
   withReward?: boolean;
+  /**
+   * 주문 상세 전용 — 버튼 스타일(목록은 항상 solid라 안 씀). Figma 실측(`1718:16488`)
+   * 결과 상태마다 "대표 액션" 하나만 solid(단독 한 줄)이고 나머지는 outline(그 아래
+   * 한 줄에 균등폭)이다 — 대표 액션이 없는 상태는 전부 outline. 생략하면 outline.
+   */
+  style?: "solid" | "outline";
 }
 
 /**
- * 상태 → 액션 버튼 매트릭스. `CANCELED`만 예외 — 사유(reason) 유무로 버튼 세트가
- * 갈리는 게 실측으로 확인됐다(소비자 취소: 장바구니 담기·바로 구매하기 / 장인 취소:
- * 1:1 문의만). 나머지 13개 상태는 `hasReason`과 무관하게 고정 매트릭스를 돌려준다.
+ * 상태 → 액션 버튼 매트릭스(목록 MY-1 기준). `CANCELED`만 예외 — 사유(reason) 유무로
+ * 버튼 세트가 갈리는 게 실측으로 확인됐다(소비자 취소: 장바구니 담기·바로 구매하기 /
+ * 장인 취소: 1:1 문의만). 나머지 13개 상태는 `hasReason`과 무관하게 고정 매트릭스를
+ * 돌려준다.
+ *
+ * `DELIVERED`의 버튼 순서·배지는 이 목록 화면(MY-1) 실측 기준. 상세 화면(MY-1-OD)은
+ * 같은 상태인데도 프레임 자체가 다르게 그려져 있어 {@link getOrderDetailActions}에서
+ * 따로 덮어쓴다(문서 불일치가 아니라 화면 인스턴스 자체의 차이 — 두 화면 모두 실측 확인).
  */
 export function getOrderCardActions(
   status: OrderStatus,
   hasReason: boolean,
+  /**
+   * "입금 정보 확인" 버튼 노출 조건(Figma 스펙시트 `2080:112091` 실측) — 실시간
+   * 계좌이체·무통장입금일 때만 보인다. 목록 화면(MY-1)은 결제 수단 자체를 안 받아서
+   * (BE 미제공, be-requests.md #3) 인자를 안 넘기면(`undefined`) 필터 없이 항상
+   * 노출한다(T-27 때부터의 기존 동작 유지) — 상세 화면(MY-1-OD)만 실제 값을 넘겨
+   * 필터링한다.
+   */
+  paymentMethod?: string | null,
 ): OrderCardActionItem[] {
   switch (status) {
-    case "PAYMENT_PENDING":
-      return [
+    case "PAYMENT_PENDING": {
+      const actions: OrderCardActionItem[] = [
         { action: "checkPaymentInfo" },
         { action: "cancelOrder" },
         { action: "inquiry" },
       ];
+      if (paymentMethod === undefined) return actions;
+      const isTransferPayment =
+        paymentMethod === "REALTIME_TRANSFER" ||
+        paymentMethod === "BANK_TRANSFER";
+      return isTransferPayment
+        ? actions
+        : actions.filter((item) => item.action !== "checkPaymentInfo");
+    }
     case "ORDER_PENDING":
       return [
         { action: "cancelOrder" },
@@ -156,6 +226,235 @@ export function getOrderCardActions(
 }
 
 /**
+ * 주문 상세 화면(`/mypage/orders/[orderId]`) 전용 매트릭스. 목록(`getOrderCardActions`)과
+ * 공유하지 않는다 — Figma 실측(`1718:16488`, "상태별 설명") 결과 상세 화면은 목록과 버튼
+ * 구성·순서·스타일이 상태마다 다르게 설계돼 있다(같은 상태여도 별개 화면 인스턴스).
+ * 상태별 "대표 액션"(있으면 solid 단독 한 줄) + 나머지(outline, 균등폭 한 줄) 구조이고,
+ * "1:1 문의"가 없는 조합엔 항상 자동으로 붙는다("클릭 시 문의하기 모달 활성화" 콜아웃이
+ * 거의 모든 상태에 반복 등장 — 상세 화면 공통 기본 액션으로 취급).
+ *
+ * `PAYMENT_PENDING`/`ORDER_PENDING`은 대표 액션(주문취소하기) 뒤에 "장바구니 담기·바로
+ * 구매하기"가 그대로 실측된다(사용자 확인, T-28) — 기다리지 않고 같은 상품을 바로 다시
+ * 살 수 있게 하는 상세 화면 전용 숏컷으로 보인다. `PAYMENT_PENDING`의 "입금 정보 확인"은
+ * 이 두 버튼과 별개로 결제 수단 조건(실시간계좌이체/무통장입금)에 따라 추가된다.
+ *
+ * `CANCELED`(사유 없음, 소비자 취소)·`REFUND_COMPLETED`는 이 실측 자료에 예시가 없어
+ * 목록 매트릭스 + "1:1 문의" 자동 추가로 대체한다(다른 상태들과 같은 보수적 기본값).
+ */
+export function getOrderDetailActions(
+  status: OrderStatus,
+  hasReason: boolean,
+  paymentMethod?: string | null,
+  /**
+   * `CANCELED` 전용 — 실측(`1725:43684`) 결과 취소 사유가 있어도 취소 주체에 따라
+   * 버튼 구성이 갈린다(소비자 "단순 변심": 장바구니에 넣기 등 3개 / 장인 거절: 1:1
+   * 문의만). BE가 이 값을 안 줘서(`reason` 자체도 계약에 없음) 생략하면 기존처럼
+   * `hasReason`으로 근사한다 — 알 수 있게 되면 이 값을 넘겨 정확히 분기한다.
+   */
+  cancelInitiator?: "consumer" | "artisan",
+): OrderCardActionItem[] {
+  const outline = (
+    action: OrderCardActionType,
+    withReward?: boolean,
+  ): OrderCardActionItem => ({ action, style: "outline", withReward });
+  const solid = (action: OrderCardActionType): OrderCardActionItem => ({
+    action,
+    style: "solid",
+  });
+  const withInquiry = (actions: OrderCardActionItem[]) =>
+    actions.some((item) => item.action === "inquiry")
+      ? actions
+      : [...actions, outline("inquiry")];
+
+  switch (status) {
+    case "PAYMENT_PENDING": {
+      const isTransferPayment =
+        paymentMethod === "REALTIME_TRANSFER" ||
+        paymentMethod === "BANK_TRANSFER";
+      const checkPaymentInfoActions =
+        paymentMethod === undefined || isTransferPayment
+          ? [outline("checkPaymentInfo")]
+          : [];
+      return withInquiry([
+        solid("cancelOrder"),
+        ...checkPaymentInfoActions,
+        outline("addToCart"),
+        outline("buyAgain"),
+      ]);
+    }
+    case "ORDER_PENDING":
+      return withInquiry([
+        solid("cancelOrder"),
+        outline("addToCart"),
+        outline("buyAgain"),
+      ]);
+    case "PREPARING":
+      return withInquiry([]);
+    case "SHIPPING":
+      return withInquiry([solid("checkDelivery")]);
+    case "DELIVERED":
+      return withInquiry([
+        solid("confirmPurchase"),
+        outline("requestExchangeRefund"),
+        outline("writeReview"),
+      ]);
+    case "PURCHASE_CONFIRMED":
+      return withInquiry([
+        solid("writeReview"),
+        outline("addToCart"),
+        outline("buyAgain"),
+      ]);
+    case "CANCELED": {
+      // 실측 결과 취소 사유 배너 유무만으론 버튼 구성을 못 가른다 — 소비자("단순
+      // 변심", `1725:43684`)와 장인 거절(`1718:62706`) 모두 사유 배너가 있다.
+      // `cancelInitiator`가 없으면(BE 미제공) `hasReason`으로 근사한다.
+      const isArtisanCancel =
+        cancelInitiator === undefined
+          ? hasReason
+          : cancelInitiator === "artisan";
+      return isArtisanCancel
+        ? withInquiry([])
+        : withInquiry(
+            getOrderCardActions(status, false).map((item) => ({
+              ...item,
+              style: "outline" as const,
+            })),
+          );
+    }
+    case "EXCHANGE_REQUESTED":
+      return withInquiry([
+        outline("cancelExchangeRequest"),
+        outline("checkDelivery"),
+      ]);
+    case "EXCHANGE_APPROVED":
+      return withInquiry([
+        solid("guideReturnAddress"),
+        outline("cancelExchangeRequest"),
+        outline("checkDelivery"),
+      ]);
+    case "EXCHANGE_REJECTED":
+      return withInquiry([]);
+    case "REFUND_REQUESTED":
+      return withInquiry([
+        outline("cancelRefundRequest"),
+        outline("checkDelivery"),
+      ]);
+    case "REFUND_APPROVED":
+      return withInquiry([
+        solid("guideReturnAddress"),
+        outline("cancelRefundRequest"),
+        outline("checkDelivery"),
+      ]);
+    case "REFUND_REJECTED":
+      return withInquiry([]);
+    case "REFUND_COMPLETED":
+      return withInquiry(
+        getOrderCardActions(status, hasReason).map((item) => ({
+          ...item,
+          style: "outline" as const,
+        })),
+      );
+  }
+}
+
+/**
+ * 사유 배너 라벨 — 콜론과 그 앞 공백 유무까지 포함한 완성 문자열이다(호출측이 더
+ * 붙이지 않는다). 실측(`1718:16488`) 결과 상태마다 미묘하게 다르다: "신청" 상태 둘은
+ * 접미사를 뗀 축약형 + 콜론 앞 공백 없음("교환 사유:", "환불 사유:" — "교환 신청
+ * 사유:"가 아니다), "불가" 상태 둘은 전체 라벨 + 콜론 앞 공백 있음("교환 불가 사유 :",
+ * "환불 불가 사유 :"), `CANCELED`는 전체 라벨 + 공백 없음("주문 취소 사유:").
+ */
+export function getOrderDetailReasonLabel(status: OrderStatus): string {
+  switch (status) {
+    case "EXCHANGE_REQUESTED":
+      return "교환 사유:";
+    case "REFUND_REQUESTED":
+      return "환불 사유:";
+    case "CANCELED":
+      return "주문 취소 사유:";
+    case "EXCHANGE_REJECTED":
+      return "교환 불가 사유 :";
+    case "REFUND_REJECTED":
+      return "환불 불가 사유 :";
+    default:
+      return `${ORDER_STATUS_LABEL[status]} 사유 :`;
+  }
+}
+
+/**
+ * 사유 배너 접미사 — "교환 신청"·"환불 신청" 상태만 사유 뒤에 "(승인 대기 중)"이
+ * 추가로 붙는다(실측 `1725:43625` 등). 이 문구는 `reason`(BE 사유 텍스트)의 일부가
+ * 아니라 상태 자체가 "대기 중"임을 나타내는 고정 문구라 별도 함수로 뗐다.
+ */
+export function getOrderDetailReasonSuffix(
+  status: OrderStatus,
+): string | undefined {
+  switch (status) {
+    case "EXCHANGE_REQUESTED":
+    case "REFUND_REQUESTED":
+      return "(승인 대기 중)";
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * 주문 상세 화면의 "주문 유의사항" — 실측(`1718:16488`) 결과 고정 문구가 아니라 상태마다
+ * 다른 안내다. 이미 사유 배너를 보여주는 상태(교환·환불 불가, 주문취소-사유있음)와
+ * 근거 화면이 없는 상태(구매확정 이후의 취소·환불 완료류)는 `undefined`(박스 자체를
+ * 안 그림). "NN시간"·"약 N주"는 Figma 목업에도 숫자가 채워지지 않은 자리표시자 그대로
+ * 다 — 실제 값은 비즈니스 확정 후 채워야 한다(be-requests.md 후보).
+ */
+export function getOrderDetailNoticeLines(
+  status: OrderStatus,
+): string[] | undefined {
+  switch (status) {
+    case "PAYMENT_PENDING":
+      return [
+        "입금 확인은 평일 기준 NN시간 이내 처리됩니다.",
+        "입금 확인 전 취소 시 결제 금액이 자동 환불됩니다.",
+      ];
+    case "ORDER_PENDING":
+      return [
+        "판매자가 주문을 확인한 후 제작이 시작됩니다.",
+        "제작 시작 후 주문 취소가 어렵습니다.",
+        "제작 완료 후 판매자가 직접 배송합니다. (약 N주 소요)",
+      ];
+    case "PREPARING":
+      return [
+        "현재 제작 중으로 주문 취소가 불가합니다.",
+        "제작 완료 후 판매자가 직접 배송합니다. (약 N주 소요)",
+      ];
+    case "SHIPPING":
+      return [
+        "판매자가 직접 배송하여 배송 조회가 늦게 업데이트될 수 있습니다.",
+        "택배사 사정에 따라 배송이 지연될 수 있습니다.",
+      ];
+    case "DELIVERED":
+      return [
+        "교환·환불은 배송 완료일 기준 7일 이내 신청 가능합니다.",
+        "주문제작 상품은 단순 변심에 의한 교환·환불이 불가합니다.",
+        "단순 변심 교환·환불 시 왕복 배송비가 청구됩니다.",
+      ];
+    case "PURCHASE_CONFIRMED":
+      return ["구매 확정 후에는 교환·환불 신청이 불가합니다."];
+    case "EXCHANGE_REQUESTED":
+    case "EXCHANGE_APPROVED":
+    case "REFUND_REQUESTED":
+    case "REFUND_APPROVED":
+      return [
+        "단순 변심에 의한 교환·환불 시 왕복 배송비가 청구됩니다.",
+        "주문제작 상품의 경우 단순 변심에 의한 교환·환불 요청은 거절될 수 있습니다.",
+      ];
+    case "CANCELED":
+    case "EXCHANGE_REJECTED":
+    case "REFUND_REJECTED":
+    case "REFUND_COMPLETED":
+      return undefined;
+  }
+}
+
+/**
  * MY-1(`/mypage/orders`) "주문 처리 상태" 필터 탭 8종 + "내 주문 현황" 요약 스트립의 그룹 키.
  * Figma 실측 탭 라벨 그대로. `ORDER_PENDING`("주문 확인 중")은 필터 탭에 별도 항목이 없어
  * `PREPARING` 그룹에 합친다 — 확정(design.md §9).
@@ -192,6 +491,24 @@ export const ORDER_STATUS_FILTER_TABS: {
   { key: "PURCHASE_CONFIRMED", label: "구매 확정" },
   { key: "EXCHANGE_REFUND", label: "교환 · 환불" },
   { key: "CANCELED", label: "주문 취소" },
+];
+
+/**
+ * MY-2(`/mypage/orders/cancellations`) 상태 필터 탭 3종 — {@link ORDER_STATUS_FILTER_TABS}의
+ * 부분집합(전체/교환·환불/주문취소). 이 화면은 나머지 상태의 카드를 아예 안 보여준다.
+ */
+export const CANCELLATION_STATUS_FILTER_TABS = ORDER_STATUS_FILTER_TABS.filter(
+  (tab) =>
+    tab.key === "ALL" ||
+    tab.key === "EXCHANGE_REFUND" ||
+    tab.key === "CANCELED",
+);
+
+/** MY-2 전용 안내 문구 — MY-1의 3·4번째 문구 대신 이 화면만의 문구가 실측됐다. */
+export const CANCELLATION_NOTICES = [
+  "주문 번호 / 자세히 보기를 클릭하시면 해당 주문에 대한 상세 내역 확인이 가능합니다.",
+  "취소 / 교환 / 반품 신청은 배송 완료일 기준 7일까지 가능합니다.",
+  "취소 완료 후 결제수단에 따라 환불까지 일정 기간이 소요될 수 있습니다.",
 ];
 
 /** 요약 스트립 4단계(진행 현황) — `PURCHASE_CONFIRMED`는 Figma대로 제외(확정, design.md §9). */
@@ -261,3 +578,47 @@ export function resolveOrderPeriod(
       return custom ?? { from: to, to };
   }
 }
+
+/** 주문 취소 요청 모달(MY-request) 사유 옵션 — 마지막 항목("직접 입력")만 자유 텍스트 노출. */
+export const ORDER_CANCEL_REASON_OPTIONS = [
+  "단순 변심",
+  "결제수단 변경",
+  "중복 주문",
+  "상품 옵션 변경",
+  "주문 실수",
+  "직접 입력",
+] as const;
+
+/** 교환·환불 신청 모달(MY-exchange)의 "교환" 선택 시 사유 옵션. */
+export const ORDER_EXCHANGE_REASON_OPTIONS = [
+  "상품 파손/불량",
+  "주문한 상품과 다른 상품이 배송됨",
+  "구성품 누락",
+  "직접 입력",
+] as const;
+
+/** 교환·환불 신청 모달(MY-exchange)의 "환불" 선택 시 사유 옵션. */
+export const ORDER_REFUND_REASON_OPTIONS = [
+  "단순 변심",
+  "상품 파손/불량",
+  "배송 지연 및 오배송",
+  "판매자 요청",
+  "직접 입력",
+] as const;
+
+/** BE `POST /api/payments/returns`의 `reason` enum. */
+export type ReturnReason =
+  "CHANGE_OF_MIND" | "DEFECTIVE" | "WRONG_ITEM" | "WRONG_DELIVERY" | "OTHER";
+
+/**
+ * 교환·환불 신청 Figma 사유 라벨 → BE `ReturnReason` enum. 전용 값이 없는 라벨
+ * ("구성품 누락"·"판매자 요청"·"직접 입력")은 매핑에 없다 — 호출측이 `?? "OTHER"`로
+ * 폴백하고, 그 라벨(또는 직접 입력한 텍스트)을 `description`에 채워 보낸다(BE가
+ * `OTHER`면 `description` 필수).
+ */
+export const ORDER_RETURN_REASON_MAP: Partial<Record<string, ReturnReason>> = {
+  "단순 변심": "CHANGE_OF_MIND",
+  "상품 파손/불량": "DEFECTIVE",
+  "주문한 상품과 다른 상품이 배송됨": "WRONG_ITEM",
+  "배송 지연 및 오배송": "WRONG_DELIVERY",
+};

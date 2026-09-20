@@ -26,6 +26,8 @@ interface SelectProps extends Omit<
   className?: string;
   /** 팝업에 적용 */
   contentClassName?: string;
+  /** false면 선택 항목 위치 대신 트리거 아래에 메뉴를 배치한다. */
+  alignItemWithTrigger?: boolean;
   children: ReactNode;
 }
 
@@ -34,6 +36,7 @@ function Select({
   ariaLabel,
   className,
   contentClassName,
+  alignItemWithTrigger = true,
   children,
   ...props
 }: SelectProps) {
@@ -55,6 +58,7 @@ function Select({
 
       <SelectPrimitive.Portal>
         <SelectPrimitive.Positioner
+          alignItemWithTrigger={alignItemWithTrigger}
           sideOffset={-1}
           className="z-50 outline-none"
         >

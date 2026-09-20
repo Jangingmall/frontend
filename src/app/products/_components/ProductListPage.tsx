@@ -3,8 +3,11 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { canUseProductMaterials } from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
+import {
+  DESIGN_MATERIALS,
+  resolveCategoryView,
+} from "@/app/products/_lib/category-view";
 import {
   parseProductSearchParams,
   updateProductSearchParams,
@@ -62,27 +65,26 @@ export function ProductListPage({
     };
   }, []);
 
-  const hasInitialQuery =
-    productKeys.list(query)[2] === productKeys.list(initialQuery)[2];
-  const products = useProductList(
-    query,
-    isReady,
-    hasInitialQuery ? initialData : undefined,
-  );
   const categories = useProductCategories(isReady, initialCategories);
-  const hasMaterialCapability = canUseProductMaterials();
+  const view = resolveCategoryView(query.category, categories.data ?? []);
+  const apiQuery = { ...query, category: view.apiCategory };
+  const hasInitialQuery =
+    productKeys.list(apiQuery)[2] === productKeys.list(initialQuery)[2];
+  const products = useProductList(
+    apiQuery,
+    isReady && view.isMapped,
+    hasInitialQuery && view.isMapped ? initialData : undefined,
+  );
   const materials = useProductMaterials(
-    isReady && Boolean(query.category),
-    query.category,
+    isReady && Boolean(view.apiCategory),
+    view.apiCategory,
   );
-  const category = categories.data?.find((item) => item.id === query.category);
+  const category = view.category;
   const crafts = useProductCrafts(
-    isReady && category?.parentId != null,
-    query.category,
+    isReady && category?.parentId != null && view.isMapped,
+    view.apiCategory,
   );
-  const parent = categories.data?.find(
-    (item) => item.id === category?.parentId,
-  );
+  const parent = view.categories.find((item) => item.id === category?.parentId);
 
   function handleChange(patch: Partial<ProductListQuery>) {
     const params = updateProductSearchParams(
@@ -110,28 +112,6 @@ export function ProductListPage({
 
   return (
     <main className="mx-auto w-full max-w-desktop px-4 pt-16 pb-24 sm:px-8 lg:px-12">
-      {!publicEnv.apiMocking && categories.data && (
-        <nav aria-label="실제 상품 분류" className="mb-6 flex flex-wrap gap-3">
-          <button
-            type="button"
-            onClick={() => handleChange({ category: undefined })}
-          >
-            전체 상품
-          </button>
-          {categories.data
-            .filter((item) => item.parentId === null)
-            .map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                aria-current={query.category === item.id ? "page" : undefined}
-                onClick={() => handleChange({ category: item.id })}
-              >
-                {item.name}
-              </button>
-            ))}
-        </nav>
-      )}
       {hasStartupError ? (
         <ErrorState
           title="상품을 불러오지 못했어요"
@@ -139,49 +119,27 @@ export function ProductListPage({
         />
       ) : (
         <div className="flex flex-col gap-6 lg:flex-row">
-          {query.category && (
-            <>
-              {categories.isError ||
-              (hasMaterialCapability && materials.isError) ? (
-                <div className="lg:w-51 lg:shrink-0">
-                  <ErrorState
-                    title="필터를 불러오지 못했어요"
-                    onRetry={() => {
-                      void categories.refetch();
-                      if (hasMaterialCapability) void materials.refetch();
-                    }}
-                  />
-                </div>
-              ) : category && (!hasMaterialCapability || materials.data) ? (
-                <ProductFilters
-                  query={query}
-                  category={category}
-                  categories={categories.data ?? []}
-                  materials={
-                    hasMaterialCapability ? (materials.data ?? []) : []
-                  }
-                  crafts={crafts.data ?? []}
-                  isCraftsPending={crafts.isPending}
-                  hasCraftsError={crafts.isError}
-                  onRetryCrafts={() => {
-                    void crafts.refetch();
-                  }}
-                  onChange={handleChange}
-                  onReset={handleReset}
-                />
-              ) : categories.isPending ||
-                (hasMaterialCapability && materials.isPending) ? (
-                <Skeleton className="h-48 w-full lg:w-51 lg:shrink-0" />
-              ) : (
-                <div className="lg:w-51 lg:shrink-0">
-                  <p className="text-body-m">
-                    현재 상품 분류와 연결되지 않은 주소예요. 위 분류에서 다시
-                    선택해 주세요.
-                  </p>
-                </div>
-              )}
-            </>
-          )}
+          {query.category &&
+            (category ? (
+              <ProductFilters
+                query={query}
+                category={category}
+                categories={view.categories}
+                materials={
+                  materials.data?.length ? materials.data : DESIGN_MATERIALS
+                }
+                crafts={crafts.data ?? []}
+                isCraftsPending={crafts.isPending}
+                hasCraftsError={crafts.isError}
+                onRetryCrafts={() => {
+                  void crafts.refetch();
+                }}
+                onChange={handleChange}
+                onReset={handleReset}
+              />
+            ) : categories.isPending ? (
+              <Skeleton className="h-48 w-full lg:w-51 lg:shrink-0" />
+            ) : null)}
           <div className="min-w-0 flex-1">
             <ProductToolbar
               category={category}
@@ -191,10 +149,13 @@ export function ProductListPage({
             />
             <ProductResults
               isCategoryList={Boolean(query.category)}
+              isUnavailable={
+                !view.isMapped && !categories.isPending && !categories.isError
+              }
               data={products.data}
               isPending={products.isPending}
               isFetching={products.isFetching}
-              hasError={products.isError}
+              hasError={products.isError || categories.isError}
               excludeSoldOut={query.excludeSoldOut ?? false}
               onExcludeSoldOutChange={(excludeSoldOut) =>
                 handleChange({ excludeSoldOut })
@@ -204,6 +165,7 @@ export function ProductListPage({
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               onRetry={() => {
+                if (categories.isError) void categories.refetch();
                 void products.refetch();
               }}
               onReset={handleReset}

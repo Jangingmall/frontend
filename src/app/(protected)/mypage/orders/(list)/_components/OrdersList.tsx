@@ -1,6 +1,7 @@
 "use client";
 
 import dayjs from "dayjs";
+import { useRouter } from "next/navigation";
 import { useLayoutEffect, useRef, useState } from "react";
 
 import { EmptyState } from "@/components/common/empty-state";
@@ -10,9 +11,10 @@ import { OrderInfoBar } from "@/components/order/OrderInfoBar";
 import { OrderProductCard } from "@/components/order/OrderProductCard";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { OrderCardActionType } from "@/constants/order";
 import { cn } from "@/lib/utils";
 import type { Page } from "@/types/api";
-import type { OrderGroup } from "@/types/order";
+import type { OrderGroup, OrderListItem } from "@/types/order";
 
 interface OrdersListProps {
   data?: Page<OrderGroup>;
@@ -21,6 +23,17 @@ interface OrdersListProps {
   hasError: boolean;
   onRetry: () => void;
   onPageChange: (page: number) => void;
+  /**
+   * 있으면 `cancelOrder`·`requestExchangeRefund`(취소·교환·환불 신청 모달을 여는 액션)
+   * 버튼이 활성화된다 — 그 외 액션은 `ORDER_LIST_IMPLEMENTED_ACTIONS`에 없어
+   * `OrderProductCard`가 계속 비활성 처리한다. `order`는 그 카드가 속한 주문 전체(모달의
+   * 주문번호·구매일자 표시용).
+   */
+  onAction?: (
+    order: OrderGroup,
+    item: OrderListItem,
+    action: OrderCardActionType,
+  ) => void;
 }
 
 function formatOrderDate(orderedAt: string): string {
@@ -40,6 +53,8 @@ interface MultiItemOrderCardProps {
   orderDate: string;
   isExpanded: boolean;
   onToggle: () => void;
+  onViewDetail: () => void;
+  onAction?: (item: OrderListItem, action: OrderCardActionType) => void;
 }
 
 /**
@@ -61,6 +76,8 @@ function MultiItemOrderCard({
   orderDate,
   isExpanded,
   onToggle,
+  onViewDetail,
+  onAction,
 }: MultiItemOrderCardProps) {
   const detailRef = useRef<HTMLDivElement>(null);
   const [detailHeight, setDetailHeight] = useState(0);
@@ -95,6 +112,7 @@ function MultiItemOrderCard({
           thumbnail={representative.thumbnailUrl}
           productName={representative.productName}
           price={representative.price}
+          onViewDetail={onViewDetail}
         />
       </div>
       <div
@@ -117,7 +135,10 @@ function MultiItemOrderCard({
               productName={item.productName}
               price={item.price}
               status={item.status}
+              reason={item.reason ?? undefined}
               showStatusBadge
+              onViewDetail={onViewDetail}
+              onAction={onAction && ((action) => onAction(item, action))}
             />
           ))}
         </div>
@@ -135,8 +156,10 @@ function MultiItemOrderCard({
 
 /**
  * 주문 목록 — 단일/다중 상품 그룹 렌더링 + 그룹별 독립 펼침·접힘(design.md §6.3, T-21 §0-1).
- * 액션 버튼(주문 상세보기·주문 취소 등)은 의도적으로 연결하지 않는다 — 이 화면은 조회·필터만
- * 담당하고, 실제 내비게이션·mutation은 후속 작업(주문 상세·취소/교환/환불)이 배선한다.
+ * "주문 상세보기"는 주문 상세 화면(`/mypage/orders/[orderId]`, T-28)으로 연결한다.
+ * "주문 취소"·"교환·환불 신청" 버튼은 `onAction`이 있으면 상위(page.tsx)로 위임한다 —
+ * 취소·교환·환불 신청 모달을 여는 두 액션만 연결되고(`ORDER_LIST_IMPLEMENTED_ACTIONS`),
+ * 나머지 액션(장바구니 담기 등)은 여전히 `OrderProductCard`가 비활성 처리한다.
  */
 function OrdersList({
   data,
@@ -145,10 +168,16 @@ function OrdersList({
   hasError,
   onRetry,
   onPageChange,
+  onAction,
 }: OrdersListProps) {
+  const router = useRouter();
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<number>>(
     new Set(),
   );
+
+  function viewDetail(orderId: number) {
+    router.push(`/mypage/orders/${orderId}`);
+  }
 
   function toggle(orderId: number) {
     setExpandedOrderIds((prev) => {
@@ -207,7 +236,12 @@ function OrdersList({
                 productName={item.productName}
                 price={item.price}
                 status={item.status}
+                reason={item.reason ?? undefined}
                 showStatusBadge={false}
+                onViewDetail={() => viewDetail(order.orderId)}
+                onAction={
+                  onAction && ((action) => onAction(order, item, action))
+                }
               />
             </div>
           );
@@ -220,6 +254,10 @@ function OrdersList({
             orderDate={orderDate}
             isExpanded={isExpanded}
             onToggle={() => toggle(order.orderId)}
+            onViewDetail={() => viewDetail(order.orderId)}
+            onAction={
+              onAction && ((item, action) => onAction(order, item, action))
+            }
           />
         );
       })}

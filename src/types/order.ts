@@ -11,6 +11,9 @@ import type { Money } from "@/types/money";
  * (2026-09-18 논의).
  */
 export interface OrderListItem {
+  /** DTO엔 이미 있던 필드를 이번에 처음 FE 모델로 옮긴다 — 교환·환불 신청
+   * (`POST /api/payments/returns`)의 `orderItemIds`에 필요하다. */
+  orderItemId: number;
   productId: number;
   productName: string;
   price: Money;
@@ -18,6 +21,11 @@ export interface OrderListItem {
   /** BE는 3-variant `ImageRef`가 아니라 단일 CDN URL 문자열(또는 `null`)만 준다. */
   thumbnailUrl: string | null;
   status: OrderStatus;
+  /**
+   * 교환/환불 사유 — `returnInfo.reason`을 그대로 옮긴다. `CANCELED`는 항상 `null`이다
+   * (BE 응답의 `returnInfo`는 `RETURN_REQUESTED`일 때만 오므로 자연히 그렇게 된다).
+   */
+  reason: string | null;
 }
 
 /** 주문 하나(상품 1개 이상). */
@@ -37,4 +45,123 @@ export interface OrderStatusSummary {
   delivered: number;
   exchangeRefund: number;
   canceled: number;
+}
+
+/**
+ * 주문 상세 화면(`/mypage/orders/[orderId]`)이 다루는 상품 한 줄. `OrderListItem`과 달리
+ * 옵션·아이템 주문번호·제작자(장인) 이름을 더 담는다 — 목록 API엔 없는 정보라
+ * `OrderListItem`을 확장하지 않고 별도로 선언한다(T-28 design.md §3).
+ *
+ * `artisanName`은 실제 BE 응답에 없는 필드다(조인 한 단계 부족 — `be-requests.md` #4) —
+ * 응답에 없으면 `null`, 목업은 항상 채워서 내려준다.
+ */
+export interface OrderDetailItem {
+  orderItemId: number;
+  productId: number;
+  productName: string;
+  price: Money;
+  quantity: number;
+  thumbnailUrl: string | null;
+  /** Figma 최대 4줄 — 실제 개수만큼(BE 미제공, 목업 전용 확장). */
+  options: string[];
+  /** 주문 단위 계산값 복제 — `OrderListItem.status`와 같은 이유(BE는 아이템별 상태가 없다). */
+  status: OrderStatus;
+  artisanName: string | null;
+  /**
+   * 교환/환불/취소 사유 — 실제 계약엔 없는 필드다(`returnInfo`엔 `type`·`status`만 있음,
+   * 취소도 마찬가지). BE 미제공, 목업 전용 확장(`artisanName`과 같은 패턴) — 응답에 없으면
+   * `null`, 상태별 사유 배너(Figma `1718:16488`)를 보여줄 때 쓴다.
+   */
+  reason: string | null;
+  /**
+   * 주문 취소 주체 — `CANCELED` 상태에서만 의미 있다. 사유 유무만으론 소비자·장인 취소를
+   * 못 가른다(실측 결과 둘 다 사유 배너가 있음, constants/order.ts 참고). BE 미제공,
+   * 목업 전용 확장.
+   */
+  cancelInitiator: "consumer" | "artisan" | null;
+}
+
+/** 제작자(장인) 이름 기준으로 묶은 상품 그룹 — Figma가 장인별로 섹션을 나눠 보여준다. */
+export interface OrderDetailArtisanGroup {
+  artisanName: string | null;
+  items: OrderDetailItem[];
+}
+
+/** 주문 배송지. 회원 배송지 목록(`Address`)과 달리 `id`가 없다 — 이 주문에 스냅샷된 값이라
+ * 회원 배송지 레코드와 독립적이다. */
+export interface OrderShippingAddress {
+  recipientName: string;
+  phone: string;
+  zipCode: string;
+  address1: string;
+  address2: string;
+}
+
+/**
+ * 주문 결제 정보. `discountAmount`·`pointsUsed`는 BE에 관련 컬럼 자체가 없다(쿠폰·적립금
+ * 제도 미구현 — `be-requests.md` #3) — 항상 0. `paymentMethod`도 BE 응답에 없어(같은 항목)
+ * `null`이면 화면이 "-"로 표시한다.
+ */
+export interface OrderPaymentSummary {
+  productAmount: Money;
+  shippingAmount: Money;
+  discountAmount: Money;
+  pointsUsed: Money;
+  totalAmount: Money;
+  paymentMethod: string | null;
+}
+
+/** 주문 상세 전체. */
+export interface OrderDetail {
+  orderId: number;
+  orderNumber: string;
+  /** ISO datetime */
+  orderedAt: string;
+  groups: OrderDetailArtisanGroup[];
+  shippingAddress: OrderShippingAddress;
+  payment: OrderPaymentSummary;
+}
+
+/**
+ * 주문 배송 조회(OD-2). BE가 스마트택배(SweetTracker) 원본 응답 중 상태값만 남기고
+ * 이동 이력·택배사 코드는 버린다(`be-requests.md` #5) — 그래서 3단계 상태만 표현한다.
+ */
+export interface OrderDelivery {
+  orderId: number;
+  carrier: string;
+  trackingNumber: string;
+  status: "SHIPPED" | "IN_TRANSIT" | "DELIVERED";
+}
+
+/** MY-request 제출값 — 목업 전용(대응 BE 엔드포인트 없음). */
+export interface OrderCancelRequest {
+  reason: string;
+  photos: File[];
+}
+
+/**
+ * MY-exchange 제출값 — `POST /api/payments/returns` 실제 계약에 맞춘 모양.
+ * `orderItemId`는 모달을 연 카드의 아이템 하나(다중상품 주문도 아이템 단위로 신청한다).
+ */
+export interface OrderExchangeRefundRequest {
+  orderItemId: number;
+  type: "EXCHANGE" | "RETURN";
+  /** Figma select 라벨 원문. api 계층이 `ORDER_RETURN_REASON_MAP`으로 BE enum 변환. */
+  reasonLabel: string;
+  /** "직접 입력" 자유 텍스트, 또는 전용 enum이 없는 라벨의 `OTHER` description. */
+  description?: string;
+  photos: File[];
+}
+
+/**
+ * 두 모달이 공유하는 상품 요약 — `OrderListItem`(목록)과 `OrderDetailItem`(상세) 양쪽에서
+ * 채울 수 있도록 필요한 최소 필드만 뽑은 구조적 타입이다.
+ */
+export interface OrderClaimItemSummary {
+  productName: string;
+  price: Money;
+  quantity: number;
+  thumbnailUrl: string | null;
+  /** 상세에서 열면 있고(`OrderDetailItem`), 목록에서 열면 없다(`OrderListItem`). */
+  options?: string[];
 }

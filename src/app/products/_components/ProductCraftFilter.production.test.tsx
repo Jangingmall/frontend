@@ -47,7 +47,7 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
     ).toBe(false);
   });
 
-  it("선택 데이터가 있어도 미지원 종목·소재 UI를 숨기고 가격 필터는 유지한다", () => {
+  it("미지원 종목은 숨기되 분류·소재·선물 포장 UI는 표시한다", () => {
     render(
       <ProductFilters
         query={query}
@@ -59,19 +59,15 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
         onReset={vi.fn()}
       />,
     );
-    expect(
-      screen.queryByRole("button", { name: "다기 · 찻잔" }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "다기 · 찻잔" })).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "사기장" }),
     ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "가격대" })).toBeVisible();
     expect(
-      screen.queryByRole("checkbox", { name: "선물 포장 가능" }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "소재" }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("checkbox", { name: "선물 포장 가능" }),
+    ).toBeVisible();
+    expect(screen.getByRole("button", { name: "소재" })).toBeVisible();
   });
 
   it("종목 선택지 조회도 시작하지 않는다", () => {

@@ -1,12 +1,19 @@
 import { ORDER_STATUS, type OrderStatus } from "@/constants/order";
 import type { Page } from "@/types/api";
 import type {
+  OrderDelivery,
+  OrderDetail,
+  OrderDetailArtisanGroup,
+  OrderDetailItem,
   OrderGroup,
   OrderListItem,
   OrderStatusSummary,
 } from "@/types/order";
 
 import type {
+  OrderDeliveryResponseDto,
+  OrderDetailItemDto,
+  OrderDetailResponseDto,
   OrderGroupDto,
   OrderItemDto,
   OrderListResponseDto,
@@ -80,9 +87,18 @@ function mapReturnStatus(returnInfo: ReturnInfoDto): OrderStatus | null {
   }
 }
 
-/** `status`는 주문 전체 계산값을 그대로 복제해 받는다(`types/order.ts` 주석 참고). */
-function mapOrderItem(dto: OrderItemDto, status: OrderStatus): OrderListItem {
+/**
+ * `status`는 주문 전체 계산값을 그대로 복제해 받는다(`types/order.ts` 주석 참고). `reason`도
+ * 마찬가지로 주문 단위 값(`returnInfo.reason`)을 그대로 복제한다 — `CANCELED`는 `returnInfo`
+ * 자체가 없어(`RETURN_REQUESTED`일 때만 옴) 자연히 `null`이 된다.
+ */
+function mapOrderItem(
+  dto: OrderItemDto,
+  status: OrderStatus,
+  reason: string | null,
+): OrderListItem {
   return {
+    orderItemId: dto.orderItemId,
     productId: dto.productId,
     productName: dto.productName,
     price: dto.price,
@@ -90,6 +106,7 @@ function mapOrderItem(dto: OrderItemDto, status: OrderStatus): OrderListItem {
     // BE는 단일 URL을 배열로 감싸 내려준다(variants 없음) — 첫 항목만 쓴다.
     thumbnailUrl: dto.thumbnail[0]?.url ?? null,
     status,
+    reason,
   };
 }
 
@@ -97,11 +114,12 @@ function mapOrderItem(dto: OrderItemDto, status: OrderStatus): OrderListItem {
 function mapOrderGroup(dto: OrderGroupDto): OrderGroup | null {
   const status = mapRawOrderStatus(dto.status, dto.returnInfo);
   if (!status) return null;
+  const reason = dto.returnInfo?.reason ?? null;
   return {
     orderId: dto.orderId,
     orderNumber: dto.orderNumber,
     orderedAt: dto.createdAt,
-    items: dto.items.map((item) => mapOrderItem(item, status)),
+    items: dto.items.map((item) => mapOrderItem(item, status, reason)),
   };
 }
 
@@ -115,6 +133,126 @@ export function mapOrderListPage(dto: OrderListResponseDto): Page<OrderGroup> {
     pageSize: dto.size,
     totalCount: dto.totalElements,
     totalPages: dto.totalPages,
+  };
+}
+
+function mapOrderDetailItem(
+  dto: OrderDetailItemDto,
+  status: OrderStatus,
+  reason: string | null,
+  cancelInitiator: "consumer" | "artisan" | null,
+): OrderDetailItem {
+  return {
+    orderItemId: dto.orderItemId,
+    productId: dto.productId,
+    productName: dto.productName,
+    price: dto.price,
+    quantity: dto.quantity,
+    thumbnailUrl: dto.thumbnail[0]?.url ?? null,
+    options: dto.options ?? [],
+    status,
+    artisanName: dto.artisanName ?? null,
+    reason,
+    cancelInitiator,
+  };
+}
+
+/** BE `canceledBy`(대문자 enum) → FE 표기(소문자) 변환. */
+function mapCancelInitiator(
+  canceledBy: OrderDetailResponseDto["canceledBy"],
+): "consumer" | "artisan" | null {
+  switch (canceledBy) {
+    case "CONSUMER":
+      return "consumer";
+    case "ARTISAN":
+      return "artisan";
+    default:
+      return null;
+  }
+}
+
+/** 아이템을 `artisanName` 기준으로 묶는다 — 처음 등장한 순서를 유지한다. */
+function groupByArtisan(items: OrderDetailItem[]): OrderDetailArtisanGroup[] {
+  const groups: OrderDetailArtisanGroup[] = [];
+  const indexByArtisan = new Map<string | null, number>();
+  for (const item of items) {
+    const existingIndex = indexByArtisan.get(item.artisanName);
+    if (existingIndex === undefined) {
+      indexByArtisan.set(item.artisanName, groups.length);
+      groups.push({ artisanName: item.artisanName, items: [item] });
+    } else {
+      groups[existingIndex]!.items.push(item);
+    }
+  }
+  return groups;
+}
+
+/**
+ * `GET /api/member/me/orders/{orderId}` 응답 → 화면용 모델.
+ *
+ * 상태 해석은 목록과 같은 `mapRawOrderStatus`/`mapReturnStatus`를 재사용한다 — 목록에서
+ * 걸러내는 상태(결제 실패, `returnInfo` 없는 비정상 반품)는 상세 진입 자체가 불가능해야
+ * 하므로, 여기서는 필터링 대신 던진다(호출부가 오류 화면으로 처리 — 실제로는 그런 주문의
+ * 상세 링크 자체를 노출하지 않아 도달할 일이 없다).
+ */
+export function mapOrderDetail(dto: OrderDetailResponseDto): OrderDetail {
+  const status =
+    (dto.purchaseConfirmed ? ORDER_STATUS.PURCHASE_CONFIRMED : null) ??
+    mapRawOrderStatus(dto.status, dto.returnInfo);
+  if (!status) {
+    throw new Error(`주문 상태를 표시할 수 없습니다 (orderId: ${dto.orderId})`);
+  }
+
+  // 사유·취소 주체는 상태에 따라 출처가 다르다 — 교환/환불류는 returnInfo, 취소는
+  // 주문 자체 필드(cancelReason/canceledBy)에서 온다(둘 다 BE 미제공, 목업 전용).
+  const reason = dto.returnInfo?.reason ?? dto.cancelReason ?? null;
+  const cancelInitiator =
+    status === ORDER_STATUS.CANCELED
+      ? mapCancelInitiator(dto.canceledBy)
+      : null;
+  const items = dto.items.map((item) =>
+    mapOrderDetailItem(item, status, reason, cancelInitiator),
+  );
+  const productAmount = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  const shippingAmount = dto.shippingAmount ?? 0;
+  const discountAmount = dto.discountAmount ?? 0;
+  const pointsUsed = dto.pointsUsed ?? 0;
+
+  return {
+    orderId: dto.orderId,
+    orderNumber: dto.orderNumber,
+    orderedAt: dto.createdAt,
+    groups: groupByArtisan(items),
+    shippingAddress: {
+      recipientName: dto.address.recipientName,
+      phone: dto.address.phone,
+      zipCode: dto.address.zipCode,
+      address1: dto.address.address1,
+      address2: dto.address.address2,
+    },
+    payment: {
+      productAmount,
+      shippingAmount,
+      discountAmount,
+      pointsUsed,
+      // 서버 권위 값을 그대로 쓴다 — shippingAmount 등 세부 금액은 BE 미제공 시 0으로
+      // 대체되므로(위), 이걸로 재계산하면 실제 BE 연동 시 결제 금액이 배송비만큼 축소
+      // 표시될 수 있다(독립 리뷰 F1). 세부 항목은 표시용으로만 쓰고, 합계는 `dto.totalAmount`.
+      totalAmount: dto.totalAmount,
+      paymentMethod: dto.paymentMethod ?? null,
+    },
+  };
+}
+
+export function mapOrderDelivery(dto: OrderDeliveryResponseDto): OrderDelivery {
+  return {
+    orderId: dto.orderId,
+    carrier: dto.carrier,
+    trackingNumber: dto.trackingNumber,
+    status: dto.status,
   };
 }
 

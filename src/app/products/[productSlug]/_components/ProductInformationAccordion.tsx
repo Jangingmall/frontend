@@ -7,6 +7,21 @@ interface ProductInformationAccordionProps {
   rows: ProductInformationRow[];
 }
 
+function InformationList({ content }: { content: string }) {
+  return (
+    <ul className="list-outside list-disc pl-4">
+      {content
+        .split(/\r?\n/)
+        .filter((line) => line.trim())
+        .map((line, index) => (
+          <li key={index} className="break-words">
+            {line}
+          </li>
+        ))}
+    </ul>
+  );
+}
+
 export function ProductInformationAccordion({
   id,
   title,
@@ -33,9 +48,26 @@ export function ProductInformationAccordion({
               title={<span className="text-title-s">{row.label}</span>}
               className="border-t border-border-jade-weak [&_h3>button]:border-0 [&_h3>button]:px-3 [&_h3>button]:py-3 [&_svg]:size-6"
             >
-              <p className="px-1 pb-2 text-body-s leading-relaxed whitespace-pre-line">
-                {row.content}
-              </p>
+              <div className="px-2 pb-1 text-body leading-normal text-font-dark-subtle">
+                {row.content && <InformationList content={row.content} />}
+                {!!row.details?.length && (
+                  <dl className="space-y-1">
+                    {row.details.map((detail) => (
+                      <div
+                        key={detail.label}
+                        className="flex items-start gap-2"
+                      >
+                        <dt className="w-22.5 shrink-0 font-bold text-font-dark-secondary">
+                          {detail.label}
+                        </dt>
+                        <dd className="min-w-0">
+                          <InformationList content={detail.content} />
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+              </div>
             </AccordionItem>
           ))}
         </Accordion>

@@ -68,6 +68,12 @@ interface OrderGroupFixture {
   totalAmount: number;
   createdAt: string;
   returnInfo?: ReturnInfoDto;
+  /**
+   * `status === "CANCELED"`일 때만 쓴다 — 상세 화면 사유 배너 목업용
+   * (`OrderDetailFixture`로 그대로 전달됨). 실제 계약엔 없는 목업 전용 필드.
+   */
+  cancelReason?: string;
+  canceledBy?: "CONSUMER" | "ARTISAN";
   items: OrderItemFixture[];
 }
 
@@ -78,21 +84,40 @@ const SINGLE_STATUS_ORDERS: {
   status: OrderStatusDto;
   daysAgo: number;
   returnInfo?: ReturnInfoDto;
+  cancelReason?: string;
+  canceledBy?: "CONSUMER" | "ARTISAN";
 }[] = [
   { status: "CREATED", daysAgo: 0 },
   { status: "PAID", daysAgo: 5 },
   { status: "IN_DELIVERY", daysAgo: 6 },
   { status: "DELIVERED", daysAgo: 20 },
-  { status: "CANCELED", daysAgo: 45 },
+  // 취소는 실측(Figma 1718:16488) 결과 소비자·장인 2가지로 갈려 각각 1건씩 둔다
+  // (constants/order.ts `getOrderDetailActions` CANCELED 분기 참고).
+  {
+    status: "CANCELED",
+    daysAgo: 40,
+    cancelReason: "단순 변심",
+    canceledBy: "CONSUMER",
+  },
+  {
+    status: "CANCELED",
+    daysAgo: 45,
+    cancelReason: "주문 승인 거절 ( 작업 불가 )",
+    canceledBy: "ARTISAN",
+  },
   {
     status: "RETURN_REQUESTED",
     daysAgo: 75,
-    returnInfo: { type: "EXCHANGE", status: "REQUESTED" },
+    returnInfo: { type: "EXCHANGE", status: "REQUESTED", reason: "제품 파손" },
   },
   {
     status: "RETURN_REQUESTED",
     daysAgo: 80,
-    returnInfo: { type: "EXCHANGE", status: "REJECTED" },
+    returnInfo: {
+      type: "EXCHANGE",
+      status: "REJECTED",
+      reason: "상품 사용에 따른 파손",
+    },
   },
   {
     status: "RETURN_REQUESTED",
@@ -102,12 +127,16 @@ const SINGLE_STATUS_ORDERS: {
   {
     status: "RETURN_REQUESTED",
     daysAgo: 140,
-    returnInfo: { type: "RETURN", status: "REQUESTED" },
+    returnInfo: { type: "RETURN", status: "REQUESTED", reason: "제품 파손" },
   },
   {
     status: "RETURN_REQUESTED",
     daysAgo: 170,
-    returnInfo: { type: "RETURN", status: "REJECTED" },
+    returnInfo: {
+      type: "RETURN",
+      status: "REJECTED",
+      reason: "상품 사용에 따른 파손",
+    },
   },
   {
     status: "RETURN_REQUESTED",
@@ -131,6 +160,8 @@ const singleOrders: OrderGroupFixture[] = SINGLE_STATUS_ORDERS.map(
       totalAmount: pool(index).price,
       createdAt: createdAt(spec.daysAgo),
       returnInfo: spec.returnInfo,
+      cancelReason: spec.cancelReason,
+      canceledBy: spec.canceledBy,
       items: [item(index)],
     };
   },
@@ -193,3 +224,111 @@ export const orderFixtures: OrderGroupFixture[] = [
   ...multiOrders,
   ...paddingOrders,
 ].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
+/**
+ * 주문 상세(`GET /api/member/me/orders/{orderId}`) mock 전용 확장 데이터.
+ * `orderFixtures`(목록)와 같은 `orderId`를 그대로 써서 목록→상세 이동이 항상 이어지게 한다.
+ * 실제 BE엔 없는 필드(옵션·배송지·결제수단·배송비 등, `be-requests.md` #3·#4)를 여기서
+ * 목업으로만 채운다. `orderId`로 찾아 in-place로 수정하는 mutation 핸들러가 쓰므로
+ * `Map`(참조가 유지되는 mutable 객체)으로 둔다.
+ */
+
+const OPTION_POOL = [
+  "색상: 백자색",
+  "사이즈: 중",
+  "포장: 선물 포장",
+  "각인: 미포함",
+];
+
+function options(seq: number): string[] {
+  const count = 1 + (seq % 3);
+  return Array.from(
+    { length: count },
+    (_, offset) => OPTION_POOL[(seq + offset) % OPTION_POOL.length]!,
+  );
+}
+
+const ADDRESS_POOL: {
+  recipientName: string;
+  phone: string;
+  zipCode: string;
+  address1: string;
+  address2: string;
+}[] = [
+  {
+    recipientName: "홍길동",
+    phone: "01012345678",
+    zipCode: "06236",
+    address1: "서울특별시 강남구 테헤란로 123",
+    address2: "미담빌딩 5층",
+  },
+  {
+    recipientName: "김미담",
+    phone: "01098765432",
+    zipCode: "48058",
+    address1: "부산광역시 해운대구 센텀로 45",
+    address2: "101동 1502호",
+  },
+];
+
+/** `components/order/PaymentsMethod.tsx`의 4종과 값을 맞춘다(결제 화면과 같은 도메인 값). */
+const PAYMENT_METHOD_POOL = [
+  "CARD",
+  "TOSS_PAY",
+  "REALTIME_TRANSFER",
+  "BANK_TRANSFER",
+] as const;
+
+export interface OrderDetailFixture {
+  orderId: number;
+  orderNumber: string;
+  status: OrderStatusDto;
+  returnInfo?: ReturnInfoDto;
+  cancelReason?: string;
+  canceledBy?: "CONSUMER" | "ARTISAN";
+  createdAt: string;
+  items: (OrderItemFixture & { options: string[] })[];
+  address: {
+    addressId: number | null;
+    recipientName: string;
+    phone: string;
+    zipCode: string;
+    address1: string;
+    address2: string;
+  };
+  shippingAmount: number;
+  paymentMethod: string;
+  discountAmount: number;
+  pointsUsed: number;
+  /** "구매 확정" — BE에 대응 상태값이 없어 목업 전용 플래그로 표현한다(§6 요청함). */
+  purchaseConfirmed: boolean;
+}
+
+/** `orderId` → 상세 mock 데이터. mutation 핸들러가 in-place로 수정한다. */
+export const orderDetailFixtures = new Map<number, OrderDetailFixture>(
+  orderFixtures.map((order, index) => [
+    order.orderId,
+    {
+      orderId: order.orderId,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      returnInfo: order.returnInfo,
+      cancelReason: order.cancelReason,
+      canceledBy: order.canceledBy,
+      createdAt: order.createdAt,
+      items: order.items.map((item, itemIndex) => ({
+        ...item,
+        options: options(index * 10 + itemIndex),
+      })),
+      address: {
+        addressId: 9000 + index,
+        ...ADDRESS_POOL[index % ADDRESS_POOL.length]!,
+      },
+      shippingAmount: 3000,
+      paymentMethod: PAYMENT_METHOD_POOL[index % PAYMENT_METHOD_POOL.length]!,
+      discountAmount: 0,
+      pointsUsed: 0,
+      purchaseConfirmed: false,
+    },
+  ]),
+);

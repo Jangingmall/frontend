@@ -119,7 +119,8 @@ function ReviewContent({
             onValueChange={(value) => {
               if (value) changeFilters({ sort: value as ReviewSort, page: 1 });
             }}
-            className="w-25"
+            className="w-32 shrink-0 whitespace-nowrap"
+            contentClassName="whitespace-nowrap"
           >
             {SORT_ITEMS.map((item) => (
               <SelectItem key={item.value} value={item.value}>

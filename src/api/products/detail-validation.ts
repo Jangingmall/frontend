@@ -13,7 +13,13 @@ const imageSource = z.string().refine((value) => {
   }
 }, "지원하지 않는 이미지 주소입니다.");
 const image = z.object({ src: imageSource, alt: z.string() });
-const informationRow = z.object({ label: z.string(), content: z.string() });
+const informationRow = z.object({
+  label: z.string(),
+  content: z.string(),
+  details: z
+    .array(z.object({ label: z.string(), content: z.string() }).passthrough())
+    .optional(),
+});
 
 /** 현재 BE ProductResponse의 실제 필드. 확장된 FE 계약과 혼합하지 않는다. */
 export const productDetailDto = z.object({

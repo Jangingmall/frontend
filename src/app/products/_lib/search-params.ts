@@ -1,7 +1,4 @@
-import {
-  canUseProductCrafts,
-  canUseProductMaterials,
-} from "@/api/products/integration";
+import { canUseProductCrafts } from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { publicEnv } from "@/lib/env";
 import { GIFT_THEMES } from "@/types/gift-theme";
@@ -42,12 +39,10 @@ export function parseProductSearchParams(
     crafts: canUseProductCrafts()
       ? [...new Set(params.getAll("subcategory").filter(Boolean))].sort()
       : [],
-    materials: canUseProductMaterials()
-      ? [...new Set(params.getAll("material").filter(Boolean))].sort()
-      : [],
+    materials: [...new Set(params.getAll("material").filter(Boolean))].sort(),
     minPrice,
     maxPrice,
-    hasGiftWrap: publicEnv.apiMocking && params.get("hasGiftWrap") === "true",
+    hasGiftWrap: params.get("hasGiftWrap") === "true",
     excludeSoldOut: params.get("excludeSoldOut") === "true",
   };
 }
@@ -57,20 +52,13 @@ export function updateProductSearchParams(
   patch: Partial<ProductListQuery>,
 ): URLSearchParams {
   const params = new URLSearchParams(current);
-  if (!publicEnv.apiMocking) params.delete("hasGiftWrap");
   if (!canUseProductCrafts()) params.delete("subcategory");
-  if (!canUseProductMaterials()) params.delete("material");
   if (!("page" in patch)) params.delete("page");
   if ("category" in patch && patch.category !== current.get("category")) {
     params.delete("subcategory");
   }
   for (const [key, value] of Object.entries(patch)) {
-    if (
-      key === "size" ||
-      (key === "hasGiftWrap" && !publicEnv.apiMocking) ||
-      (key === "crafts" && !canUseProductCrafts()) ||
-      (key === "materials" && !canUseProductMaterials())
-    )
+    if (key === "size" || (key === "crafts" && !canUseProductCrafts()))
       continue;
     const param =
       key === "materials" ? "material" : key === "crafts" ? "subcategory" : key;
