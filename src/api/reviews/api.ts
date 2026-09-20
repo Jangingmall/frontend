@@ -1,8 +1,18 @@
 import { clientFetch } from "@/lib/http/client";
-import type { ReviewFilters } from "@/types/review";
+import type {
+  MyReviewPage,
+  ReviewableItem,
+  ReviewFilters,
+} from "@/types/review";
 
-import { mapReviewPage } from "./mapper";
-import { backendReviewPageDto, reviewPageDto } from "./validation";
+import { mapMyReviewPage, mapReviewableItem, mapReviewPage } from "./mapper";
+import {
+  backendReviewPageDto,
+  createReviewResponseDto,
+  myReviewPageDto,
+  reviewableItemDto,
+  reviewPageDto,
+} from "./validation";
 
 /** 시연 확장과 실제 Spring Page 계약을 구분한다. */
 export async function fetchReviews(
@@ -63,4 +73,38 @@ export async function fetchReviews(
     { auth: false },
   );
   return mapReviewPage(reviewPageDto.parse(data));
+}
+
+/** "빠른 후기 작성" 카드 목록 — 목업 전용(대응 BE 엔드포인트 없음). */
+export async function fetchReviewableItems(): Promise<ReviewableItem[]> {
+  const data = await clientFetch<unknown>("/api/member/me/reviews/reviewable");
+  return reviewableItemDto.array().parse(data).map(mapReviewableItem);
+}
+
+/** "내가 작성한 후기" 목록 — 목업 전용(대응 BE 엔드포인트 없음). */
+export async function fetchMyReviews(page: number): Promise<MyReviewPage> {
+  const search = new URLSearchParams({ page: String(page), size: "5" });
+  const data = await clientFetch<unknown>(`/api/member/me/reviews?${search}`);
+  return mapMyReviewPage(myReviewPageDto.parse(data));
+}
+
+/**
+ * 후기 작성 — 실제 BE 계약 그대로(`POST /api/products/{productId}/reviews`). `rating`은
+ * FE가 0.5 단위로 받은 값을 그대로 보낸다 — BE는 현재 정수만 받으므로 mock-off 시
+ * 반올림·절사될 수 있다(BE에 0.5 단위 지원 요청함).
+ */
+export async function createReview(
+  productId: number,
+  input: {
+    orderItemId: number;
+    rating: number;
+    content: string;
+    images: string[];
+  },
+): Promise<void> {
+  const data = await clientFetch<unknown>(
+    `/api/products/${productId}/reviews`,
+    { method: "POST", body: input },
+  );
+  createReviewResponseDto.parse(data);
 }
