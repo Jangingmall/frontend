@@ -8,6 +8,7 @@ import type { ChangeOrderAddressRequest } from "@/api/orders/api";
 import { ErrorState } from "@/components/common/error-state";
 import { OrderCancelRequestModal } from "@/components/order/OrderCancelRequestModal";
 import { OrderExchangeRefundRequestModal } from "@/components/order/OrderExchangeRefundRequestModal";
+import { ReviewFormModal } from "@/components/review/ReviewFormModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import type { OrderCardActionType } from "@/constants/order";
@@ -22,11 +23,13 @@ import {
   useOrderDeliveryQuery,
   useOrderDetailQuery,
 } from "@/queries/orders/queries";
+import { useCreateReviewMutation } from "@/queries/reviews/mutations";
 import type {
   OrderCancelRequest,
   OrderDetailItem,
   OrderExchangeRefundRequest,
 } from "@/types/order";
+import type { ReviewFormInput } from "@/types/review";
 
 import { DeliveryTrackingModal } from "./_components/DeliveryTrackingModal";
 import { OrderAddressChangeModal } from "./_components/OrderAddressChangeModal";
@@ -38,9 +41,10 @@ import { OrderShippingPaymentPanel } from "./_components/OrderShippingPaymentPan
 /**
  * 주문 상세(`/mypage/orders/[orderId]`, Figma MY-1-OD). 인증 데이터라 서버 프리페치는
  * 하지 않는다(T-27과 동일 패턴). 실제로 연결하는 액션은 배송지 변경·배송 조회·주문 취소·
- * 구매 확정·교환·환불 신청 5개뿐 — 후기 작성·장바구니담기 등은 아직 연결하지 않는다
- * (design.md §4·§8). "주문 취소"·"교환·환불 신청"은 이제 즉시 실행이 아니라 모달(사유+사진
- * 입력)을 연다 — MY-1 리스트와 같은 모달을 공유한다(design.md §0.5, §5.2 — T-29에서 정정).
+ * 구매 확정·교환·환불 신청·후기 작성 6개뿐 — 장바구니담기 등은 아직 연결하지 않는다.
+ * "주문 취소"·"교환·환불 신청"은 즉시 실행이 아니라 모달(사유+사진 입력)을 연다 — MY-1
+ * 리스트와 같은 모달을 공유한다. "후기 작성"도 마이페이지 후기 화면(`/mypage/reviews`)과
+ * 같은 `ReviewFormModal`을 공유한다.
  *
  * dynamic segment는 `use(params)`(Next 공식 예시)가 아니라 `useParams()`로 읽는다 —
  * 로컬 확인 중 `use(params)` + 존재하지 않는 주문(404) 조합에서 페이지가 계속 재요청되는
@@ -78,11 +82,16 @@ export default function OrderDetailPage() {
   );
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [exchangeError, setExchangeError] = useState<string | null>(null);
+  const [reviewTarget, setReviewTarget] = useState<OrderDetailItem | null>(
+    null,
+  );
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const confirmPurchaseMutation = useConfirmPurchaseMutation(orderId);
   const changeAddressMutation = useChangeOrderAddressMutation(orderId);
   const cancelMutation = useRequestOrderCancelMutation(orderId);
   const exchangeMutation = useRequestOrderExchangeRefundMutation(orderId);
+  const createReviewMutation = useCreateReviewMutation();
   const deliveryQuery = useOrderDeliveryQuery(orderId, isDeliveryModalOpen);
 
   if (detailQuery.isError) {
@@ -152,9 +161,13 @@ export default function OrderDetailPage() {
         case "checkDelivery":
           setIsDeliveryModalOpen(true);
           break;
+        case "writeReview":
+          setReviewError(null);
+          setReviewTarget(item);
+          break;
         default:
-          // 후기 작성·장바구니담기·1:1 문의·교환/환불 신청 취소·상품 회수 안내 등은
-          // 후속 작업 범위 — 연결하지 않는다.
+          // 장바구니담기·1:1 문의·교환/환불 신청 취소·상품 회수 안내 등은 후속 작업
+          // 범위 — 연결하지 않는다.
           break;
       }
     } catch (error) {
@@ -189,6 +202,21 @@ export default function OrderDetailPage() {
       setExchangeTarget(null);
     } catch (error) {
       setExchangeError(resolveActionErrorMessage(error));
+    }
+  }
+
+  async function handleReviewSubmit(input: ReviewFormInput) {
+    if (!reviewTarget) return;
+    setReviewError(null);
+    try {
+      await createReviewMutation.mutateAsync({
+        productId: reviewTarget.productId,
+        orderItemId: reviewTarget.orderItemId,
+        input,
+      });
+      setReviewTarget(null);
+    } catch (error) {
+      setReviewError(resolveActionErrorMessage(error));
     }
   }
 
@@ -288,6 +316,23 @@ export default function OrderDetailPage() {
             submitting={exchangeMutation.isPending}
             submitError={exchangeError}
             onSubmit={(input) => void handleExchangeSubmit(input)}
+          />
+        )}
+
+        {reviewTarget && (
+          <ReviewFormModal
+            open
+            onOpenChange={(open) => {
+              if (!open) {
+                setReviewTarget(null);
+                setReviewError(null);
+              }
+            }}
+            item={reviewTarget}
+            purchasedAt={order.orderedAt}
+            submitting={createReviewMutation.isPending}
+            submitError={reviewError}
+            onSubmit={(input) => void handleReviewSubmit(input)}
           />
         )}
       </div>

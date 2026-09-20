@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http } from "msw";
 import type { ReactNode } from "react";
@@ -37,6 +37,9 @@ const deliveredOrderIds = orderFixtures
   .filter((order) => order.status === "DELIVERED")
   .map((order) => order.orderId);
 const secondDeliveredOrderId = deliveredOrderIds[1]!;
+// 후기 작성 테스트는 실제로 성공 제출까지 하므로(위 두 주문과 상태가 겹치지 않게)
+// 별개의 세 번째 DELIVERED 주문을 쓴다.
+const thirdDeliveredOrderId = deliveredOrderIds[2]!;
 
 let mockOrderId = String(deliveredOrderId);
 vi.mock("next/navigation", () => ({
@@ -248,5 +251,25 @@ describe("OrderDetailPage", () => {
     expect(
       await screen.findByText("사진을 1장 이상 첨부해주세요."),
     ).toBeInTheDocument();
+  });
+
+  it("후기 작성 클릭 시 모달이 뜨고, 등록하면 버튼이 사라진다", async () => {
+    const user = userEvent.setup();
+    mockOrderId = String(thirdDeliveredOrderId);
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: "후기 작성" }));
+    expect(
+      screen.getByRole("heading", { name: "후기 작성하기" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("review-rating-star-4"));
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: "후기 작성" }),
+      ).not.toBeInTheDocument(),
+    );
   });
 });
