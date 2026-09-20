@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { OrderClaimPhotoField } from "./OrderClaimPhotoField";
 
@@ -38,6 +38,20 @@ describe("OrderClaimPhotoField", () => {
 
     await user.click(screen.getByLabelText("photo.png 삭제"));
     expect(screen.queryByLabelText("photo.png 삭제")).not.toBeInTheDocument();
+  });
+
+  it("사진을 삭제하면 미리보기 object URL을 해제한다(Codex 리뷰 F2)", async () => {
+    const revokeSpy = vi.spyOn(URL, "revokeObjectURL");
+    const user = userEvent.setup();
+    render(<Wrapper />);
+
+    const input =
+      document.querySelector<HTMLInputElement>('input[type="file"]')!;
+    await user.upload(input, file("photo.png"));
+    await user.click(screen.getByLabelText("photo.png 삭제"));
+
+    expect(revokeSpy).toHaveBeenCalled();
+    revokeSpy.mockRestore();
   });
 
   it("10MB를 넘는 사진은 에러를 보여주고 추가되지 않는다", async () => {

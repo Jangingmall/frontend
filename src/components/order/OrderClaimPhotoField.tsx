@@ -1,7 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 
 const MAX_PHOTOS = 5;
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
@@ -28,6 +28,19 @@ export function OrderClaimPhotoField({
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [localError, setLocalError] = useState<string | null>(null);
+
+  // `value`(파일 추가·삭제 — 둘 다 새 배열)가 바뀔 때만 미리보기 URL을 새로 만들고,
+  // 이전 URL은 배열이 바뀌거나 언마운트될 때 해제한다(Codex 리뷰 F2 — 렌더마다 새로
+  // 만들고 해제 안 하던 누수 수정).
+  const previewUrls = useMemo(
+    () => value.map((file) => URL.createObjectURL(file)),
+    [value],
+  );
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
 
   function handleSelect(event: ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
@@ -71,7 +84,7 @@ export function OrderClaimPhotoField({
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- 로컬 File 미리보기, next/image 최적화 대상 아님 */}
             <img
-              src={URL.createObjectURL(file)}
+              src={previewUrls[index]}
               alt=""
               className="size-full object-cover"
             />
