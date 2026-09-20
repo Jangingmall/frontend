@@ -31,8 +31,10 @@ export function ProductToolbar({
   const rootCategory = parent ?? category;
   const options = SORT_OPTIONS.map((option) => ({
     ...option,
+    // BE의 POPULAR는 아직 ID 내림차순이므로 실제 인기순 지원으로 취급하지 않는다.
     disabled:
-      !publicEnv.apiMocking && ["sales", "wishlist"].includes(option.value),
+      !publicEnv.apiMocking &&
+      ["popular", "sales", "wishlist"].includes(option.value),
   }));
   return (
     <div>

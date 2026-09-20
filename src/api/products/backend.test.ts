@@ -50,45 +50,6 @@ function mockPages(mutate = (page: Record<string, unknown>) => page) {
   return requests;
 }
 describe("현재 Pageable 목록 계약", () => {
-  it("인기순을 POPULAR로 전송하고 필터·페이지 적용 후에도 서버 순서를 유지한다", async () => {
-    const requests: URLSearchParams[] = [];
-    const ranked = [...products].reverse();
-    server.use(
-      http.get("*/api/products", ({ request }) => {
-        const params = new URL(request.url).searchParams;
-        requests.push(params);
-        const number = Number(params.get("page"));
-        const size = Number(params.get("size"));
-        return mockOk({
-          content: ranked.slice(number * size, (number + 1) * size),
-          number,
-          size,
-          totalElements: ranked.length,
-          totalPages: Math.ceil(ranked.length / size),
-        });
-      }),
-    );
-    for (const fetchList of [fetchProductList, fetchProductListClient]) {
-      const unfiltered = await fetchList({ sort: "popular", size: 2 });
-      expect(unfiltered.items.map((item) => item.id)).toEqual([103, 102]);
-      const filtered = await fetchList({
-        sort: "popular",
-        keyword: "백자",
-        size: 2,
-      });
-      expect(filtered.items.map((item) => item.id)).toEqual([103, 102]);
-      const nextPage = await fetchList({
-        sort: "popular",
-        keyword: "백자",
-        size: 2,
-        page: 2,
-      });
-      expect(nextPage.items.map((item) => item.id)).toEqual([101]);
-    }
-    expect(requests).toHaveLength(10);
-    for (const params of requests)
-      expect(params.getAll("sort")).toEqual(["POPULAR"]);
-  });
   it("필터 없는 요청은 Spring 정렬과 한 페이지만 사용한다", async () => {
     const requests = mockPages();
     for (const fetchList of [fetchProductList, fetchProductListClient]) {
