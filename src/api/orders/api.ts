@@ -1,4 +1,4 @@
-import type { ReturnReason } from "@/constants/order";
+import type { OrderStatusGroupKey, ReturnReason } from "@/constants/order";
 import { clientFetch } from "@/lib/http/client";
 import type { Page } from "@/types/api";
 import type {
@@ -14,7 +14,11 @@ import {
   mapOrderListPage,
   mapOrderStatusSummary,
 } from "./mapper";
-import { type OrdersListQuery, toOrdersListSearchParams } from "./query";
+import {
+  type OrdersListQuery,
+  resolveOrdersListPaging,
+  toOrdersListSearchParams,
+} from "./query";
 import {
   orderDeliveryResponseDto,
   orderDetailResponseDto,
@@ -35,6 +39,50 @@ export async function fetchOrdersList(
     `/api/member/me/orders?${toOrdersListSearchParams(query)}`,
   );
   return mapOrderListPage(orderListResponseDto.parse(data));
+}
+
+/** MY-2("전체" 탭)가 합쳐 보여줘야 하는 두 상태 그룹. `fetchCancellationOrdersList` 참고. */
+const CANCELLATION_STATUS_GROUPS: readonly OrderStatusGroupKey[] = [
+  "EXCHANGE_REFUND",
+  "CANCELED",
+];
+
+/**
+ * 취소·교환·환불 내역(Figma MY-2) "전체" 탭 전용 목록 조회. BE `status` 쿼리 파라미터는
+ * 값 하나만 받아(`MemberReadRepositoryImpl.orders` — `ALL` 아니면 단일 `o.status=:status`
+ * 동등비교) "교환·환불 + 주문취소를 합친 전체"를 한 번에 요청할 방법이 없다(`be-requests.md`
+ * 참고) — 두 상태를 병렬로 가져와 주문일 내림차순으로 합친 뒤 요청한 페이지 구간만
+ * 잘라낸다. 개별 탭(교환·환불/주문취소)은 이미 단일 raw status라 `fetchOrdersList`로 그대로
+ * 위임한다.
+ *
+ * 한계: 병합 페이지네이션이라 한 회원의 취소+교환·환불 누적 건수가 BE 페이지 크기 상한
+ * (100)을 넘으면 그 이후 페이지는 정확하지 않다 — 실사용 규모에선 발생하지 않는다고 보고
+ * 넘어간다.
+ */
+export async function fetchCancellationOrdersList(
+  query: OrdersListQuery = {},
+): Promise<Page<OrderGroup>> {
+  if (query.status && query.status !== "ALL") {
+    return fetchOrdersList(query);
+  }
+  const { page, size } = resolveOrdersListPaging(query);
+  const upto = Math.min(page * size, 100);
+  const pages = await Promise.all(
+    CANCELLATION_STATUS_GROUPS.map((status) =>
+      fetchOrdersList({ ...query, status, page: 1, size: upto }),
+    ),
+  );
+  const merged = pages
+    .flatMap((p) => p.items)
+    .sort((a, b) => (a.orderedAt < b.orderedAt ? 1 : -1));
+  const totalCount = pages.reduce((sum, p) => sum + p.totalCount, 0);
+  return {
+    items: merged.slice((page - 1) * size, page * size),
+    page,
+    pageSize: size,
+    totalCount,
+    totalPages: Math.ceil(totalCount / size),
+  };
 }
 
 /** `GET /api/member/me/orders/summary` → 최근 3개월 고정 기준 상태별 카운트. */

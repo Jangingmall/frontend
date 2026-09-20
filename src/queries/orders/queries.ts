@@ -3,6 +3,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import {
+  fetchCancellationOrdersList,
   fetchOrderDelivery,
   fetchOrderDetail,
   fetchOrdersList,
@@ -17,6 +18,18 @@ export function useOrdersListQuery(query: OrdersListQuery) {
   return useQuery({
     queryKey: orderKeys.list(query),
     queryFn: () => fetchOrdersList(query),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/**
+ * 취소·교환·환불 내역(MY-2) 전용 주문 목록 — "전체" 탭일 때만 두 상태를 병합 조회하고
+ * (`fetchCancellationOrdersList`), 나머지 탭은 일반 목록 조회와 동일하게 동작한다.
+ */
+export function useCancellationOrdersListQuery(query: OrdersListQuery) {
+  return useQuery({
+    queryKey: orderKeys.cancellationList(query),
+    queryFn: () => fetchCancellationOrdersList(query),
     placeholderData: keepPreviousData,
   });
 }

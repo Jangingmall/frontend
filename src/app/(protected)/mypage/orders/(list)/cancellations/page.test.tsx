@@ -48,6 +48,21 @@ describe("MypageOrderCancellationsPage", () => {
     ).toBeInTheDocument();
   });
 
+  it("'전체' 탭(기본값)에서도 교환·환불·취소 외의 상태 카드는 뜨지 않는다", async () => {
+    renderPage();
+    await screen.findAllByText("주문번호 :");
+    // 이 화면에 없는 상태(SHIPPING/DELIVERED/PREPARING/PAYMENT_PENDING) 배지가 카드에
+    // 섞여 들어오면 안 된다 — status=ALL이 BE에 "필터 없음"으로 보내지던 버그의 회귀 테스트.
+    for (const label of [
+      "배송 중",
+      "배송 완료",
+      "상품 준비 중",
+      "입금 확인 중",
+    ]) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument();
+    }
+  });
+
   it("이 화면 전용 안내 문구를 보여준다(MY-1과 다름)", async () => {
     renderPage();
     await screen.findAllByText("주문번호 :");

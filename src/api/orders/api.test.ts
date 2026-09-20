@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   changeOrderAddress,
   confirmPurchase,
+  fetchCancellationOrdersList,
   fetchOrderDelivery,
   fetchOrderDetail,
   fetchOrdersList,
@@ -101,6 +102,47 @@ describe("fetchOrdersList", () => {
     expect(result.totalCount).toBe(expectedCount);
     expect(result.totalCount).toBeGreaterThan(0);
     expect(result.totalCount).toBeLessThan(orderFixtures.length);
+  });
+});
+
+describe("fetchCancellationOrdersList", () => {
+  it("'전체' 탭은 교환·환불·취소 상태만 합쳐서 돌려준다(취소·교환·환불 화면 전용)", async () => {
+    const expectedCount = orderFixtures.filter(
+      (order) =>
+        order.status === "CANCELED" || order.status === "RETURN_REQUESTED",
+    ).length;
+    const result = await fetchCancellationOrdersList({ size: 100 });
+    expect(result.totalCount).toBe(expectedCount);
+    expect(result.items.length).toBe(expectedCount);
+    expect(
+      result.items.every((order) =>
+        order.items.every(
+          (item) =>
+            item.status !== "PAYMENT_PENDING" &&
+            item.status !== "PREPARING" &&
+            item.status !== "SHIPPING" &&
+            item.status !== "DELIVERED",
+        ),
+      ),
+    ).toBe(true);
+  });
+
+  it("개별 상태 탭(교환·환불/주문취소)은 단일 조회 결과와 같다", async () => {
+    const [cancellation, plain] = await Promise.all([
+      fetchCancellationOrdersList({ status: "CANCELED", size: 100 }),
+      fetchOrdersList({ status: "CANCELED", size: 100 }),
+    ]);
+    expect(cancellation.totalCount).toBe(plain.totalCount);
+    expect(cancellation.items.map((o) => o.orderId)).toEqual(
+      plain.items.map((o) => o.orderId),
+    );
+  });
+
+  it("주문일 내림차순으로 병합·정렬한다", async () => {
+    const result = await fetchCancellationOrdersList({ size: 100 });
+    const orderedAts = result.items.map((o) => o.orderedAt);
+    const sorted = [...orderedAts].sort((a, b) => (a < b ? 1 : -1));
+    expect(orderedAts).toEqual(sorted);
   });
 });
 
