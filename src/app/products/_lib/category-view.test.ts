@@ -52,11 +52,37 @@ describe("헤더와 상품목록 분류", () => {
 
   it("전체 상품과 기존 ID는 유지하며 모든 헤더 대분류를 제공한다", () => {
     expect(resolveCategoryView(undefined, []).isMapped).toBe(true);
-    expect(resolveCategoryView("category-1", []).apiCategory).toBe(
-      "category-1",
-    );
+    const categories = mapBackendProductCategories([
+      { categoryId: 1, name: "도자기" },
+    ]);
+    expect(resolveCategoryView("category-1", categories)).toMatchObject({
+      category: categories[0],
+      apiCategory: "category-1",
+      isMapped: true,
+    });
     expect(
       PRODUCT_NAV_CATEGORIES.filter((c) => c.parentId === null),
     ).toHaveLength(7);
+  });
+
+  it.each(["오타", "category-999", "subcategory-999", ""])(
+    "알 수 없는 분류 %s는 매핑하거나 API에 전달하지 않는다",
+    (id) => {
+      const categories = mapBackendProductCategories([
+        { categoryId: 1, name: "도자기" },
+      ]);
+      expect(resolveCategoryView(id, categories)).toMatchObject({
+        category: undefined,
+        apiCategory: undefined,
+        isMapped: false,
+      });
+    },
+  );
+
+  it("API 목록에 없는 기존 ID도 미매핑으로 처리한다", () => {
+    expect(resolveCategoryView("category-1", [])).toMatchObject({
+      apiCategory: undefined,
+      isMapped: false,
+    });
   });
 });

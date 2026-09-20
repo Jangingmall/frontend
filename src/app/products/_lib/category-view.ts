@@ -29,11 +29,12 @@ export function resolveCategoryView(
 ) {
   const display = PRODUCT_NAV_CATEGORIES.find((category) => category.id === id);
   if (!display) {
+    const category = categories.find((category) => category.id === id);
     return {
-      category: categories.find((category) => category.id === id),
+      category,
       categories,
-      apiCategory: id,
-      isMapped: true,
+      apiCategory: category?.id,
+      isMapped: id === undefined || category !== undefined,
     };
   }
   const normalize = (name: string) =>
