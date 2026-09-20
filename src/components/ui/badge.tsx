@@ -19,7 +19,7 @@ const badgeVariants = cva(
         jade: "bg-(--badge-jade) px-2 py-1 text-caption text-font-dark",
         solid:
           "bg-fill-neutral-impact px-2 py-1 text-caption-b text-font-white",
-        plain: "px-3 py-1 text-body-m font-bold text-font-dark",
+        plain: "text-body-m font-bold text-font-dark",
       },
     },
     defaultVariants: { variant: "jade" },

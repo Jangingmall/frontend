@@ -1,8 +1,33 @@
 import dayjs from "dayjs";
 import { describe, expect, it } from "vitest";
 
-import { fetchOrdersList, fetchOrderStatusSummary } from "./api";
+import {
+  cancelOrder,
+  changeOrderAddress,
+  confirmPurchase,
+  fetchOrderDelivery,
+  fetchOrderDetail,
+  fetchOrdersList,
+  fetchOrderStatusSummary,
+} from "./api";
 import { orderFixtures } from "./mock/fixtures";
+
+// 상태별 주문 id를 파일 로드 시점(= 어떤 mutation 테스트도 실행되기 전)에 한 번만 캡처한다.
+// mutation 테스트가 나중에 이 배열의 `status`를 바꾸므로, 매번 `.find`로 다시 찾으면
+// 이전 mutation 테스트의 영향을 받아 다른 주문을 가리킬 수 있다 — 테스트끼리 별개
+// 주문을 쓰도록 인덱스로 고정한다.
+const createdOrderIds = orderFixtures
+  .filter((order) => order.status === "CREATED")
+  .map((order) => order.orderId);
+const paidOrderId = orderFixtures.find(
+  (order) => order.status === "PAID",
+)!.orderId;
+const deliveredOrderId = orderFixtures.find(
+  (order) => order.status === "DELIVERED",
+)!.orderId;
+const inDeliveryOrderId = orderFixtures.find(
+  (order) => order.status === "IN_DELIVERY",
+)!.orderId;
 
 describe("fetchOrdersList", () => {
   it("기본 조회는 최신순 첫 페이지(size 10)를 돌려준다", async () => {
@@ -88,5 +113,90 @@ describe("fetchOrderStatusSummary", () => {
       summary.exchangeRefund +
       summary.canceled;
     expect(total).toBeGreaterThan(0);
+  });
+});
+
+describe("fetchOrderDetail", () => {
+  it("주문 상세를 조회한다", async () => {
+    const detail = await fetchOrderDetail(deliveredOrderId);
+    expect(detail.orderId).toBe(deliveredOrderId);
+    expect(detail.groups.length).toBeGreaterThan(0);
+    expect(detail.shippingAddress.recipientName).toBeTruthy();
+  });
+
+  it("존재하지 않는 주문은 404를 던진다", async () => {
+    await expect(fetchOrderDetail(999_999)).rejects.toMatchObject({
+      status: 404,
+    });
+  });
+});
+
+describe("fetchOrderDelivery", () => {
+  it("배송 중 주문은 IN_TRANSIT 상태를 돌려준다", async () => {
+    const delivery = await fetchOrderDelivery(inDeliveryOrderId);
+    expect(delivery.status).toBe("IN_TRANSIT");
+    expect(delivery.trackingNumber).toBeTruthy();
+  });
+});
+
+describe("cancelOrder", () => {
+  it("입금 확인 중(CREATED) 주문을 취소하면 상세 상태가 CANCELED로 바뀐다", async () => {
+    const orderId = createdOrderIds[0]!;
+    await cancelOrder(orderId);
+    const detail = await fetchOrderDetail(orderId);
+    expect(detail.groups[0]!.items[0]!.status).toBe("CANCELED");
+  });
+
+  it("결제 완료 주문은 취소할 수 없다(BUSINESS_RULE_VIOLATION)", async () => {
+    await expect(cancelOrder(paidOrderId)).rejects.toMatchObject({
+      status: 422,
+    });
+  });
+});
+
+describe("confirmPurchase", () => {
+  it("배송 완료 주문을 구매 확정하면 상태가 PURCHASE_CONFIRMED로 바뀐다", async () => {
+    await confirmPurchase(deliveredOrderId);
+    const detail = await fetchOrderDetail(deliveredOrderId);
+    expect(detail.groups[0]!.items[0]!.status).toBe("PURCHASE_CONFIRMED");
+  });
+
+  it("배송 완료가 아닌 주문은 구매 확정할 수 없다", async () => {
+    await expect(confirmPurchase(paidOrderId)).rejects.toMatchObject({
+      status: 422,
+    });
+  });
+});
+
+describe("changeOrderAddress", () => {
+  it("입금 확인 중 주문의 배송지를 변경하면 상세 조회에 반영된다", async () => {
+    const orderId = createdOrderIds[1]!;
+    await changeOrderAddress(orderId, {
+      recipientName: "박변경",
+      phone: "01055556666",
+      zipCode: "12345",
+      address1: "변경된 주소",
+      address2: "2층",
+    });
+    const detail = await fetchOrderDetail(orderId);
+    expect(detail.shippingAddress).toEqual({
+      recipientName: "박변경",
+      phone: "01055556666",
+      zipCode: "12345",
+      address1: "변경된 주소",
+      address2: "2층",
+    });
+  });
+
+  it("배송지를 변경할 수 없는 상태(배송 완료)면 실패한다", async () => {
+    await expect(
+      changeOrderAddress(deliveredOrderId, {
+        recipientName: "박변경",
+        phone: "01055556666",
+        zipCode: "12345",
+        address1: "변경된 주소",
+        address2: "2층",
+      }),
+    ).rejects.toMatchObject({ status: 422 });
   });
 });

@@ -2,7 +2,12 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
-import { fetchOrdersList, fetchOrderStatusSummary } from "@/api/orders/api";
+import {
+  fetchOrderDelivery,
+  fetchOrderDetail,
+  fetchOrdersList,
+  fetchOrderStatusSummary,
+} from "@/api/orders/api";
 import type { OrdersListQuery } from "@/api/orders/query";
 
 import { orderKeys } from "./keys";
@@ -21,5 +26,25 @@ export function useOrderStatusSummaryQuery() {
   return useQuery({
     queryKey: orderKeys.statusSummary,
     queryFn: fetchOrderStatusSummary,
+  });
+}
+
+/** 주문 상세(`/mypage/orders/[orderId]`). 본인 주문이 아니거나 없으면 404(T-28 design.md §5). */
+export function useOrderDetailQuery(orderId: number) {
+  return useQuery({
+    queryKey: orderKeys.detail(orderId),
+    queryFn: () => fetchOrderDetail(orderId),
+  });
+}
+
+/**
+ * 배송 조회 모달(OD-2) 전용 — 모달이 열렸을 때만 호출한다(`enabled`). 매번 새로 조회해
+ * 최신 배송 상태를 보여준다(T-28 design.md §4.4).
+ */
+export function useOrderDeliveryQuery(orderId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: orderKeys.delivery(orderId),
+    queryFn: () => fetchOrderDelivery(orderId),
+    enabled,
   });
 }

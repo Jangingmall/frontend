@@ -89,10 +89,13 @@ export function OrderProductCard(props: OrderProductCardProps) {
             onError={() => setHasImageError(true)}
           />
         </div>
-        <div className="flex h-full min-w-0 flex-1 flex-col justify-between gap-2 self-stretch">
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-2 self-stretch">
           <div className="flex flex-col gap-1 text-body-s-b">
             <p className="truncate">{props.productName}</p>
-            <p className="text-right whitespace-nowrap">
+            {/* Figma 실측(`product-card` 컴포넌트, node `I...;868:2919`) — 가격은
+                상품명과 같은 왼쪽 정렬로 붙는다. 오른쪽 정렬은 "주문 상세보기"만
+                해당한다(T-21에서 가격까지 오른쪽으로 미룬 게 실수였음, T-28에서 발견). */}
+            <p className="whitespace-nowrap">
               {props.price.toLocaleString("ko-KR")}원
             </p>
           </div>

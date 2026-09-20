@@ -1,9 +1,14 @@
 import dayjs from "dayjs";
-import { http } from "msw";
+import { type DefaultBodyType, http, type PathParams } from "msw";
 
-import { mockOk } from "@/mocks/envelope";
+import { mockError, mockOk } from "@/mocks/envelope";
+import type { ApiErrorResponse, ApiResponse } from "@/types/api";
 
-import { orderFixtures } from "./fixtures";
+import { orderDetailFixtures, orderFixtures } from "./fixtures";
+
+/** 성공·실패 응답을 함께 반환하는 핸들러에 명시 지정 — 아니면 TS가 첫 반환 분기만 보고
+ * 응답 타입을 좁혀 다른 분기(주로 `mockError`)에서 타입 에러가 난다(`api/member` 동일 패턴). */
+type Envelope = ApiResponse<unknown> | ApiErrorResponse;
 
 /**
  * 마이페이지 주문 목록 도메인 MSW 핸들러. (`장인몰 주문 이력 API 계약서` v1.0 확정 —
@@ -81,4 +86,124 @@ export const orderHandlers = [
       empty: content.length === 0,
     });
   }),
+
+  /** `GET /api/member/me/orders/{orderId}` — 주문 상세(T-28). */
+  http.get<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/me/orders/:orderId",
+    ({ params }) => {
+      const orderId = Number(params.orderId);
+      const detail = orderDetailFixtures.get(orderId);
+      if (!detail) return mockError(404, "NOT_FOUND");
+
+      const productAmount = detail.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+      return mockOk({
+        orderId: detail.orderId,
+        orderNumber: detail.orderNumber,
+        status: detail.status,
+        totalAmount: productAmount + detail.shippingAmount,
+        createdAt: detail.createdAt,
+        returnInfo: detail.returnInfo,
+        cancelReason: detail.cancelReason,
+        canceledBy: detail.canceledBy,
+        items: detail.items,
+        address: detail.address,
+        shippingAmount: detail.shippingAmount,
+        paymentMethod: detail.paymentMethod,
+        discountAmount: detail.discountAmount,
+        pointsUsed: detail.pointsUsed,
+        purchaseConfirmed: detail.purchaseConfirmed,
+      });
+    },
+  ),
+
+  /** `GET /api/payments/orders/{orderId}/delivery` — 배송 조회(T-28, `be-requests.md` #5). */
+  http.get<PathParams, DefaultBodyType, Envelope>(
+    "*/api/payments/orders/:orderId/delivery",
+    ({ params }) => {
+      const orderId = Number(params.orderId);
+      const detail = orderDetailFixtures.get(orderId);
+      if (!detail) return mockError(404, "NOT_FOUND");
+
+      const status =
+        detail.status === "DELIVERED"
+          ? "DELIVERED"
+          : detail.status === "IN_DELIVERY"
+            ? "IN_TRANSIT"
+            : "SHIPPED";
+      return mockOk({
+        orderId,
+        carrier: "CJ대한통운",
+        trackingNumber: `${600000000000 + orderId}`,
+        status,
+      });
+    },
+  ),
+
+  /** `POST /api/payments/orders/{orderId}/cancel` — 목업 전용(T-28, `be-requests.md` #6). */
+  http.post<PathParams, DefaultBodyType, Envelope>(
+    "*/api/payments/orders/:orderId/cancel",
+    ({ params }) => {
+      const orderId = Number(params.orderId);
+      const detail = orderDetailFixtures.get(orderId);
+      if (!detail) return mockError(404, "NOT_FOUND");
+      if (detail.status !== "CREATED") {
+        return mockError(
+          422,
+          "BUSINESS_RULE_VIOLATION",
+          "결제 전 주문만 취소할 수 있습니다.",
+        );
+      }
+      detail.status = "CANCELED";
+      const listOrder = orderFixtures.find(
+        (order) => order.orderId === orderId,
+      );
+      if (listOrder) listOrder.status = "CANCELED";
+      return mockOk(null);
+    },
+  ),
+
+  /**
+   * `POST /api/member/me/orders/{orderId}/confirm-purchase` — 목업 전용(T-28,
+   * `be-requests.md` #6).
+   */
+  http.post<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/me/orders/:orderId/confirm-purchase",
+    ({ params }) => {
+      const orderId = Number(params.orderId);
+      const detail = orderDetailFixtures.get(orderId);
+      if (!detail) return mockError(404, "NOT_FOUND");
+      if (detail.status !== "DELIVERED") {
+        return mockError(
+          422,
+          "BUSINESS_RULE_VIOLATION",
+          "배송 완료된 주문만 구매 확정할 수 있습니다.",
+        );
+      }
+      detail.purchaseConfirmed = true;
+      return mockOk(null);
+    },
+  ),
+
+  /** `PATCH /api/payments/orders/{orderId}/address` — 목업 전용(T-28, `be-requests.md` #7). */
+  http.patch<PathParams, DefaultBodyType, Envelope>(
+    "*/api/payments/orders/:orderId/address",
+    async ({ params, request }) => {
+      const orderId = Number(params.orderId);
+      const detail = orderDetailFixtures.get(orderId);
+      if (!detail) return mockError(404, "NOT_FOUND");
+      if (detail.status !== "CREATED" && detail.status !== "PAID") {
+        return mockError(
+          422,
+          "BUSINESS_RULE_VIOLATION",
+          "배송지를 변경할 수 없는 주문 상태입니다.",
+        );
+      }
+      const body = (await request.json()) as Partial<typeof detail.address>;
+      detail.address = { ...detail.address, ...body };
+      return mockOk(null);
+    },
+  ),
 ];

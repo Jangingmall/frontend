@@ -8,6 +8,7 @@ import MypageOrdersPage from "./page";
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 function renderPage() {

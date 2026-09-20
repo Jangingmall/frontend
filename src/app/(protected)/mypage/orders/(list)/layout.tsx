@@ -9,7 +9,12 @@ import { MypageSidebarSection } from "@/app/(protected)/mypage/_components/Mypag
  * 쓴다, T-27 design.md §1). `(default)` route group 안에 두고 `usePathname()`으로 분기하는
  * 대신 이 라우트만 별도 Server 레이아웃으로 분리했다 — pathname 분기 하나 때문에 형제
  * 레이아웃 전체를 Client Component로 만들 필요가 없다(Codex 리뷰 지적, `docs/conventions.md`
- * §6 최소 Client 경계 원칙). `account/layout.tsx`처럼 group 없이 자기 URL 세그먼트로 둔다.
+ * §6 최소 Client 경계 원칙).
+ *
+ * `(list)` route group 안에 있다 — 이 셸은 목록(`page.tsx`)·`cancellations`에만 적용되고
+ * 주문 상세(`/mypage/orders/[orderId]`, T-28)엔 안 걸린다. Figma MY-1-OD는 마이페이지
+ * 사이드바 없이 GNB 바로 아래 콘텐츠가 오는 별도 화면이라(T-28 design.md §0 실측),
+ * `[orderId]`를 이 group 밖(형제)에 둬서 이 레이아웃을 상속하지 않게 했다.
  */
 export default function MypageOrdersLayout({
   children,
