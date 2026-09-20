@@ -17,6 +17,8 @@ export interface CartOptionDialogProps {
   definitions: CartOptionDefinition[];
   initialValues: string[];
   onApply: (values: string[]) => void;
+  unavailableMessage?: string;
+  currentOptions?: string[];
   initialError?: boolean;
   initialOpenIndex?: number;
 }
@@ -26,6 +28,8 @@ export function CartOptionDialog({
   definitions,
   initialValues,
   onApply,
+  unavailableMessage,
+  currentOptions = [],
   initialError = false,
   initialOpenIndex = -1,
 }: CartOptionDialogProps) {
@@ -86,13 +90,42 @@ export function CartOptionDialog({
           >
             취소
           </Button>
-          <Button size="xl" className="flex-1" onClick={submit}>
+          <Button
+            size="xl"
+            className="flex-1"
+            onClick={submit}
+            disabled={!!unavailableMessage}
+          >
             변경하기
           </Button>
         </div>
       }
     >
       <div ref={container} className="flex min-h-full flex-col">
+        {unavailableMessage && (
+          <div className="mb-6 space-y-3">
+            <p role="status" className="text-body-s text-font-dark-weak">
+              {unavailableMessage}
+            </p>
+            {currentOptions.map((option, index) => (
+              <p
+                key={index}
+                className="border border-border-jade-weak p-3 text-body-s"
+              >
+                {option}
+              </p>
+            ))}
+            <Select
+              ariaLabel="상품 옵션"
+              placeholder="옵션 정보를 불러올 수 없습니다"
+              disabled
+            >
+              <SelectItem value="unavailable" disabled>
+                서비스 준비 중
+              </SelectItem>
+            </Select>
+          </div>
+        )}
         <p className="mb-2 text-body-s-b">
           선택 ({visible.filter((_, index) => !!draft[index]).length}/
           {visible.length})

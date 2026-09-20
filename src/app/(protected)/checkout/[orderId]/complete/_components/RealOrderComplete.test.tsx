@@ -20,7 +20,7 @@ vi.mock("@/queries/payments", () => ({
 it("does not announce completion for unpaid persisted orders", () => {
   state.status = "CREATED";
   render(<RealOrderComplete orderId={42} />);
-  expect(screen.getByRole("heading")).toHaveTextContent(
+  expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
     "결제 완료가 확인되지 않았습니다",
   );
 });

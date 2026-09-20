@@ -3,12 +3,14 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { PaymentFeedbackDialog } from "@/app/(protected)/checkout/_components/PaymentFeedbackDialog";
 import {
   clearOrderRequestKey,
   readPaymentContext,
   validatePaymentCallback,
 } from "@/app/(protected)/checkout/_lib/checkout-session";
 import { getPaymentErrorMessage } from "@/app/(protected)/checkout/_lib/payment-error";
+import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator";
 import { Button } from "@/components/ui/button";
 import {
   useConfirmPaymentMutation,
@@ -68,10 +70,14 @@ export function PaymentCallback({ failure = false }: { failure?: boolean }) {
     void run();
   }, [params, router, failure, confirmPayment, failPayment, retry]);
   return (
-    <main className="mx-auto max-w-xl space-y-5 px-6 py-24">
-      <h1 className="text-title-l">
+    <main className="mx-auto w-full max-w-[936px] space-y-6 px-6 pt-16 pb-[200px]">
+      <header className="mb-12 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-title-xl">주문 결제</h1>
+        <PurchaseStepIndicator current={2} />
+      </header>
+      <h2 className="text-title-l">
         {failure ? "결제를 완료하지 못했습니다" : "결제 승인 확인"}
-      </h1>
+      </h2>
       {error ? (
         <>
           <p role="alert">{error}</p>
@@ -93,6 +99,20 @@ export function PaymentCallback({ failure = false }: { failure?: boolean }) {
       <Link href="/mypage/orders">주문 내역 확인</Link>
       <br />
       <Link href="/cart">장바구니로 이동</Link>
+      <PaymentFeedbackDialog
+        outcome={
+          failure && error
+            ? (params.get("code") ?? "").includes("CANCEL")
+              ? "cancelled"
+              : (params.get("code") ?? "").includes("TIMEOUT")
+                ? "timeout"
+                : "declined"
+            : null
+        }
+        message={error}
+        onClose={() => router.push("/cart")}
+        onCart={() => router.push("/cart")}
+      />
     </main>
   );
 }

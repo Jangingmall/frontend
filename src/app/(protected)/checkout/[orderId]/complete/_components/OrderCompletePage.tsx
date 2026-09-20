@@ -8,6 +8,13 @@ import type { OrderCompleteOutcome } from "./order-complete-state";
 
 interface OrderCompletePageProps {
   outcome: OrderCompleteOutcome;
+  verification?: {
+    message: string;
+    description: string;
+    loading?: boolean;
+    error?: boolean;
+    onRetry?: () => void;
+  };
   totalAmount?: number;
   orderNumber?: string;
   onViewOrders: () => void;
@@ -18,12 +25,13 @@ const wonFormatter = new Intl.NumberFormat("ko-KR");
 
 export function OrderCompletePage({
   outcome,
+  verification,
   totalAmount = ORDER_COMPLETE_FIXTURE.fallbackTotalAmount,
   orderNumber = ORDER_COMPLETE_FIXTURE.orderNumber,
   onViewOrders,
   onContinueBrowsing,
 }: OrderCompletePageProps) {
-  const isBankPending = outcome === "bank-pending";
+  const isBankPending = !verification && outcome === "bank-pending";
 
   return (
     <div className="flex flex-1 flex-col bg-bg-subtle px-6 pt-16">
@@ -46,19 +54,41 @@ export function OrderCompletePage({
               id="order-complete-heading"
               className="text-title-xl text-font-dark"
             >
-              주문이 완료되었습니다
+              {verification?.message ?? "주문이 완료되었습니다"}
             </h2>
             <p className="text-body text-font-dark-subtle">
-              주문번호: {orderNumber}
+              주문번호: {verification && !orderNumber ? "확인 중" : orderNumber}
             </p>
           </div>
 
-          <p className="mt-6 text-body-l text-font-dark">
-            {isBankPending
-              ? "아래의 계좌로 입금해주시면 정상적으로 결제 완료 처리가 됩니다."
-              : "장인이 주문을 확인한 후 제작을 시작할 예정입니다."}
+          <p
+            role={
+              verification?.error
+                ? "alert"
+                : verification
+                  ? "status"
+                  : undefined
+            }
+            className="mt-6 text-body-l text-font-dark"
+          >
+            {verification
+              ? verification.description
+              : isBankPending
+                ? "아래의 계좌로 입금해주시면 정상적으로 결제 완료 처리가 됩니다."
+                : "장인이 주문을 확인한 후 제작을 시작할 예정입니다."}
           </p>
 
+          {verification?.onRetry && (
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-6"
+              disabled={verification.loading}
+              onClick={verification.onRetry}
+            >
+              다시 확인
+            </Button>
+          )}
           {isBankPending ? (
             <BankTransferDetails totalAmount={totalAmount} />
           ) : null}

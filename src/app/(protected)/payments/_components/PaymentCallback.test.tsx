@@ -64,7 +64,7 @@ it("records cancellation using backend fail fields", async () => {
   );
   state.fail.mockResolvedValue(undefined);
   render(<PaymentCallback failure />);
-  await screen.findByRole("alert");
+  expect(await screen.findByRole("dialog")).toHaveTextContent("취소");
   expect(state.fail).toHaveBeenCalledExactlyOnceWith({
     orderId: "ORD-12345",
     errorCode: "USER_CANCEL",

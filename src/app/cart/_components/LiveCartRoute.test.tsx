@@ -121,9 +121,7 @@ it("keeps unselected lines on selected deletion and restores through the server"
   setup();
   const user = userEvent.setup();
   await screen.findByText("상품91");
-  expect(
-    screen.getAllByRole("button", { name: "옵션 변경" })[0],
-  ).toBeDisabled();
+  expect(screen.getAllByRole("button", { name: "옵션 변경" })[0]).toBeEnabled();
   await user.click(screen.getByRole("button", { name: "선택 삭제" }));
   await user.click(screen.getByRole("button", { name: "삭제하기" }));
   await waitFor(() =>
@@ -194,4 +192,36 @@ it("restores the exact variant and custom text instead of adding the base produc
   );
   await screen.findByText("상품91");
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+});
+
+it("preserves the option dialog and explains unavailable editing", async () => {
+  setup(true);
+  await screen.findByText("상품91");
+  await userEvent.click(
+    screen.getAllByRole("button", { name: "옵션 변경" })[0],
+  );
+  expect(screen.getByRole("dialog")).toBeVisible();
+  expect(screen.getByRole("button", { name: "변경하기" })).toBeDisabled();
+  expect(
+    screen.getByText(/상품 옵션 정보와 변경 기능은 준비 중/),
+  ).toBeVisible();
+});
+
+it("keeps the cart heading, summary and retry action after an API error", async () => {
+  server.use(http.get("*/api/payments/cart", () => HttpResponse.error()));
+  useAuthStore.setState({ status: "authenticated" });
+  render(
+    <QueryClientProvider
+      client={
+        new QueryClient({ defaultOptions: { queries: { retry: false } } })
+      }
+    >
+      <LiveCartRoute />
+    </QueryClientProvider>,
+  );
+  await screen.findByRole("alert");
+  expect(screen.getByRole("heading", { name: "장바구니" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "결제 정보" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "구매하기" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "다시 시도" })).toBeEnabled();
 });

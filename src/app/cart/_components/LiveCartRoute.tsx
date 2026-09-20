@@ -7,6 +7,7 @@ import { OrderSummary } from "@/components/order/OrderSummary";
 import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Toast } from "@/components/ui/toast";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import { ApiError } from "@/lib/http/api-error";
 import { useCartMutations, useCartQuery } from "@/queries/cart";
@@ -15,6 +16,8 @@ import { type CartLine, getCartShippingAmount } from "@/types/cart";
 import type { CartPreviewLine } from "@/types/purchase-preview";
 
 import { CartDeleteDialog } from "./CartDeleteDialog";
+import { CartLoginDialog } from "./CartLoginDialog";
+import { CartOptionDialog } from "./CartOptionDialog";
 import { CartProductCard } from "./CartProductCard";
 export function LiveCartRoute() {
   const router = useRouter();
@@ -29,6 +32,8 @@ export function LiveCartRoute() {
   const [deleteIds, setDeleteIds] = useState<string[]>([]);
   const [undo, setUndo] = useState<CartLine[]>([]);
   const [error, setError] = useState("");
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [optionLine, setOptionLine] = useState<CartLine | null>(null);
   const [pending, setPending] = useState(false);
   const busy = useRef(false);
   const lines = (cart.data?.lines ?? []).map((line) => ({
@@ -85,24 +90,13 @@ export function LiveCartRoute() {
       setUndo([...remaining]);
     }
   }
-  if (status === "loading" || cart.isPending)
-    return (
-      <div role="status" className="p-16 text-center">
-        장바구니를 불러오는 중입니다.
-      </div>
-    );
-  if (cart.isError || !cart.data)
-    return (
-      <div role="alert" className="p-16 text-center">
-        <p>장바구니를 불러오지 못했습니다.</p>
-        <Button onClick={() => void cart.refetch()}>다시 시도</Button>
-      </div>
-    );
+  const loading = status === "loading" || cart.isPending;
+  const unavailable = cart.isError || (!loading && !cart.data);
   const amount = selected.reduce(
     (sum, line) => sum + line.unitPrice * line.quantity,
     0,
   );
-  const shipping = getCartShippingAmount(cart.data.sections, selected);
+  const shipping = getCartShippingAmount(cart.data?.sections ?? [], selected);
   function choose(group: CartPreviewLine[], checked: boolean) {
     setSelection((current) => ({
       ...current,
@@ -120,16 +114,32 @@ export function LiveCartRoute() {
           <h1 className="text-title-xl">장바구니</h1>
           <PurchaseStepIndicator current={1} />
         </div>
-        <p className="mt-4 text-body-s">
-          현재 상품 옵션 변경은 지원되지 않습니다. 수량 변경과 상품 삭제를
-          이용해 주세요.
-        </p>
         {error && (
           <p role="alert" className="mt-4">
             {error}
           </p>
         )}
-        {lines.length ? (
+        {loading || unavailable ? (
+          <div className="mt-10 grid items-start gap-6 md:grid-cols-[minmax(0,546px)_318px]">
+            <div className="flex min-h-64 flex-col items-center justify-center gap-4 rounded-xs bg-bg-default p-6">
+              <p role={unavailable ? "alert" : "status"}>
+                {unavailable
+                  ? "장바구니를 불러오지 못했습니다."
+                  : "장바구니를 불러오는 중입니다."}
+              </p>
+              {unavailable && (
+                <Button variant="outline" onClick={() => void cart.refetch()}>
+                  다시 시도
+                </Button>
+              )}
+            </div>
+            <OrderSummary productAmount={0} shippingAmount={0} totalAmount={0}>
+              <Button size="l" className="w-full" disabled>
+                구매하기
+              </Button>
+            </OrderSummary>
+          </div>
+        ) : lines.length ? (
           <>
             <div className="mt-6 flex h-10 max-w-136.5 items-center justify-between">
               <Checkbox
@@ -157,7 +167,7 @@ export function LiveCartRoute() {
             </div>
             <div className="mt-1 grid items-start gap-6 md:grid-cols-[minmax(0,546px)_318px]">
               <div className="flex min-w-0 flex-col gap-6">
-                {cart.data.sections.map((section) => {
+                {(cart.data?.sections ?? []).map((section) => {
                   const group = lines.filter(
                     (line) => line.artisanId === section.artisanId,
                   );
@@ -166,6 +176,9 @@ export function LiveCartRoute() {
                     <ArtisanOrderGroup
                       key={section.artisanId}
                       artisanName={section.artisanName}
+                      onArtisanClick={() =>
+                        setError("장인 상세 페이지는 준비 중입니다.")
+                      }
                       headerAction={
                         <Checkbox
                           aria-label={`${section.artisanName} 상품 선택`}
@@ -186,9 +199,9 @@ export function LiveCartRoute() {
                         <CartProductCard
                           key={line.lineId}
                           line={line}
+                          showUnavailableDetails
                           pending={pending}
-                          optionsDisabled
-                          onOptions={() => {}}
+                          onOptions={() => setOptionLine(line)}
                           onSelect={(checked) => choose([line], checked)}
                           onDelete={() => setDeleteIds([line.lineId])}
                           onQuantity={(quantity) => {
@@ -220,11 +233,11 @@ export function LiveCartRoute() {
                   className="w-full"
                   disabled={pending || !selected.length}
                   onClick={() =>
-                    router.push(
-                      status === "authenticated"
-                        ? `/checkout/new?items=${selected.map((line) => line.lineId).join(",")}`
-                        : "/login?returnUrl=%2Fcart",
-                    )
+                    status === "authenticated"
+                      ? router.push(
+                          `/checkout/new?items=${selected.map((line) => line.lineId).join(",")}`,
+                        )
+                      : setLoginOpen(true)
                   }
                 >
                   {selected.length
@@ -247,12 +260,35 @@ export function LiveCartRoute() {
           </div>
         )}
         {undo.length > 0 && (
-          <div role="status" className="mt-6 flex items-center gap-4">
-            <span>상품이 삭제되었습니다.</span>
-            <Button disabled={pending} onClick={() => void run(restore)}>
-              장바구니에 다시 추가
-            </Button>
+          <div className="fixed bottom-8 left-1/2 z-50 max-w-[calc(100%-32px)] -translate-x-1/2">
+            <Toast
+              actionLabel="장바구니에 다시 추가"
+              onAction={() => {
+                if (!pending) void run(restore);
+              }}
+            >
+              상품이 삭제되었습니다.
+            </Toast>
           </div>
+        )}
+        <CartLoginDialog
+          open={loginOpen}
+          onOpenChange={setLoginOpen}
+          onLogin={() => router.push("/login?returnUrl=%2Fcart")}
+        />
+        {optionLine && (
+          <CartOptionDialog
+            key={optionLine.lineId}
+            open
+            onOpenChange={(open) => {
+              if (!open) setOptionLine(null);
+            }}
+            definitions={[]}
+            initialValues={[]}
+            onApply={() => {}}
+            unavailableMessage="상품 옵션 정보와 변경 기능은 준비 중입니다. 현재 선택한 옵션은 아래에서 확인할 수 있습니다."
+            currentOptions={optionLine.options}
+          />
         )}
         <CartDeleteDialog
           open={deleteIds.length > 0}

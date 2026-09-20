@@ -2,8 +2,14 @@
 import { ANONYMOUS, loadTossPayments } from "@tosspayments/tosspayments-sdk";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useKakaoPostcodePopup } from "react-daum-postcode";
+import { FormProvider, useForm } from "react-hook-form";
 
+import {
+  type CheckoutFormValues,
+  EMPTY_CHECKOUT_FORM,
+} from "@/app/(protected)/checkout/_lib/checkout-form-schema";
 import {
   clearOrderRequestKey,
   getOrderRequestKey,
@@ -11,25 +17,40 @@ import {
   savePaymentContext,
 } from "@/app/(protected)/checkout/_lib/checkout-session";
 import { getPaymentErrorMessage } from "@/app/(protected)/checkout/_lib/payment-error";
-import { AddressFormModal } from "@/components/member/AddressFormModal";
 import { OrderSummary } from "@/components/order/OrderSummary";
 import { PaymentsMethod } from "@/components/order/PaymentsMethod";
 import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator";
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
+import { Select, SelectItem } from "@/components/ui/select";
+import { splitPhone } from "@/constants/phone";
 import { useCartQuery } from "@/queries/cart";
 import { useCreateAddressMutation } from "@/queries/member/mutations";
-import { useAddressesQuery } from "@/queries/member/queries";
+import {
+  useAddressesQuery,
+  useMemberProfileQuery,
+} from "@/queries/member/queries";
 import {
   useCreateOrderMutation,
   usePreparePaymentMutation,
 } from "@/queries/payments";
 import { useAuthStore } from "@/stores/auth";
 import { getCartShippingAmount } from "@/types/cart";
+import type { Address } from "@/types/member";
 import type { CreateOrderInput } from "@/types/payment";
 import type { PreviewPaymentMethod } from "@/types/purchase-preview";
 
 import { CheckoutProducts } from "./CheckoutProducts";
-export function RealCheckoutPage() {
+import { CustomerFields } from "./CustomerFields";
+import { DeliveryMemoField } from "./DeliveryMemoField";
+import { DiscountSlots } from "./DiscountSlots";
+import { PaymentAgreement } from "./PaymentAgreement";
+import { ShippingFields } from "./ShippingFields";
+export function RealCheckoutPage({
+  allowOrder = true,
+}: {
+  allowOrder?: boolean;
+}) {
   const params = useSearchParams();
   const ids = parseCartItemIds(params.get("items"));
   const user = useAuthStore((state) => state.user);
@@ -40,58 +61,83 @@ export function RealCheckoutPage() {
   const prepare = usePreparePaymentMutation();
   const [addressId, setAddressId] = useState<number>();
   const [method, setMethod] = useState<PreviewPaymentMethod>();
-  const [memo, setMemo] = useState("");
+  const profile = useMemberProfileQuery();
+  const form = useForm<CheckoutFormValues>({
+    defaultValues: EMPTY_CHECKOUT_FORM,
+  });
+  const openPostcode = useKakaoPostcodePopup();
+  const [sameCustomer, setSameCustomer] = useState(false);
+  const [details, setDetails] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const [modal, setModal] = useState(false);
   const [error, setError] = useState("");
-  const [addressError, setAddressError] = useState("");
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
+  const createdAddress = useRef<Address | undefined>(undefined);
   const [revisedOrder, setRevisedOrder] = useState<{
     key: string;
     amount: number;
   } | null>(null);
-  if (cart.isPending || addresses.isPending)
-    return (
-      <p role="status" className="p-16">
-        주문 정보를 불러오는 중입니다.
-      </p>
-    );
-  if (cart.isError || addresses.isError)
-    return (
-      <div className="p-16">
-        <p role="alert">주문 정보를 불러오지 못했습니다.</p>
-        <Button
-          onClick={() => {
-            void cart.refetch();
-            void addresses.refetch();
-          }}
-        >
-          다시 시도
-        </Button>
-      </div>
-    );
-  const lines = cart.data.lines.filter((line) =>
+  const lines = (cart.data?.lines ?? []).filter((line) =>
     ids.includes(Number(line.lineId)),
   );
-  if (!ids.length || lines.length !== ids.length)
-    return (
-      <div className="p-16">
-        <p>선택한 장바구니 상품을 확인할 수 없습니다.</p>
-        <Link href="/cart">장바구니로 이동</Link>
-      </div>
-    );
+  const loading = cart.isPending || addresses.isPending;
+  const unavailable = cart.isError || addresses.isError;
+  const invalidSelection =
+    !allowOrder || !ids.length || lines.length !== ids.length;
+  const blocked = loading || unavailable || invalidSelection;
   const selectedAddress =
-    addressId ?? addresses.data.find((address) => address.isDefault)?.id;
+    addressId ?? addresses.data?.find((address) => address.isDefault)?.id;
+  const savedAddress = addresses.data?.find(
+    (address) => address.id === selectedAddress,
+  );
+  const { setValue } = form;
+  const hydratedAddress = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (!profile.data) return;
+    const phone = splitPhone(profile.data.phone);
+    setValue("customerName", profile.data.name);
+    setValue("email", profile.data.email);
+    setValue("customerPhoneFirst", profile.data.phone.slice(0, 3));
+    setValue("customerPhoneMiddle", phone.phoneMiddle);
+    setValue("customerPhoneLast", phone.phoneLast);
+  }, [profile.data, setValue]);
+  useEffect(() => {
+    if (!savedAddress || hydratedAddress.current === savedAddress.id) return;
+    hydratedAddress.current = savedAddress.id;
+    const phone = splitPhone(savedAddress.phone);
+    setValue("recipientName", savedAddress.recipientName);
+    setValue("recipientPhoneFirst", savedAddress.phone.slice(0, 3));
+    setValue("recipientPhoneMiddle", phone.phoneMiddle);
+    setValue("recipientPhoneLast", phone.phoneLast);
+    setValue("postcode", savedAddress.zipCode);
+    setValue("address", savedAddress.address1);
+    setValue("addressDetail", savedAddress.address2);
+  }, [savedAddress, setValue]);
   const productAmount = lines.reduce(
     (sum, line) => sum + line.unitPrice * line.quantity,
     0,
   );
-  const shippingAmount = getCartShippingAmount(cart.data.sections, lines);
+  const shippingAmount = getCartShippingAmount(
+    cart.data?.sections ?? [],
+    lines,
+  );
   async function submit() {
-    if (submitting.current) return;
+    if (submitting.current || blocked) return;
+    const values = form.getValues();
+    const memo = values.memo === "직접 입력" ? values.memoText : values.memo;
+    const addressInput = {
+      recipientName: values.recipientName.trim(),
+      phone: `${values.recipientPhoneFirst}${values.recipientPhoneMiddle}${values.recipientPhoneLast}`,
+      zipCode: values.postcode,
+      address1: values.address,
+      address2: values.addressDetail.trim(),
+      isDefault: false,
+    };
     if (
-      !selectedAddress ||
+      !addressInput.recipientName ||
+      !/^\d{9,20}$/.test(addressInput.phone) ||
+      !addressInput.zipCode ||
+      !addressInput.address1 ||
       !method ||
       method === "BANK_TRANSFER" ||
       !agreed ||
@@ -105,6 +151,22 @@ export function RealCheckoutPage() {
     setBusy(true);
     setError("");
     try {
+      // Reuse an identical saved address; persist edited shipping fields before ordering.
+      const existing = [
+        ...(addresses.data ?? []),
+        ...(createdAddress.current ? [createdAddress.current] : []),
+      ].find(
+        (address) =>
+          address.recipientName === addressInput.recipientName &&
+          address.phone === addressInput.phone &&
+          address.zipCode === addressInput.zipCode &&
+          address.address1 === addressInput.address1 &&
+          address.address2 === addressInput.address2,
+      );
+      const shippingAddress =
+        existing ?? (await createAddress.mutateAsync(addressInput));
+      createdAddress.current = shippingAddress;
+      setAddressId(shippingAddress.id);
       const paymentMethod =
         method === "REALTIME_TRANSFER"
           ? "TRANSFER"
@@ -113,7 +175,7 @@ export function RealCheckoutPage() {
             : "CARD";
       const input: CreateOrderInput = {
         cartItemIds: ids,
-        addressId: selectedAddress,
+        addressId: shippingAddress.id,
         deliveryRequest: memo.trim(),
         paymentMethod,
       };
@@ -200,128 +262,174 @@ export function RealCheckoutPage() {
     }
   }
   return (
-    <main className="mx-auto max-w-[936px] space-y-8 px-6 py-16">
-      <header className="mb-12 flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-start">
-        <h1 className="text-title-xl">주문 결제</h1>
-        <PurchaseStepIndicator current={2} />
-      </header>
-      <div className="grid gap-8 md:grid-cols-[1fr_318px]">
-        <div className="space-y-6">
-          <section className="space-y-3">
-            <h2 className="text-title-m">배송지</h2>
-            {addresses.data.map((address) => (
-              <label key={address.id} className="block border p-3">
-                <input
-                  type="radio"
-                  name="address"
-                  checked={selectedAddress === address.id}
-                  onChange={() => setAddressId(address.id)}
-                  disabled={busy}
-                />
-                <span className="ml-2">
-                  {address.recipientName} · {address.phone}
-                  <br />
-                  {address.address1} {address.address2}
-                </span>
-              </label>
-            ))}
-            {!addresses.data.length && <p>배송지를 추가해 주세요.</p>}
+    <FormProvider {...form}>
+      <form
+        noValidate
+        aria-label="주문 결제"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submit();
+        }}
+        className="mx-auto w-full max-w-[936px] px-6 pt-16 pb-[200px] text-font-dark"
+      >
+        <header className="mb-12 flex items-center justify-between gap-4 max-sm:flex-col max-sm:items-start">
+          <h1 className="text-title-xl">주문 결제</h1>
+          <PurchaseStepIndicator current={2} />
+        </header>
+        {loading && (
+          <p role="status" className="mb-6">
+            주문 정보를 불러오는 중입니다.
+          </p>
+        )}
+        {unavailable && (
+          <div role="alert" className="mb-6">
+            <p>주문 정보를 불러오지 못했습니다.</p>
             <Button
-              variant="outline"
-              onClick={() => setModal(true)}
-              disabled={busy}
+              type="button"
+              onClick={() => {
+                void cart.refetch();
+                void addresses.refetch();
+              }}
             >
-              배송지 추가
+              다시 시도
             </Button>
-            <p className="text-caption">
+          </div>
+        )}
+        {!loading && !unavailable && invalidSelection && (
+          <p role="status" className="mb-6">
+            선택한 장바구니 상품을 확인할 수 없습니다.{" "}
+            <Link href="/cart" className="underline">
+              장바구니로 이동
+            </Link>
+          </p>
+        )}
+        <div className="grid grid-cols-[minmax(0,546px)_318px] items-start gap-6 max-md:grid-cols-1">
+          <fieldset disabled={busy} className="min-w-0 space-y-6">
+            <CustomerFields readOnly />
+            <p className="text-caption text-font-dark-weak">
               주문자 정보는 회원 정보를 사용합니다. 변경은 마이페이지에서 할 수
               있습니다.
             </p>
-          </section>
-          <label className="block">
-            배송 요청사항
-            <textarea
-              aria-label="배송 요청사항"
-              className="mt-2 block w-full border p-3"
-              maxLength={100}
-              value={memo}
-              onChange={(event) => setMemo(event.target.value)}
-              disabled={busy}
+            {profile.isError && (
+              <p role="alert">
+                회원 정보를 불러오지 못했습니다.{" "}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  onClick={() => void profile.refetch()}
+                >
+                  다시 불러오기
+                </Button>
+              </p>
+            )}
+            <hr className="border-border-jade-weak" />
+            {!!addresses.data?.length && (
+              <Select
+                ariaLabel="저장된 배송지"
+                items={addresses.data.map((address) => ({
+                  value: String(address.id),
+                  label: `${address.recipientName} · ${address.address1}`,
+                }))}
+                value={selectedAddress?.toString() ?? null}
+                placeholder="저장된 배송지 선택"
+                onValueChange={(value) => {
+                  setSameCustomer(false);
+                  setAddressId(value ? Number(value) : undefined);
+                }}
+              >
+                {addresses.data.map((address) => (
+                  <SelectItem key={address.id} value={String(address.id)}>
+                    {address.recipientName} · {address.address1}
+                  </SelectItem>
+                ))}
+              </Select>
+            )}
+            <ShippingFields
+              sameCustomer={sameCustomer}
+              onSameCustomerChange={setSameCustomer}
+              onAddressSearch={() => {
+                void openPostcode({
+                  onComplete: (data) => {
+                    form.setValue("postcode", data.zonecode);
+                    form.setValue("address", data.roadAddress || data.address);
+                    form.setFocus("addressDetail");
+                  },
+                }).catch(() =>
+                  setError("주소 검색을 열지 못했습니다. 다시 시도해 주세요."),
+                );
+              }}
             />
-          </label>
-          <CheckoutProducts
-            lines={lines}
-            onArtisanClick={() => setError("장인 상세 페이지는 준비 중입니다.")}
-          />
-          <p className="text-caption">
-            쿠폰·포인트 할인은 현재 지원하지 않습니다.
-          </p>
-          <fieldset disabled={busy}>
+            <DeliveryMemoField />
+            <hr className="border-border-jade-weak" />
+            <CheckoutProducts
+              showUnavailableDetails
+              lines={lines}
+              onArtisanClick={() =>
+                setError("장인 상세 페이지는 준비 중입니다.")
+              }
+            />
+            <hr className="border-border-jade-weak" />
+            <DiscountSlots unavailable />
+            <p className="text-caption text-font-dark-weak">
+              할인코드·쿠폰·적립금은 서비스 준비 중입니다.
+            </p>
+            <hr className="border-border-jade-weak" />
             <PaymentsMethod
               value={method}
               onChange={setMethod}
               disabledMethods={["BANK_TRANSFER"]}
             />
+            <p className="text-caption text-font-dark-weak">
+              무통장입금은 입금 확인 기능 준비 중으로 사용할 수 없습니다.
+            </p>
           </fieldset>
-          <p className="text-caption">
-            무통장입금은 입금 확인 기능 준비 중으로 사용할 수 없습니다.
-          </p>
+          <aside className="space-y-4 md:pt-9">
+            <OrderSummary
+              productAmount={productAmount}
+              shippingAmount={shippingAmount}
+              totalAmount={productAmount + shippingAmount}
+              totalLabel="총 주문금액"
+              headingSize="m"
+            />
+            <PaymentAgreement
+              agreed={agreed}
+              onAgreedChange={setAgreed}
+              onDetails={() => setDetails(true)}
+              disabled={busy || blocked}
+              submitLabel={
+                busy
+                  ? "결제 준비 중…"
+                  : revisedOrder
+                    ? `${revisedOrder.amount.toLocaleString("ko-KR")}원 확인 후 결제`
+                    : "결제하기"
+              }
+            />
+            <p className="text-caption">
+              최종 결제 금액은 서버에서 확인한 주문 금액입니다.
+            </p>
+            {error && <p role="alert">{error}</p>}
+            <Link href="/mypage/orders" className="text-caption underline">
+              주문 내역 확인
+            </Link>
+          </aside>
         </div>
-        <aside className="space-y-5">
-          <OrderSummary
-            productAmount={productAmount}
-            shippingAmount={shippingAmount}
-            totalAmount={productAmount + shippingAmount}
-            totalLabel="총 주문금액"
-          />
-          <label className="block">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(event) => setAgreed(event.target.checked)}
-              disabled={busy}
-            />{" "}
-            주문 상품과 결제 금액을 확인하고 구매에 동의합니다.
-          </label>
+        <Dialog
+          open={details}
+          onOpenChange={setDetails}
+          title="이용약관"
+          description="결제 전 이용 정보 제공 약관 등의 내용을 확인해 주세요."
+        >
+          <p className="text-body-m">약관 상세 내용은 준비 중입니다.</p>
           <Button
-            className="w-full"
-            disabled={busy}
-            onClick={() => void submit()}
+            type="button"
+            className="mt-6 w-full"
+            onClick={() => setDetails(false)}
           >
-            {busy
-              ? "결제 준비 중…"
-              : revisedOrder
-                ? `${revisedOrder.amount.toLocaleString("ko-KR")}원 확인 후 결제`
-                : "결제하기"}
+            확인
           </Button>
-          <p className="text-caption">
-            최종 결제 금액은 서버에서 확인한 주문 금액입니다.
-          </p>
-          {error && <p role="alert">{error}</p>}
-          <Link href="/mypage/orders">주문 내역 확인</Link>
-        </aside>
-      </div>
-      {modal && (
-        <AddressFormModal
-          open
-          mode="add"
-          submitting={createAddress.isPending}
-          submitError={addressError}
-          onOpenChange={setModal}
-          onSubmit={async (input) => {
-            setAddressError("");
-            try {
-              const address = await createAddress.mutateAsync(input);
-              setAddressId(address.id);
-              setModal(false);
-            } catch {
-              setAddressError(
-                "배송지를 저장하지 못했습니다. 다시 시도해 주세요.",
-              );
-            }
-          }}
-        />
-      )}
-    </main>
+        </Dialog>
+      </form>
+    </FormProvider>
   );
 }

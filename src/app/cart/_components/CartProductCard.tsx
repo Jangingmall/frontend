@@ -9,6 +9,7 @@ import type { CartPreviewLine } from "@/types/purchase-preview";
 interface CartProductCardProps {
   line: CartPreviewLine;
   pending?: boolean;
+  showUnavailableDetails?: boolean;
   optionsDisabled?: boolean;
   onSelect: (selected: boolean) => void;
   onQuantity: (value: number) => void;
@@ -18,6 +19,7 @@ interface CartProductCardProps {
 export function CartProductCard({
   line,
   pending = false,
+  showUnavailableDetails = false,
   optionsDisabled = false,
   onSelect,
   onQuantity,
@@ -51,10 +53,19 @@ export function CartProductCard({
         <ProductOrder
           thumbnail={line.thumbnail}
           productName={line.productName}
-          options={line.options}
+          options={
+            line.options.length || !showUnavailableDetails
+              ? line.options
+              : ["옵션 정보가 제공되지 않았습니다."]
+          }
           quantity={line.quantity}
           price={line.unitPrice * line.quantity}
-          note={line.note}
+          note={
+            line.note ||
+            (showUnavailableDetails
+              ? "제작·배송 안내가 제공되지 않았습니다."
+              : undefined)
+          }
           variant="stacked"
           actions={
             <Button
