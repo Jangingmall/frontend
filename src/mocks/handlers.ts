@@ -1,3 +1,4 @@
+import { imageHandlers } from "@/api/images/mock/handlers";
 import { inquiryHandlers } from "@/api/inquiries/mock/handlers";
 import { memberHandlers } from "@/api/member/mock/handlers";
 import { orderHandlers } from "@/api/orders/mock/handlers";
@@ -19,4 +20,5 @@ export const handlers = [
   ...inquiryHandlers,
   ...memberHandlers,
   ...orderHandlers,
+  ...imageHandlers,
 ];

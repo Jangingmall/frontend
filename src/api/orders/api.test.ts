@@ -2,13 +2,14 @@ import dayjs from "dayjs";
 import { describe, expect, it } from "vitest";
 
 import {
-  cancelOrder,
   changeOrderAddress,
   confirmPurchase,
   fetchOrderDelivery,
   fetchOrderDetail,
   fetchOrdersList,
   fetchOrderStatusSummary,
+  requestOrderCancel,
+  requestOrderExchangeRefund,
 } from "./api";
 import { orderFixtures } from "./mock/fixtures";
 
@@ -22,9 +23,10 @@ const createdOrderIds = orderFixtures
 const paidOrderId = orderFixtures.find(
   (order) => order.status === "PAID",
 )!.orderId;
-const deliveredOrderId = orderFixtures.find(
-  (order) => order.status === "DELIVERED",
-)!.orderId;
+const deliveredOrderIds = orderFixtures
+  .filter((order) => order.status === "DELIVERED")
+  .map((order) => order.orderId);
+const deliveredOrderId = deliveredOrderIds[0]!;
 const inDeliveryOrderId = orderFixtures.find(
   (order) => order.status === "IN_DELIVERY",
 )!.orderId;
@@ -139,18 +141,52 @@ describe("fetchOrderDelivery", () => {
   });
 });
 
-describe("cancelOrder", () => {
-  it("입금 확인 중(CREATED) 주문을 취소하면 상세 상태가 CANCELED로 바뀐다", async () => {
+describe("requestOrderCancel", () => {
+  it("취소를 요청하면 사유가 반영되어 상세 상태가 CANCELED로 바뀐다", async () => {
     const orderId = createdOrderIds[0]!;
-    await cancelOrder(orderId);
+    await requestOrderCancel(orderId, {
+      reason: "단순 변심",
+      imageIds: [],
+    });
     const detail = await fetchOrderDetail(orderId);
     expect(detail.groups[0]!.items[0]!.status).toBe("CANCELED");
   });
 
-  it("결제 완료 주문은 취소할 수 없다(BUSINESS_RULE_VIOLATION)", async () => {
-    await expect(cancelOrder(paidOrderId)).rejects.toMatchObject({
-      status: 422,
+  it("존재하지 않는 주문은 404를 던진다", async () => {
+    await expect(
+      requestOrderCancel(999_999_999, { reason: "단순 변심", imageIds: [] }),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+});
+
+describe("requestOrderExchangeRefund", () => {
+  it("교환·환불을 신청하면 상세 상태가 RETURN_REQUESTED로 바뀐다", async () => {
+    const orderId = deliveredOrderIds[1]!;
+    const detailBefore = await fetchOrderDetail(orderId);
+    const orderItemId = detailBefore.groups[0]!.items[0]!.orderItemId;
+
+    await requestOrderExchangeRefund(orderId, {
+      type: "RETURN",
+      orderItemId,
+      reason: "CHANGE_OF_MIND",
+      description: "단순 변심",
+      imageIds: [],
     });
+
+    const detail = await fetchOrderDetail(orderId);
+    expect(detail.groups[0]!.items[0]!.status).toBe("REFUND_REQUESTED");
+    expect(detail.groups[0]!.items[0]!.reason).toBe("단순 변심");
+  });
+
+  it("존재하지 않는 주문은 404를 던진다", async () => {
+    await expect(
+      requestOrderExchangeRefund(999_999_999, {
+        type: "EXCHANGE",
+        orderItemId: 1,
+        reason: "DEFECTIVE",
+        imageIds: [],
+      }),
+    ).rejects.toMatchObject({ status: 404 });
   });
 });
 

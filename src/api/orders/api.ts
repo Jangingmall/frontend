@@ -1,3 +1,4 @@
+import type { ReturnReason } from "@/constants/order";
 import { clientFetch } from "@/lib/http/client";
 import type { Page } from "@/types/api";
 import type {
@@ -59,12 +60,45 @@ export async function fetchOrderDelivery(
 }
 
 /**
- * 주문 취소(입금 확인 중 상태 전용) — 목업 전용 엔드포인트. 결제 전 주문을 취소하는 실제
- * API가 BE에 없다(`be-requests.md` #6) — 답변 전까지 화면 흐름만 보여준다.
+ * 주문 취소 요청(사유·사진 첨부) — 목업 전용 엔드포인트. 결제 전 주문을 취소하는 실제 API가
+ * BE에 없다(`be-requests.md` #6) — 답변 전까지 화면 흐름만 보여준다. `imageIds`는 실제로
+ * 업로드는 됐지만(§`api/images`) 받는 쪽이 목업이라 그냥 저장 안 되고 버려진다.
  */
-export async function cancelOrder(orderId: number): Promise<void> {
-  await clientFetch<null>(`/api/payments/orders/${orderId}/cancel`, {
+export async function requestOrderCancel(
+  orderId: number,
+  input: { reason: string; imageIds: string[] },
+): Promise<void> {
+  await clientFetch<null>(`/api/payments/orders/${orderId}/cancel-request`, {
     method: "POST",
+    body: input,
+  });
+}
+
+/**
+ * 교환·환불 신청 — 실제 BE 계약 그대로(`ReturnController`/`ReturnService.request`,
+ * `docs/api-contract.md` §8). `NEXT_PUBLIC_API_MOCKING`을 끄면 이 호출이 바로 실제 서버로
+ * 간다. `returnAddressId`는 생략 — BE가 주문 자체의 배송지를 기본값으로 쓴다.
+ */
+export async function requestOrderExchangeRefund(
+  orderId: number,
+  input: {
+    type: "EXCHANGE" | "RETURN";
+    orderItemId: number;
+    reason: ReturnReason;
+    description?: string;
+    imageIds: string[];
+  },
+): Promise<void> {
+  await clientFetch<null>("/api/payments/returns", {
+    method: "POST",
+    body: {
+      orderId,
+      type: input.type,
+      orderItemIds: [input.orderItemId],
+      reason: input.reason,
+      description: input.description,
+      imageIds: input.imageIds,
+    },
   });
 }
 

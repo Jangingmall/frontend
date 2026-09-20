@@ -23,12 +23,14 @@ function order(overrides: Partial<OrderGroup> = {}): OrderGroup {
     orderedAt: "2026-08-28T00:00:00.000Z",
     items: [
       {
+        orderItemId: 100,
         productId: 10,
         thumbnailUrl: "https://cdn.midam.store/products/1.jpg",
         productName: "백자 달항아리",
         price: 320000,
         quantity: 1,
         status: "DELIVERED",
+        reason: null,
       },
     ],
     ...overrides,
@@ -133,20 +135,24 @@ describe("OrdersList", () => {
       orderNumber: "JJ000002",
       items: [
         {
+          orderItemId: 100,
           productId: 10,
           thumbnailUrl: "https://cdn.midam.store/products/1.jpg",
           productName: "백자 달항아리",
           price: 320000,
           quantity: 1,
           status: "PREPARING",
+          reason: null,
         },
         {
+          orderItemId: 101,
           productId: 11,
           thumbnailUrl: "https://cdn.midam.store/products/2.jpg",
           productName: "옻칠 3단 찬합",
           price: 189000,
           quantity: 1,
           status: "DELIVERED",
+          reason: null,
         },
       ],
     });
@@ -194,12 +200,14 @@ describe("OrdersList", () => {
       orderId: 3,
       orderNumber: "JJ000003",
       items: Array.from({ length: 6 }, (_, i) => ({
+        orderItemId: 200 + i,
         productId: 20 + i,
         thumbnailUrl: "https://cdn.midam.store/products/1.jpg",
         productName: `상품 ${i + 1}`,
         price: 10000,
         quantity: 1,
         status: "DELIVERED" as const,
+        reason: null,
       })),
     });
 
@@ -248,20 +256,24 @@ describe("OrdersList", () => {
       orderId: 7,
       items: [
         {
+          orderItemId: 100,
           productId: 10,
           thumbnailUrl: null,
           productName: "백자 달항아리",
           price: 320000,
           quantity: 1,
           status: "DELIVERED",
+          reason: null,
         },
         {
+          orderItemId: 101,
           productId: 11,
           thumbnailUrl: null,
           productName: "옻칠 3단 찬합",
           price: 189000,
           quantity: 1,
           status: "DELIVERED",
+          reason: null,
         },
       ],
     });

@@ -11,6 +11,9 @@ import type { Money } from "@/types/money";
  * (2026-09-18 논의).
  */
 export interface OrderListItem {
+  /** DTO엔 이미 있던 필드를 이번에 처음 FE 모델로 옮긴다 — 교환·환불 신청
+   * (`POST /api/payments/returns`)의 `orderItemIds`에 필요하다. */
+  orderItemId: number;
   productId: number;
   productName: string;
   price: Money;
@@ -18,6 +21,11 @@ export interface OrderListItem {
   /** BE는 3-variant `ImageRef`가 아니라 단일 CDN URL 문자열(또는 `null`)만 준다. */
   thumbnailUrl: string | null;
   status: OrderStatus;
+  /**
+   * 교환/환불 사유 — `returnInfo.reason`을 그대로 옮긴다. `CANCELED`는 항상 `null`이다
+   * (BE 응답의 `returnInfo`는 `RETURN_REQUESTED`일 때만 오므로 자연히 그렇게 된다).
+   */
+  reason: string | null;
 }
 
 /** 주문 하나(상품 1개 이상). */
@@ -123,4 +131,37 @@ export interface OrderDelivery {
   carrier: string;
   trackingNumber: string;
   status: "SHIPPED" | "IN_TRANSIT" | "DELIVERED";
+}
+
+/** MY-request 제출값 — 목업 전용(대응 BE 엔드포인트 없음). */
+export interface OrderCancelRequest {
+  reason: string;
+  photos: File[];
+}
+
+/**
+ * MY-exchange 제출값 — `POST /api/payments/returns` 실제 계약에 맞춘 모양.
+ * `orderItemId`는 모달을 연 카드의 아이템 하나(다중상품 주문도 아이템 단위로 신청한다).
+ */
+export interface OrderExchangeRefundRequest {
+  orderItemId: number;
+  type: "EXCHANGE" | "RETURN";
+  /** Figma select 라벨 원문. api 계층이 `ORDER_RETURN_REASON_MAP`으로 BE enum 변환. */
+  reasonLabel: string;
+  /** "직접 입력" 자유 텍스트, 또는 전용 enum이 없는 라벨의 `OTHER` description. */
+  description?: string;
+  photos: File[];
+}
+
+/**
+ * 두 모달이 공유하는 상품 요약 — `OrderListItem`(목록)과 `OrderDetailItem`(상세) 양쪽에서
+ * 채울 수 있도록 필요한 최소 필드만 뽑은 구조적 타입이다.
+ */
+export interface OrderClaimItemSummary {
+  productName: string;
+  price: Money;
+  quantity: number;
+  thumbnailUrl: string | null;
+  /** 상세에서 열면 있고(`OrderDetailItem`), 목록에서 열면 없다(`OrderListItem`). */
+  options?: string[];
 }
