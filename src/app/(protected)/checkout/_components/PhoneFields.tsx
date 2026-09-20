@@ -35,6 +35,9 @@ export function PhoneFields({
             render={({ field }) => (
               <Select
                 ariaLabel={`${label} 휴대전화 앞자리`}
+                alignItemWithTrigger={false}
+                placeholder=""
+                className="whitespace-nowrap"
                 value={
                   direct ||
                   (!!field.value &&
