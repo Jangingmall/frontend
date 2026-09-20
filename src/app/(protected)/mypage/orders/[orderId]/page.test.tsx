@@ -152,6 +152,31 @@ describe("OrderDetailPage", () => {
     expect(screen.getAllByRole("alert")).toHaveLength(1);
   });
 
+  it("배송지 변경 실패 후 모달을 닫았다 다시 열면 이전 오류가 남지 않는다(독립 리뷰 F3)", async () => {
+    const user = userEvent.setup();
+    mockOrderId = String(preparingOrderId);
+    server.use(
+      http.patch("*/api/payments/orders/:orderId/address", () =>
+        mockError(422, "BUSINESS_RULE_VIOLATION"),
+      ),
+    );
+    renderPage();
+
+    await user.click(
+      (await screen.findAllByRole("button", { name: "배송지 변경" }))[0]!,
+    );
+    await user.click(screen.getByRole("button", { name: "주소검색" }));
+    await user.click(screen.getByRole("button", { name: "변경" }));
+    await screen.findByRole("alert");
+
+    await user.click(screen.getByRole("button", { name: "취소" }));
+    await user.click(
+      (await screen.findAllByRole("button", { name: "배송지 변경" }))[0]!,
+    );
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
   it("입금 확인 중에는 배송지 변경 버튼을 보여주지 않는다(Figma 스펙시트 2080:112091)", async () => {
     mockOrderId = String(paymentPendingOrderId);
     renderPage();

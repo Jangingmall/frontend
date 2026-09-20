@@ -191,7 +191,12 @@ export default function OrderDetailPage() {
 
         <OrderAddressChangeModal
           open={isAddressModalOpen}
-          onOpenChange={setIsAddressModalOpen}
+          onOpenChange={(open) => {
+            setIsAddressModalOpen(open);
+            // 닫을 때 지난 실패 문구를 지운다 — 안 지우면 다시 열었을 때 새 시도
+            // 전인데도 이전 오류가 남아 보인다(독립 리뷰 F3).
+            if (!open) setAddressChangeError(null);
+          }}
           initialValue={order.shippingAddress}
           submitting={changeAddressMutation.isPending}
           submitError={addressChangeError}
