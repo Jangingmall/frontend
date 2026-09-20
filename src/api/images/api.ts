@@ -60,10 +60,16 @@ export async function uploadClaimPhoto(file: File): Promise<string> {
   if (!upload) {
     throw new Error("업로드 URL을 발급받지 못했습니다.");
   }
-  await fetch(upload.presignedUrl, {
+  const putResponse = await fetch(upload.presignedUrl, {
     method: "PUT",
     headers: { "Content-Type": "image/webp" },
     body: compressed,
   });
+  // `fetch`는 403(만료된 URL)·5xx 같은 HTTP 실패에서 reject하지 않는다 — `ok`를 직접
+  // 봐야 한다. S3 응답 상태코드는 우리 API 상태코드 의미체계와 달라(`ApiError`가 아니라)
+  // 일반 `Error`로 던진다 — `resolveErrorMessage`가 status로 오분류된 문구를 고르지 않게.
+  if (!putResponse.ok) {
+    throw new Error("사진 업로드에 실패했습니다. 다시 시도해주세요.");
+  }
   return presigned.imageId;
 }
