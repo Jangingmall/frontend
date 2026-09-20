@@ -6,20 +6,27 @@ import { useState } from "react";
 
 import type { ChangeOrderAddressRequest } from "@/api/orders/api";
 import { ErrorState } from "@/components/common/error-state";
+import { OrderCancelRequestModal } from "@/components/order/OrderCancelRequestModal";
+import { OrderExchangeRefundRequestModal } from "@/components/order/OrderExchangeRefundRequestModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import type { OrderCardActionType } from "@/constants/order";
 import { ApiError } from "@/lib/http/api-error";
 import {
-  useCancelOrderMutation,
   useChangeOrderAddressMutation,
   useConfirmPurchaseMutation,
+  useRequestOrderCancelMutation,
+  useRequestOrderExchangeRefundMutation,
 } from "@/queries/orders/mutations";
 import {
   useOrderDeliveryQuery,
   useOrderDetailQuery,
 } from "@/queries/orders/queries";
-import type { OrderDetailItem } from "@/types/order";
+import type {
+  OrderCancelRequest,
+  OrderDetailItem,
+  OrderExchangeRefundRequest,
+} from "@/types/order";
 
 import { DeliveryTrackingModal } from "./_components/DeliveryTrackingModal";
 import { OrderAddressChangeModal } from "./_components/OrderAddressChangeModal";
@@ -31,8 +38,9 @@ import { OrderShippingPaymentPanel } from "./_components/OrderShippingPaymentPan
 /**
  * 주문 상세(`/mypage/orders/[orderId]`, Figma MY-1-OD). 인증 데이터라 서버 프리페치는
  * 하지 않는다(T-27과 동일 패턴). 실제로 연결하는 액션은 배송지 변경·배송 조회·주문 취소·
- * 구매 확정 4개뿐 — 후기 작성·교환환불신청·장바구니담기 등은 각각 별도 작업(T-29/T-30 등)
- * 범위라 버튼은 보이되 아직 연결하지 않는다(design.md §4·§8).
+ * 구매 확정·교환·환불 신청 5개뿐 — 후기 작성·장바구니담기 등은 아직 연결하지 않는다
+ * (design.md §4·§8). "주문 취소"·"교환·환불 신청"은 이제 즉시 실행이 아니라 모달(사유+사진
+ * 입력)을 연다 — MY-1 리스트와 같은 모달을 공유한다(design.md §0.5, §5.2 — T-29에서 정정).
  *
  * dynamic segment는 `use(params)`(Next 공식 예시)가 아니라 `useParams()`로 읽는다 —
  * 로컬 확인 중 `use(params)` + 존재하지 않는 주문(404) 조합에서 페이지가 계속 재요청되는
@@ -58,14 +66,23 @@ export default function OrderDetailPage() {
   const [actionError, setActionError] = useState<string | null>(null);
   // 배송지 변경 모달 전용 에러 — `actionError`(페이지 배너)와 같은 값을 쓰면 모달이
   // 열린 채로 변경이 실패했을 때 배너·모달 두 군데에 같은 문구가 중복 표시된다
-  // (독립 리뷰 Nit).
+  // (독립 리뷰 Nit). 취소·교환환불 모달도 같은 이유로 전용 에러를 둔다.
   const [addressChangeError, setAddressChangeError] = useState<string | null>(
     null,
   );
+  const [cancelTarget, setCancelTarget] = useState<OrderDetailItem | null>(
+    null,
+  );
+  const [exchangeTarget, setExchangeTarget] = useState<OrderDetailItem | null>(
+    null,
+  );
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [exchangeError, setExchangeError] = useState<string | null>(null);
 
-  const cancelMutation = useCancelOrderMutation(orderId);
   const confirmPurchaseMutation = useConfirmPurchaseMutation(orderId);
   const changeAddressMutation = useChangeOrderAddressMutation(orderId);
+  const cancelMutation = useRequestOrderCancelMutation(orderId);
+  const exchangeMutation = useRequestOrderExchangeRefundMutation(orderId);
   const deliveryQuery = useOrderDeliveryQuery(orderId, isDeliveryModalOpen);
 
   if (detailQuery.isError) {
@@ -115,14 +132,19 @@ export default function OrderDetailPage() {
   }
 
   async function handleAction(
-    _item: OrderDetailItem,
+    item: OrderDetailItem,
     action: OrderCardActionType,
   ) {
     setActionError(null);
     try {
       switch (action) {
         case "cancelOrder":
-          await cancelMutation.mutateAsync();
+          setCancelError(null);
+          setCancelTarget(item);
+          break;
+        case "requestExchangeRefund":
+          setExchangeError(null);
+          setExchangeTarget(item);
           break;
         case "confirmPurchase":
           await confirmPurchaseMutation.mutateAsync();
@@ -131,8 +153,8 @@ export default function OrderDetailPage() {
           setIsDeliveryModalOpen(true);
           break;
         default:
-          // 후기 작성·교환환불신청·장바구니담기·1:1 문의·교환/환불 신청 취소·상품 회수
-          // 안내 등은 후속 작업 범위 — 연결하지 않는다.
+          // 후기 작성·장바구니담기·1:1 문의·교환/환불 신청 취소·상품 회수 안내 등은
+          // 후속 작업 범위 — 연결하지 않는다.
           break;
       }
     } catch (error) {
@@ -147,6 +169,26 @@ export default function OrderDetailPage() {
       setIsAddressModalOpen(false);
     } catch (error) {
       setAddressChangeError(resolveActionErrorMessage(error));
+    }
+  }
+
+  async function handleCancelSubmit(input: OrderCancelRequest) {
+    setCancelError(null);
+    try {
+      await cancelMutation.mutateAsync(input);
+      setCancelTarget(null);
+    } catch (error) {
+      setCancelError(resolveActionErrorMessage(error));
+    }
+  }
+
+  async function handleExchangeSubmit(input: OrderExchangeRefundRequest) {
+    setExchangeError(null);
+    try {
+      await exchangeMutation.mutateAsync(input);
+      setExchangeTarget(null);
+    } catch (error) {
+      setExchangeError(resolveActionErrorMessage(error));
     }
   }
 
@@ -211,6 +253,43 @@ export default function OrderDetailPage() {
           hasError={deliveryQuery.isError}
           onRetry={() => void deliveryQuery.refetch()}
         />
+
+        {cancelTarget && (
+          <OrderCancelRequestModal
+            open
+            onOpenChange={(open) => {
+              if (!open) {
+                setCancelTarget(null);
+                setCancelError(null);
+              }
+            }}
+            item={cancelTarget}
+            purchasedAt={order.orderedAt}
+            orderNumber={order.orderNumber}
+            submitting={cancelMutation.isPending}
+            submitError={cancelError}
+            onSubmit={(input) => void handleCancelSubmit(input)}
+          />
+        )}
+
+        {exchangeTarget && (
+          <OrderExchangeRefundRequestModal
+            open
+            onOpenChange={(open) => {
+              if (!open) {
+                setExchangeTarget(null);
+                setExchangeError(null);
+              }
+            }}
+            item={exchangeTarget}
+            orderItemId={exchangeTarget.orderItemId}
+            purchasedAt={order.orderedAt}
+            orderNumber={order.orderNumber}
+            submitting={exchangeMutation.isPending}
+            submitError={exchangeError}
+            onSubmit={(input) => void handleExchangeSubmit(input)}
+          />
+        )}
       </div>
     </div>
   );
