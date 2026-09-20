@@ -1,6 +1,10 @@
 import { mapProductDetailMock } from "@/api/products/detail-mapper";
 import type { ProductDetailMockDto } from "@/api/products/detail-validation";
 import { productDetailMockDto } from "@/api/products/detail-validation";
+import {
+  PRODUCT_NOTICES,
+  PRODUCT_SHIPPING_INFORMATION,
+} from "@/constants/product-information";
 
 import { productCatalogue } from "./catalogue";
 
@@ -148,40 +152,8 @@ export function getProductDetailMockDto(
       { label: "인증", content: "해당 없음" },
       { label: "제조", content: "대한민국" },
     ],
-    notices: [
-      {
-        label: "제품 유의사항",
-        content:
-          "수작업 특성상 색상, 형태, 크기에 작은 차이가 있을 수 있습니다. 부드러운 천으로 관리하고 강한 충격과 급격한 온도 변화를 피해주세요.",
-      },
-      {
-        label: "품질보증기준",
-        content:
-          "상품 수령 후 상태를 확인해주세요. 작품의 상태와 관련한 문의는 상품 문의를 통해 남겨주시면 확인 후 안내합니다.",
-      },
-      {
-        label: "A/S 안내",
-        content:
-          "수선 가능 여부는 작품의 소재와 손상 상태에 따라 달라집니다. 상세한 내용은 작가에게 문의해주세요.",
-      },
-    ],
-    shippingInformation: [
-      {
-        label: "결제정보",
-        content:
-          "선택한 옵션과 수량을 확인한 후 주문해주세요. 결제 수단 및 최종 금액은 주문서에서 확인할 수 있습니다.",
-      },
-      {
-        label: "배송정보",
-        content:
-          "주문 후 제작되는 작품은 제작 완료 후 순차 발송됩니다. 기본 배송비는 3,000원이며 100,000원 이상 구매 시 무료입니다. 도서·산간 지역은 추가 비용이 발생할 수 있습니다.",
-      },
-      {
-        label: "교환 · 반품 · 환불",
-        content:
-          "작품의 상태, 제작 방식에 따라 교환·반품 가능 여부가 다를 수 있습니다. 접수 전 상품 문의를 통해 안내받아주세요.",
-      },
-    ],
+    notices: PRODUCT_NOTICES,
+    shippingInformation: PRODUCT_SHIPPING_INFORMATION,
     relatedProducts: productCatalogue
       .filter(
         (product) =>

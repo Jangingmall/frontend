@@ -69,7 +69,7 @@ export function ProductToolbar({
           onValueChange={(value) => {
             if (value) onSortChange(value as ProductListSort);
           }}
-          className="w-35 shrink-0 whitespace-nowrap"
+          className="w-32 shrink-0 whitespace-nowrap"
           contentClassName="whitespace-nowrap"
           alignItemWithTrigger={false}
         >
