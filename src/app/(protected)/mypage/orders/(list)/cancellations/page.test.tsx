@@ -79,6 +79,29 @@ describe("MypageOrderCancellationsPage", () => {
     expect(screen.queryByText("내 주문 현황 보기")).not.toBeInTheDocument();
   });
 
+  it("URL의 status가 이 화면 3탭 밖 값이면 전체로 되돌린다(CodeRabbit 리뷰)", async () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/mypage/orders/cancellations?status=SHIPPING",
+    );
+    renderPage();
+    await screen.findAllByText("주문번호 :");
+
+    for (const label of [
+      "배송 중",
+      "배송 완료",
+      "상품 준비 중",
+      "입금 확인 중",
+    ]) {
+      expect(screen.queryByText(label)).not.toBeInTheDocument();
+    }
+    const statusGroup = screen.getByRole("group", { name: "주문 처리 상태" });
+    expect(
+      within(statusGroup).getByRole("button", { name: "전체" }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
   it("주문 취소 상태 탭을 클릭하면 URL에 반영된다", async () => {
     const user = userEvent.setup();
     renderPage();

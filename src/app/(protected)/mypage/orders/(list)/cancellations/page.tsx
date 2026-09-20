@@ -35,9 +35,17 @@ import { useCancellationOrdersListQuery } from "@/queries/orders/queries";
  */
 export default function MypageOrderCancellationsPage() {
   const searchParams = useSearchParams();
-  const filterState = parseOrdersSearchParams(
+  const parsed = parseOrdersSearchParams(
     new URLSearchParams(searchParams.toString()),
   );
+  // 이 화면은 3탭(전체/교환·환불/주문취소) 밖 상태를 다루지 않는다 — URL을 직접 편집하거나
+  // 다른 화면의 상태 값이 섞여 들어오면(design.md §9-G) "전체"로 되돌린다. 안 그러면
+  // `fetchCancellationOrdersList`가 단일 상태 위임 경로를 타 이 화면에 없는 카드가 뜬다.
+  const filterState: OrdersFilterState = CANCELLATION_STATUS_FILTER_TABS.some(
+    (tab) => tab.key === parsed.status,
+  )
+    ? parsed
+    : { ...parsed, status: "ALL" };
 
   const listQuery = useCancellationOrdersListQuery(
     toOrdersListQuery(filterState),
