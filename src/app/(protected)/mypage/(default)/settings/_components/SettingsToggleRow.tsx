@@ -27,6 +27,7 @@ function SettingsToggleRow({
     <div className="flex w-full items-center gap-3 p-3">
       <Toggle
         size="s"
+        aria-label={label}
         checked={checked}
         onCheckedChange={(next) => onCheckedChange(next)}
         disabled={disabled}

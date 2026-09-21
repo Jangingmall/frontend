@@ -17,7 +17,8 @@ describe("SettingsToggleRow", () => {
 
     expect(screen.getByText("다크모드 변경")).toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("switch"));
+    const toggle = screen.getByRole("switch", { name: "다크모드 변경" });
+    await userEvent.click(toggle);
     expect(onCheckedChange).toHaveBeenCalledWith(true);
   });
 
@@ -43,6 +44,8 @@ describe("SettingsToggleRow", () => {
       />,
     );
 
-    expect(screen.getByRole("switch")).toBeInTheDocument();
+    expect(
+      screen.getByRole("switch", { name: "찜 목록 알림" }),
+    ).toBeInTheDocument();
   });
 });

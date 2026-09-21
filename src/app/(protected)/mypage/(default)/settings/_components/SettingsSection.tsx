@@ -75,6 +75,7 @@ function SettingsSection() {
           onCheckedChange={(checked) =>
             updateSettings.mutate({ darkMode: checked })
           }
+          disabled={updateSettings.isPending}
         />
       </div>
 
@@ -96,6 +97,7 @@ function SettingsSection() {
           onCheckedChange={(checked) =>
             updateSettings.mutate({ marketing: checked })
           }
+          disabled={updateSettings.isPending}
         />
       </div>
     </div>
