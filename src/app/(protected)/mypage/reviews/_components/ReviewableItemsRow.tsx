@@ -26,12 +26,12 @@ function ReviewableItemCard({
 }) {
   const [hasImageError, setHasImageError] = useState(false);
   return (
-    <div className="flex w-108 shrink-0 flex-col gap-2.5 border border-border-neutral-solid p-3">
-      <div className="flex items-center justify-between text-body-s">
+    <div className="flex w-108 shrink-0 flex-col gap-2.5 rounded-xs border border-border-neutral-solid bg-bg-default p-3">
+      <div className="flex items-center justify-between">
         <p className="truncate text-title-s text-font-dark">
           {item.productName}
         </p>
-        <p className="shrink-0 text-caption text-font-dark-subtle">
+        <p className="shrink-0 text-body-s text-font-dark">
           {new Date(item.purchasedAt).toLocaleDateString("ko-KR")} 구매
         </p>
       </div>
@@ -50,7 +50,7 @@ function ReviewableItemCard({
             onError={() => setHasImageError(true)}
           />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-1 text-caption text-font-dark">
+        <div className="flex min-w-0 flex-1 shrink-0 flex-col gap-1 self-start text-body-s text-font-dark">
           {item.options.map((option, index) => (
             <p key={`${item.orderItemId}-option-${index}`} className="truncate">
               {option}
@@ -58,7 +58,7 @@ function ReviewableItemCard({
           ))}
         </div>
         <div className="relative shrink-0">
-          <span className="absolute -top-6 right-0 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b whitespace-nowrap text-font-dark">
+          <span className="absolute -top-2.5 right-0 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b whitespace-nowrap text-font-dark">
             적립금 + {item.rewardPoints}원
           </span>
           <Button variant="solid" size="m" onClick={() => onWriteReview(item)}>
