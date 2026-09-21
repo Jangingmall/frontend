@@ -1,14 +1,7 @@
-import { EmptyState } from "@/components/common/empty-state";
+import { SettingsSection } from "./_components/SettingsSection";
 
-/**
- * "설정" 마이페이지 내비 목적지. 화면 설계·API 계약이 아직 없어 placeholder만
- * 둔다 — 상품 문의·결제수단 탭과 같은 처리(design.md §7-10·§7-11).
- */
+/** "설정"(`/mypage/settings`, Figma MY-7). 사이드바·프로필 카드·제목은 상위
+ * `(default)/layout.tsx`(`MypageShell`)가 공용으로 렌더링한다. */
 export default function MypageSettingsPage() {
-  return (
-    <EmptyState
-      title="설정 기능은 준비 중입니다"
-      description="빠른 시일 내에 준비하겠습니다."
-    />
-  );
+  return <SettingsSection />;
 }
