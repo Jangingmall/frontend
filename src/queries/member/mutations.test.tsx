@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
+import { http } from "msw";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -12,7 +13,10 @@ import {
   __resetEmailVerificationState,
   __resetLoginRateLimit,
   resetAddressMock,
+  resetSettingsMock,
 } from "@/api/member/mock/handlers";
+import { mockError } from "@/mocks/envelope";
+import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
 import { memberKeys } from "./keys";
@@ -25,6 +29,7 @@ import {
   useSignupMutation,
   useUpdateAddressMutation,
   useUpdateProfileMutation,
+  useUpdateSettingsMutation,
   useVerifyEmailCodeMutation,
   useVerifyPasswordMutation,
 } from "./mutations";
@@ -47,6 +52,7 @@ beforeEach(() => {
   __resetLoginRateLimit();
   __resetEmailVerificationState();
   resetAddressMock();
+  resetSettingsMock();
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
 });
 
@@ -268,5 +274,59 @@ describe("배송지 mutation", () => {
     expect(client.getQueryState(memberKeys.addresses())?.isInvalidated).toBe(
       true,
     );
+  });
+});
+
+describe("useUpdateSettingsMutation", () => {
+  beforeEach(() => {
+    useAuthStore.setState({ accessToken: SEED_ACCESS_TOKEN });
+  });
+
+  it("성공: 낙관적으로 즉시 반영되고 서버 응답으로 확정된다", async () => {
+    const client = createClient();
+    client.setQueryData(memberKeys.settings(), {
+      darkMode: false,
+      marketing: true,
+    });
+
+    const { result } = renderHook(() => useUpdateSettingsMutation(), {
+      wrapper: createWrapper(client),
+    });
+    result.current.mutate({ darkMode: true });
+
+    await waitFor(() =>
+      expect(client.getQueryData(memberKeys.settings())).toEqual({
+        darkMode: true,
+        marketing: true,
+      }),
+    );
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(client.getQueryState(memberKeys.settings())?.isInvalidated).toBe(
+      true,
+    );
+  });
+
+  it("실패: 저장이 실패하면 이전 값으로 롤백한다", async () => {
+    server.use(
+      http.patch("*/api/member/settings", () =>
+        mockError(500, "INTERNAL_ERROR"),
+      ),
+    );
+    const client = createClient();
+    client.setQueryData(memberKeys.settings(), {
+      darkMode: false,
+      marketing: true,
+    });
+
+    const { result } = renderHook(() => useUpdateSettingsMutation(), {
+      wrapper: createWrapper(client),
+    });
+    result.current.mutate({ darkMode: true });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(client.getQueryData(memberKeys.settings())).toEqual({
+      darkMode: false,
+      marketing: true,
+    });
   });
 });

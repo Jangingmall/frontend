@@ -2,7 +2,11 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchAddresses, fetchMemberProfile } from "@/api/member/api";
+import {
+  fetchAddresses,
+  fetchMemberProfile,
+  fetchSettings,
+} from "@/api/member/api";
 
 import { memberKeys } from "./keys";
 
@@ -18,5 +22,13 @@ export function useAddressesQuery() {
   return useQuery({
     queryKey: memberKeys.addresses(),
     queryFn: fetchAddresses,
+  });
+}
+
+/** 설정(`/mypage/settings`) 조회. */
+export function useSettingsQuery() {
+  return useQuery({
+    queryKey: memberKeys.settings(),
+    queryFn: fetchSettings,
   });
 }
