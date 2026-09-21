@@ -3,11 +3,13 @@ import type {
   Address,
   MemberAuthProvider,
   MemberProfile,
+  MemberSettings,
 } from "@/types/member";
 
 import type {
   AddressResponseDto,
   MemberProfileResponseDto,
+  MemberSettingsResponseDto,
 } from "./validation";
 
 /**
@@ -60,4 +62,12 @@ export function mapAddress(dto: AddressResponseDto): Address {
     address2: dto.address2,
     isDefault: dto.isDefault,
   };
+}
+
+/** 설정 DTO → FE 도메인 모델. 필드명이 이미 같아 사실상 identity지만, 컴포넌트가 DTO
+ * 타입을 직접 들고 있지 않도록(architecture.md 의존 규칙) 다른 도메인과 동일하게 거친다. */
+export function mapMemberSettings(
+  dto: MemberSettingsResponseDto,
+): MemberSettings {
+  return { darkMode: dto.darkMode, marketing: dto.marketing };
 }
