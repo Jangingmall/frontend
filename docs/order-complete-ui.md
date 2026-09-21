@@ -37,7 +37,8 @@
 
 - 주문번호, 가상계좌, 예금주, 입금기한, direct URL 기본 합계는 `order-complete-fixture.ts`의 검토 fixture다.
 - 무통장입금 금액은 `usePurchasePreviewStore.checkoutLines`가 있으면 `unitPrice × quantity` 합계를 사용한다. 직접 URL 검토처럼 snapshot이 없으면 fixture 합계를 사용한다.
-- `주문 내역 보기`는 아직 `/mypage/orders`가 없으므로 공용 `Toast`로 준비 중 안내를 표시한다.
+- `주문 내역 보기`는 실제 이동 없이 공용 `Toast`로 준비 중 안내만 표시한다. `/mypage/orders`
+  자체는 이미 구현돼 있으나 이 화면에서 아직 연결하지 않았다.
 - `계속 둘러보기`는 홈(`/`)으로 이동한다.
 
 ## 레이아웃
