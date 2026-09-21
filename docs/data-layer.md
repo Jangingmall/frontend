@@ -139,24 +139,33 @@ export function createQueryClient() {
 ```
 
 - SSR 하이드레이션 대비 `QueryProvider`는 `useState(createQueryClient)`로 요청마다 새 client를 만든다(현행 유지).
-- 상태코드별 retry 튜닝, 도메인별 `staleTime`, 전역 `queryCache`/`mutationCache` 에러
-  핸들러는 아직 도입하지 않았다(§10).
+- 전역 기본값은 `retry: 1`뿐이다. 개별 조회 훅은 목적에 따라 `staleTime`·`retry`를 이미
+  override한다 — 예: `queries/products/queries.ts`는 상품 목록·카테고리·소재에
+  `staleTime: 60000`~`3600000`, `queries/wishlist/queries.ts`는 `staleTime: 30000`,
+  `queries/products/detail-actions.ts`는 `retry: false`. 상태코드별 retry 공식(예:
+  4xx는 재시도 안 함)을 전역 기본값 자체에 넣는 것과 전역 `queryCache`/`mutationCache`
+  에러 핸들러는 아직 도입하지 않았다(§10).
 
 ### 6.2 조회 에러 표면화
 
-`throwOnError` 티어링은 아직 쓰지 않는다. 모든 조회 훅이 기본값 그대로이며, 컴포넌트가
-`isError`를 직접 분기해 `ErrorState`를 인라인으로 표시한다. 페이지 핵심 데이터를
-`error.tsx`로 넘기거나 없는 리소스를 `not-found`로 돌리는 opt-in 경로는 아직 없다(§10) —
-일부 route의 `error.tsx`(예: 상품 상세)는 예기치 않은 렌더링 오류 전용 안전망이며 조회
-에러 표면화 목적이 아니다.
+`throwOnError` 티어링은 아직 쓰지 않는다. 모든 조회 훅이 기본값 그대로이며, `isError`
+분기는 컴포넌트가 직접 한다. 기본 패턴은 `ErrorState` 인라인 표시이지만, 화면 맥락에 따라
+더 가벼운 처리를 택한 예외가 있다 — 예: 홈의 `GiftSection`은 `role="status"` 텍스트만
+표시하고, 홈 서버 조회 중 비핵심 섹션은 실패를 흡수하고 해당 섹션 자체를 렌더하지 않는다.
+페이지 핵심 데이터를 `error.tsx`로 넘기거나 없는 리소스를 `not-found`로 돌리는 opt-in
+경로는 아직 없다(§10) — 일부 route의 `error.tsx`(예: 상품 상세)는 예기치 않은 렌더링
+오류 전용 안전망이며 조회 에러 표면화 목적이 아니다.
 
 상태별 컴포넌트 책임(Skeleton / EmptyState / ErrorState / `error.tsx`)은 [ui-system.md](ui-system.md) 참조.
 
 ### 6.3 전역 에러 처리
 
-`queryCache`/`mutationCache`의 전역 `onError` 훅은 아직 도입하지 않았다(§10). 401 처리
-(refresh 실패 시 로그인 리다이렉트 + 토큰·캐시 클리어)는 fetcher 계층이 직접 수행한다(§4.2).
-403/429/5xx의 공통 처리는 없고, 필요한 화면·도메인이 개별 `onError`로 처리한다(§6.4).
+`queryCache`/`mutationCache`의 전역 `onError` 훅은 아직 도입하지 않았다(§10). 401 처리는
+fetcher와 보호 가드로 역할이 나뉜다 — refresh 실패 시 fetcher(§4.2)는
+`useAuthStore.getState().clear()`로 auth store만 초기화하고, 로그인 화면 리다이렉트는
+`anonymous` 상태를 구독하는 `(protected)/layout.tsx` 가드([routing-and-auth.md](routing-and-auth.md) §5.1)가 이어서 수행한다. Query
+캐시를 별도로 비우는 로직은 없다. 403/429/5xx의 공통 처리도 없고, 필요한 화면·도메인이
+개별 `onError`로 처리한다(§6.4).
 
 ### 6.4 뮤테이션
 

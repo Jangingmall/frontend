@@ -176,14 +176,17 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
 }
 ```
 
-### 5.2 `(seller)/layout.tsx`
+### 5.2 `(seller)/layout.tsx` — 설계 초안, 아직 구현 전
 
-로그인 가드 + role 검사. 권한 부족은 **리다이렉트하지 않고** 403 안내를 렌더한다.
+판매자 트랙은 다른 팀원 담당이라 `(seller)` route group과 `ForbiddenNotice`
+컴포넌트 둘 다 코드베이스에 아직 없다. Figma 근거도 없는 가정 설계다 — 판매자 트랙
+착수 시 재검토가 필요하다. 아래는 의도한 동작 초안이다: 로그인 가드 + role 검사,
+권한 부족은 **리다이렉트하지 않고** 403 안내를 렌더한다.
 
 ```tsx
 const { status, user } = useAuthStore();
 if (status === "authenticated" && !user!.roles.includes("ARTISAN")) {
-  return <ForbiddenNotice />; // components/common/
+  return <ForbiddenNotice />; // components/common/ — 설계·구현 전
 }
 ```
 

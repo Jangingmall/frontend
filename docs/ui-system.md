@@ -127,14 +127,14 @@ PD Figma 변수 변경·게시
 
 ### 7.1 상태별 책임
 
-| 상태                             | 처리                                           |
-| -------------------------------- | ---------------------------------------------- |
-| 데이터 로딩 중                   | `Skeleton` (Base)                              |
-| 정상 응답이나 표시할 데이터 없음 | `EmptyState` (Shared)                          |
-| 예상 가능한 FE·BE 오류           | `ErrorState` (Shared) 또는 입력·폼 인라인 오류 |
-| 예기치 않은 렌더링 오류          | Next.js `error.tsx`                            |
-| 존재하지 않는 공개 리소스        | Next.js `not-found`                            |
-| 권한 부족                        | `ForbiddenNotice` (Shared)                     |
+| 상태                             | 처리                                                 |
+| -------------------------------- | ---------------------------------------------------- |
+| 데이터 로딩 중                   | `Skeleton` (Base)                                    |
+| 정상 응답이나 표시할 데이터 없음 | `EmptyState` (Shared)                                |
+| 예상 가능한 FE·BE 오류           | `ErrorState` (Shared) 또는 입력·폼 인라인 오류       |
+| 예기치 않은 렌더링 오류          | Next.js `error.tsx`                                  |
+| 존재하지 않는 공개 리소스        | Next.js `not-found`                                  |
+| 권한 부족                        | `ForbiddenNotice` (Shared) — 설계·구현 전, §5.2 참고 |
 
 조회 에러를 `error.tsx`로 던질지 `ErrorState`로 인라인 처리할지의 기본값은 [data-layer.md](data-layer.md) §6.2.
 
