@@ -66,6 +66,10 @@ describe("MypageReviewsPage", () => {
     const dialog = await screen.findByRole("dialog");
     const stars = within(dialog).getAllByTestId(/review-rating-star-/);
     await user.click(stars[4]!);
+    await user.type(
+      within(dialog).getByRole("textbox", { name: "후기 본문" }),
+      "정말 만족스러운 상품이었습니다.",
+    );
     await user.click(within(dialog).getByRole("button", { name: "등록하기" }));
 
     await waitFor(() =>

@@ -264,6 +264,10 @@ describe("OrderDetailPage", () => {
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId("review-rating-star-4"));
+    await user.type(
+      screen.getByRole("textbox", { name: "후기 본문" }),
+      "정말 만족스러운 상품이었습니다.",
+    );
     await user.click(screen.getByRole("button", { name: "등록하기" }));
 
     await waitFor(() =>

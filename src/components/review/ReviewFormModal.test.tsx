@@ -28,6 +28,27 @@ describe("ReviewFormModal", () => {
     expect(handleSubmit).not.toHaveBeenCalled();
   });
 
+  it("별점을 고르고 본문을 비운 채 제출하면 등록되지 않는다(BE `@NotBlank` 계약)", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+    render(
+      <ReviewFormModal
+        open
+        onOpenChange={() => {}}
+        item={item}
+        purchasedAt="2026-09-05T00:00:00.000Z"
+        onSubmit={handleSubmit}
+      />,
+    );
+    fireEvent.click(screen.getByTestId("review-rating-star-4"));
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+
+    expect(
+      await screen.findByText("후기 내용을 입력해주세요."),
+    ).toBeInTheDocument();
+    expect(handleSubmit).not.toHaveBeenCalled();
+  });
+
   it("별점을 고르고 본문을 작성해 등록하면 rating·content·photos가 담겨 제출된다", async () => {
     const user = userEvent.setup();
     const handleSubmit = vi.fn();

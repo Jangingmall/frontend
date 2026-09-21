@@ -20,7 +20,11 @@ const CONTENT_MAX_LENGTH = 2000;
 
 const reviewFormSchema = z.object({
   rating: z.number().min(0.5, { message: "별점을 입력해주세요." }),
-  content: z.string().max(CONTENT_MAX_LENGTH),
+  content: z
+    .string()
+    .trim()
+    .min(1, { message: "후기 내용을 입력해주세요." })
+    .max(CONTENT_MAX_LENGTH),
   photos: z.array(z.instanceof(File)),
 });
 
@@ -162,6 +166,7 @@ export function ReviewFormModal({
               maxLength={CONTENT_MAX_LENGTH}
               value={field.value}
               onChange={field.onChange}
+              error={errors.content?.message}
             />
           )}
         />
