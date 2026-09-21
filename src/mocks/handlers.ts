@@ -5,7 +5,9 @@ import { orderHandlers } from "@/api/orders/mock/handlers";
 import { productDetailActionHandlers } from "@/api/products/mock/detail-action-handlers";
 import { productDetailHandlers } from "@/api/products/mock/detail-handlers";
 import { productHandlers } from "@/api/products/mock/handlers";
+import { recentViewHandlers } from "@/api/recent-views/mock/handlers";
 import { reviewHandlers } from "@/api/reviews/mock/handlers";
+import { wishlistHandlers } from "@/api/wishlist/mock/handlers";
 
 /**
  * 전 도메인 MSW 핸들러 집계 지점. `browser`(worker)·`server`(node)·테스트가 이 배열을
@@ -21,4 +23,6 @@ export const handlers = [
   ...memberHandlers,
   ...orderHandlers,
   ...imageHandlers,
+  ...wishlistHandlers,
+  ...recentViewHandlers,
 ];
