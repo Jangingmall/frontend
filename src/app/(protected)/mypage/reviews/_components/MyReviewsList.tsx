@@ -6,7 +6,7 @@ import { useState } from "react";
 
 import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
-import { StarFilledIcon } from "@/components/ui/icons";
+import { ChevronRightIcon, StarFilledIcon } from "@/components/ui/icons";
 import { Pagination } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { MyReviewPage } from "@/types/review";
@@ -25,14 +25,14 @@ interface MyReviewsListProps {
 function MyReviewRow({ review }: { review: MyReviewPage["items"][number] }) {
   const [hasImageError, setHasImageError] = useState(false);
   return (
-    <div className="flex flex-col border-b border-border-neutral-weak">
-      <div className="flex items-center justify-between bg-fill-neutral-weak px-3 py-2 text-body-s-b text-font-dark">
+    <div className="flex flex-col bg-bg-default">
+      <div className="flex items-center justify-between bg-fill-neutral-weak px-3 py-2 text-title-s text-font-dark">
         <p className="truncate">{review.productName}</p>
-        <p className="shrink-0 text-caption text-font-dark-subtle">
+        <p className="shrink-0 text-body-s text-font-dark">
           작성일 {new Date(review.createdAt).toLocaleDateString("ko-KR")}
         </p>
       </div>
-      <div className="flex items-center gap-3 p-3">
+      <div className="flex items-stretch gap-4 p-3">
         <div className="relative size-22.5 shrink-0 overflow-hidden bg-fill-jade-weak">
           <Image
             src={
@@ -47,20 +47,20 @@ function MyReviewRow({ review }: { review: MyReviewPage["items"][number] }) {
             onError={() => setHasImageError(true)}
           />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <p className="truncate text-body-s-b text-font-dark">
+        <div className="flex min-w-0 flex-1 flex-col justify-between">
+          <div className="flex flex-col gap-1">
+            <p className="truncate text-title-s text-font-dark">
               {review.productName}
             </p>
             <span
               aria-label={`평점 ${review.rating.toFixed(1)}`}
-              className="inline-flex shrink-0 items-center gap-1 text-caption text-font-dark-secondary"
+              className="inline-flex shrink-0 items-center justify-end gap-1 text-body-m text-font-label"
             >
               <StarFilledIcon className="size-5" aria-hidden="true" />
               {review.rating.toFixed(1)}
             </span>
           </div>
-          <p className="line-clamp-2 text-caption text-font-dark">
+          <p className="line-clamp-2 text-body-s text-font-dark">
             {review.content}
           </p>
         </div>
@@ -68,9 +68,10 @@ function MyReviewRow({ review }: { review: MyReviewPage["items"][number] }) {
           type="button"
           disabled
           title="준비 중"
-          className="shrink-0 text-body-s text-font-dark-secondary disabled:cursor-default disabled:opacity-60"
+          className="flex shrink-0 items-end gap-1 self-stretch pb-1 text-body-m text-font-dark-secondary disabled:cursor-default disabled:opacity-60"
         >
           후기 자세히 보기
+          <ChevronRightIcon aria-hidden className="size-6" />
         </button>
       </div>
     </div>
@@ -128,16 +129,18 @@ export function MyReviewsList({
   return (
     <div className="flex flex-col gap-4" aria-busy={isFetching}>
       <p className="text-title-m text-font-dark">내가 작성한 후기</p>
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-4">
         {data.items.map((review) => (
           <MyReviewRow key={review.id} review={review} />
         ))}
       </div>
-      <Pagination
-        page={page}
-        pageCount={pageCount}
-        onPageChange={onPageChange}
-      />
+      <div className="mt-17 flex justify-center">
+        <Pagination
+          page={page}
+          pageCount={pageCount}
+          onPageChange={onPageChange}
+        />
+      </div>
     </div>
   );
 }
