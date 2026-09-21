@@ -109,12 +109,15 @@ interface AuthState {
   status: "loading" | "authenticated" | "anonymous";
   accessToken: string | null;
   user: { id: number; role: Role; name: string } | null;
+  /** 로그인·부팅 복원 성공: 토큰+user 확보. */
   setSession: (token: string, user: AuthState["user"]) => void;
+  /** 401 자동 refresh 성공: access token만 교체, `status`·`user`는 유지. */
+  setAccessToken: (token: string) => void;
   clear: () => void;
 }
 ```
 
-- `lib/http/client.ts`가 `useAuthStore.getState().accessToken`을 동기로 읽어 헤더에 주입한다. 401 refresh 성공 → `setSession`, 실패 → `clear`.
+- `lib/http/client.ts`가 `useAuthStore.getState().accessToken`을 동기로 읽어 헤더에 주입한다. 401 refresh 성공 → `setAccessToken`(토큰만 교체, `GET /me` 재호출 없음), 실패 → `clear`.
 - 세부 fetcher 동작은 [data-layer.md](data-layer.md) §4.2.
 - `role`은 배열이 아니라 단일 값이다. BE `MemberProfileResponse.role`이 `MemberRole` 단일 enum이라(판매자는 `"ARTISAN"` 하나) — 2026-09-15 BE 레포(`Jangingmall/backend`) 직접 대조로 확인.
 
@@ -185,7 +188,7 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
 
 ```tsx
 const { status, user } = useAuthStore();
-if (status === "authenticated" && !user!.roles.includes("ARTISAN")) {
+if (status === "authenticated" && user?.role !== "ARTISAN") {
   return <ForbiddenNotice />; // components/common/ — 설계·구현 전
 }
 ```
