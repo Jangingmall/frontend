@@ -54,7 +54,7 @@ function MyReviewRow({ review }: { review: MyReviewPage["items"][number] }) {
             </p>
             <span
               aria-label={`평점 ${review.rating.toFixed(1)}`}
-              className="inline-flex shrink-0 items-center justify-end gap-1 text-body-m text-font-label"
+              className="inline-flex shrink-0 items-center gap-1 self-start text-body-m text-font-label"
             >
               <StarFilledIcon className="size-5" aria-hidden="true" />
               {review.rating.toFixed(1)}
