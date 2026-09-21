@@ -26,7 +26,7 @@ function ReviewableItemCard({
 }) {
   const [hasImageError, setHasImageError] = useState(false);
   return (
-    <div className="flex w-108 shrink-0 flex-col gap-2.5 rounded-xs border border-border-neutral-solid bg-bg-default p-3">
+    <div className="flex w-108 shrink-0 flex-col gap-2.5 rounded-xs border border-border-neutral-subtle bg-bg-default p-3">
       <div className="flex items-center justify-between">
         <p className="truncate text-title-s text-font-dark">
           {item.productName}
@@ -58,12 +58,16 @@ function ReviewableItemCard({
           ))}
         </div>
         <div className="relative shrink-0">
-          <span className="absolute -top-2.5 right-0 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b whitespace-nowrap text-font-dark">
-            적립금 + {item.rewardPoints}원
-          </span>
-          <Button variant="solid" size="m" onClick={() => onWriteReview(item)}>
+          <Button
+            variant="solid"
+            className="h-auto min-w-22 px-6 py-2 text-[14px] leading-[1.4] font-semibold"
+            onClick={() => onWriteReview(item)}
+          >
             후기 작성하기
           </Button>
+          <span className="absolute -top-2.5 right-0 z-10 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b whitespace-nowrap text-font-dark">
+            적립금 + {item.rewardPoints}원
+          </span>
         </div>
       </div>
     </div>
