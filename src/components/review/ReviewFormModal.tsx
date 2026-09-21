@@ -37,8 +37,9 @@ interface ReviewFormModalProps {
   onOpenChange: (open: boolean) => void;
   /** `OrderClaimProductSummary`와 같은 셰이프를 그대로 재사용한다. */
   item: OrderClaimItemSummary;
-  /** ISO datetime — `OrderClaimProductSummary`의 "N 구매" 표시용. */
-  purchasedAt: string;
+  /** ISO datetime — `OrderClaimProductSummary`의 "N 구매" 표시용. BE가 아직 안 내려주면
+   * `null`(`be-requests.md` #11) — 그 줄만 생략된다. */
+  purchasedAt: string | null;
   submitting?: boolean;
   submitError?: string | null;
   onSubmit: (input: ReviewFormInput) => void;

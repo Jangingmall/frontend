@@ -36,19 +36,19 @@ export function mapReviewableItem(dto: ReviewableItemDto): ReviewableItem {
     productId: dto.productId,
     productName: dto.productName,
     thumbnailUrl: dto.thumbnailUrl,
-    options: dto.options,
-    purchasedAt: dto.purchasedAt,
-    rewardPoints: dto.rewardPoints,
+    options: dto.options ?? [],
+    purchasedAt: dto.purchasedAt ?? null,
+    rewardPoints: dto.rewardPoints ?? null,
   };
 }
 
 function mapMyReview(dto: MyReviewPageDto["content"][number]): MyReview {
   return {
     id: dto.reviewId,
-    orderItemId: dto.orderItemId,
+    orderItemId: dto.orderItemId ?? null,
     productId: dto.productId,
-    productName: dto.productName,
-    thumbnailUrl: dto.thumbnailUrl,
+    productName: dto.productName ?? null,
+    thumbnailUrl: dto.thumbnailUrl ?? null,
     rating: dto.rating,
     content: dto.content,
     images: dto.images.map(({ src, alt }) => ({ src, alt })),

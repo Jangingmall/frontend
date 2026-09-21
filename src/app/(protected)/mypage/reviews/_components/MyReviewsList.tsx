@@ -24,10 +24,11 @@ interface MyReviewsListProps {
 
 function MyReviewRow({ review }: { review: MyReviewPage["items"][number] }) {
   const [hasImageError, setHasImageError] = useState(false);
+  const productName = review.productName ?? "상품 정보 준비 중";
   return (
     <div className="flex flex-col bg-bg-default">
       <div className="flex items-center justify-between bg-fill-neutral-weak px-3 py-2 text-title-s text-font-dark">
-        <p className="truncate">{review.productName}</p>
+        <p className="truncate">{productName}</p>
         <p className="shrink-0 text-body-s text-font-dark">
           작성일 {new Date(review.createdAt).toLocaleDateString("ko-KR")}
         </p>
@@ -50,7 +51,7 @@ function MyReviewRow({ review }: { review: MyReviewPage["items"][number] }) {
         <div className="flex min-w-0 flex-1 flex-col justify-between">
           <div className="flex flex-col gap-1">
             <p className="truncate text-title-s text-font-dark">
-              {review.productName}
+              {productName}
             </p>
             <span
               aria-label={`평점 ${review.rating.toFixed(1)}`}

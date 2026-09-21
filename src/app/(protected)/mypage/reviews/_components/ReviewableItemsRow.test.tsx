@@ -78,4 +78,23 @@ describe("ReviewableItemsRow", () => {
     fireEvent.click(screen.getByRole("button", { name: "후기 작성하기" }));
     expect(onWriteReview).toHaveBeenCalledWith(item);
   });
+
+  it("purchasedAt·rewardPoints가 없으면(BE 미제공) 해당 부분만 생략한다", () => {
+    render(
+      <ReviewableItemsRow
+        nickname="홍길동"
+        data={[{ ...item, purchasedAt: null, rewardPoints: null }]}
+        isPending={false}
+        hasError={false}
+        onRetry={vi.fn()}
+        onWriteReview={vi.fn()}
+      />,
+    );
+    expect(screen.queryByText(/구매$/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/적립금/)).not.toBeInTheDocument();
+    expect(screen.getByText("백자 달항아리")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "후기 작성하기" }),
+    ).toBeInTheDocument();
+  });
 });
