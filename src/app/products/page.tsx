@@ -6,11 +6,11 @@ import {
   fetchProductCategoriesServer,
   fetchProductList,
 } from "@/api/products/api";
+import { ProductGridSkeleton } from "@/components/product/ProductGridSkeleton";
 import { getQueryClient } from "@/lib/query/server";
 import { productKeys } from "@/queries/products/keys";
 import type { ProductCategory } from "@/types/product-filter";
 
-import { ProductGridSkeleton } from "./_components/ProductGridSkeleton";
 import { ProductListPage } from "./_components/ProductListPage";
 import { resolveCategoryView } from "./_lib/category-view";
 import { parseProductSearchParams } from "./_lib/search-params";
