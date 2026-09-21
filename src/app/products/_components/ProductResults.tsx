@@ -3,6 +3,7 @@
 import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ProductGridSkeleton } from "@/components/product/ProductGridSkeleton";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components/ui/pagination";
@@ -10,8 +11,6 @@ import { publicEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import type { Page } from "@/types/api";
 import type { ProductSummary } from "@/types/product";
-
-import { ProductGridSkeleton } from "./ProductGridSkeleton";
 
 interface ProductResultsProps {
   isCategoryList?: boolean;

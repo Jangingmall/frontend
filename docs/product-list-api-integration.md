@@ -31,15 +31,15 @@
 
 ## 상세와 상호작용
 
-| 기능            | 현재 연결 / 제한                                                                                       |
-| --------------- | ------------------------------------------------------------------------------------------------------ |
-| 상품 기본 정보  | `GET /api/products/{id}`: 제목·설명·가격·재고·썸네일·상태·제작 기간                                    |
-| 장인 소개       | `GET /api/member/artisans/{artisanId}`: 공개 이름·사진·소개·공예 분류. 요약 실패 시 기본 상품 유지     |
-| 후기            | `GET /api/products/{id}/reviews`: 5개씩 Spring Page, 최신/별점 정렬, 전체 건수                         |
-| 찜 상태         | 인증된 `GET /api/member/me/wishes`의 cursor 페이지를 확인                                              |
-| 찜 등록/취소    | `POST/DELETE /api/products/{id}/wish`; null 성공 응답 허용, 성공 후 UI 반영                            |
-| 공개 문의 등록  | `POST /api/products/{id}/questions`, `{content, secret:false}`, 최대 1000자. 유형·제목 입력 제거       |
-| 장바구니 어댑터 | `POST /api/payments/cart/items`, productId/quantity/selectedOptions/textInputs. 실제 숫자 옵션 ID 검증 |
+| 기능            | 현재 연결 / 제한                                                                                           |
+| --------------- | ---------------------------------------------------------------------------------------------------------- |
+| 상품 기본 정보  | `GET /api/products/{id}`: 제목·설명·가격·재고·썸네일·상태·제작 기간                                        |
+| 장인 소개       | `GET /api/member/artisans/{artisanId}`: 공개 이름·사진·소개·공예 분류. 요약 실패 시 기본 상품 유지         |
+| 후기            | `GET /api/products/{id}/reviews`: 5개씩 Spring Page, 최신/별점 정렬, 전체 건수                             |
+| 찜 상태         | 인증된 `GET /api/member/me/wishes/{id}`로 확인(204/404, 공통 응답 봉투 미적용 — `docs/api-contract.md` §5) |
+| 찜 등록/취소    | `POST/DELETE /api/products/{id}/wish`; null 성공 응답 허용, 성공 후 UI 반영                                |
+| 공개 문의 등록  | `POST /api/products/{id}/questions`, `{content, secret:false}`, 최대 1000자. 유형·제목 입력 제거           |
+| 장바구니 어댑터 | `POST /api/payments/cart/items`, productId/quantity/selectedOptions/textInputs. 실제 숫자 옵션 ID 검증     |
 
 실제 후기에는 이미지·닉네임·옵션·전체 평균이 없다. 사진 필터·평균·옵션 문구는 숨기며 작성자는 일반 표기인 ‘구매자’를 쓴다. 한 페이지의 평균을 상품 전체 평점으로 표시하지 않는다.
 

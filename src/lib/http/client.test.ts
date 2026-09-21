@@ -7,7 +7,7 @@ import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 import type { ApiErrorResponse, ApiResponse } from "@/types/api";
 
-import { __resetRefreshState, clientFetch } from "./client";
+import { __resetRefreshState, clientFetch, clientFetchExists } from "./client";
 
 const REFRESHED = "mock-access-token-refreshed";
 
@@ -245,5 +245,49 @@ describe("clientFetch — 401 refresh", () => {
       code: "INTERNAL_ERROR",
     });
     expect(refreshCalls).toBe(0);
+  });
+});
+
+describe("clientFetchExists — 봉투 없는 status-only 엔드포인트", () => {
+  it("204 → true", async () => {
+    server.use(
+      http.get("*/api/exists", () => new Response(null, { status: 204 })),
+    );
+
+    await expect(clientFetchExists("/api/exists")).resolves.toBe(true);
+  });
+
+  it("404 → false", async () => {
+    server.use(
+      http.get("*/api/exists", () => new Response(null, { status: 404 })),
+    );
+
+    await expect(clientFetchExists("/api/exists")).resolves.toBe(false);
+  });
+
+  it("그 외 실패는 ApiError로 던진다", async () => {
+    server.use(
+      http.get("*/api/exists", () => mockError(500, "INTERNAL_ERROR")),
+    );
+
+    await expect(clientFetchExists("/api/exists")).rejects.toMatchObject({
+      name: "ApiError",
+      status: 500,
+    });
+  });
+
+  it("401이면 clientFetch와 같은 refresh 재시도를 거친다", async () => {
+    useAuthStore.setState({ accessToken: "stale" });
+    server.use(
+      http.get("*/api/exists", ({ request }) =>
+        request.headers.get("Authorization") ===
+        "Bearer mock-access-token-refreshed"
+          ? new Response(null, { status: 204 })
+          : mockError(401, "TOKEN_EXPIRED"),
+      ),
+    );
+
+    await expect(clientFetchExists("/api/exists")).resolves.toBe(true);
+    expect(useAuthStore.getState().accessToken).toBe(REFRESHED);
   });
 });

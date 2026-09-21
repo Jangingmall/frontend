@@ -125,10 +125,16 @@ export function __resetRefreshState(): void {
   refreshInFlight = null;
 }
 
-export async function clientFetch<T>(
+/**
+ * 인증 헤더 주입 + 401 single-flight refresh 재시도까지 처리하고 원본 `Response`를
+ * 돌려준다. 응답 해석(봉투 해제 vs status만 보기)은 호출부(`clientFetch`/
+ * `clientFetchExists`)가 나눠 맡는다 — 인증 로직은 이 한 곳에만 둔다(docs/data-layer.md
+ * §4.2 "단일 지점" 원칙).
+ */
+async function fetchWithAuthRetry(
   path: string,
-  options: ClientFetchOptions = {},
-): Promise<T> {
+  options: ClientFetchOptions,
+): Promise<Response> {
   const tokenAtRequest = useAuthStore.getState().accessToken;
   const response = await doFetch(path, options);
 
@@ -139,13 +145,13 @@ export async function clientFetch<T>(
     options.auth === false ||
     options.retryOn401 === false
   ) {
-    return resolveResponse<T>(response);
+    return response;
   }
 
   // 이 요청이 나간 뒤 다른 요청이 이미 토큰을 갱신했으면(single-flight 윈도우가 닫힌 뒤
   // 도착한 지연 401) refresh를 다시 돌리지 않고 새 토큰으로 1회 재시도한다.
   if (useAuthStore.getState().accessToken !== tokenAtRequest) {
-    return resolveResponse<T>(await doFetch(path, options));
+    return doFetch(path, options);
   }
 
   // 401 → refresh(single-flight) 후 새 토큰으로 원요청 1회 재시도.
@@ -159,6 +165,30 @@ export async function clientFetch<T>(
   }
 
   // 재시도 결과는 그대로 표면화한다(재-refresh 없음).
-  const retried = await doFetch(path, options);
-  return resolveResponse<T>(retried);
+  return doFetch(path, options);
+}
+
+export async function clientFetch<T>(
+  path: string,
+  options: ClientFetchOptions = {},
+): Promise<T> {
+  return resolveResponse<T>(await fetchWithAuthRetry(path, options));
+}
+
+/**
+ * 공통 응답 봉투(`{ success, status, data }`)를 쓰지 않고 HTTP status만으로 응답하는
+ * 엔드포인트 전용 — 204면 존재(true), 404면 없음(false). 그 외 실패는 `ApiError`.
+ * (현재 `GET /api/member/me/wishes/{productId}` 전용 — docs/api-contract.md §5)
+ */
+export async function clientFetchExists(
+  path: string,
+  options: ClientFetchOptions = {},
+): Promise<boolean> {
+  const response = await fetchWithAuthRetry(path, options);
+  if (response.status === 204) return true;
+  if (response.status === 404) return false;
+  throw new ApiError(
+    response.ok ? 502 : response.status,
+    await parseBody(response),
+  );
 }

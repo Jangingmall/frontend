@@ -1,4 +1,4 @@
-import { http } from "msw";
+import { http, HttpResponse } from "msw";
 import { beforeEach, expect, it, vi } from "vitest";
 
 import { mockError, mockOk } from "@/mocks/envelope";
@@ -36,37 +36,32 @@ it("uses authenticated POST/DELETE wish and accepts the null success payload", a
   expect(methods).toEqual(["POST", "DELETE"]);
 });
 
-it("checks subsequent wish cursor pages before deciding the product is not wished", async () => {
-  const cursors: (string | null)[] = [];
+it("찜 여부를 GET /wishes/{id}(204/404, 봉투 없음)로 한 번에 확인한다", async () => {
+  const requestedIds: string[] = [];
   server.use(
-    http.get("*/api/member/me/wishes", ({ request }) => {
-      const cursor = new URL(request.url).searchParams.get("cursor");
-      cursors.push(cursor);
-      return mockOk(
-        cursor
-          ? {
-              items: [{ productId: 101 }],
-              hasNext: false,
-              nextCursor: null,
-              totalCount: 2,
-            }
-          : {
-              items: [{ productId: 102 }],
-              hasNext: true,
-              nextCursor: "next",
-              totalCount: 2,
-            },
-      );
+    http.get("*/api/member/me/wishes/:productId", ({ params }) => {
+      requestedIds.push(String(params.productId));
+      return new HttpResponse(null, { status: 204 });
     }),
   );
   expect(await fetchProductActionState(101)).toMatchObject({ wished: true });
-  expect(cursors).toEqual([null, "next"]);
+  expect(requestedIds).toEqual(["101"]);
 });
 
-it("does not convert a failed or broken wish listing into an unwished state", async () => {
+it("404면 찜 안 한 상태로 판단한다", async () => {
   server.use(
-    http.get("*/api/member/me/wishes", () =>
-      mockOk({ items: [], hasNext: true, nextCursor: null, totalCount: 3 }),
+    http.get(
+      "*/api/member/me/wishes/:productId",
+      () => new HttpResponse(null, { status: 404 }),
+    ),
+  );
+  expect(await fetchProductActionState(101)).toMatchObject({ wished: false });
+});
+
+it("찜 여부 확인이 서버 오류면 안 한 상태로 조용히 넘어가지 않고 그대로 던진다", async () => {
+  server.use(
+    http.get("*/api/member/me/wishes/:productId", () =>
+      mockError(500, "INTERNAL_ERROR"),
     ),
   );
   await expect(fetchProductActionState(101)).rejects.toThrow();
