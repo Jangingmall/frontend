@@ -1,3 +1,4 @@
+import { addWish, checkWished, removeWish } from "@/api/wishlist/api";
 import { publicEnv } from "@/lib/env";
 import { clientFetch } from "@/lib/http/client";
 
@@ -5,10 +6,9 @@ import {
   backendCartDto,
   backendCartInput,
   productActionResultDto,
-  productActionStateDto,
   productCartInput,
   type ProductCartLine,
-  productWishPageDto,
+  restockDemoStateDto,
 } from "./detail-actions-validation";
 
 /** 상세 확장 시연 API는 MSW에서만 호출한다. */
@@ -17,44 +17,25 @@ function actionPath(productId: number, action = "") {
   return `/api/products/${productId}/detail-actions${action}`;
 }
 
+/**
+ * 찜 여부는 목업 상태와 무관하게 항상 실제 계약 경로(`api/wishlist`)로 확인한다 — 목업
+ * 상태에 따라 다른 엔드포인트를 호출하지 않는다(원칙: API 호출은 목업 여부로 갈리지 않고,
+ * 목업이냐 아니냐는 MSW가 그 경로를 가로채는지로만 갈린다). 재입고 알림(`restockRequested`)은
+ * 대응하는 실제 BE 엔드포인트 자체가 없어(`requestProductRestock`과 동일 사유) 목업일 때만
+ * 데모 전용 상태를 읽고, 아니면 항상 `false`다.
+ */
 export async function fetchProductActionState(productId: number) {
-  if (!publicEnv.apiMocking) {
-    const visited = new Set<string>();
-    let cursor: string | null = null;
-    for (let page = 0; page < 100; page++) {
-      const params = new URLSearchParams({ limit: "100" });
-      if (cursor) params.set("cursor", cursor);
-      const result = productWishPageDto.parse(
-        await clientFetch(`/api/member/me/wishes?${params}`, {
-          cache: "no-store",
-        }),
-      );
-      if (result.items.some((item) => item.productId === productId))
-        return { wished: true, restockRequested: false };
-      if (!result.hasNext) return { wished: false, restockRequested: false };
-      if (!result.nextCursor || visited.has(result.nextCursor))
-        throw new Error("찜 목록을 확인하지 못했습니다.");
-      cursor = result.nextCursor;
-      visited.add(cursor);
-    }
-    throw new Error("찜 목록을 모두 확인하지 못했습니다.");
-  }
-  return productActionStateDto.parse(await clientFetch(actionPath(productId)));
+  const wished = await checkWished(productId);
+  const restockRequested = publicEnv.apiMocking
+    ? restockDemoStateDto.parse(await clientFetch(actionPath(productId)))
+        .restockRequested
+    : false;
+  return { wished, restockRequested };
 }
 
 export async function setProductWishlist(productId: number, wished: boolean) {
-  if (!publicEnv.apiMocking) {
-    await clientFetch(`/api/products/${productId}/wish`, {
-      method: wished ? "POST" : "DELETE",
-    });
-    return { wished, restockRequested: false };
-  }
-  return productActionStateDto.parse(
-    await clientFetch(actionPath(productId, "/wishlist"), {
-      method: "PUT",
-      body: { wished },
-    }),
-  );
+  await (wished ? addWish(productId) : removeWish(productId));
+  return { wished, restockRequested: false };
 }
 
 export async function addProductToCart(

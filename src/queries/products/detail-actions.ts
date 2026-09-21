@@ -35,7 +35,13 @@ export function useProductActions(
       const previous = client.getQueryData<ProductActionState>(queryKey);
       return { previous };
     },
-    onSuccess: (result) => client.setQueryData(queryKey, result),
+    // result.restockRequested는 늘 false로 고정돼 온다(setProductWishlist는 찜만 안다) —
+    // 이전 캐시의 실제 restockRequested 값을 덮어쓰지 않도록 merge한다.
+    onSuccess: (result) =>
+      client.setQueryData(queryKey, (previous?: ProductActionState) => ({
+        wished: result.wished,
+        restockRequested: previous?.restockRequested ?? false,
+      })),
     onError: (_error, _wished, context) => {
       client.setQueryData(
         queryKey,

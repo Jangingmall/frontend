@@ -8,7 +8,6 @@ import {
 import {
   productCartInput,
   type ProductCartLine,
-  productWishlistInput,
 } from "@/api/products/detail-actions-validation";
 import { mockError, mockOk } from "@/mocks/envelope";
 import type { ApiErrorResponse, ApiResponse } from "@/types/api";
@@ -19,7 +18,7 @@ import { getProductDetailMock } from "./detail-fixtures";
 type Envelope = ApiResponse<unknown> | ApiErrorResponse;
 const states = new Map<
   string,
-  { wished: boolean; restockRequested: boolean; cart: Set<string> }
+  { restockRequested: boolean; cart: Set<string> }
 >();
 
 export function resetProductDetailActionState() {
@@ -33,7 +32,6 @@ function getState(request: Request, id: string) {
     token === SEED_ACCESS_TOKEN_REFRESHED ? SEED_ACCESS_TOKEN : token;
   const key = `${user}:${id}`;
   const state = states.get(key) ?? {
-    wished: false,
     restockRequested: false,
     cart: new Set<string>(),
   };
@@ -88,7 +86,10 @@ function canAddLines(product: ProductDetail, lines: ProductCartLine[]) {
 
 const path = "*/api/products/:productId/detail-actions";
 
-/** MSW runtime에만 보관하는 잠정 계약. 사용자·상품별 찜/알림/장바구니 중복 상태. */
+/**
+ * MSW runtime에만 보관하는 잠정 계약. 사용자·상품별 재입고 알림/장바구니 중복 상태 —
+ * 찜 상태는 더 이상 여기서 안 다룬다(`api/wishlist`가 실제 계약 그대로 담당).
+ */
 export const productDetailActionHandlers = [
   http.get<PathParams, DefaultBodyType, Envelope>(
     path,
@@ -97,28 +98,7 @@ export const productDetailActionHandlers = [
       if (!state) return mockError(401, "UNAUTHORIZED");
       if (!getProductDetailMock(Number(params.productId)))
         return mockError(404, "NOT_FOUND");
-      return mockOk({
-        wished: state.wished,
-        restockRequested: state.restockRequested,
-      });
-    },
-  ),
-  http.put<PathParams, DefaultBodyType, Envelope>(
-    `${path}/wishlist`,
-    async ({ request, params }) => {
-      const state = getState(request, String(params.productId));
-      if (!state) return mockError(401, "UNAUTHORIZED");
-      if (!getProductDetailMock(Number(params.productId)))
-        return mockError(404, "NOT_FOUND");
-      const input = productWishlistInput.safeParse(
-        await request.json().catch(() => null),
-      );
-      if (!input.success) return mockError(400, "INVALID_INPUT");
-      state.wished = input.data.wished;
-      return mockOk({
-        wished: state.wished,
-        restockRequested: state.restockRequested,
-      });
+      return mockOk({ restockRequested: state.restockRequested });
     },
   ),
   http.post<PathParams, DefaultBodyType, Envelope>(
