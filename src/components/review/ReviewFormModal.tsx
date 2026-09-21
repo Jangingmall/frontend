@@ -116,6 +116,8 @@ export function ReviewFormModal({
 
         <OrderClaimProductSummary item={item} purchasedAt={purchasedAt} />
 
+        <div className="border-t border-border-neutral-weak" />
+
         <Controller
           control={control}
           name="rating"
@@ -136,6 +138,8 @@ export function ReviewFormModal({
           )}
         />
 
+        <div className="border-t border-border-neutral-weak" />
+
         <Controller
           control={control}
           name="photos"
@@ -143,6 +147,7 @@ export function ReviewFormModal({
             <OrderClaimPhotoField
               value={field.value}
               onChange={field.onChange}
+              showLabel={false}
             />
           )}
         />
