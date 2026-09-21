@@ -46,6 +46,22 @@ describe("OrderProductCard", () => {
     expect(screen.getByText("적립금 + 100원")).toBeInTheDocument();
   });
 
+  it("reviewId가 있으면 이미 작성한 후기라 후기 작성 버튼을 보여주지 않는다", () => {
+    render(
+      <OrderProductCard
+        thumbnail={thumbnail}
+        productName="상품명"
+        price={10000}
+        status="DELIVERED"
+        reviewId={1}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: "후기 작성" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText("적립금 + 100원")).not.toBeInTheDocument();
+  });
+
   it("구매확정 상태의 액션 버튼을 렌더한다", () => {
     render(
       <OrderProductCard

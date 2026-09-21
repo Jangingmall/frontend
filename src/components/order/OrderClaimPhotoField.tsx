@@ -3,6 +3,8 @@
 import type { ChangeEvent } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 
+import { PlusIcon } from "@/components/ui/icons";
+
 const MAX_PHOTOS = 5;
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
@@ -10,6 +12,8 @@ interface OrderClaimPhotoFieldProps {
   value: File[];
   onChange: (files: File[]) => void;
   required?: boolean;
+  /** 상단 "사진 첨부" 라벨을 숨긴다 — 후기 작성 모달(Figma 1362:35796)엔 라벨이 없다. */
+  showLabel?: boolean;
   error?: string;
 }
 
@@ -23,6 +27,7 @@ export function OrderClaimPhotoField({
   value,
   onChange,
   required = false,
+  showLabel = true,
   error,
 }: OrderClaimPhotoFieldProps) {
   const inputId = useId();
@@ -82,48 +87,65 @@ export function OrderClaimPhotoField({
 
   return (
     <div className="flex flex-col gap-2">
-      <label
-        htmlFor={inputId}
-        className="flex items-center gap-1 text-body-s-b text-font-dark"
-      >
-        사진 첨부
-        {required && <span className="font-normal text-red-font">*</span>}
-      </label>
+      {showLabel && (
+        <label
+          htmlFor={inputId}
+          className="flex items-center gap-1 text-body-s-b text-font-dark"
+        >
+          사진 첨부
+          {required && <span className="font-normal text-red-font">*</span>}
+        </label>
+      )}
 
-      <div className="flex flex-wrap gap-2">
-        {value.map((file, index) => (
-          <div
-            key={`${file.name}-${index}`}
-            className="relative size-20 shrink-0 overflow-hidden rounded-xs border border-border-neutral-weak"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element -- 로컬 File 미리보기, next/image 최적화 대상 아님 */}
-            <img
-              src={previewUrls[index]}
-              alt=""
-              className="size-full object-cover"
-            />
+      {value.length === 0 ? (
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="flex h-27.5 w-full flex-col items-center justify-center gap-2 rounded-sm border border-dashed border-border-jade-fill bg-bg-default text-center"
+        >
+          <PlusIcon className="size-8" />
+          <span className="text-caption-b text-font-dark-subtle">
+            사진 첨부하기
+            <br />
+            (최대 {MAX_PHOTOS}장 / 각 10MB 이내)
+          </span>
+        </button>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {value.map((file, index) => (
+            <div
+              key={`${file.name}-${index}`}
+              className="relative size-20 shrink-0 overflow-hidden rounded-xs border border-border-neutral-weak"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- 로컬 File 미리보기, next/image 최적화 대상 아님 */}
+              <img
+                src={previewUrls[index]}
+                alt=""
+                className="size-full object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => removeAt(index)}
+                aria-label={`${file.name} 삭제`}
+                className="absolute top-0.5 right-0.5 flex size-5 items-center justify-center rounded-full bg-bg-deam text-font-white"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+
+          {value.length < MAX_PHOTOS && (
             <button
               type="button"
-              onClick={() => removeAt(index)}
-              aria-label={`${file.name} 삭제`}
-              className="absolute top-0.5 right-0.5 flex size-5 items-center justify-center rounded-full bg-bg-deam text-font-white"
+              onClick={() => inputRef.current?.click()}
+              className="flex size-20 shrink-0 flex-col items-center justify-center gap-1 rounded-xs border border-dashed border-border-neutral-weak text-caption text-font-dark-subtle"
             >
-              ×
+              <span className="text-title-s">+</span>
+              <span>추가</span>
             </button>
-          </div>
-        ))}
-
-        {value.length < MAX_PHOTOS && (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="flex size-20 shrink-0 flex-col items-center justify-center gap-1 rounded-xs border border-dashed border-border-neutral-weak text-caption text-font-dark-subtle"
-          >
-            <span className="text-title-s">+</span>
-            <span>사진 첨부하기</span>
-          </button>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       <input
         ref={inputRef}
@@ -135,9 +157,11 @@ export function OrderClaimPhotoField({
         className="sr-only"
       />
 
-      <p className="text-caption text-font-dark-weak">
-        최대 {MAX_PHOTOS}장 / 각 10MB 이내
-      </p>
+      {value.length > 0 && (
+        <p className="text-caption text-font-dark-weak">
+          최대 {MAX_PHOTOS}장 / 각 10MB 이내
+        </p>
+      )}
 
       {(localError ?? error) != null && (
         <p role="alert" className="text-caption text-red-font">

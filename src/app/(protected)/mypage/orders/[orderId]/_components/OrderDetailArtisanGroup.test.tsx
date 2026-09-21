@@ -23,6 +23,7 @@ function group(
         artisanName: "김도예",
         reason: null,
         cancelInitiator: null,
+        reviewId: null,
       },
     ],
     ...overrides,
@@ -77,6 +78,7 @@ describe("OrderDetailArtisanGroup", () => {
               artisanName: "김도예",
               reason: null,
               cancelInitiator: null,
+              reviewId: null,
             },
             {
               orderItemId: 2,
@@ -90,6 +92,7 @@ describe("OrderDetailArtisanGroup", () => {
               artisanName: "김도예",
               reason: null,
               cancelInitiator: null,
+              reviewId: null,
             },
           ],
         })}

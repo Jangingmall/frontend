@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { OrderCancelRequestModal } from "@/components/order/OrderCancelRequestModal";
 import { OrderExchangeRefundRequestModal } from "@/components/order/OrderExchangeRefundRequestModal";
+import { ReviewFormModal } from "@/components/review/ReviewFormModal";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import {
   type OrderCardActionType,
@@ -21,12 +22,14 @@ import {
   useOrdersListQuery,
   useOrderStatusSummaryQuery,
 } from "@/queries/orders/queries";
+import { useCreateReviewMutation } from "@/queries/reviews/mutations";
 import type {
   OrderCancelRequest,
   OrderExchangeRefundRequest,
   OrderGroup,
   OrderListItem,
 } from "@/types/order";
+import type { ReviewFormInput } from "@/types/review";
 
 import { OrdersFilterBar } from "./_components/OrdersFilterBar";
 import { OrdersList } from "./_components/OrdersList";
@@ -52,8 +55,10 @@ interface ClaimTarget {
  * SSR엔 접근 토큰이 없다). 필터 변경은 `products` 목록과 동일하게 shallow
  * `history.pushState`로 URL만 갱신한다(design.md §6.4).
  *
- * "주문 취소"·"교환·환불 신청" 버튼은 취소·교환·환불 신청 모달을 연다(design.md §0.5, §5.2) —
- * T-27은 이 배선을 상세 화면 몫으로 미뤄뒀지만, 이번에 목록에도 처음 연결한다.
+ * "주문 취소"·"교환·환불 신청" 버튼은 취소·교환·환불 신청 모달을 연다 — T-27은 이 배선을
+ * 상세 화면 몫으로 미뤄뒀지만, T-29에서 목록에도 처음 연결했다. "후기 작성" 버튼도 같은
+ * 자리에서 처음 연결한다 — 마이페이지 후기 화면(`/mypage/reviews`)과 같은 `ReviewFormModal`
+ * 을 공유한다.
  */
 export default function MypageOrdersPage() {
   const searchParams = useSearchParams();
@@ -68,8 +73,10 @@ export default function MypageOrdersPage() {
   const [exchangeTarget, setExchangeTarget] = useState<ClaimTarget | null>(
     null,
   );
+  const [reviewTarget, setReviewTarget] = useState<ClaimTarget | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [exchangeError, setExchangeError] = useState<string | null>(null);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const cancelMutation = useRequestOrderCancelMutation(
     cancelTarget?.orderId ?? -1,
@@ -77,6 +84,7 @@ export default function MypageOrdersPage() {
   const exchangeMutation = useRequestOrderExchangeRefundMutation(
     exchangeTarget?.orderId ?? -1,
   );
+  const createReviewMutation = useCreateReviewMutation();
 
   function updateUrl(patch: Partial<OrdersFilterState>) {
     const params = updateOrdersSearchParams(
@@ -116,6 +124,10 @@ export default function MypageOrdersPage() {
         setExchangeError(null);
         setExchangeTarget(target);
         break;
+      case "writeReview":
+        setReviewError(null);
+        setReviewTarget(target);
+        break;
       default:
         // ORDER_LIST_IMPLEMENTED_ACTIONS에 없는 액션 — 버튼 자체가 비활성이라 도달하지 않는다.
         break;
@@ -139,6 +151,21 @@ export default function MypageOrdersPage() {
       setExchangeTarget(null);
     } catch (error) {
       setExchangeError(resolveActionErrorMessage(error));
+    }
+  }
+
+  async function handleReviewSubmit(input: ReviewFormInput) {
+    if (!reviewTarget) return;
+    setReviewError(null);
+    try {
+      await createReviewMutation.mutateAsync({
+        productId: reviewTarget.item.productId,
+        orderItemId: reviewTarget.item.orderItemId,
+        input,
+      });
+      setReviewTarget(null);
+    } catch (error) {
+      setReviewError(resolveActionErrorMessage(error));
     }
   }
 
@@ -216,6 +243,23 @@ export default function MypageOrdersPage() {
           submitting={exchangeMutation.isPending}
           submitError={exchangeError}
           onSubmit={(input) => void handleExchangeSubmit(input)}
+        />
+      )}
+
+      {reviewTarget && (
+        <ReviewFormModal
+          open
+          onOpenChange={(open) => {
+            if (!open) {
+              setReviewTarget(null);
+              setReviewError(null);
+            }
+          }}
+          item={reviewTarget.item}
+          purchasedAt={reviewTarget.orderedAt}
+          submitting={createReviewMutation.isPending}
+          submitError={reviewError}
+          onSubmit={(input) => void handleReviewSubmit(input)}
         />
       )}
     </div>

@@ -31,6 +31,7 @@ function order(overrides: Partial<OrderGroup> = {}): OrderGroup {
         quantity: 1,
         status: "DELIVERED",
         reason: null,
+        reviewId: null,
       },
     ],
     ...overrides,
@@ -143,6 +144,7 @@ describe("OrdersList", () => {
           quantity: 1,
           status: "PREPARING",
           reason: null,
+          reviewId: null,
         },
         {
           orderItemId: 101,
@@ -153,6 +155,7 @@ describe("OrdersList", () => {
           quantity: 1,
           status: "DELIVERED",
           reason: null,
+          reviewId: null,
         },
       ],
     });
@@ -208,6 +211,7 @@ describe("OrdersList", () => {
         quantity: 1,
         status: "DELIVERED" as const,
         reason: null,
+        reviewId: null,
       })),
     });
 
@@ -264,6 +268,7 @@ describe("OrdersList", () => {
           quantity: 1,
           status: "DELIVERED",
           reason: null,
+          reviewId: null,
         },
         {
           orderItemId: 101,
@@ -274,6 +279,7 @@ describe("OrdersList", () => {
           quantity: 1,
           status: "DELIVERED",
           reason: null,
+          reviewId: null,
         },
       ],
     });
@@ -314,6 +320,7 @@ describe("OrdersList", () => {
                 quantity: 1,
                 status: "PAYMENT_PENDING",
                 reason: null,
+                reviewId: null,
               },
             ],
           }),
@@ -349,6 +356,7 @@ describe("OrdersList", () => {
                 quantity: 1,
                 status: "REFUND_REJECTED",
                 reason: "상품 사용에 따른 파손",
+                reviewId: null,
               },
             ],
           }),

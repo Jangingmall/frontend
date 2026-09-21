@@ -107,6 +107,7 @@ function mapOrderItem(
     thumbnailUrl: dto.thumbnail[0]?.url ?? null,
     status,
     reason,
+    reviewId: dto.reviewId ?? null,
   };
 }
 
@@ -154,6 +155,7 @@ function mapOrderDetailItem(
     artisanName: dto.artisanName ?? null,
     reason,
     cancelInitiator,
+    reviewId: dto.reviewId ?? null,
   };
 }
 

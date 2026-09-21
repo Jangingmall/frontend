@@ -4,7 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 
-import { fetchReviews } from "./api";
+import {
+  createReview,
+  fetchMyReviews,
+  fetchReviewableItems,
+  fetchReviews,
+} from "./api";
+import { MY_REVIEW_FIXTURES } from "./mock/fixtures";
 import { reviewHandlers } from "./mock/handlers";
 
 describe("상품 후기", () => {
@@ -99,4 +105,50 @@ describe("상품 후기", () => {
       });
     },
   );
+});
+
+describe("마이페이지 후기 목록·작성", () => {
+  beforeEach(() => server.use(...reviewHandlers));
+
+  it("리뷰 미작성 + 배송완료 주문 아이템을 보여준다", async () => {
+    const items = await fetchReviewableItems();
+    expect(items.some((item) => item.orderItemId === 9003)).toBe(true);
+    expect(items.every((item) => item.rewardPoints === 100)).toBe(true);
+  });
+
+  it("내가 작성한 후기를 5건씩 페이지네이션한다", async () => {
+    const first = await fetchMyReviews(1);
+    const second = await fetchMyReviews(2);
+    expect(first.totalCount).toBe(MY_REVIEW_FIXTURES.length);
+    expect(first.items).toHaveLength(5);
+    expect(second.items.length).toBeGreaterThan(0);
+  });
+
+  it("후기를 작성하면 목록 맨 앞에 추가되고 해당 아이템이 리뷰작성 대상에서 빠진다", async () => {
+    await createReview(1003, {
+      orderItemId: 9003,
+      rating: 4.5,
+      content: "테스트 후기입니다.",
+      images: [],
+    });
+    const myReviews = await fetchMyReviews(1);
+    expect(myReviews.items[0]).toMatchObject({
+      orderItemId: 9003,
+      rating: 4.5,
+      content: "테스트 후기입니다.",
+    });
+    const reviewable = await fetchReviewableItems();
+    expect(reviewable.some((item) => item.orderItemId === 9003)).toBe(false);
+  });
+
+  it("이미 작성한 아이템에 다시 작성하면 거부한다", async () => {
+    await expect(
+      createReview(1003, {
+        orderItemId: 9003,
+        rating: 3,
+        content: "두 번째 시도",
+        images: [],
+      }),
+    ).rejects.toThrow();
+  });
 });

@@ -33,6 +33,8 @@ const orderItemDto = z
     price: z.number().int(),
     quantity: z.number().int(),
     thumbnail: orderThumbnailDto,
+    /** 목업 전용 필드 — 이미 작성된 후기 id. 실제 계약엔 이 연결이 없다(BE 미제공). */
+    reviewId: z.number().int().nullish(),
   })
   .passthrough();
 
@@ -113,6 +115,8 @@ const orderDetailItemDto = z
     thumbnail: orderThumbnailDto,
     artisanName: z.string().nullish(),
     options: z.array(z.string()).optional(),
+    /** `orderItemDto.reviewId`와 같은 목업 전용 필드. */
+    reviewId: z.number().int().nullish(),
   })
   .passthrough();
 

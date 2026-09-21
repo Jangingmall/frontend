@@ -3,7 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 
 import { server } from "@/mocks/server";
 
-import { createPresignedUpload, uploadClaimPhoto } from "./api";
+import {
+  createPresignedUpload,
+  uploadPublicImage,
+  uploadReturnPhoto,
+} from "./api";
 
 // `browser-image-compression`(canvas 기반)·`readImageDimensions`(Image 디코딩)는 jsdom이
 // 실제로 이미지를 디코드하지 않아 신뢰할 수 없다 — 이 파일의 관심사(presign → PUT → imageId)와
@@ -37,9 +41,9 @@ describe("createPresignedUpload", () => {
   });
 });
 
-describe("uploadClaimPhoto", () => {
+describe("uploadReturnPhoto", () => {
   it("압축·presign·업로드에 성공하면 imageId를 돌려준다", async () => {
-    const imageId = await uploadClaimPhoto(fakeFile());
+    const imageId = await uploadReturnPhoto(fakeFile());
     expect(imageId).toMatch(/^mock-image-/);
   });
 
@@ -50,7 +54,26 @@ describe("uploadClaimPhoto", () => {
         () => new HttpResponse(null, { status: 403 }),
       ),
     );
-    await expect(uploadClaimPhoto(fakeFile())).rejects.toThrow(
+    await expect(uploadReturnPhoto(fakeFile())).rejects.toThrow(
+      "사진 업로드에 실패했습니다.",
+    );
+  });
+});
+
+describe("uploadPublicImage", () => {
+  it("320w/640w/1280w 3개 variant를 모두 발급받아 업로드하고 imageId를 돌려준다", async () => {
+    const imageId = await uploadPublicImage(fakeFile(), "PRODUCT");
+    expect(imageId).toMatch(/^mock-image-/);
+  });
+
+  it("variant 중 하나라도 PUT이 실패하면 에러를 던진다", async () => {
+    server.use(
+      http.put(
+        "https://mock-cdn.midam.local/uploads/*/640w",
+        () => new HttpResponse(null, { status: 500 }),
+      ),
+    );
+    await expect(uploadPublicImage(fakeFile(), "PRODUCT")).rejects.toThrow(
       "사진 업로드에 실패했습니다.",
     );
   });

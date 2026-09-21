@@ -109,4 +109,18 @@ describe("MypageOrdersPage", () => {
       ).not.toBeInTheDocument(),
     );
   });
+
+  it("배송 완료 주문의 후기 작성 버튼을 누르면 후기 작성 모달이 뜬다", async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findAllByText("주문번호 :");
+    await user.click(screen.getByRole("button", { name: "배송 완료" }));
+    const writeButtons = await screen.findAllByRole("button", {
+      name: "후기 작성",
+    });
+    await user.click(writeButtons[0]!);
+    expect(
+      screen.getByRole("heading", { name: "후기 작성하기" }),
+    ).toBeInTheDocument();
+  });
 });

@@ -26,6 +26,9 @@ export interface OrderListItem {
    * (BE 응답의 `returnInfo`는 `RETURN_REQUESTED`일 때만 오므로 자연히 그렇게 된다).
    */
   reason: string | null;
+  /** 이 아이템에 이미 작성된 후기 id. 없으면 `null`. BE 목록 응답엔 이 연결이 없다 —
+   * 목업 전용 확장, `artisanName`·`cancelInitiator`와 같은 패턴. */
+  reviewId: number | null;
 }
 
 /** 주문 하나(상품 1개 이상). */
@@ -79,6 +82,8 @@ export interface OrderDetailItem {
    * 목업 전용 확장.
    */
   cancelInitiator: "consumer" | "artisan" | null;
+  /** `OrderListItem.reviewId`와 같은 목업 전용 확장. */
+  reviewId: number | null;
 }
 
 /** 제작자(장인) 이름 기준으로 묶은 상품 그룹 — Figma가 장인별로 섹션을 나눠 보여준다. */
@@ -159,8 +164,10 @@ export interface OrderExchangeRefundRequest {
  */
 export interface OrderClaimItemSummary {
   productName: string;
-  price: Money;
-  quantity: number;
+  /** `OrderClaimProductSummary`가 렌더하지 않는 필드라 optional로 둔다 — 후기 작성 모달
+   * (`ReviewableItem`)처럼 가격·수량이 없는 요약도 이 타입을 그대로 만족할 수 있다. */
+  price?: Money;
+  quantity?: number;
   thumbnailUrl: string | null;
   /** 상세에서 열면 있고(`OrderDetailItem`), 목록에서 열면 없다(`OrderListItem`). */
   options?: string[];
