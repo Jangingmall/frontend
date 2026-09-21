@@ -88,17 +88,19 @@ src/lib/http/
 - **401 처리**: `UNAUTHORIZED` 응답을 받으면
   1. 진행 중인 refresh가 없으면 `POST /api/member/token/refresh` 호출 (single-flight — 동시 다발 401은 하나의 refresh Promise를 공유)
   2. refresh 성공 → 새 access token으로 원요청 1회 재시도
-  3. refresh 실패 → `ApiError`를 그대로 전파하고, 전역 처리(§6)가 로그인 리다이렉트 + 토큰·캐시 클리어를 수행
+  3. refresh 실패 → `useAuthStore.getState().clear()`로 auth store만 초기화하고
+     `ApiError`를 그대로 전파한다. 로그인 화면 리다이렉트는 `anonymous` 상태를 구독하는
+     보호 가드([routing-and-auth.md](routing-and-auth.md) §5.1)가 이어서 수행한다. Query
+     캐시 정리는 없다(§6.3)
 - 재시도는 401 refresh 경로에서 1회로 한정한다. 그 외 재시도는 TanStack Query가 담당(§6).
 
 ### 4.3 응답 검증·변환
 
 - **모든 도메인 응답을 `api/{domain}/validation.ts`의 Zod 스키마로 검증**한 뒤 `mapper.ts`로 FE 도메인 모델(camelCase)로 변환한다.
 - 모든 응답 스키마는 `.passthrough()`를 기본으로 한다. BE가 필드를 추가해도 FE가 깨지지 않는다. 목록 item 스키마만 명시한다.
-- 검증 실패 처리는 환경별로 분기한다:
-  - **dev·preview**: `parse` 실패 시 throw → 에러 화면에서 즉시 발견 (BE 연동 초기 계약 드리프트를 빠르게 잡는다)
-  - **prod**: `safeParse` 실패 시 throw하지 않고 `reportSchemaMismatch`(§5.2)로 기록 후 원본 데이터로 진행
-  - 단 **결제·주문·인증** 도메인은 prod에서도 `parse` throw
+- 검증 실패 시 환경 구분 없이 항상 `parse`로 throw한다 — 계약 드리프트를 조용히 넘기지
+  않는다. dev/preview는 throw, prod는 `safeParse`로 기록 후 진행하는 환경별 분기 설계는
+  아직 도입하지 않았다(§10).
 - MSW mock fixture도 같은 스키마로 검증해 mock ↔ 실제 계약 일치를 보장한다(→ [testing.md](testing.md) §4).
 
 ## 5. `ApiError`와 에러 코드
@@ -126,51 +128,47 @@ class ApiError extends Error {
 
 ### 5.2 관측
 
-- prod에서 응답 Zod `safeParse` 실패, 전역 `onError`의 5xx, Error Boundary 캐치는 `lib/observability.ts`의 `reportSchemaMismatch(context)` 등 단일 함수로 감싼다.
-- 현재 구현은 내부가 `console.warn`. 에러 리포팅 도구 선정 시 이 함수 구현만 교체한다.
+별도 관측 유틸리티는 아직 없다. 응답 검증 실패·전역 에러를 한 곳에서 모아 리포팅하는
+설계는 미구현이며 §10에 남겨둔다.
 
 ## 6. TanStack Query 규칙
 
 ### 6.1 QueryClient 기본 옵션
 
 ```ts
-new QueryClient({
-  defaultOptions: {
-    queries: {
-      throwOnError: false,
-      retry: (failureCount, error) =>
-        error instanceof ApiError && error.status < 500
-          ? false
-          : failureCount < 2,
-      staleTime: 0, // 도메인별로 개별 지정
-    },
-    mutations: { throwOnError: false },
-  },
-  queryCache: new QueryCache({ onError: handleGlobalQueryError }),
-  mutationCache: new MutationCache({ onError: handleGlobalMutationError }),
-});
+export function createQueryClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: 1 } } });
+}
 ```
 
 - SSR 하이드레이션 대비 `QueryProvider`는 `useState(createQueryClient)`로 요청마다 새 client를 만든다(현행 유지).
+- 전역 기본값은 `retry: 1`뿐이다. 개별 조회 훅은 목적에 따라 `staleTime`·`retry`를 이미
+  override한다 — 예: `queries/products/queries.ts`는 상품 목록·카테고리·소재에
+  `staleTime: 60000`~`3600000`, `queries/wishlist/queries.ts`는 `staleTime: 30000`,
+  `queries/products/detail-actions.ts`는 `retry: false`. 상태코드별 retry 공식(예:
+  4xx는 재시도 안 함)을 전역 기본값 자체에 넣는 것과 전역 `queryCache`/`mutationCache`
+  에러 핸들러는 아직 도입하지 않았다(§10).
 
 ### 6.2 조회 에러 표면화
 
-| 대상                       | 설정                                                             | 표시                                            |
-| -------------------------- | ---------------------------------------------------------------- | ----------------------------------------------- |
-| 일반 조회 (영역/위젯 단위) | 기본값 `throwOnError: false`                                     | 컴포넌트가 `isError` 분기 → `ErrorState` 인라인 |
-| 페이지 핵심 데이터         | `throwOnError: true` opt-in                                      | 가장 가까운 `error.tsx`                         |
-| 없는 리소스                | `throwOnError: (e) => e instanceof ApiError && e.status === 404` | `not-found`                                     |
+`throwOnError` 티어링은 아직 쓰지 않는다. 모든 조회 훅이 기본값 그대로이며, `isError`
+분기는 컴포넌트가 직접 한다. 기본 패턴은 `ErrorState` 인라인 표시이지만, 화면 맥락에 따라
+더 가벼운 처리를 택한 예외가 있다 — 예: 홈의 `GiftSection`은 `role="status"` 텍스트만
+표시하고, 홈 서버 조회 중 비핵심 섹션은 실패를 흡수하고 해당 섹션 자체를 렌더하지 않는다.
+페이지 핵심 데이터를 `error.tsx`로 넘기거나 없는 리소스를 `not-found`로 돌리는 opt-in
+경로는 아직 없다(§10) — 일부 route의 `error.tsx`(예: 상품 상세)는 예기치 않은 렌더링
+오류 전용 안전망이며 조회 에러 표면화 목적이 아니다.
 
 상태별 컴포넌트 책임(Skeleton / EmptyState / ErrorState / `error.tsx`)은 [ui-system.md](ui-system.md) 참조.
 
-### 6.3 전역 `onError` (부수효과 전용)
+### 6.3 전역 에러 처리
 
-화면 렌더와 무관하게 실행되는 공통 처리만 담당한다.
-
-- `401` (`UNAUTHORIZED` / `TOKEN_EXPIRED` / `TOKEN_MISMATCH`) — refresh 흐름(§4.2) 실패가 확정된 경우 로그인 리다이렉트 + access token·Query 캐시 클리어
-- `403` (`FORBIDDEN`) — 권한 안내. 리다이렉트 없음
-- `429` / `5xx` / `RESOURCE_EXPIRED` — 공통 토스트, 필요 시 에러 리포팅
-- 그 외 4xx — 전역 처리 없음(호출부·화면이 담당)
+`queryCache`/`mutationCache`의 전역 `onError` 훅은 아직 도입하지 않았다(§10). 401 처리는
+fetcher와 보호 가드로 역할이 나뉜다 — refresh 실패 시 fetcher(§4.2)는
+`useAuthStore.getState().clear()`로 auth store만 초기화하고, 로그인 화면 리다이렉트는
+`anonymous` 상태를 구독하는 `(protected)/layout.tsx` 가드([routing-and-auth.md](routing-and-auth.md) §5.1)가 이어서 수행한다. Query
+캐시를 별도로 비우는 로직은 없다. 403/429/5xx의 공통 처리도 없고, 필요한 화면·도메인이
+개별 `onError`로 처리한다(§6.4).
 
 ### 6.4 뮤테이션
 
@@ -252,11 +250,11 @@ useQuery({
 
 ## 10. 미확정 / 후속
 
-| 항목                       | 내용                                                                     | 해소 조건                                              |
-| -------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
-| same-origin rewrite 대상   | Vercel rewrite(`/api/*` → 백엔드)의 실제 백엔드 origin                   | 인프라 도메인 확정 후 `vercel.json`/`next.config` 설정 |
-| 페이지네이션 파라미터·응답 | `page`+`size` vs `offset`+`limit`, 응답에 `totalPages` 포함 여부         | BE 반영 (FE 요청 발신 완료)                            |
-| 응답 검증 관측             | `reportSchemaMismatch` 실제 전송 대상                                    | 에러 리포팅 도구 선정 후 (MVP 이후 관측 트랙)          |
-| AI 생성 폴링 간격·타임아웃 | `generations/{id}` 폴링 주기·최대 대기 (WebSocket 아님 — BE 스택에 없음) | AI 상세 화면 설계 + AI 콘텐츠 DTO 계약 확정 후         |
+| 항목                       | 내용                                                                                                                                                                                                                                                                                                                                      | 해소 조건                                                             |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| same-origin rewrite 대상   | Vercel rewrite(`/api/*` → 백엔드)의 실제 백엔드 origin                                                                                                                                                                                                                                                                                    | 인프라 도메인 확정 후 `vercel.json`/`next.config` 설정                |
+| 페이지네이션 파라미터·응답 | `page`+`size` vs `offset`+`limit`, 응답에 `totalPages` 포함 여부                                                                                                                                                                                                                                                                          | BE 반영 (FE 요청 발신 완료)                                           |
+| 전역 에러 처리 파이프라인  | 환경별 파싱 실패 분기(dev throw / prod 기록 후 진행)·관측 유틸리티·`QueryClient` 상태코드별 retry·전역 `queryCache`/`mutationCache` 에러 핸들러·`throwOnError` 티어링을 묶은 설계 초안이 있었으나 전부 미구현. 현재는 균일한 `parse()` throw + 최소 `QueryClient` 옵션(§6.1) + 도메인별 개별 `onError`(§6.4)로 실제 요구를 충분히 처리 중 | 스키마 드리프트 내성·전역 401/429/5xx 처리가 실제로 필요해지면 재검토 |
+| AI 생성 폴링 간격·타임아웃 | `generations/{id}` 폴링 주기·최대 대기 (WebSocket 아님 — BE 스택에 없음)                                                                                                                                                                                                                                                                  | AI 상세 화면 설계 + AI 콘텐츠 DTO 계약 확정 후                        |
 
 `MISMATCH` errorCode(BE `ErrorCode.java` 반영 대기)는 `code: string` unknown-safe 설계로 이미 흡수되어 blocking이 아니다.

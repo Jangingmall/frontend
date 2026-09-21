@@ -53,14 +53,17 @@ API_BASE_URL=http://localhost:3000
 
 확장된 상세 응답은 MSW 플래그가 켜진 경우에만 `productDetailMockDto`로 읽는다. 다음 endpoint는 UI 시연을 위한 **잠정 mock 계약**이다.
 
-| 기능           | 경로                                               |
-| -------------- | -------------------------------------------------- |
-| 찜·재입고 상태 | `GET /api/products/:id/detail-actions`             |
-| 찜             | `PUT /api/products/:id/detail-actions/wishlist`    |
-| 담기           | `POST /api/products/:id/detail-actions/cart-items` |
-| 재입고         | `POST /api/products/:id/detail-actions/restock`    |
-| 후기           | `GET /api/mock/products/:id/reviews`               |
-| 문의           | `GET/POST /api/mock/products/:id/inquiries`        |
+| 기능        | 경로                                               |
+| ----------- | -------------------------------------------------- |
+| 재입고 상태 | `GET /api/products/:id/detail-actions`             |
+| 담기        | `POST /api/products/:id/detail-actions/cart-items` |
+| 재입고      | `POST /api/products/:id/detail-actions/restock`    |
+| 후기        | `GET /api/mock/products/:id/reviews`               |
+| 문의        | `GET/POST /api/mock/products/:id/inquiries`        |
+
+찜 확인·토글은 이 mock 계약에 포함되지 않는다 — mock 모드 여부와 무관하게 항상 실제 계약
+경로(`GET /api/member/me/wishes/{id}`, `POST|DELETE /api/products/{id}/wish`)로 요청한다
+([현재 BE API 연동](product-list-api-integration.md) 참고).
 
 위 표의 시연 전용 endpoint는 실제 모드에서 호출하지 않는다. 실제 후기·찜·공개 문의는 기존 BE 경로로 요청한다. 모의 확장 상태는 MSW 실행 중에만 유지된다. 로그인은 `/login?returnUrl=...`로 연결한다. 찜·담기는 로그인 확인 모달을 거치고, 구매·문의·재입고 신청은 비회원이면 로그인으로 이동한다. 로그인 성공 시 원래 상품의 쿼리·해시를 포함한 경로로 복귀한다. 장바구니·주문·결제·장인 상세·알림 설정 화면 연결은 후속 작업이며, 준비되지 않은 목적지로 이동하거나 임시 주문 성공을 만들지 않는다. 비회원 장바구니의 전역 정책은 변경하지 않았다.
 

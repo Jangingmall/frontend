@@ -45,10 +45,10 @@
 | ~~교환·반품 신청~~         | ~~`/mypage/orders/[orderId]/return`~~            | ~~RT-2~~                      | **폐기** — Figma 실제 화면은 별도 라우트가 아니라 모달(MY-exchange)이다. 라우트 자체를 만들지 않는다                                                                                                                                                                                                                                                                                             |
 | 후기 관리                  | `/mypage/reviews`                                | MY-3                          | 로그인. 구매확정·배송완료 상품 중 미작성 건 안내 + 후기 작성 모달 + 내가 작성한 후기 목록. 구현됨(수정·삭제는 대응 API 없어 범위 밖)                                                                                                                                                                                                                                                             |
 | 상품 문의                  | `/mypage/inquiries`                              | —                             | 로그인. Figma 마이페이지 좌측 내비 항목이지만 MY 번호 체계 밖. placeholder만("준비 중" 안내)                                                                                                                                                                                                                                                                                                     |
-| 찜 목록                    | `/mypage/wishlist`                               | MY-4                          | 로그인. placeholder만("준비 중" 안내)                                                                                                                                                                                                                                                                                                                                                            |
-| 최근 본 상품               | `/mypage/recent`                                 | MY-5                          | 로그인. placeholder만("준비 중" 안내). 찜 목록과 별개 라우트 — Figma 좌측 내비에 두 항목이 분리돼 있다                                                                                                                                                                                                                                                                                           |
+| 찜 목록                    | `/mypage/wishlist`                               | MY-4                          | 로그인. 4열 카드 그리드 + 번호 페이지네이션, 하트로 찜 해제(낙관적 업데이트) + 토스트, 빈 상태 안내. 구현됨                                                                                                                                                                                                                                                                                      |
+| 최근 본 상품               | `/mypage/recent`                                 | MY-5                          | 로그인. 찜 목록과 같은 카드 그리드 재사용, 최근 조회순(정렬 UI 없음), 카드별 찜 토글. 찜 목록과 별개 라우트 — Figma 좌측 내비에 두 항목이 분리돼 있다. 구현됨                                                                                                                                                                                                                                    |
 | 회원정보 수정              | `/mypage/account`                                | MY-6 진입 + ID-1·ID-2·ID-3 탭 | 로그인. `tab=info \| password \| addresses \| payment-methods`. 배송지·결제수단 편집은 모달. 좌측 내비의 "비밀번호 변경" 항목은 소셜 로그인 계정에서 숨긴다(비밀번호가 없는 계정에 죽은 탭을 두지 않으려는 제품 판단 — Figma 소셜 변형은 실제로는 이 항목을 숨기지 않는다). 구현됨(결제수단 탭은 §9 참고)                                                                                        |
-| 설정                       | `/mypage/settings`                               | MY-7                          | 로그인. placeholder만("준비 중" 안내)                                                                                                                                                                                                                                                                                                                                                            |
+| 설정                       | `/mypage/settings`                               | MY-7                          | 로그인. 다크모드·마케팅 수신동의 토글, `GET\|PATCH /api/member/settings` 연동. 구현됨                                                                                                                                                                                                                                                                                                            |
 | 회원 탈퇴                  | `/mypage/withdraw`                               | —                             | 로그인. Figma 시안 자체가 없음(정책·화면 설계 둘 다 미착수) — 개발 백로그 미편성(§9)                                                                                                                                                                                                                                                                                                             |
 | 로그인                     | `/login`                                         | LI-1                          | 내부 상대 `returnUrl`만 허용 (§6)                                                                                                                                                                                                                                                                                                                                                                |
 | 회원가입                   | `/signup`                                        | SU-1 · SU-2                   | 약관 동의 → 정보 입력을 in-page 스텝으로. IA는 약관을 `/signup/terms`로 분리하나 FE는 단일 라우트 스텝                                                                                                                                                                                                                                                                                           |
@@ -95,7 +95,7 @@ BE 계약([PHASE2-2 인증 정책 계약서](https://github.com/Jangingmall/back
 | OAuth          | `GET /api/member/oauth2/{naver\|kakao}` → 302로 `/oauth2/authorization/{provider}`(Spring Security 실제 시작 경로) → 콜백 후 쿠키 기반 티켓 → `POST /api/member/oauth2/exchange`로 교환(`onboardingRequired` 확인) → 최초 로그인이면 `POST /api/member/oauth2/complete-profile`(바디는 `{name, phone, agreements}`뿐 — email·provider는 서버가 쿠키로 식별)로 추가 정보 입력 후 `USER` 부여. BE 소스(`OAuthController`) 직접 대조로 확인 — [api-contract.md](api-contract.md) §9 "OAuth 목업·실제 계약 괴리" |
 | 부팅·새로고침  | 메모리가 비므로 앱 시작 시 **silent refresh 1회** 시도 → 성공 시 세션 복원, 실패 시 비로그인 시작                                                                                                                                                                                                                                                                                                                                                                                                            |
 | 요청 중 만료   | 401 → 클라이언트 fetcher가 refresh(single-flight) 후 원요청 1회 재시도 → refresh도 실패 시 로그아웃 처리                                                                                                                                                                                                                                                                                                                                                                                                     |
-| 로그아웃       | `POST /api/member/logout` (서버 refresh 무효화) → 메모리 access 제거 + Query 캐시 클리어                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 로그아웃       | `api/member/api.ts`의 `logout()`(`POST /api/member/logout`, 서버 refresh 무효화)은 이미 있으나 아직 어떤 UI에도 연결되지 않았다(Figma에 로그아웃 메뉴 디자인이 아직 없음) — 후속 작업에서 연결 시 메모리 access 제거 + Query 캐시 클리어(현재 코드에 없음, 새로 구현 필요)까지 함께 한다                                                                                                                                                                                                                     |
 | `ARTISAN` 전환 | `POST /api/member/artisans/applications` → `ADMIN` 승인 후 role 전환                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 ### 4.1 인증 상태 저장 — `stores/auth.ts` (Zustand)
@@ -104,17 +104,21 @@ BE 계약([PHASE2-2 인증 정책 계약서](https://github.com/Jangingmall/back
 
 ```ts
 type Role = "USER" | "ARTISAN" | "ADMIN";
+type AuthUser = { id: number; role: Role; name: string };
 
 interface AuthState {
   status: "loading" | "authenticated" | "anonymous";
   accessToken: string | null;
-  user: { id: number; role: Role; name: string } | null;
-  setSession: (token: string, user: AuthState["user"]) => void;
+  user: AuthUser | null;
+  /** 로그인·부팅 복원 성공: 토큰+user 확보(user는 non-null). */
+  setSession: (token: string, user: AuthUser) => void;
+  /** 401 자동 refresh 성공: access token만 교체, `status`·`user`는 유지. */
+  setAccessToken: (token: string) => void;
   clear: () => void;
 }
 ```
 
-- `lib/http/client.ts`가 `useAuthStore.getState().accessToken`을 동기로 읽어 헤더에 주입한다. 401 refresh 성공 → `setSession`, 실패 → `clear`.
+- `lib/http/client.ts`가 `useAuthStore.getState().accessToken`을 동기로 읽어 헤더에 주입한다. 401 refresh 성공 → `setAccessToken`(토큰만 교체, `GET /me` 재호출 없음), 실패 → `clear`.
 - 세부 fetcher 동작은 [data-layer.md](data-layer.md) §4.2.
 - `role`은 배열이 아니라 단일 값이다. BE `MemberProfileResponse.role`이 `MemberRole` 단일 enum이라(판매자는 `"ARTISAN"` 하나) — 2026-09-15 BE 레포(`Jangingmall/backend`) 직접 대조로 확인.
 
@@ -176,14 +180,17 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
 }
 ```
 
-### 5.2 `(seller)/layout.tsx`
+### 5.2 `(seller)/layout.tsx` — 설계 초안, 아직 구현 전
 
-로그인 가드 + role 검사. 권한 부족은 **리다이렉트하지 않고** 403 안내를 렌더한다.
+판매자 트랙은 다른 팀원 담당이라 `(seller)` route group과 `ForbiddenNotice`
+컴포넌트 둘 다 코드베이스에 아직 없다. Figma 근거도 없는 가정 설계다 — 판매자 트랙
+착수 시 재검토가 필요하다. 아래는 의도한 동작 초안이다: 로그인 가드 + role 검사,
+권한 부족은 **리다이렉트하지 않고** 403 안내를 렌더한다.
 
 ```tsx
 const { status, user } = useAuthStore();
-if (status === "authenticated" && !user!.roles.includes("ARTISAN")) {
-  return <ForbiddenNotice />; // components/common/
+if (status === "authenticated" && user?.role !== "ARTISAN") {
+  return <ForbiddenNotice />; // components/common/ — 설계·구현 전
 }
 ```
 
