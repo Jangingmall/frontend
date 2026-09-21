@@ -88,7 +88,10 @@ src/lib/http/
 - **401 처리**: `UNAUTHORIZED` 응답을 받으면
   1. 진행 중인 refresh가 없으면 `POST /api/member/token/refresh` 호출 (single-flight — 동시 다발 401은 하나의 refresh Promise를 공유)
   2. refresh 성공 → 새 access token으로 원요청 1회 재시도
-  3. refresh 실패 → `ApiError`를 그대로 전파하고, 전역 처리(§6)가 로그인 리다이렉트 + 토큰·캐시 클리어를 수행
+  3. refresh 실패 → `useAuthStore.getState().clear()`로 auth store만 초기화하고
+     `ApiError`를 그대로 전파한다. 로그인 화면 리다이렉트는 `anonymous` 상태를 구독하는
+     보호 가드([routing-and-auth.md](routing-and-auth.md) §5.1)가 이어서 수행한다. Query
+     캐시 정리는 없다(§6.3)
 - 재시도는 401 refresh 경로에서 1회로 한정한다. 그 외 재시도는 TanStack Query가 담당(§6).
 
 ### 4.3 응답 검증·변환
