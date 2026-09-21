@@ -90,13 +90,13 @@ PD Figma 변수 변경·게시
 
 ### 5.1 Base Components — 확정 대상
 
-| 대상          | 상태 | 비고                                  |
-| ------------- | ---- | ------------------------------------- |
-| `Button`      | 확정 | `src/components/ui/button.tsx` 반입됨 |
-| `TextField`   | 확정 |                                       |
-| `SearchField` | 확정 | `TextField` 확장·조합                 |
-| `Skeleton`    | 확정 | §7                                    |
-| `BoardRow`    | 보류 | 사용 방식 확인 후 Base 여부 확정      |
+| 대상          | 상태 | 비고                                                                                                         |
+| ------------- | ---- | ------------------------------------------------------------------------------------------------------------ |
+| `Button`      | 확정 | `src/components/ui/button.tsx` 반입됨                                                                        |
+| `InputField`  | 확정 | `src/components/ui/input-field.tsx` 반입됨                                                                   |
+| `SearchField` | 확정 | `InputField`와 별개로 `@base-ui/react/input`을 직접 감싼 독립 컴포넌트(`src/components/ui/search-field.tsx`) |
+| `Skeleton`    | 확정 | §7                                                                                                           |
+| `BoardRow`    | 보류 | 사용 방식 확인 후 Base 여부 확정                                                                             |
 
 ### 5.2 Shared Components — 승격 기준
 
@@ -109,13 +109,13 @@ PD Figma 변수 변경·게시
 
 겉모양만 비슷하거나 화면별 예외가 많거나 도메인 데이터에 강결합이면 성급히 승격하지 않는다.
 
-| 대상              | 상태 | 비고                                                                                     |
-| ----------------- | ---- | ---------------------------------------------------------------------------------------- |
-| `Header`          | 확정 | 인증 영역은 부팅 refresh 동안 스켈레톤 → [routing-and-auth.md](routing-and-auth.md) §4.2 |
-| `Footer`          | 확정 |                                                                                          |
-| `EmptyState`      | 확정 | §7                                                                                       |
-| `ErrorState`      | 확정 | §7                                                                                       |
-| `ForbiddenNotice` | 확정 | 403 권한 안내 → [routing-and-auth.md](routing-and-auth.md) §5.2                          |
+| 대상              | 상태   | 비고                                                                                                     |
+| ----------------- | ------ | -------------------------------------------------------------------------------------------------------- |
+| `Header`          | 확정   | 인증 영역은 부팅 refresh 동안 스켈레톤 → [routing-and-auth.md](routing-and-auth.md) §4.2                 |
+| `Footer`          | 확정   |                                                                                                          |
+| `EmptyState`      | 확정   | §7                                                                                                       |
+| `ErrorState`      | 확정   | §7                                                                                                       |
+| `ForbiddenNotice` | 미구현 | 403 권한 안내 전용 컴포넌트는 아직 없음(`FORBIDDEN` 에러코드 상수만 존재). 실제 화면에서 필요해지면 구현 |
 
 ## 6. 아이콘
 
