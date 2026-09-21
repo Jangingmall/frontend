@@ -19,11 +19,17 @@
 - 비회원 구매는 로그인 안내 후 `/login?returnUrl=%2Fcart`로 이동한다. 로그인 복귀 후 구매 버튼을 다시 누르는 계약이다.
 - 장인 이름은 후속 상세 화면이 없어 준비 중 Toast를 표시한다.
 
-## 결제 후속 PR 의존성
+## 장바구니 → 체크아웃 연결
 
-**이 카트 PR에는 checkout route가 없다.** 로그인한 사용자가 구매하면 현재 화면에서 준비 중 안내를 표시한다. CO-1 후속 PR과 통합할 때 `onCheckout`을 연결해 `usePurchasePreviewStore.beginCheckout`으로 선택된 구매 가능 항목의 깊은 복사본을 저장하고 `/checkout/ui-preview-order`로 이동하도록 한다. 개인 입력이나 결제정보는 URL/스토리지에 넣지 않는다.
+체크아웃 route(`/checkout/[orderId]`)는 이미 구현돼 있으나, 장바구니 쪽에서 그리로 넘어가는
+연결은 아직 배선되지 않았다 — `CartRoute`가 `CartPage`에 `onCheckout`을 넘기지 않아, 로그인한
+사용자가 "구매하기"를 눌러도 여전히 준비 중 안내만 뜬다. 연결하려면 `onCheckout`을 구현해
+`usePurchasePreviewStore.beginCheckout`으로 선택된 구매 가능 항목의 깊은 복사본을 저장하고
+`/checkout/ui-preview-order`로 이동하도록 한다(체크아웃 쪽 `CheckoutEntry`는 이미 이
+`PURCHASE_PREVIEW_ORDER_ID`를 mock 진입점으로 기대하고 있다). 개인 입력이나 결제정보는
+URL/스토리지에 넣지 않는다.
 
-공통 구매 부품·store·ProductOrder 확장은 route에 의존하지 않는 선행 커밋으로 분리되어 checkout/complete 브랜치에서 재사용한다. 소비자 화면에 시나리오 선택 컨트롤을 추가하지 않았다.
+공통 구매 부품·store·ProductOrder 확장은 route에 의존하지 않는 선행 커밋으로 분리되어 checkout/complete 화면에서 재사용된다.
 
 ## Storybook과 검증
 
