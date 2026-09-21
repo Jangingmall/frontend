@@ -104,13 +104,14 @@ BE 계약([PHASE2-2 인증 정책 계약서](https://github.com/Jangingmall/back
 
 ```ts
 type Role = "USER" | "ARTISAN" | "ADMIN";
+type AuthUser = { id: number; role: Role; name: string };
 
 interface AuthState {
   status: "loading" | "authenticated" | "anonymous";
   accessToken: string | null;
-  user: { id: number; role: Role; name: string } | null;
-  /** 로그인·부팅 복원 성공: 토큰+user 확보. */
-  setSession: (token: string, user: AuthState["user"]) => void;
+  user: AuthUser | null;
+  /** 로그인·부팅 복원 성공: 토큰+user 확보(user는 non-null). */
+  setSession: (token: string, user: AuthUser) => void;
   /** 401 자동 refresh 성공: access token만 교체, `status`·`user`는 유지. */
   setAccessToken: (token: string) => void;
   clear: () => void;
