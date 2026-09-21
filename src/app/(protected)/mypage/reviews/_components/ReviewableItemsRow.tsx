@@ -65,7 +65,7 @@ function ReviewableItemCard({
           >
             후기 작성하기
           </Button>
-          <span className="absolute -top-2.5 right-0 z-10 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b whitespace-nowrap text-font-dark">
+          <span className="absolute -top-4 right-0 z-10 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b whitespace-nowrap text-font-dark">
             적립금 + {item.rewardPoints}원
           </span>
         </div>
