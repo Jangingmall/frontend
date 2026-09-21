@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect } from "react";
 
 import { ProductCardGrid } from "@/components/product/ProductCardGrid";
 import { Toast } from "@/components/ui/toast";
+import { useAutoDismissMessage } from "@/hooks/use-auto-dismiss-message";
 import { useRemoveWishMutation } from "@/queries/wishlist/mutations";
 import { useWishlistQuery } from "@/queries/wishlist/queries";
-
-const REMOVED_TOAST_DURATION_MS = 3000;
 
 /**
  * 마이페이지 찜 목록 화면(Figma MY-4, `/mypage/wishlist`) — 4열 카드 그리드, 전부 이미
@@ -20,7 +19,7 @@ const REMOVED_TOAST_DURATION_MS = 3000;
 export default function MypageWishlistPage() {
   const searchParams = useSearchParams();
   const page = Math.max(1, Number(searchParams.get("page") ?? 1) || 1);
-  const [showRemovedToast, setShowRemovedToast] = useState(false);
+  const removedToast = useAutoDismissMessage();
 
   const query = useWishlistQuery(page);
   const removeWish = useRemoveWishMutation(page);
@@ -36,15 +35,19 @@ export default function MypageWishlistPage() {
     );
   }
 
+  // 현재 페이지의 마지막 항목을 해제하면 서버 totalPages가 줄어 지금 page가 범위를
+  // 벗어날 수 있다 — 그대로 두면 앞 페이지에 항목이 남아 있어도 빈 상태로 고착된다
+  // (Codex 리뷰 F1). 새 totalPages로 되돌린다.
+  useEffect(() => {
+    if (!query.data) return;
+    if (query.data.totalCount > 0 && page > query.data.totalPages) {
+      updatePage(query.data.totalPages);
+    }
+  }, [query.data, page]);
+
   function handleToggle(productId: number) {
     removeWish.mutate(productId, {
-      onSuccess: () => {
-        setShowRemovedToast(true);
-        window.setTimeout(
-          () => setShowRemovedToast(false),
-          REMOVED_TOAST_DURATION_MS,
-        );
-      },
+      onSuccess: () => removedToast.show("찜 목록에서 삭제되었습니다."),
     });
   }
 
@@ -71,9 +74,9 @@ export default function MypageWishlistPage() {
           onToggle: handleToggle,
         }}
       />
-      {showRemovedToast && (
+      {removedToast.message && (
         <div className="fixed inset-x-4 bottom-6 z-40 flex justify-center">
-          <Toast>찜 목록에서 삭제되었습니다.</Toast>
+          <Toast>{removedToast.message}</Toast>
         </div>
       )}
     </>

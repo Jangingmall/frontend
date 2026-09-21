@@ -5,8 +5,24 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { WISH_FIXTURES } from "@/api/wishlist/mock/fixtures";
+import type { WishlistProductDto } from "@/api/wishlist/validation";
 
 import MypageWishlistPage from "./page";
+
+/** 페이지 크기(20)를 넘겨 2페이지짜리 시드를 만들 때 쓰는 필러 항목. */
+function fillerWish(productId: number, name: string): WishlistProductDto {
+  return {
+    productId,
+    name,
+    price: 10000,
+    thumbnail: [],
+    status: "ON_SALE",
+    rating: null,
+    artisanId: 900,
+    artisanName: "필러 장인",
+    primaryBadge: null,
+  };
+}
 
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(window.location.search),
@@ -67,5 +83,32 @@ describe("MypageWishlistPage", () => {
     if (!nextPageButton) return; // 시드 데이터가 한 페이지에 다 들어가면 스킵
     await user.click(nextPageButton);
     expect(new URLSearchParams(window.location.search).get("page")).toBe("2");
+  });
+
+  it("마지막 페이지의 마지막 항목을 해제하면 앞 페이지로 자동 이동한다 (Codex 리뷰 F1)", async () => {
+    // 20개(1페이지) + 2페이지 전용 1개 = 총 21개, 2페이지 크기 1.
+    WISH_FIXTURES.push(
+      ...Array.from({ length: 12 }, (_, i) =>
+        fillerWish(9000 + i, `필러 상품 ${i}`),
+      ),
+      fillerWish(9999, "마지막 페이지 상품"),
+    );
+    expect(WISH_FIXTURES).toHaveLength(21);
+
+    const user = userEvent.setup();
+    window.history.replaceState(null, "", "/mypage/wishlist?page=2");
+    renderPage();
+
+    await screen.findByText("마지막 페이지 상품");
+    await user.click(
+      screen.getByRole("button", { name: "마지막 페이지 상품 찜 취소" }),
+    );
+
+    await waitFor(() =>
+      expect(
+        new URLSearchParams(window.location.search).get("page"),
+      ).toBeNull(),
+    );
+    expect(await screen.findByText("백자 달항아리")).toBeInTheDocument();
   });
 });

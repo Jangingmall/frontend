@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
 
 import { ProductCardGrid } from "@/components/product/ProductCardGrid";
 import { Toast } from "@/components/ui/toast";
+import { useAutoDismissMessage } from "@/hooks/use-auto-dismiss-message";
 import { useRecentViewsQuery } from "@/queries/recent-views/queries";
 import { useToggleWishMutation } from "@/queries/wishlist/mutations";
 import { useWishedIdsQuery } from "@/queries/wishlist/queries";
-
-const WISH_TOAST_DURATION_MS = 3000;
 
 /**
  * 마이페이지 최근 본 상품 화면(Figma MY-5, `/mypage/recent`) — 찜 목록과 같은 4열 카드
@@ -21,7 +19,7 @@ const WISH_TOAST_DURATION_MS = 3000;
 export default function MypageRecentPage() {
   const searchParams = useSearchParams();
   const page = Math.max(1, Number(searchParams.get("page") ?? 1) || 1);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const wishToast = useAutoDismissMessage();
 
   const query = useRecentViewsQuery(page);
   const wishedIdsQuery = useWishedIdsQuery(true);
@@ -43,17 +41,12 @@ export default function MypageRecentPage() {
     toggleWish.mutate(
       { productId, wished: wasWished },
       {
-        onSuccess: () => {
-          setToastMessage(
+        onSuccess: () =>
+          wishToast.show(
             wasWished
               ? "찜 목록에서 삭제되었습니다."
               : "찜 목록에 추가했습니다.",
-          );
-          window.setTimeout(
-            () => setToastMessage(null),
-            WISH_TOAST_DURATION_MS,
-          );
-        },
+          ),
       },
     );
   }
@@ -81,9 +74,9 @@ export default function MypageRecentPage() {
           onToggle: handleToggle,
         }}
       />
-      {toastMessage && (
+      {wishToast.message && (
         <div className="fixed inset-x-4 bottom-6 z-40 flex justify-center">
-          <Toast>{toastMessage}</Toast>
+          <Toast>{wishToast.message}</Toast>
         </div>
       )}
     </>
