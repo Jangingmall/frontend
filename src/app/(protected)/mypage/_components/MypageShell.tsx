@@ -26,6 +26,10 @@ import { cn } from "@/lib/utils";
  * 바 밑(→제목)과 제목 밑(→2단 행)에 각각 하나씩, 총 두 번 나온다(2026-09-17
  * `get_design_context` 대조). `py-12`(navbar↔제목)만 맞추고 이 gap을 24px로 둔 채
  * 넘어갔던 걸 정정.
+ *
+ * 배경은 `bg-bg-subtle`(#fafbfc) — Figma MY-3 루트 프레임이 이 색을 깔고 카드들만
+ * `bg-bg-default`(흰색)로 얹는다. 이 셸이 모든 `/mypage/*` 화면의 공통 뼈대라 지금까지
+ * 배경색 자체가 빠져 있었다(2026-09-21 `get_design_context` 대조로 발견).
  */
 interface MypageShellProps {
   title: ReactNode;
@@ -42,7 +46,7 @@ function MypageShell({
   contentClassName,
 }: MypageShellProps) {
   return (
-    <div className="mx-auto flex w-full max-w-360 flex-col gap-12 px-8 py-12">
+    <div className="mx-auto flex w-full max-w-360 flex-col gap-12 bg-bg-subtle px-8 py-12">
       {title}
       <div className="flex gap-6">
         {sidebar}
