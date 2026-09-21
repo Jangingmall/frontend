@@ -4,7 +4,7 @@ import { orderDetailFixtures, orderFixtures } from "@/api/orders/mock/fixtures";
 import {
   createReviewResponseDto,
   myReviewPageDto,
-  reviewableItemDto,
+  reviewableItemsPageDto,
   reviewPageDto,
 } from "@/api/reviews/validation";
 import { mockError, mockOk } from "@/mocks/envelope";
@@ -71,13 +71,19 @@ export const reviewHandlers = [
   }),
 
   /**
-   * `GET /api/member/me/reviews/reviewable` — 목업 전용(대응 BE 엔드포인트 없음). 매번
-   * `orderDetailFixtures`에서 실시간으로 계산한다(정적 배열로 미리 만들어두면 후기 작성
-   * 직후에도 계속 보이는 stale 문제가 생긴다) — DELIVERED 상태(구매확정 여부 무관, §BE
-   * 목록 응답엔 이 구분이 없다)면서 아직 `reviewId`가 없는 아이템만 뽑는다.
+   * `GET /api/member/me/reviews/writable` — 실제 BE 엔드포인트가 있다(`validation.ts`
+   * 주석 참고). 매번 `orderDetailFixtures`에서 실시간으로 계산한다(정적 배열로 미리
+   * 만들어두면 후기 작성 직후에도 계속 보이는 stale 문제가 생긴다) — DELIVERED
+   * 상태(구매확정 여부 무관, BE 목록 응답엔 이 구분이 없다)면서 아직 `reviewId`가 없는
+   * 아이템만 뽑는다. BE가 아직 안 주는 `options`·`purchasedAt`·`rewardPoints`는 mock이
+   * 목표 계약대로 채운다.
    */
-  http.get("*/api/member/me/reviews/reviewable", () => {
-    const items = [...orderDetailFixtures.values()]
+  http.get("*/api/member/me/reviews/writable", ({ request }) => {
+    const search = new URL(request.url).searchParams;
+    // BE 0-base — 목업도 그대로 0-base로 다룬다(`api/orders/mock/handlers.ts`와 동일 패턴).
+    const page = Math.max(0, Number(search.get("page")) || 0);
+    const size = Math.min(100, Math.max(1, Number(search.get("size")) || 20));
+    const all = [...orderDetailFixtures.values()]
       .filter((detail) => detail.status === "DELIVERED")
       .flatMap((detail) =>
         detail.items
@@ -92,21 +98,44 @@ export const reviewHandlers = [
             rewardPoints: 100,
           })),
       );
-    return mockOk(reviewableItemDto.array().parse(items));
+    const offset = page * size;
+    const content = all.slice(offset, offset + size);
+    const totalPages = Math.ceil(all.length / size);
+    return mockOk(
+      reviewableItemsPageDto.parse({
+        content,
+        totalElements: all.length,
+        totalPages,
+        size,
+        number: page,
+        first: page === 0,
+        last: page >= totalPages - 1,
+        empty: content.length === 0,
+      }),
+    );
   }),
 
-  /** `GET /api/member/me/reviews` — 목업 전용(대응 BE 엔드포인트 없음). */
+  /** `GET /api/member/me/reviews` — 실제 BE 엔드포인트가 있다(`validation.ts` 주석 참고). */
   http.get("*/api/member/me/reviews", ({ request }) => {
     const search = new URL(request.url).searchParams;
-    const page = Math.max(1, Number(search.get("page")) || 1);
-    const size = Math.max(1, Number(search.get("size")) || 5);
-    const sorted = [...MY_REVIEW_FIXTURES].sort((a, b) =>
-      b.createdAt.localeCompare(a.createdAt),
-    );
+    const page = Math.max(0, Number(search.get("page")) || 0);
+    const size = Math.min(100, Math.max(1, Number(search.get("size")) || 20));
+    const sorted = [...MY_REVIEW_FIXTURES]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map(({ id, ...rest }) => ({ reviewId: id, ...rest }));
+    const offset = page * size;
+    const content = sorted.slice(offset, offset + size);
+    const totalPages = Math.ceil(sorted.length / size);
     return mockOk(
       myReviewPageDto.parse({
-        items: sorted.slice((page - 1) * size, page * size),
-        totalCount: sorted.length,
+        content,
+        totalElements: sorted.length,
+        totalPages,
+        size,
+        number: page,
+        first: page === 0,
+        last: page >= totalPages - 1,
+        empty: content.length === 0,
       }),
     );
   }),

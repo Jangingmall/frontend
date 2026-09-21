@@ -10,7 +10,7 @@ import {
   backendReviewPageDto,
   createReviewResponseDto,
   myReviewPageDto,
-  reviewableItemDto,
+  reviewableItemsPageDto,
   reviewPageDto,
 } from "./validation";
 
@@ -75,15 +75,21 @@ export async function fetchReviews(
   return mapReviewPage(reviewPageDto.parse(data));
 }
 
-/** "빠른 후기 작성" 카드 목록 — 목업 전용(대응 BE 엔드포인트 없음). */
+/**
+ * "빠른 후기 작성" 카드 목록 — 실제 BE 계약 그대로(`GET /api/member/me/reviews/writable`,
+ * Spring Page). 가로 스크롤 카드라 페이지네이션 없이 기본 페이지(0)만 가져온다.
+ */
 export async function fetchReviewableItems(): Promise<ReviewableItem[]> {
-  const data = await clientFetch<unknown>("/api/member/me/reviews/reviewable");
-  return reviewableItemDto.array().parse(data).map(mapReviewableItem);
+  const data = await clientFetch<unknown>("/api/member/me/reviews/writable");
+  return reviewableItemsPageDto.parse(data).content.map(mapReviewableItem);
 }
 
-/** "내가 작성한 후기" 목록 — 목업 전용(대응 BE 엔드포인트 없음). */
+/** "내가 작성한 후기" 목록 — 실제 BE 계약 그대로(`GET /api/member/me/reviews`, Spring Page — `page`는 0-base). */
 export async function fetchMyReviews(page: number): Promise<MyReviewPage> {
-  const search = new URLSearchParams({ page: String(page), size: "5" });
+  const search = new URLSearchParams({
+    page: String(page - 1),
+    size: "5",
+  });
   const data = await clientFetch<unknown>(`/api/member/me/reviews?${search}`);
   return mapMyReviewPage(myReviewPageDto.parse(data));
 }

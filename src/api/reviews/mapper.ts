@@ -42,9 +42,9 @@ export function mapReviewableItem(dto: ReviewableItemDto): ReviewableItem {
   };
 }
 
-function mapMyReview(dto: MyReviewPageDto["items"][number]): MyReview {
+function mapMyReview(dto: MyReviewPageDto["content"][number]): MyReview {
   return {
-    id: dto.id,
+    id: dto.reviewId,
     orderItemId: dto.orderItemId,
     productId: dto.productId,
     productName: dto.productName,
@@ -58,7 +58,7 @@ function mapMyReview(dto: MyReviewPageDto["items"][number]): MyReview {
 
 export function mapMyReviewPage(dto: MyReviewPageDto): MyReviewPage {
   return {
-    items: dto.items.map(mapMyReview),
-    totalCount: dto.totalCount,
+    items: dto.content.map(mapMyReview),
+    totalCount: dto.totalElements,
   };
 }
