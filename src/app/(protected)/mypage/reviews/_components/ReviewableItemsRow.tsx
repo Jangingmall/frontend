@@ -68,7 +68,30 @@ function ReviewableItemCard({
           <div className="absolute -top-4 left-1/2 z-10 -translate-x-1/2">
             <div className="relative rounded-xs bg-(--button-jade) px-2 py-1 text-center text-caption-b whitespace-nowrap text-font-dark">
               적립금 + {item.rewardPoints}원
-              <div className="absolute top-full left-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-(--button-jade)" />
+              {/* 말풍선 꼬리 — Figma "Vector 156"(1271:53686)을 그대로 옮김: 뱃지 왼쪽에 치우쳐
+                  아래로 5px 삐져나온다(대칭 삼각형이 아니라 비대칭 잎사귀 모양). */}
+              <div
+                className="absolute top-[20px] left-[3px] flex h-[7px] w-[5px] items-center justify-center overflow-hidden"
+                style={{ containerType: "size" }}
+              >
+                <div className="h-[100cqw] w-[100cqh] flex-none -scale-x-100 rotate-90">
+                  <div className="relative size-full">
+                    <div className="absolute inset-[18.83%_0_0_30.27%]">
+                      <svg
+                        viewBox="0 0 4.88144 4.05857"
+                        fill="none"
+                        className="block size-full"
+                        aria-hidden
+                      >
+                        <path
+                          d="M0.420666 2.24484L3.3002 0.188029C3.96207 -0.284734 4.88144 0.188391 4.88144 1.00176V4.05857H1.0019C0.0290647 4.05857 -0.370966 2.81029 0.420666 2.24484Z"
+                          fill="var(--button-jade)"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
