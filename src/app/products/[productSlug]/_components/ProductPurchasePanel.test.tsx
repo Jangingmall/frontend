@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { http } from "msw";
+import { http, HttpResponse } from "msw";
 import { beforeEach, expect, it, vi } from "vitest";
 
 import {
@@ -95,13 +95,10 @@ it("loads real wish state and waits for server confirmation before changing it",
     .setSession("mock-access-token", { id: 1, name: "구매자", role: "USER" });
   let wished = true;
   server.use(
-    http.get("*/api/member/me/wishes", () =>
-      mockOk({
-        items: wished ? [{ productId: 102 }] : [],
-        nextCursor: null,
-        hasNext: false,
-        totalCount: wished ? 1 : 0,
-      }),
+    http.get("*/api/member/me/wishes/102", () =>
+      wished
+        ? new HttpResponse(null, { status: 204 })
+        : new HttpResponse(null, { status: 404 }),
     ),
     http.delete("*/api/products/102/wish", () => {
       wished = false;
@@ -218,7 +215,11 @@ it("shows a generated no-gift choice while excluding it from the cart request", 
 it("rolls wishlist back when the server rejects the change", async () => {
   server.use(...productDetailActionHandlers);
   server.use(
-    http.put("*/api/products/:productId/detail-actions/wishlist", () =>
+    http.get(
+      "*/api/member/me/wishes/102",
+      () => new HttpResponse(null, { status: 404 }),
+    ),
+    http.post("*/api/products/102/wish", () =>
       mockError(500, "INTERNAL_ERROR"),
     ),
   );
