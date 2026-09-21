@@ -151,17 +151,18 @@ src/app/
 src/components/
   ui/
   common/
-  product/
-  artisan/
+  member/
   order/
+  product/
+  review/
 ```
 
-| 위치                   | 책임                                     | 예시                                     |
-| ---------------------- | ---------------------------------------- | ---------------------------------------- |
-| `components/ui/`       | 디자인 시스템 기반의 UI 요소             | Button, TextField, SearchField, Skeleton |
-| `components/common/`   | 도메인에 종속되지 않는 공용 UI·상태 표현 | Header, Footer, EmptyState, ErrorState   |
-| `components/{domain}/` | 여러 화면에서 재사용되는 도메인 UI       | ProductCard, ProductPrice, ArtisanCard   |
-| `app/.../_components/` | 해당 route에서만 사용하는 화면 전용 UI   | 상품 상세 갤러리, 결제 주문 요약 블록    |
+| 위치                   | 책임                                     | 예시                                      |
+| ---------------------- | ---------------------------------------- | ----------------------------------------- |
+| `components/ui/`       | 디자인 시스템 기반의 UI 요소             | Button, InputField, SearchField, Skeleton |
+| `components/common/`   | 도메인에 종속되지 않는 공용 UI·상태 표현 | Header, Footer, EmptyState, ErrorState    |
+| `components/{domain}/` | 여러 화면에서 재사용되는 도메인 UI       | ProductCard, AddressCard, OrderInfoBar    |
+| `app/.../_components/` | 해당 route에서만 사용하는 화면 전용 UI   | 상품 상세 갤러리, 결제 주문 요약 블록     |
 
 `components/ui/`와 `components/common/`은 API, Query, Zustand store, 도메인 컴포넌트에 의존하지 않는다. 재사용 가능한 도메인 컴포넌트는 가능한 한 데이터를 props로 받고, 서버 상태 조회는 화면 조합 코드가 담당한다.
 
