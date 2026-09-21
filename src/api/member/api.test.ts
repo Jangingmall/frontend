@@ -11,6 +11,7 @@ import {
   fetchAddresses,
   fetchMe,
   fetchMemberProfile,
+  fetchSettings,
   login,
   logout,
   refreshToken,
@@ -18,6 +19,7 @@ import {
   signup,
   updateAddress,
   updateMemberProfile,
+  updateSettings,
   verifyEmailCode,
   verifyPassword,
 } from "./api";
@@ -32,6 +34,7 @@ import {
   __resetEmailVerificationState,
   __resetLoginRateLimit,
   resetAddressMock,
+  resetSettingsMock,
 } from "./mock/handlers";
 import { setMockIdentity } from "./mock/mock-identity";
 
@@ -41,6 +44,7 @@ beforeEach(() => {
   __resetLoginRateLimit();
   __resetEmailVerificationState();
   resetAddressMock();
+  resetSettingsMock();
   // fetchMe·refreshToken 테스트는 "이미 로그인 이력이 있다" 전제다 — 명시적으로 깐다(이전엔
   // 앞선 `login()` 테스트가 실행되며 우연히 같은 값을 남겨 통과했을 뿐이었다. §client.test.ts).
   setMockIdentity("USER");
@@ -451,5 +455,35 @@ describe("member addresses api", () => {
       name: "ApiError",
       status: 404,
     });
+  });
+});
+
+describe("member settings api", () => {
+  beforeEach(() => {
+    useAuthStore.setState({ accessToken: SEED_ACCESS_TOKEN });
+  });
+
+  it("fetchSettings: 시드된 기본값을 반환한다", async () => {
+    await expect(fetchSettings()).resolves.toEqual({
+      darkMode: false,
+      marketing: true,
+    });
+  });
+
+  it("updateSettings: 넘긴 필드만 갱신하고 나머지는 유지한다", async () => {
+    await expect(updateSettings({ darkMode: true })).resolves.toEqual({
+      darkMode: true,
+      marketing: true,
+    });
+    await expect(fetchSettings()).resolves.toEqual({
+      darkMode: true,
+      marketing: true,
+    });
+  });
+
+  it("updateSettings: 여러 필드를 한 번에 갱신한다", async () => {
+    await expect(
+      updateSettings({ darkMode: true, marketing: false }),
+    ).resolves.toEqual({ darkMode: true, marketing: false });
   });
 });

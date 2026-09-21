@@ -17,11 +17,12 @@ import {
   updateAddress,
   updateMemberProfile,
   type UpdateMemberProfileRequest,
+  updateSettings,
   verifyEmailCode,
   verifyPassword,
 } from "@/api/member/api";
 import type { OAuthProvider } from "@/types/auth";
-import type { AddressInput } from "@/types/member";
+import type { AddressInput, MemberSettings } from "@/types/member";
 
 import { memberKeys } from "./keys";
 
@@ -147,6 +148,38 @@ export function useDeleteAddressMutation() {
     mutationFn: (addressId: number) => deleteAddress(addressId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: memberKeys.addresses() });
+    },
+  });
+}
+
+/**
+ * 설정 변경 mutation. 토글은 즉시성이 중요하고 실패 확률이 낮은 상호작용이라
+ * 낙관적 업데이트를 적용한다(docs/data-layer.md §6.6) — `onMutate` 스냅샷 → `onError`
+ * 롤백 → `onSettled` 무효화.
+ */
+export function useUpdateSettingsMutation() {
+  const queryClient = useQueryClient();
+  const queryKey = memberKeys.settings();
+  return useMutation({
+    mutationFn: (input: Partial<MemberSettings>) => updateSettings(input),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<MemberSettings>(queryKey);
+      if (previous) {
+        queryClient.setQueryData(queryKey, { ...previous, ...input });
+      }
+      return { previous };
+    },
+    onSuccess: (result) => {
+      queryClient.setQueryData(queryKey, result);
+    },
+    onError: (_error, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey, context.previous);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey });
     },
   });
 }

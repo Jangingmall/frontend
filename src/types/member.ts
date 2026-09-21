@@ -40,3 +40,9 @@ export interface AddressInput {
   address2: string;
   isDefault: boolean;
 }
+
+/** `GET|PATCH /api/member/settings` — 화면·알림 설정. BE 엔티티엔 이 두 필드뿐이다. */
+export interface MemberSettings {
+  darkMode: boolean;
+  marketing: boolean;
+}

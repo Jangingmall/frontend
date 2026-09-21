@@ -125,3 +125,16 @@ export const addressListResponseDto = z.array(addressResponseDto);
 
 export type AddressResponseDto = z.infer<typeof addressResponseDto>;
 export type AddressListResponseDto = z.infer<typeof addressListResponseDto>;
+
+/**
+ * 설정 응답. `GET|PATCH /api/member/settings` 공유 — BE `MemberActivityService.Settings
+ * (darkMode, marketing)`를 직접 대조해 확정한 필드. 그 이상의 필드(알림 종류별 on/off)는
+ * BE에 없다.
+ */
+export const memberSettingsResponseDto = z
+  .object({ darkMode: z.boolean(), marketing: z.boolean() })
+  .passthrough();
+
+export type MemberSettingsResponseDto = z.infer<
+  typeof memberSettingsResponseDto
+>;

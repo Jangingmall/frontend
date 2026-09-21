@@ -1,6 +1,7 @@
 import type {
   AddressResponseDto,
   MemberProfileResponseDto,
+  MemberSettingsResponseDto,
 } from "@/api/member/validation";
 import type { Role } from "@/types/auth";
 
@@ -101,3 +102,9 @@ export function createAddressFixtures(memberId: number): AddressResponseDto[] {
     },
   ];
 }
+
+/** 회원별 초기 설정 시드. Figma가 이미 동의된 상태로 그려서 데모 시나리오와 맞춘다. */
+export const DEFAULT_MEMBER_SETTINGS: MemberSettingsResponseDto = {
+  darkMode: false,
+  marketing: true,
+};

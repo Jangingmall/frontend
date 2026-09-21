@@ -2,9 +2,19 @@ import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import { clientFetch, refreshAccessToken } from "@/lib/http/client";
 import type { AuthUser, OAuthProvider } from "@/types/auth";
-import type { Address, AddressInput, MemberProfile } from "@/types/member";
+import type {
+  Address,
+  AddressInput,
+  MemberProfile,
+  MemberSettings,
+} from "@/types/member";
 
-import { mapAddress, mapMemberDetail, mapMemberProfile } from "./mapper";
+import {
+  mapAddress,
+  mapMemberDetail,
+  mapMemberProfile,
+  mapMemberSettings,
+} from "./mapper";
 import { SEED_OAUTH_ACCESS_TOKEN } from "./mock/fixtures";
 import {
   getMockOAuthLinkedMember,
@@ -18,6 +28,7 @@ import {
   emailVerificationResponseDto,
   loginResponseDto,
   memberProfileResponseDto,
+  memberSettingsResponseDto,
   oauthCompleteProfileResponseDto,
   signupResponseDto,
 } from "./validation";
@@ -329,4 +340,22 @@ export async function deleteAddress(addressId: number): Promise<void> {
   await clientFetch<null>(`/api/member/me/addresses/${addressId}`, {
     method: "DELETE",
   });
+}
+
+/** `GET /api/member/settings`. */
+export async function fetchSettings(): Promise<MemberSettings> {
+  const data = await clientFetch<unknown>("/api/member/settings");
+  return mapMemberSettings(memberSettingsResponseDto.parse(data));
+}
+
+/** `PATCH /api/member/settings` — 부분 갱신(BE `Settings(Boolean, Boolean)`이 둘 다
+ * optional이라 바뀐 값만 보내면 된다). */
+export async function updateSettings(
+  input: Partial<MemberSettings>,
+): Promise<MemberSettings> {
+  const data = await clientFetch<unknown>("/api/member/settings", {
+    method: "PATCH",
+    body: input,
+  });
+  return mapMemberSettings(memberSettingsResponseDto.parse(data));
 }

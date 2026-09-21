@@ -3,12 +3,14 @@ import { type DefaultBodyType, http, type PathParams } from "msw";
 import type {
   AddressResponseDto,
   MemberProfileResponseDto,
+  MemberSettingsResponseDto,
 } from "@/api/member/validation";
 import { mockError, mockOk } from "@/mocks/envelope";
 import type { ApiErrorResponse, ApiResponse } from "@/types/api";
 
 import {
   createAddressFixtures,
+  DEFAULT_MEMBER_SETTINGS,
   memberMeAdmin,
   memberMeArtisan,
   memberMeUser,
@@ -106,6 +108,21 @@ function getAddresses(memberId: number): AddressResponseDto[] {
 /** 테스트 전용 — 배송지 mock 상태를 비운다. */
 export function resetAddressMock(): void {
   addressesByMember.clear();
+}
+
+/** 설정 mock 저장소 — 배송지와 동일한 Map + lazy 시드 패턴. */
+const settingsByMember = new Map<number, MemberSettingsResponseDto>();
+
+function getSettings(memberId: number): MemberSettingsResponseDto {
+  if (!settingsByMember.has(memberId)) {
+    settingsByMember.set(memberId, { ...DEFAULT_MEMBER_SETTINGS });
+  }
+  return settingsByMember.get(memberId)!;
+}
+
+/** 테스트 전용 — 설정 mock 상태를 비운다. */
+export function resetSettingsMock(): void {
+  settingsByMember.clear();
 }
 
 /** 현재 `/me`가 돌려주는 프로필(가입 직후 dynamic 값 우선) — PATCH 핸들러들이 공유. */
@@ -512,6 +529,32 @@ export const memberHandlers = [
         addresses[0].isDefault = true;
       }
       return mockOk(null);
+    },
+  ),
+
+  http.get<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/settings",
+    ({ request }) => {
+      if (!requireAuth(request)) return mockError(401, "UNAUTHORIZED");
+      const profile = currentMemberProfile();
+      if (!profile) return mockError(401, "UNAUTHORIZED");
+      return mockOk(getSettings(profile.memberId));
+    },
+  ),
+
+  http.patch<PathParams, DefaultBodyType, Envelope>(
+    "*/api/member/settings",
+    async ({ request }) => {
+      if (!requireAuth(request)) return mockError(401, "UNAUTHORIZED");
+      const profile = currentMemberProfile();
+      if (!profile) return mockError(401, "UNAUTHORIZED");
+      const body = (await request
+        .json()
+        .catch(() => null)) as Partial<MemberSettingsResponseDto> | null;
+      const current = getSettings(profile.memberId);
+      if (body?.darkMode !== undefined) current.darkMode = body.darkMode;
+      if (body?.marketing !== undefined) current.marketing = body.marketing;
+      return mockOk(current);
     },
   ),
 ];
