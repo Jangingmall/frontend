@@ -97,15 +97,19 @@ type PagedResponse<T> = {
 
 ## 3. 역할과 인가
 
-| Role           | 대상     | 주요 권한                                                |
-| -------------- | -------- | -------------------------------------------------------- |
-| Guest (비인증) | 미로그인 | 상품·장인 조회, 챗봇, 게스트 장바구니(localStorage — §8) |
-| `USER`         | 소비자   | 장바구니, 주문·결제, 찜, 후기, 배송지                    |
-| `ARTISAN`      | 판매자   | `USER` + 상품·콘텐츠·장인 프로필 관리                    |
-| `ADMIN`        | 운영자   | 장인 가입 승인·반려                                      |
+| Role           | 대상     | 주요 권한                                          |
+| -------------- | -------- | -------------------------------------------------- |
+| Guest (비인증) | 미로그인 | 상품·장인 조회, 게스트 장바구니(localStorage — §8) |
+| `USER`         | 소비자   | 장바구니, 주문·결제, 찜, 후기, 배송지, 챗봇        |
+| `ARTISAN`      | 판매자   | `USER` + 상품·콘텐츠·장인 프로필 관리              |
+| `ADMIN`        | 운영자   | 장인 가입 승인·반려                                |
 
 - FE는 `user.role: Role` **단일 값**으로 판단한다(판매자는 `"ARTISAN"` 하나 — 배열 아님). BE `MemberProfileResponse.role`이 `MemberRole` 단일 enum이라는 걸 2026-09-15 BE 레포(`Jangingmall/backend`) 직접 대조로 확인했다. `MemberRole.authorities`(`ARTISAN` → `["ROLE_USER","ROLE_ARTISAN"]`)는 Spring Security 내부 권한 문자열일 뿐 응답 DTO 필드로 노출되지 않는다. 라우트 가드는 [routing-and-auth.md](routing-and-auth.md) §5.
 - API별 인증 수준(`Public` / `Public(게스트)` / `Authenticated` / `USER` / `ARTISAN` / `ADMIN`)은 BE `PHASE2-2` §5 표 기준.
+- **챗봇은 Guest가 아니라 `USER` 전용이다** — 2026-09-22 BE 레포(`ChatController`) 직접 대조로
+  확인. 챗봇 API 4종 전부 `@PreAuthorize("hasRole('USER')")`라, 이전 버전 문서가 전제했던
+  "Guest도 챗봇 가능"은 틀렸다. FE는 비로그인 사용자가 챗봇 진입을 시도하면 로그인 유도
+  다이얼로그로 게이트한다(BE 쪽 인증 완화 요청은 하지 않음) — §7 참고.
 
 ## 4. 호출 계층
 
@@ -177,17 +181,34 @@ type PagedResponse<T> = {
 - 응답 블록 구조: `{ order, tag(h2/p/img/video), text, imageUrl }`.
 - 문단·사진 상세 DTO, interview↔generation 데이터 소유 관계, 여러 버전 중 publish 대상 선택 규칙은 미확정(§9). AI 상세 화면 구조는 이 계약 확정 후 설계.
 
-## 7. 챗봇 도메인 (Public)
+## 7. 챗봇 도메인 (`USER`)
+
+**2026-09-22 정정**: `USER` 전용이다(§3) — 이전 버전 문서는 Public(게스트 포함)으로 적어뒀으나
+BE 레포(`ChatController`) 직접 대조로 4종 전부 `@PreAuthorize("hasRole('USER')")`임을
+확인했다.
 
 | Method | 경로                                         | 용도                                        |
 | ------ | -------------------------------------------- | ------------------------------------------- |
 | POST   | `/api/chatbot/sessions`                      | 세션 생성 (`sessionId`, `expiresInSeconds`) |
 | POST   | `/api/chatbot/sessions/{sessionId}/messages` | 메시지 전송                                 |
+| GET    | `/api/chatbot/sessions/{sessionId}/messages` | 히스토리 조회 — 이전 버전 문서에 없었음     |
+| DELETE | `/api/chatbot/sessions/{sessionId}`          | 세션 종료 — 이전 버전 문서에 없었음         |
 
 - 호출 구조는 FE → BE 단방향. FE는 BE 챗봇 API만 호출한다(AI 서버 직접 호출 없음).
-- 입력: `message`(소비자 자연어 원문, 가공 없이 전달).
+- **입력 필드명은 `message`가 아니라 `content`다**(2026-09-22 정정, `ChatRequest.SendMessage`
+  직접 대조). 소비자 자연어 원문을 가공 없이 전달한다.
 - 응답: `reply`(항상 존재), `intent`, `suggestions`(최대 3), `products`(카드 배열, 각 `reason` 포함).
-- **`products: []`는 에러가 아니라 정상 응답.** AI 불가 시 BE가 fallback `reply`를 주므로 FE는 에러 모달 없이 안내 문구를 표시한다. (`errorCode: AI_UNAVAILABLE`는 BE 내부 5xx 처리이며 FE는 fallback `reply` 경로를 우선.)
+- 히스토리 조회(`GET`) 응답은 `messageId`·`sessionId`·`sender`·`content`·`sentAt`만 준다 —
+  **`products`·`suggestions`는 히스토리에 포함되지 않는다.** 세션을 다시 열어 히스토리로
+  복원하면 봇 답변 텍스트는 남아도 그때 함께 왔던 추천 상품 카드·제안 칩은 사라진다.
+- **`products: []`는 에러가 아니라 정상 응답.** AI 불가 시 BE가 fallback `reply`(고정 문구
+  "현재 AI 추천을 이용할 수 없습니다")를 주므로 FE는 에러 모달 없이 안내 문구를 표시한다.
+  **2026-09-22 정정: `errorCode: AI_UNAVAILABLE`는 실재하지 않는다.** BE(`RestAiChatClient`)는
+  AI 서버 호출이 재시도 후에도 전부 실패해도 예외를 던지지 않고 항상 `201` 성공 응답 +
+  fallback `reply`로 처리한다 — FE가 대비해야 할 "AI 실패" 전용 에러 코드/상태 자체가 없다.
+- 세션 관련 에러 3종(`SESSION_NOT_FOUND` 404, `SESSION_ALREADY_ENDED` 422, `SESSION_FORBIDDEN`
+  403)은 `ErrorCode.java`에 없는 챗봇 도메인 전용 메시지이지만, `status` 기준 unknown-safe
+  처리로 이미 흡수된다(§2.3, [data-layer.md](data-layer.md) §5).
 - 응답 지연 허용 30초.
 
 ## 8. 장인 · 회원 · 결제 도메인
