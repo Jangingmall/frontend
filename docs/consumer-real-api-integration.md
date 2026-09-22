@@ -8,8 +8,11 @@
 - 실제 카카오/네이버 시작은 `/api/member/oauth2/{provider}`로 문서 전체를 이동한다. `/oauth/callback`은 부팅 세션 복원 후 티켓을 한 번 교환하고, 신규 회원에게 이름·전화번호·약관을 받는다. 실제 추가정보 요청에는 클라이언트 email/provider를 보내지 않는다.
 - OAuth 컨트롤러의 반환 DTO는 평면 구조이나 `GlobalResponseAdvice`가 공통 봉투로 감싼다. 공통 fetcher를 그대로 사용한다.
 - 상품 목록은 서버 필터·정렬 enum·0-based 페이지를 사용한다. 필터링하려고 전체 페이지를 수집하던 처리를 제거했다. 기본/미지원 정렬은 NEWEST이며 홈에는 최근 등록 작품으로 표시한다.
+- 선물 테마는 `ProductController.giftTheme` → `JpaProductRepository`의 `MEMBER OF p.giftThemes` 조건으로 실제 지원한다. 미지원 선물 **포장** 필터와 구분한다.
 - 상품 이미지 variants와 정렬된 상세 콘텐츠 블록(텍스트·이미지)을 표시한다. 품절 상품도 실제 목록 계약에 맞게 처리한다.
 - 회원/게스트 장바구니, 로그인 병합, 상세 담기·구매하기, 선택 구매·수량·삭제, 배송지 등록/선택, 주문 생성·결제 준비·Toss 콜백을 연결한다. MSW 상세→카트→주문서 흐름도 유지한다.
+- 로그인 병합 대기는 장바구니·주문결제 레이아웃에만 적용한다. 다른 화면과 OAuth 콜백은 병합 API 응답을 기다리지 않는다.
+- 서버 카트 항목은 생성 시 `selected=true`이며 변경 API가 없다. 구매 전 카트를 다시 조회하고, 서버에서 미선택된 비정상 항목은 주문 진입과 직접 주문 URL에서 차단한다. UI 체크박스는 주문할 `cartItemIds`만 좁힌다. 서버 선택 변경이 필요하면 백엔드 계약 추가가 선행되어야 한다.
 - 주문 생성의 멱등 키를 재사용한다. 재고는 서버가 검증하며 자신의 예약 때문에 품절로 표시된 카트도 기존 주문을 재시도할 수 있다.
 - 완료 화면은 서버 주문 상태를 조회한다. URL의 `result=success`만으로 결제 완료를 표시하지 않는다. 주문 생성·승인 후 마이페이지 주문 쿼리를 갱신한다.
 
@@ -34,9 +37,9 @@ OAuth 공급자에 등록한 콜백 출처와 백엔드의 `OAUTH_FRONTEND_REDIR
 
 - 실제 로컬 백엔드: 가입 null 토큰, MailHog 메일 인증 링크, 로그인, 프로필, 배송지 생성, 장바구니, 주문 생성·동일 멱등 키 재시도·목록·상세 확인.
 - 실제 화면 E2E: 로그인 → 상세 → 장바구니 → 주문서, 미결제 주문의 성공 URL 조작 차단.
-- `src/e2e/live-purchase.spec.ts`는 별도 시드 DB/계정이 있을 때만 실행한다. `LIVE_API_EMAIL`, `LIVE_API_PASSWORD`, `LIVE_ORDER_ID`, `PLAYWRIGHT_BASE_URL`을 환경에 설정하며 기본 E2E에서는 건너뛴다. 테스트 상품 1번을 카트에 추가하므로 운영 계정에서 실행하지 않는다.
+- `src/e2e/live-purchase.spec.ts`는 별도 시드 DB/계정이 있을 때만 실행한다. `LIVE_API_EMAIL`, `LIVE_API_PASSWORD`, `LIVE_ORDER_ID`, `PLAYWRIGHT_BASE_URL`을 환경에 설정하며 기본 E2E에서는 건너뛴다. 테스트 상품 1번을 카트에 추가하므로 운영 계정에서 실행하지 않는다. LIVE_ORDER_ID는 해당 계정 소유의 새 CREATED 주문을 사용한다. 오래된 미결제 주문은 백엔드 만료 처리로 PAYMENT_FAILED가 되며 마이페이지 표시 대상에서 제외된다.
 - Toss 키가 없어 결제 준비가 422로 차단되는 것까지 검증했다. 외부 PG 승인과 카카오/네이버 제공자 왕복은 미검증이다. 스테이징 배포 검증도 DNS 복구 후 필요하다.
 
 기존 `api-contract.md`, `routing-and-auth.md`의 과거 placeholder 설명과 차이가 있으면 이 문서의 최신 백엔드 확인 결과를 기준으로 한다.
 
-최종 검증: 타입 검사·린트 통과, 단위 테스트 181개 파일/1,111개 통과, MSW E2E 3개 및 실제 API E2E 1개 통과, production webpack build 통과.
+최종 검증: 타입 검사·린트 통과, 단위 테스트 182개 파일/1,117개 통과, MSW E2E 3개 및 실제 API E2E 1개 통과, production webpack build 통과.

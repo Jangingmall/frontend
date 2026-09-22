@@ -2,7 +2,7 @@
 
 ## 범위와 실행
 
-`/cart`는 비회원도 접근할 수 있다. `NEXT_PUBLIC_API_MOCKING=enabled`에서는 상세에서 담은 상품을 메모리 store로 공유한다. 처음에는 빈 장바구니이며 고정 샘플은 Storybook에만 사용한다. 실제 API 모드는 준비 중 안내를 표시한다. 실제 주문 API/결제 SDK/영구 저장은 포함하지 않는다.
+`/cart`는 비회원도 접근할 수 있다. `NEXT_PUBLIC_API_MOCKING=enabled`에서는 상세에서 담은 상품을 메모리 store로 공유한다. 처음에는 빈 장바구니이며 고정 샘플은 Storybook에만 사용한다. MSW 시연에는 실제 주문 API/결제 SDK/영구 저장을 포함하지 않는다. 실제 API 모드는 회원·게스트 장바구니 조회/변경과 로그인 병합, 주문 생성 및 결제 SDK를 연결한다. 지원 범위와 외부 결제 검증 한계는 [소비자 실제 API 연동](consumer-real-api-integration.md)을 따른다.
 
 - 개발 실행: `npm run dev -- --port 3151`
 - Storybook: `npx storybook dev -p 6151 --ci --no-open`
