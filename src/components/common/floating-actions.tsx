@@ -1,6 +1,7 @@
 "use client";
 
 import { AiChatIcon, ChevronRightIcon, TopIcon } from "@/components/ui/icons";
+import { cn } from "@/lib/utils";
 
 /**
  * CM-5 플로팅 버튼(Figma 어노테이션 `1193:10734`, 프레임 `987:25006` 우하단) — 맨 위로 +
@@ -46,7 +47,15 @@ export function FloatingActions({
   onAiChatToggle,
 }: FloatingActionsProps) {
   return (
-    <div className="fixed right-0 bottom-16 z-40 flex w-13 flex-col overflow-hidden bg-fill-neutral-impact text-font-white [&_path]:fill-current">
+    <div
+      className={cn(
+        "fixed bottom-16 z-40 flex w-13 flex-col overflow-hidden bg-fill-neutral-impact text-font-white [&_path]:fill-current",
+        // 패널이 열리면 챗봇 패널(`ChatPanel`, `right-0 w-120 z-55`)의 왼쪽 바깥에 붙는다
+        // — Figma `Floating`의 `close` variant 실측 위치(패널과 겹치지 않고 바로 옆)와
+        // 일치. `right-0`로 그대로 두면 패널(z-55)이 더 위라 이 버튼이 눌리지 않는다.
+        showAiChat && isChatOpen ? "right-120" : "right-0",
+      )}
+    >
       {showAiChat && isChatOpen ? (
         <button
           type="button"
