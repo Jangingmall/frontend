@@ -58,7 +58,7 @@ export function CartProductCard({
               disabled={line.soldOut}
               onClick={onOptions}
             >
-              옵션 변경
+              {line.productPath ? "옵션 다시 선택" : "옵션 변경"}
             </Button>
           }
           quantityControl={

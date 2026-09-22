@@ -1,8 +1,11 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type ReactNode, useRef, useState } from "react";
 
+import { toCartPreviewLines } from "@/app/products/[productSlug]/_lib/purchase-preview";
 import {
   addSelection,
   createSelection,
@@ -26,7 +29,9 @@ import { Stepper } from "@/components/ui/stepper";
 import { cn } from "@/lib/utils";
 import { useProductActions } from "@/queries/products/detail-actions";
 import { selectIsAuthenticated, useAuthStore } from "@/stores/auth";
+import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import type { ProductDetail, ProductNotify } from "@/types/product-detail";
+import { PURCHASE_PREVIEW_ORDER_ID } from "@/types/purchase-preview";
 
 const money = (amount: number) => `${amount.toLocaleString("ko-KR")}원`;
 const NO_OPTION = "__no_option__";
@@ -44,6 +49,7 @@ export function ProductPurchasePanel({
   onRequireLogin,
   notice,
 }: ProductPurchasePanelProps) {
+  const router = useRouter();
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const actions = useProductActions(product.id, userId, isAuthenticated);
@@ -130,22 +136,34 @@ export function ProductPurchasePanel({
     return true;
   }
 
-  function handleCart() {
+  function handlePurchase(checkout = false) {
     if (!product.isMock) return;
     if (!validatePurchase(true) || busy) return;
+    const snapshot = toCartPreviewLines(product, lines);
     actions.cart.mutate(
       lines.map(({ choices, quantity }) => ({ choices, quantity })),
       {
-        onSuccess: ({ duplicate }) =>
+        onSuccess: () => {
+          if (useAuthStore.getState().user?.id !== userId) return;
+          if (checkout) {
+            usePurchasePreviewStore.getState().beginCheckout(snapshot);
+            router.push(`/checkout/${PURCHASE_PREVIEW_ORDER_ID}` as Route);
+            return;
+          }
+          // 삭제 후 다시 담기도 허용하도록 현재 카트를 기준으로 중복을 판정한다.
+          const duplicate = usePurchasePreviewStore
+            .getState()
+            .addLines(snapshot);
           onNotify(
             duplicate
               ? "이미 장바구니에 담긴 작품입니다."
               : "장바구니에 작품을 담았습니다.",
             {
               label: "장바구니 보기",
-              onClick: () => onNotify("장바구니 화면은 준비 중입니다."),
+              onClick: () => router.push("/cart"),
             },
-          ),
+          );
+        },
         onError: () =>
           onNotify("장바구니에 담지 못했습니다. 옵션과 재고를 확인해 주세요."),
       },
@@ -495,18 +513,15 @@ export function ProductPurchasePanel({
             className="w-2/5 min-w-0 border-border-neutral-solid px-3 xl:w-50"
             disabled={!product.isMock || (unknownStock && !soldOut)}
             loading={busy}
-            onClick={soldOut ? handleRestock : handleCart}
+            onClick={soldOut ? handleRestock : () => handlePurchase()}
           >
             {soldOut ? "재입고 알림" : "장바구니"}
           </Button>
           <Button
             size="xl"
             className="min-w-0 flex-1 px-3"
-            disabled={!product.isMock || soldOut || unknownStock}
-            onClick={() => {
-              if (validatePurchase())
-                onNotify("주문·결제 기능은 준비 중입니다.");
-            }}
+            disabled={!product.isMock || soldOut || unknownStock || busy}
+            onClick={() => handlePurchase(true)}
           >
             {soldOut ? "품절" : "구매하기"}
           </Button>

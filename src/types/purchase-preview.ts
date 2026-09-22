@@ -18,11 +18,14 @@ export interface CartPreviewLine {
   soldOut: boolean;
   selected: boolean;
   note?: string;
+  /** 상세에서 담은 항목은 해당 상품에서 옵션을 다시 선택한다. */
+  productPath?: string;
 }
 export interface PurchasePreviewState {
   lines: CartPreviewLine[];
   checkoutLines: CartPreviewLine[];
   setLines: (lines: CartPreviewLine[]) => void;
+  addLines: (lines: CartPreviewLine[]) => boolean;
   beginCheckout: (selectedLines: CartPreviewLine[]) => void;
   resetPreview: () => void;
 }

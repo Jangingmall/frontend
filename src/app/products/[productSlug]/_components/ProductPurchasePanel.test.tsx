@@ -13,13 +13,18 @@ import { publicEnv } from "@/lib/env";
 import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
+import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import type { ProductDetail } from "@/types/product-detail";
 
 import { ProductPurchasePanel } from "./ProductPurchasePanel";
 
 vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
+const { push } = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 beforeEach(() => {
+  push.mockClear();
+  usePurchasePreviewStore.getState().resetPreview();
   Object.assign(publicEnv, { apiMocking: true });
   useAuthStore.getState().clear();
   resetProductDetailActionState();
@@ -301,4 +306,63 @@ it("waits for all option choices and preserves completed cards when gift wrappin
   expect(screen.getByTestId("purchase-total")).toHaveTextContent("20,000원");
   await user.click(screen.getByRole("button", { name: /선택 안 함 삭제$/ }));
   expect(screen.getByTestId("purchase-total")).toHaveTextContent("0원");
+});
+
+it("stores confirmed cart items and opens the cart from the success action", async () => {
+  useAuthStore.getState().setSession("mock-access-token", {
+    id: 1,
+    name: "구매자",
+    role: "USER",
+  });
+  const { onNotify } = setup(102);
+  await userEvent.click(screen.getByRole("button", { name: "증가" }));
+  await userEvent.click(screen.getByRole("button", { name: "장바구니" }));
+  await waitFor(() =>
+    expect(usePurchasePreviewStore.getState().lines).toHaveLength(1),
+  );
+  expect(usePurchasePreviewStore.getState().lines[0]).toMatchObject({
+    productId: 102,
+    quantity: 2,
+    unitPrice: 35000,
+    selected: true,
+  });
+  onNotify.mock.calls.at(-1)?.[1].onClick();
+  expect(push).toHaveBeenCalledWith("/cart");
+});
+
+it("opens checkout with the selected product when buying directly", async () => {
+  useAuthStore.getState().setSession("mock-access-token", {
+    id: 1,
+    name: "구매자",
+    role: "USER",
+  });
+  setup(102);
+  await userEvent.click(screen.getByRole("button", { name: "구매하기" }));
+  await waitFor(() =>
+    expect(push).toHaveBeenCalledWith("/checkout/ui-preview-order"),
+  );
+  expect(usePurchasePreviewStore.getState().checkoutLines[0]).toMatchObject({
+    productId: 102,
+    quantity: 1,
+    unitPrice: 35000,
+  });
+  expect(usePurchasePreviewStore.getState().lines).toEqual([]);
+});
+
+it("does not store items or navigate when MSW rejects the purchase", async () => {
+  useAuthStore.getState().setSession("mock-access-token", {
+    id: 1,
+    name: "구매자",
+    role: "USER",
+  });
+  server.use(
+    http.post("*/api/products/:productId/detail-actions/cart-items", () =>
+      mockError(409, "CONFLICT"),
+    ),
+  );
+  const { onNotify } = setup(102);
+  await userEvent.click(screen.getByRole("button", { name: "구매하기" }));
+  await waitFor(() => expect(onNotify).toHaveBeenCalled());
+  expect(push).not.toHaveBeenCalled();
+  expect(usePurchasePreviewStore.getState().checkoutLines).toEqual([]);
 });

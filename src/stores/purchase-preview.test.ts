@@ -1,5 +1,6 @@
 import { beforeEach, expect, it } from "vitest";
 
+import { useAuthStore } from "./auth";
 import { usePurchasePreviewStore } from "./purchase-preview";
 const createLine = () => ({
   lineId: "a",
@@ -39,4 +40,30 @@ it("reset clears cart and checkout memory", () => {
   usePurchasePreviewStore.getState().resetPreview();
   expect(usePurchasePreviewStore.getState().lines).toEqual([]);
   expect(usePurchasePreviewStore.getState().checkoutLines).toEqual([]);
+});
+
+it("keeps an existing combination once and allows adding it again after deletion", () => {
+  const store = usePurchasePreviewStore.getState();
+  expect(store.addLines([line])).toBe(false);
+  expect(store.addLines([{ ...line, quantity: 3 }])).toBe(true);
+  expect(usePurchasePreviewStore.getState().lines).toHaveLength(1);
+  expect(usePurchasePreviewStore.getState().lines[0].quantity).toBe(2);
+  store.setLines([]);
+  expect(store.addLines([line])).toBe(false);
+  line.options[0] = "외부 변경";
+  expect(usePurchasePreviewStore.getState().lines[0].options).toEqual(["옵션"]);
+});
+
+it("clears cart and checkout when the authenticated customer changes", () => {
+  useAuthStore
+    .getState()
+    .setSession("a", { id: 1, name: "고객1", role: "USER" });
+  usePurchasePreviewStore.getState().addLines([line]);
+  usePurchasePreviewStore.getState().beginCheckout([line]);
+  useAuthStore
+    .getState()
+    .setSession("b", { id: 2, name: "고객2", role: "USER" });
+  expect(usePurchasePreviewStore.getState().lines).toEqual([]);
+  expect(usePurchasePreviewStore.getState().checkoutLines).toEqual([]);
+  useAuthStore.getState().clear();
 });

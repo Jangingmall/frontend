@@ -2,7 +2,7 @@
 
 ## 범위와 실행
 
-`/cart`는 비회원도 접근할 수 있다. `NEXT_PUBLIC_API_MOCKING=enabled`에서만 샘플 2개 장인·3개 상품을 표시한다. 실제 API 모드는 준비 중 안내를 표시한다. API/결제 SDK/영구 저장은 이번 변경에 포함하지 않는다.
+`/cart`는 비회원도 접근할 수 있다. `NEXT_PUBLIC_API_MOCKING=enabled`에서는 상세에서 담은 상품을 메모리 store로 공유한다. 처음에는 빈 장바구니이며 고정 샘플은 Storybook에만 사용한다. 실제 API 모드는 준비 중 안내를 표시한다. 실제 주문 API/결제 SDK/영구 저장은 포함하지 않는다.
 
 - 개발 실행: `npm run dev -- --port 3151`
 - Storybook: `npx storybook dev -p 6151 --ci --no-open`
@@ -21,13 +21,13 @@
 
 ## 장바구니 → 체크아웃 연결
 
-체크아웃 route(`/checkout/[orderId]`)는 이미 구현돼 있으나, 장바구니 쪽에서 그리로 넘어가는
-연결은 아직 배선되지 않았다 — `CartRoute`가 `CartPage`에 `onCheckout`을 넘기지 않아, 로그인한
-사용자가 "구매하기"를 눌러도 여전히 준비 중 안내만 뜬다. 연결하려면 `onCheckout`을 구현해
-`usePurchasePreviewStore.beginCheckout`으로 선택된 구매 가능 항목의 깊은 복사본을 저장하고
-`/checkout/ui-preview-order`로 이동하도록 한다(체크아웃 쪽 `CheckoutEntry`는 이미 이
-`PURCHASE_PREVIEW_ORDER_ID`를 mock 진입점으로 기대하고 있다). 개인 입력이나 결제정보는
-URL/스토리지에 넣지 않는다.
+상세의 MSW 담기 요청 성공 후 상품·옵션·수량·단가를 `usePurchasePreviewStore`에 저장한다.
+같은 조합은 중복 추가하지 않으며, 삭제 후 다시 담기는 허용한다. 성공 알림의 "장바구니 보기"는
+`/cart`로 이동한다. 카트의 "구매하기"는 선택된 구매 가능 항목의 복사본을
+`beginCheckout`에 저장하고 `/checkout/ui-preview-order`로 이동한다.
+상세의 "구매하기"는 MSW 검증 후 선택한 항목으로 바로 결제 화면을 연다.
+상세에서 담은 항목의 "옵션 다시 선택"은 상세로 돌아간다. 샘플 옵션 모달을 실제 상품에 적용하지 않는다.
+새로고침·로그아웃·사용자 전환 시 메모리 데이터는 초기화한다. 개인정보나 결제정보는 URL/스토리지에 넣지 않는다.
 
 공통 구매 부품·store·ProductOrder 확장은 route에 의존하지 않는 선행 커밋으로 분리되어 checkout/complete 화면에서 재사용된다.
 
