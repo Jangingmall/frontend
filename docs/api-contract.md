@@ -1,5 +1,7 @@
 # API 계약 (FE 파생)
 
+> **2026-09-22 연동 갱신**: [소비자 실제 API 연동](consumer-real-api-integration.md)에 최신 계약, 연결 범위와 미검증 항목을 정리했습니다. 아래의 과거 placeholder 설명과 다르면 갱신 문서를 기준으로 합니다.
+
 > **원본**: BE 레포([Jangingmall/backend](https://github.com/Jangingmall/backend)) `docs/PHASE2-1_API_협업_계약서.md`, `docs/API_공통규칙.md`, `docs/예외_설계.md`, `docs/장인몰_API_계약서_공개조회.md`, `docs/PHASE2-2_인증_정책_계약서.md`, `docs/PHASE2-3_AI_통합_계약서.md`, `global/exception/ErrorCode.java` / 노션 [FE API 연동 계약](https://app.notion.com/p/API-3c29e3e335cc80d08a26e8b864d43f7f)
 > **기준일**: 2026-09-08
 > **상태**: 재구성 초안 (BE member/payment 모듈 미구현 — 엔드포인트 맵 수준)

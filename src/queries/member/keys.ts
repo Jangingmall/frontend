@@ -7,4 +7,3 @@ export const memberKeys = {
       ? ([...memberKeys.all, "addresses"] as const)
       : ([...memberKeys.all, "addresses", memberId] as const),
 };
-

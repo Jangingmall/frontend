@@ -111,11 +111,15 @@ it("never reserves an order on render or invalid submit", () => {
   fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
   expect(state.create).not.toHaveBeenCalled();
 });
-it("blocks sold out selection before reserving stock", () => {
+it("does not prepare payment when the server rejects unavailable stock", async () => {
   state.soldOut = true;
+  state.create.mockRejectedValueOnce(new Error("재고가 부족합니다."));
   render(<RealCheckoutPage />);
   fill();
-  expect(state.create).not.toHaveBeenCalled();
+  await waitFor(() =>
+    expect(screen.getByRole("alert")).toHaveTextContent("재고가 부족합니다."),
+  );
+  expect(state.prepare).not.toHaveBeenCalled();
 });
 it("reports unconfigured gateway without fabricating success", async () => {
   render(<RealCheckoutPage />);
@@ -213,4 +217,16 @@ it("does not reserve stock when saving an edited address fails", async () => {
   fill();
   await screen.findByRole("alert");
   expect(state.create).not.toHaveBeenCalled();
+});
+it("retries the same reserved order after its final stock becomes sold out", async () => {
+  const view = render(<RealCheckoutPage />);
+  fill();
+  await waitFor(() => expect(state.prepare).toHaveBeenCalledTimes(1));
+  const firstKey = state.create.mock.calls[0][0].key;
+  view.unmount();
+  state.soldOut = true;
+  render(<RealCheckoutPage />);
+  fill();
+  await waitFor(() => expect(state.prepare).toHaveBeenCalledTimes(2));
+  expect(state.create.mock.calls[1][0].key).toBe(firstKey);
 });

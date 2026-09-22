@@ -2,6 +2,7 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import { fetchProductList } from "@/api/products/api";
 import { FloatingActions } from "@/components/common/floating-actions";
+import { publicEnv } from "@/lib/env";
 import { getQueryClient } from "@/lib/query/server";
 import { productKeys } from "@/queries/products/keys";
 import { GIFT_THEMES } from "@/types/gift-theme";
@@ -42,7 +43,10 @@ export default async function HomePage() {
   const giftQuery = { giftTheme: INITIAL_GIFT_THEME, size: 3 };
 
   const [bestProducts, newProducts] = await Promise.all([
-    fetchProductList({ sort: "sales", size: 5 }).catch(() => undefined),
+    fetchProductList({
+      sort: publicEnv.apiMocking ? "sales" : "newest",
+      size: 5,
+    }).catch(() => undefined),
     fetchProductList({ sort: "newest", size: 4 }).catch(() => undefined),
     queryClient.prefetchQuery({
       queryKey: productKeys.list(giftQuery),
@@ -54,9 +58,13 @@ export default async function HomePage() {
     <>
       <HeroBanner />
       <ProductCarouselSection
-        title="베스트"
-        description="최근 4주 판매·조회 기준"
-        viewAllPreset="best"
+        title={publicEnv.apiMocking ? "베스트" : "최근 등록 작품"}
+        description={
+          publicEnv.apiMocking
+            ? "최근 4주 판매·조회 기준"
+            : "새로 등록된 작품을 만나보세요"
+        }
+        viewAllPreset={publicEnv.apiMocking ? "best" : "new"}
         columns={5}
         data={bestProducts}
       />

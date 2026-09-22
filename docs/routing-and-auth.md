@@ -1,5 +1,7 @@
 # 라우팅과 인증
 
+> **2026-09-22 연동 갱신**: [소비자 실제 API 연동](consumer-real-api-integration.md)에 최신 계약, 연결 범위와 미검증 항목을 정리했습니다. 아래의 과거 placeholder 설명과 다르면 갱신 문서를 기준으로 합니다.
+
 > **원본**: 노션 [라우팅](https://app.notion.com/p/e44ecddcc9cb8297beb201ace1430247) + BE 레포 `docs/PHASE2-2_인증_정책_계약서.md`
 > **기준일**: 2026-09-08
 > **상태**: 재구성 초안 (설계 진행 중)

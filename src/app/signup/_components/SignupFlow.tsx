@@ -72,6 +72,7 @@ export function SignupFlow({ returnUrl, provider }: SignupFlowProps) {
    */
   const handleOAuthComplete = useCallback(
     (result: OAuthLoginResult) => {
+      if (result.outcome === "redirecting") return;
       if (result.outcome === "authenticated") {
         useAuthStore.getState().setSession(result.accessToken, result.user);
         router.replace(safeReturnUrl(returnUrl, "/") as Route);

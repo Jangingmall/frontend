@@ -141,8 +141,7 @@ export function RealCheckoutPage({
       !method ||
       method === "BANK_TRANSFER" ||
       !agreed ||
-      memo.length > 100 ||
-      lines.some((line) => line.soldOut)
+      memo.length > 100
     ) {
       setError("배송지, 결제수단, 약관 동의를 확인해 주세요.");
       return;
@@ -192,6 +191,7 @@ export function RealCheckoutPage({
           shippingAmount,
         }),
       );
+      // 기존 주문이 예약한 재고는 품절로 보일 수 있어 재고/멱등성 판단을 서버에 맡긴다.
       const order = await create.mutateAsync({
         input,
         key,

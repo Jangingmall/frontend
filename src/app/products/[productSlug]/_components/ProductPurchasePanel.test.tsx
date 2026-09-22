@@ -22,7 +22,6 @@ const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
-
 beforeEach(() => {
   push.mockClear();
   usePurchasePreviewStore.getState().resetPreview();
@@ -363,7 +362,6 @@ it("does not store items or navigate when MSW rejects the purchase", async () =>
   await waitFor(() => expect(onNotify).toHaveBeenCalled());
   expect(push).not.toHaveBeenCalled();
   expect(usePurchasePreviewStore.getState().checkoutLines).toEqual([]);
-
 });
 function mockLiveCart(quantity = 1) {
   const requests: unknown[] = [];
@@ -473,5 +471,3 @@ it("asks before ordering a quantity merged with an existing cart item", async ()
   fireEvent.click(screen.getByRole("button", { name: "주문 계속하기" }));
   expect(push).toHaveBeenCalledWith("/checkout/new?items=72");
 });
-
-

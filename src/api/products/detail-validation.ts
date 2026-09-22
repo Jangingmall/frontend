@@ -13,6 +13,12 @@ const imageSource = z.string().refine((value) => {
   }
 }, "지원하지 않는 이미지 주소입니다.");
 const image = z.object({ src: imageSource, alt: z.string() });
+const backendImageVariant = z.object({
+  url: imageSource,
+  width: natural.positive(),
+  height: natural.positive(),
+  format: z.string(),
+});
 const informationRow = z.object({
   label: z.string(),
   content: z.string(),
@@ -32,6 +38,28 @@ export const productDetailDto = z.object({
   productionPeriodDays: natural.nullish(),
   thumbnailUrl: imageSource.nullish().or(z.literal("")),
   status: z.enum(["ON_SALE", "SOLD_OUT", "DRAFT", "HIDDEN"]),
+  images: z
+    .array(
+      z.object({
+        imageId: z.string(),
+        alt: z.string().nullish(),
+        variants: z.array(backendImageVariant).nullish(),
+      }),
+    )
+    .optional(),
+  thumbnail: z.array(backendImageVariant).optional(),
+  detailPageBlocks: z
+    .array(
+      z.object({
+        order: natural,
+        tag: z.string(),
+        hasImage: z.boolean(),
+        imageVariants: z.array(backendImageVariant).nullish(),
+        text: z.string().nullish(),
+        videoUrl: z.string().nullish(),
+      }),
+    )
+    .optional(),
 });
 
 /** MSW 전용 확장. 실서버 응답에는 아직 없는 PD-1 데이터를 검증한다. */

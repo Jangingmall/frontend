@@ -36,13 +36,19 @@ function mockPages(mutate = (page: Record<string, unknown>) => page) {
       requests.push(p);
       const number = Number(p.get("page")),
         size = Number(p.get("size"));
+      const filtered = products.filter(
+        (item) =>
+          (!p.get("keyword") || item.title.includes(p.get("keyword")!)) &&
+          (!p.get("subcategoryId") ||
+            item.subcategoryId === Number(p.get("subcategoryId"))),
+      );
       return mockOk(
         mutate({
-          content: products.slice(number * size, (number + 1) * size),
+          content: filtered.slice(number * size, (number + 1) * size),
           number,
           size,
-          totalElements: 103,
-          totalPages: Math.ceil(103 / size),
+          totalElements: filtered.length,
+          totalPages: Math.ceil(filtered.length / size),
         }),
       );
     }),
@@ -59,11 +65,11 @@ describe("현재 Pageable 목록 계약", () => {
     }
     expect(requests).toHaveLength(2);
     for (const p of requests) {
-      expect([...p.keys()]).toEqual(["page", "size", "sort", "sort"]);
-      expect(p.getAll("sort")).toEqual(["price,asc", "id,asc"]);
+      expect([...p.keys()]).toEqual(["page", "size", "sort", "excludeSoldOut"]);
+      expect(p.getAll("sort")).toEqual(["PRICE_ASC"]);
     }
   });
-  it("검색은 전체 페이지를 모은 뒤 정렬과 페이지를 적용한다", async () => {
+  it("검색 필터와 페이지를 서버에 보내고 한 페이지만 조회한다", async () => {
     const requests = mockPages();
     for (const fetchList of [fetchProductList, fetchProductListClient]) {
       const result = await fetchList({
@@ -73,31 +79,11 @@ describe("현재 Pageable 목록 계약", () => {
         page: 2,
       });
       expect(result.totalCount).toBe(3);
-      expect(result.items.map((i) => i.id)).toEqual([101]);
+      expect(result.items.map((i) => i.id)).toEqual([103]);
     }
-    expect(requests).toHaveLength(4);
-    expect(requests.every((p) => !p.has("keyword"))).toBe(true);
+    expect(requests).toHaveLength(2);
+    expect(requests.every((p) => p.get("keyword") === "백자")).toBe(true);
   });
-  it.each(["total", "duplicate", "short"])(
-    "불완전한 스캔 %s 는 실패한다",
-    async (kind) => {
-      mockPages((p) =>
-        p.number === 1
-          ? {
-              ...p,
-              ...(kind === "total"
-                ? { totalElements: 104 }
-                : kind === "duplicate"
-                  ? { content: [products[0], products[101], products[102]] }
-                  : { content: [] }),
-            }
-          : p,
-      );
-      await expect(
-        fetchProductListClient({ keyword: "백자" }),
-      ).rejects.toThrow();
-    },
-  );
   it("실제 분류와 품목을 같은 이름의 GNB에 억지로 연결하지 않는다", async () => {
     server.use(
       http.get("*/api/products/categories", () =>
@@ -143,25 +129,4 @@ it("잘못된 단일 페이지 번호와 길이를 거부한다", async () => {
   await expect(fetchProductListClient({})).rejects.toThrow();
   mockPages((p) => ({ ...p, content: [] }));
   await expect(fetchProductListClient({})).rejects.toThrow();
-});
-it("가격과 선물 테마를 전체 데이터에 적용하고 nullable 분류도 처리한다", async () => {
-  mockPages((p) => ({
-    ...p,
-    content: (p.content as typeof products).map((item) => ({
-      ...item,
-      categoryId: null,
-      categoryName: null,
-      subcategoryId: null,
-      subcategoryName: null,
-      giftThemes: item.productId >= 101 ? ["HOUSEWARMING"] : [],
-    })),
-  }));
-  const result = await fetchProductListClient({
-    giftTheme: "housewarming",
-    minPrice: 2,
-    maxPrice: 3,
-    sort: "price-desc",
-  });
-  expect(result.items.map((item) => item.id)).toEqual([102, 103]);
-  expect(result.totalCount).toBe(2);
 });

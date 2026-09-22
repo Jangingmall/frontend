@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { __resetRefreshState } from "@/lib/http/client";
 import { useAuthStore } from "@/stores/auth";
@@ -37,7 +38,6 @@ import {
   resetSettingsMock,
 } from "./mock/handlers";
 import { setMockIdentity } from "./mock/mock-identity";
-
 beforeEach(() => {
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
   __resetRefreshState();

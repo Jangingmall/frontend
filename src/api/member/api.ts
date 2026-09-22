@@ -146,15 +146,10 @@ export async function verifyEmailCode(
   });
 }
 
-/**
- * `POST /api/member/signup` → 가입 + 자동 로그인. **BE에 요청한 응답 계약을 전제로 한다**
- * (design.md §0.2) — 로그인과 동일하게 `{ accessToken, member }`를 받는다고 가정한다. 실제로
- * 지금 BE가 주는 건 `{ memberId, email, status }`뿐이라(세션 없음) BE가 이 변경을 배포하기
- * 전엔 실제 서버로 가입할 때마다 파싱에 실패한다 — 배포 순서를 BE 완료에 맞춰야 한다.
- */
+/** 실제 가입은 토큰 없이 이메일 인증 대기 상태를 반환한다. MSW는 기존 자동 로그인 시연을 유지한다. */
 export async function signup(
   body: SignupRequest,
-): Promise<{ accessToken: string; user: AuthUser }> {
+): Promise<{ accessToken: string | null; user: AuthUser }> {
   const data = await clientFetch<unknown>("/api/member/signup", {
     method: "POST",
     body,
@@ -165,6 +160,7 @@ export async function signup(
 }
 
 export type OAuthLoginResult =
+  | { outcome: "redirecting" }
   | { outcome: "authenticated"; accessToken: string; user: AuthUser }
   | {
       outcome: "needsProfile";
@@ -172,22 +168,20 @@ export type OAuthLoginResult =
       suggestedEmail: string | null;
     };
 
-/**
- * 소셜 로그인 시작 — 목업 전용. 실제 흐름은 전체 페이지 리다이렉트(`GET
- * /api/member/oauth2/{provider}` → 302로 Spring Security `/oauth2/authorization/{provider}`
- * → 동의 화면 → BE 콜백 → 쿠키 기반 티켓 교환)라 fetch 왕복으로 재현할 방법이 없다. 이
- * 함수는 그 전체를 클라이언트에서 한 번에 흉내낸다 — 이 provider로 이미 연동을 완료한 적
- * 있으면 즉시 로그인, 처음이면 추가정보 입력이 필요하다는 결과를 돌려준다. 실제 백엔드
- * 도메인이 정해지면 이 함수를 지우고 호출부를 `<a href="/api/member/oauth2/{provider}">`로
- * 교체한다 — 시작 경로 자체는 BE 소스(`OAuthController`) 직접 대조로 확인됐다. 다만 그
- * 뒤 단계(추가정보 제출)의 요청·응답 계약은 이 목업과 다르다 — `docs/api-contract.md` §9
- * "OAuth 목업·실제 계약 괴리" 참고.
- */
+/** 실제 모드는 Spring OAuth로 문서 전체를 이동하고, MSW는 제공자 인증을 시연한다. */
 export async function startMockOAuthLogin(
   provider: OAuthProvider,
 ): Promise<OAuthLoginResult> {
   if (!publicEnv.apiMocking) {
-    throw new Error("소셜 로그인은 아직 준비 중입니다.");
+    const returnUrl = new URL(window.location.href).searchParams.get(
+      "returnUrl",
+    );
+    sessionStorage.setItem("oauth-return", returnUrl ?? "/");
+    sessionStorage.setItem("oauth-provider", provider);
+    // Spring OAuth 시작은 Next 페이지 이동이 아닌 문서 전체 리다이렉트가 필요하다.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.assign(`/api/member/oauth2/${provider}`);
+    return { outcome: "redirecting" };
   }
 
   const linked = getMockOAuthLinkedMember(provider);
@@ -210,6 +204,7 @@ export async function startMockOAuthLogin(
 }
 
 export interface CompleteOAuthProfileRequest {
+  agreements?: SignupRequest["agreements"];
   provider: OAuthProvider;
   email: string;
   name: string;
@@ -227,7 +222,13 @@ export async function completeOAuthProfile(
 ): Promise<{ accessToken: string; user: AuthUser }> {
   const data = await clientFetch<unknown>(
     "/api/member/oauth2/complete-profile",
-    { method: "POST", body, auth: false },
+    {
+      method: "POST",
+      body: publicEnv.apiMocking
+        ? body
+        : { name: body.name, phone: body.phone, agreements: body.agreements },
+      auth: false,
+    },
   );
   const { accessToken, memberId, role } =
     oauthCompleteProfileResponseDto.parse(data);

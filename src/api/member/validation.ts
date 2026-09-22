@@ -60,13 +60,10 @@ export const emailVerificationResponseDto = z
   .object({ expiresInSeconds: z.number().int().positive() })
   .passthrough();
 
-/**
- * `POST /api/member/signup` 응답. **BE에 변경을 요청한 형태**(design.md §0.2) — 로그인과
- * 동일하게 세션(`accessToken`+`member`)을 받는다고 가정한다. 실제로 지금 BE가 주는 건
- * `{ memberId, email, status }`뿐이라(세션 없음) BE가 이 변경을 배포하기 전엔 실제 서버로
- * 가입할 때마다 이 스키마의 `parse`가 실패한다 — 알고 진행하는 배포 순서 리스크.
- */
-export const signupResponseDto = loginResponseDto;
+/** 최신 가입 응답: member 정보와 nullable accessToken. */
+export const signupResponseDto = loginResponseDto.extend({
+  accessToken: z.string().min(1).nullable(),
+});
 
 export type EmailVerificationResponseDto = z.infer<
   typeof emailVerificationResponseDto

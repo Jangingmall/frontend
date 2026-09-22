@@ -73,15 +73,23 @@ export function toProductListSearchParams(
   params.set("page", String(publicEnv.apiMocking ? page : page - 1));
   params.set("size", String(size));
   if (!publicEnv.apiMocking) {
-    params.append(
+    params.set(
       "sort",
       query.sort === "price-asc"
-        ? "price,asc"
+        ? "PRICE_ASC"
         : query.sort === "price-desc"
-          ? "price,desc"
-          : "createdAt,desc",
+          ? "PRICE_DESC"
+          : "NEWEST",
     );
-    params.append("sort", "id,asc");
+    if (query.keyword?.trim()) params.set("keyword", query.keyword.trim());
+    for (const key of ["minPrice", "maxPrice"] as const) {
+      const value = query[key];
+      if (value !== undefined && Number.isSafeInteger(value) && value >= 0)
+        params.set(key, String(value));
+    }
+    if (query.giftTheme)
+      params.set("giftTheme", toGiftThemeApi(query.giftTheme));
+    params.set("excludeSoldOut", String(query.excludeSoldOut ?? false));
     return params;
   }
   params.set("sort", toProductListSortApi(query.sort));

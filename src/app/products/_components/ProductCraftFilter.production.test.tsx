@@ -65,7 +65,7 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "가격대" })).toBeVisible();
     expect(
-      screen.getByRole("checkbox", { name: "선물 포장 가능" }),
+      screen.getByRole("checkbox", { name: "선물 포장 가능 (준비 중)" }),
     ).toBeVisible();
     expect(screen.getByRole("button", { name: "소재" })).toBeVisible();
   });

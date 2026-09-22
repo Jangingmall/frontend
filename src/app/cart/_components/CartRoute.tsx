@@ -10,7 +10,6 @@ import { PURCHASE_PREVIEW_ORDER_ID } from "@/types/purchase-preview";
 import { CartPage } from "./CartPage";
 import { LiveCartRoute } from "./LiveCartRoute";
 
-
 export function CartRoute() {
   const router = useRouter();
   const authenticated = useAuthStore(
@@ -37,4 +36,3 @@ export function CartRoute() {
     />
   );
 }
-
