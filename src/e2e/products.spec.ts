@@ -109,7 +109,7 @@ test("PL-3에서 경로를 따라 대분류로 복귀하고 TOP으로 이동한�
     "다기 · 찻잔",
   );
   await expect(page.getByRole("button", { name: "맨 위로" })).toBeVisible();
-  await expect(page.getByText("AI CHAT", { exact: true })).toBeVisible();
+  await expect(page.getByText("미담 챗봇", { exact: true })).toBeVisible();
   await breadcrumb.getByRole("link", { name: "키친 · 다이닝" }).click();
   await expect(page).toHaveURL(/category=kitchen$/);
   await expect(
