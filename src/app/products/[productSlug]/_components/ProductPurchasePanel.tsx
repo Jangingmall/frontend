@@ -16,6 +16,7 @@ import {
   setSelectionQuantity,
 } from "@/app/products/[productSlug]/_lib/purchase-selection";
 import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
 import {
   CancelIcon,
   ChevronRightIcon,
@@ -27,6 +28,7 @@ import {
 import { Select, SelectItem } from "@/components/ui/select";
 import { Stepper } from "@/components/ui/stepper";
 import { cn } from "@/lib/utils";
+import { useCartMutations } from "@/queries/cart";
 import { useProductActions } from "@/queries/products/detail-actions";
 import { selectIsAuthenticated, useAuthStore } from "@/stores/auth";
 import { usePurchasePreviewStore } from "@/stores/purchase-preview";
@@ -50,15 +52,20 @@ export function ProductPurchasePanel({
   notice,
 }: ProductPurchasePanelProps) {
   const router = useRouter();
+  const cart = useCartMutations();
+  const submitting = useRef(false);
+  const [mergedPurchase, setMergedPurchase] = useState<{
+    id: string;
+    quantity: number;
+  } | null>(null);
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const actions = useProductActions(product.id, userId, isAuthenticated);
   const [choices, setChoices] = useState<ProductChoices>({});
   const [lines, setLines] = useState<PurchaseSelection[]>(() => {
-    const initial =
-      !product.isMock || product.optionGroups.length
-        ? null
-        : createSelection(product, {});
+    const initial = product.optionGroups.length
+      ? null
+      : createSelection(product, {});
     return initial ? [initial] : [];
   });
   const [lastSelectionKey, setLastSelectionKey] = useState<string | null>(
@@ -71,7 +78,9 @@ export function ProductPurchasePanel({
   const unknownStock = product.stock === null;
   const groups = product.optionGroups;
   const missingGroups = groups.filter((group) => !choices[group.id]);
-  const busy = actions.cart.isPending || actions.restock.isPending;
+  const busy =
+    actions.cart.isPending || actions.restock.isPending || cart.add.isPending;
+  const unsupportedOptions = !product.isMock && groups.length > 0;
   const wished = isAuthenticated && (actions.state.data?.wished ?? false);
 
   function handleChoose(index: number, value: string | null) {
@@ -136,8 +145,76 @@ export function ProductPurchasePanel({
     return true;
   }
 
+  async function handleLivePurchase(checkout: boolean) {
+    if (
+      submitting.current ||
+      busy ||
+      soldOut ||
+      unknownStock ||
+      unsupportedOptions ||
+      product.status !== "ON_SALE"
+    )
+      return;
+    if (!lines.length) {
+      onNotify("구매할 작품을 추가해 주세요.");
+      return;
+    }
+    if (checkout && !isAuthenticated) {
+      onRequireLogin(true);
+      return;
+    }
+    submitting.current = true;
+    try {
+      const result = await cart.add.mutateAsync({
+        productId: product.id,
+        quantity: lines.reduce((sum, line) => sum + line.quantity, 0),
+      });
+      const added = result.lines.filter(
+        (line) =>
+          line.productId === product.id &&
+          !line.selectedOptions.length &&
+          !line.textInputs.length,
+      );
+      if (checkout) {
+        if (added.length !== 1 || added[0].soldOut) {
+          onNotify("장바구니에 담긴 작품 상태를 확인해 주세요.", {
+            label: "장바구니 보기",
+            onClick: () => router.push("/cart"),
+          });
+          return;
+        }
+        const requestedQuantity = lines.reduce(
+          (sum, line) => sum + line.quantity,
+          0,
+        );
+        if (added[0].quantity !== requestedQuantity) {
+          setMergedPurchase({
+            id: added[0].lineId,
+            quantity: added[0].quantity,
+          });
+          return;
+        }
+        router.push(`/checkout/new?items=${added[0].lineId}`);
+      } else {
+        onNotify("장바구니에 작품을 담았습니다.", {
+          label: "장바구니 보기",
+          onClick: () => router.push("/cart"),
+        });
+      }
+    } catch {
+      onNotify(
+        "장바구니에 담지 못했습니다. 재고와 수량을 확인하고 다시 시도해 주세요.",
+      );
+    } finally {
+      submitting.current = false;
+    }
+  }
+
   function handlePurchase(checkout = false) {
-    if (!product.isMock) return;
+    if (!product.isMock) {
+      void handleLivePurchase(checkout);
+      return;
+    }
     if (!validatePurchase(true) || busy) return;
     const snapshot = toCartPreviewLines(product, lines);
     actions.cart.mutate(
@@ -401,22 +478,18 @@ export function ProductPurchasePanel({
           </div>
         )}
       </div>
-      {product.isMock &&
-        !groups.length &&
-        !lines.length &&
-        !soldOut &&
-        !unknownStock && (
-          <Button
-            variant="outline"
-            size="s"
-            onClick={() => {
-              const selection = createSelection(product, {});
-              if (selection) setLines([selection]);
-            }}
-          >
-            작품 추가
-          </Button>
-        )}
+      {!groups.length && !lines.length && !soldOut && !unknownStock && (
+        <Button
+          variant="outline"
+          size="s"
+          onClick={() => {
+            const selection = createSelection(product, {});
+            if (selection) setLines([selection]);
+          }}
+        >
+          작품 추가
+        </Button>
+      )}
       {lines.length > 0 && (
         <div
           className="flex flex-col gap-2 border-t border-border-neutral-weak pt-6"
@@ -499,11 +572,11 @@ export function ProductPurchasePanel({
             재고를 확인 중입니다.
           </p>
         )}
-        {!product.isMock && (
+        {!product.isMock && (soldOut || unsupportedOptions) && (
           <p className="text-body-s text-font-dark-weak">
             {soldOut
               ? "재입고 알림은 아직 지원하지 않습니다."
-              : "구매 옵션을 확인 중입니다. 장바구니와 구매는 준비 중입니다."}
+              : "이 작품의 옵션 구매는 아직 지원하지 않습니다."}
           </p>
         )}
         <div className="flex gap-2">
@@ -511,7 +584,11 @@ export function ProductPurchasePanel({
             variant="outline"
             size="xl"
             className="w-2/5 min-w-0 border-border-neutral-solid px-3 xl:w-50"
-            disabled={!product.isMock || (unknownStock && !soldOut)}
+            disabled={
+              unsupportedOptions ||
+              (!product.isMock && soldOut) ||
+              (unknownStock && !soldOut)
+            }
             loading={busy}
             onClick={soldOut ? handleRestock : () => handlePurchase()}
           >
@@ -520,13 +597,42 @@ export function ProductPurchasePanel({
           <Button
             size="xl"
             className="min-w-0 flex-1 px-3"
-            disabled={!product.isMock || soldOut || unknownStock || busy}
+            disabled={unsupportedOptions || soldOut || unknownStock || busy}
             onClick={() => handlePurchase(true)}
           >
             {soldOut ? "품절" : "구매하기"}
           </Button>
         </div>
       </div>
+      <Dialog
+        open={mergedPurchase !== null}
+        onOpenChange={(open) => {
+          if (!open) setMergedPurchase(null);
+        }}
+        variant="confirmation"
+        title="장바구니에 같은 작품이 있습니다"
+        description={`기존 수량을 포함해 총 ${mergedPurchase?.quantity ?? 0}개가 담겨 있습니다. 이 수량으로 주문하시겠습니까?`}
+      >
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() => router.push("/cart")}
+          >
+            수량 확인하기
+          </Button>
+          <Button
+            className="flex-1"
+            onClick={() => {
+              if (mergedPurchase)
+                router.push(`/checkout/new?items=${mergedPurchase.id}`);
+            }}
+          >
+            주문 계속하기
+          </Button>
+        </div>
+      </Dialog>
     </section>
   );
 }
+

@@ -45,8 +45,8 @@ export function mapMemberDetail(dto: MemberProfileResponseDto): MemberProfile {
     id: dto.memberId,
     name: dto.name,
     email: dto.email,
-    phone: dto.phone,
-    authProvider: mapAuthProvider(dto.authProvider),
+    phone: dto.phone ?? "",
+    authProvider: dto.provider ?? mapAuthProvider(dto.authProvider),
     role: dto.role,
   };
 }

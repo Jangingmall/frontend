@@ -2,11 +2,15 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 interface PaymentAgreementProps {
   agreed: boolean;
+  disabled?: boolean;
+  submitLabel?: string;
   onAgreedChange: (checked: boolean) => void;
   onDetails: () => void;
 }
 export function PaymentAgreement({
   agreed,
+  disabled = false,
+  submitLabel = "결제하기",
   onAgreedChange,
   onDetails,
 }: PaymentAgreementProps) {
@@ -28,11 +32,20 @@ export function PaymentAgreement({
           자세히
         </Button>
       </div>
-      <Checkbox checked={agreed} onCheckedChange={onAgreedChange}>
+      <Checkbox
+        disabled={disabled}
+        checked={agreed}
+        onCheckedChange={onAgreedChange}
+      >
         약관에 동의합니다.
       </Checkbox>
-      <Button type="submit" size="l" className="w-full" disabled={!agreed}>
-        결제하기
+      <Button
+        type="submit"
+        size="l"
+        className="w-full"
+        disabled={!agreed || disabled}
+      >
+        {submitLabel}
       </Button>
     </section>
   );

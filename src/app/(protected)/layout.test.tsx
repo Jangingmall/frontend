@@ -14,10 +14,23 @@ vi.mock("next/navigation", () => ({
 
 beforeEach(() => {
   replace.mockClear();
+  window.history.replaceState(null, "", "/");
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
 });
 
 describe("ProtectedLayout", () => {
+  it("로그인 뒤 결제 콜백과 선택 상품의 쿼리 파라미터를 보존한다", () => {
+    window.history.replaceState(
+      null,
+      "",
+      "/?paymentKey=pk-test&orderId=ORD-1&amount=85000",
+    );
+    useAuthStore.setState({ status: "anonymous" });
+    render(<ProtectedLayout>보호된 화면</ProtectedLayout>);
+    expect(replace).toHaveBeenCalledWith(
+      `/login?returnUrl=${encodeURIComponent("/mypage/orders?paymentKey=pk-test&orderId=ORD-1&amount=85000")}`,
+    );
+  });
   it("loading이면 로딩을 보여주고 리다이렉트하지 않는다", () => {
     render(<ProtectedLayout>보호된 화면</ProtectedLayout>);
 
