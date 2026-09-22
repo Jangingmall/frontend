@@ -18,7 +18,8 @@ export default async function OrderCompleteRoutePage({
   const outcome = resolveOrderCompleteOutcome(
     orderId,
     result,
-    publicEnv.apiMocking && !publicEnv.isVercelProduction,
+    publicEnv.apiMocking &&
+      (!publicEnv.isVercelProduction || publicEnv.allowProductionMock),
   );
 
   if (!outcome) notFound();

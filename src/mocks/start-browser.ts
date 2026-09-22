@@ -16,15 +16,15 @@ let startPromise: Promise<void> | null = null;
  * `worker.start()` 완료 전에 두 번째 호출을 즉시 resolve시켜 첫 요청이 인터셉트를 놓친다).
  * 실패하면 상태를 되돌려 다음 호출이 재시도할 수 있게 한다.
  *
- * Vercel 실제 production 배포(`publicEnv.isVercelProduction`)면 플래그가 켜져 있어도
- * 띄우지 않는다 — `src/instrumentation.ts`(서버 쪽 게이트)와 동일한 이유(PR 리뷰 —
- * CodeRabbit Security Review). 배포 환경 변수에 실수로 목업 플래그가 남아 있어도
- * 브라우저에서 임의 mock 신원(예: ADMIN)을 얻을 수 없게 한다. `NODE_ENV === "production"`
- * 으로 먼저 막았다가 CI E2E(의도적으로 production 빌드에서 목업을 씀)까지 걸려 전부
- * 실패한 적이 있다 — "빌드 모드"가 아니라 "어디에 떠 있는가"로 판단해야 한다.
+ * Vercel Production에서는 기본적으로 차단한다. 공유 테스트 배포에 한해
+ * NEXT_PUBLIC_ALLOW_PRODUCTION_MOCK=enabled를 추가로 지정하면 허용한다.
+ * 로컬 및 Preview는 기존 MSW 플래그만 따른다.
  */
 export function startMockWorker(): Promise<void> {
-  if (!publicEnv.apiMocking || publicEnv.isVercelProduction) {
+  if (
+    !publicEnv.apiMocking ||
+    (publicEnv.isVercelProduction && !publicEnv.allowProductionMock)
+  ) {
     return Promise.resolve();
   }
   startPromise ??= (async () => {
