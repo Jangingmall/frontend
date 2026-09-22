@@ -204,7 +204,7 @@ export async function startMockOAuthLogin(
 }
 
 export interface CompleteOAuthProfileRequest {
-  agreements?: SignupRequest["agreements"];
+  agreements: SignupRequest["agreements"];
   provider: OAuthProvider;
   email: string;
   name: string;

@@ -107,6 +107,26 @@ export function LiveCartRoute() {
       ),
     }));
   }
+  async function checkout() {
+    const ids = selected.map((line) => line.lineId);
+    const latest = await cart.refetch();
+    // 현재 백엔드는 selected 변경 API가 없으며 생성 시 true로 고정한다.
+    // 오래되었거나 비정상인 서버 항목을 로컬 체크만으로 주문하지 않는다.
+    if (
+      latest.isError ||
+      !ids.every((id) =>
+        latest.data?.lines.some(
+          (line) => line.lineId === id && line.selected && !line.soldOut,
+        ),
+      )
+    ) {
+      setError(
+        "선택한 상품의 주문 가능 상태를 확인할 수 없습니다. 장바구니를 확인해 주세요.",
+      );
+      return;
+    }
+    router.push(`/checkout/new?items=${ids.join(",")}`);
+  }
   return (
     <div className="flex-1 bg-bg-subtle">
       <div className="mx-auto w-full max-w-234 px-6 pt-16 pb-50">
@@ -234,9 +254,7 @@ export function LiveCartRoute() {
                   disabled={pending || !selected.length}
                   onClick={() =>
                     status === "authenticated"
-                      ? router.push(
-                          `/checkout/new?items=${selected.map((line) => line.lineId).join(",")}`,
-                        )
+                      ? void run(checkout)
                       : setLoginOpen(true)
                   }
                 >

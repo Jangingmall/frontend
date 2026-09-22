@@ -200,6 +200,12 @@ describe("member api", () => {
 
   it("completeOAuthProfile: 새 이메일이면 가입 + 세션(accessToken+user)을 반환한다", async () => {
     const result = await completeOAuthProfile({
+      agreements: {
+        age14OrOlder: true,
+        termsOfService: true,
+        privacyCollection: true,
+        marketing: false,
+      },
       provider: "kakao",
       email: "kakao-newbie@midam.test",
       name: "김소셜",
@@ -215,6 +221,12 @@ describe("member api", () => {
     // 지키는지 확인한다 — TS로는 막히는 값을 일부러 흘려보낸다.
     await expect(
       completeOAuthProfile({
+        agreements: {
+          age14OrOlder: true,
+          termsOfService: true,
+          privacyCollection: true,
+          marketing: false,
+        },
         provider: "google" as unknown as "naver",
         email: "google-user@midam.test",
         name: "김소셜",
@@ -226,6 +238,12 @@ describe("member api", () => {
   it("completeOAuthProfile: 필수 항목이 비어 있으면 ApiError 400", async () => {
     await expect(
       completeOAuthProfile({
+        agreements: {
+          age14OrOlder: true,
+          termsOfService: true,
+          privacyCollection: true,
+          marketing: false,
+        },
         provider: "naver",
         email: "",
         name: "김소셜",
@@ -239,6 +257,12 @@ describe("member api", () => {
     // "연동"이 아니라 무조건 CONFLICT다(PR 리뷰).
     await expect(
       completeOAuthProfile({
+        agreements: {
+          age14OrOlder: true,
+          termsOfService: true,
+          privacyCollection: true,
+          marketing: false,
+        },
         provider: "kakao",
         email: memberMeArtisan.email,
         name: "다른이름",
@@ -257,6 +281,12 @@ describe("member api", () => {
     // 한다(이전엔 이 검사가 빠져 있었다).
     await expect(
       completeOAuthProfile({
+        agreements: {
+          age14OrOlder: true,
+          termsOfService: true,
+          privacyCollection: true,
+          marketing: false,
+        },
         provider: "naver",
         email: "naver-unverified@midam.test",
         name: "김소셜",
@@ -293,6 +323,12 @@ describe("member api", () => {
 
     await expect(
       completeOAuthProfile({
+        agreements: {
+          age14OrOlder: true,
+          termsOfService: true,
+          privacyCollection: true,
+          marketing: false,
+        },
         provider: "kakao",
         email,
         name: "김소셜",

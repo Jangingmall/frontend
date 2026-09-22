@@ -10,7 +10,10 @@ import { useAuthStore } from "@/stores/auth";
 import { LiveCartRoute } from "./LiveCartRoute";
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
-afterEach(() => useAuthStore.getState().clear());
+afterEach(() => {
+  useAuthStore.getState().clear();
+  push.mockClear();
+});
 const item = (id: number, selected: boolean) => ({
   cartItemId: id,
   productId: id,
@@ -137,7 +140,17 @@ it("passes only selected numeric cart IDs to checkout", async () => {
   setup();
   await screen.findByText("상품91");
   await userEvent.click(screen.getByRole("button", { name: "1건 구매하기" }));
-  expect(push).toHaveBeenCalledWith("/checkout/new?items=91");
+  await waitFor(() =>
+    expect(push).toHaveBeenCalledWith("/checkout/new?items=91"),
+  );
+});
+it("does not navigate when a locally checked item is not orderable on the server", async () => {
+  setup();
+  await screen.findByText("상품91");
+  await userEvent.click(screen.getByRole("checkbox", { name: "전체 선택" }));
+  await userEvent.click(screen.getByRole("button", { name: "2건 구매하기" }));
+  await screen.findByRole("alert");
+  expect(push).not.toHaveBeenCalled();
 });
 it("shows a failed quantity change without changing the server quantity", async () => {
   setup();

@@ -83,7 +83,10 @@ export function RealCheckoutPage({
   const loading = cart.isPending || addresses.isPending;
   const unavailable = cart.isError || addresses.isError;
   const invalidSelection =
-    !allowOrder || !ids.length || lines.length !== ids.length;
+    !allowOrder ||
+    !ids.length ||
+    lines.length !== ids.length ||
+    lines.some((line) => !line.selected);
   const blocked = loading || unavailable || invalidSelection;
   const selectedAddress =
     addressId ?? addresses.data?.find((address) => address.isDefault)?.id;

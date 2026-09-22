@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 import { Footer } from "@/components/common/footer";
 
 import { AuthBootstrap } from "./auth-bootstrap";
-import { CartSessionSync } from "./cart-session-sync";
 import { pretendard } from "./fonts";
 import { MockIdentitySwitcher } from "./mock-identity-switcher-loader";
 import { QueryProvider } from "./query-provider";
@@ -26,9 +25,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthBootstrap>
             <SiteGnb />
-            <main className="flex flex-1 flex-col">
-              <CartSessionSync>{children}</CartSessionSync>
-            </main>
+            <main className="flex flex-1 flex-col">{children}</main>
             <Footer />
             <MockIdentitySwitcher />
           </AuthBootstrap>

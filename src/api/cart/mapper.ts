@@ -47,7 +47,7 @@ export function mapCart(dto: CartDto): Cart {
         unitPrice: item.unitPrice,
         maxQuantity: Infinity,
         soldOut: item.soldOut,
-        selected: item.selected && !item.soldOut,
+        selected: item.selected,
       })),
     ),
   };

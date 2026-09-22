@@ -60,6 +60,26 @@ it("maps server IDs, availability and section shipping without inventing stock",
     getCartShippingAmount(cart.sections, [{ ...cart.lines[0], quantity: 3 }]),
   ).toBe(0);
 });
+it("preserves server selection when an existing order reservation makes the item sold out", async () => {
+  server.use(
+    http.get("*/api/payments/cart", () =>
+      HttpResponse.json({
+        success: true,
+        data: {
+          ...dto,
+          sections: dto.sections.map((section) => ({
+            ...section,
+            items: section.items.map((item) => ({ ...item, soldOut: true })),
+          })),
+        },
+      }),
+    ),
+  );
+  expect((await fetchCart()).lines[0]).toMatchObject({
+    soldOut: true,
+    selected: true,
+  });
+});
 it("sends quantity and add commands, deletes an individual item and merges the cookie cart", async () => {
   server.use(
     http.patch("*/api/payments/cart/items/91", async ({ request }) =>

@@ -15,6 +15,7 @@ export default function OAuthCallbackPage() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
   const request = useRef<ReturnType<typeof exchangeOAuthTicket> | null>(null);
+  const handled = useRef(false);
   const [error, setError] = useState(false);
   const [onboarding, setOnboarding] = useState<{
     provider: OAuthProvider;
@@ -24,6 +25,7 @@ export default function OAuthCallbackPage() {
     // 부팅 refresh가 끝난 뒤 교환하여 새 세션을 이전 refresh 실패가 지우지 않게 한다.
     if (status === "loading") return;
     if (
+      request.current === null &&
       status === "authenticated" &&
       !sessionStorage.getItem("oauth-provider")
     ) {
@@ -32,11 +34,13 @@ export default function OAuthCallbackPage() {
       );
       return;
     }
+    if (handled.current) return;
     let active = true;
     request.current ??= exchangeOAuthTicket();
     void request.current
       .then((result) => {
         if (!active) return;
+        handled.current = true;
         const returnUrl = safeReturnUrl(
           sessionStorage.getItem("oauth-return"),
           "/",

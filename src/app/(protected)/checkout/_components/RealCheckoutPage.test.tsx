@@ -5,6 +5,7 @@ import { ApiError } from "@/lib/http/api-error";
 
 import { RealCheckoutPage } from "./RealCheckoutPage";
 const state = vi.hoisted(() => ({
+  selected: true,
   soldOut: false,
   unavailable: false,
   empty: false,
@@ -41,6 +42,7 @@ vi.mock("@/queries/cart", () => ({
                   quantity: 1,
                   options: [],
                   soldOut: state.soldOut,
+                  selected: state.selected,
                 },
               ],
           sections: [],
@@ -82,6 +84,7 @@ vi.mock("@/components/order/PaymentsMethod", () => ({
   ),
 }));
 beforeEach(() => {
+  state.selected = true;
   sessionStorage.clear();
   vi.clearAllMocks();
   state.soldOut = false;
@@ -105,6 +108,15 @@ function fill() {
   fireEvent.click(screen.getByRole("checkbox", { name: "약관에 동의합니다." }));
   fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
 }
+it("blocks a direct checkout URL for a server-unselected item", () => {
+  state.selected = false;
+  render(<RealCheckoutPage />);
+  expect(screen.getByRole("button", { name: "결제하기" })).toBeDisabled();
+  expect(
+    screen.getByText(/선택한 장바구니 상품을 확인할 수 없습니다/),
+  ).toBeVisible();
+  expect(state.create).not.toHaveBeenCalled();
+});
 it("never reserves an order on render or invalid submit", () => {
   render(<RealCheckoutPage />);
   expect(state.create).not.toHaveBeenCalled();

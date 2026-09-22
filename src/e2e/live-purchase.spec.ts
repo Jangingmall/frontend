@@ -5,7 +5,9 @@ test("실제 백엔드 상세 → 카트 → 주문서와 미승인 완료 차�
 }) => {
   test.setTimeout(90000);
   test.skip(
-    !process.env.LIVE_API_EMAIL,
+    !process.env.LIVE_API_EMAIL ||
+      !process.env.LIVE_API_PASSWORD ||
+      !process.env.LIVE_ORDER_ID,
     "별도 로컬 백엔드와 검증 계정이 필요합니다",
   );
   await page.goto("/login?returnUrl=%2Fproducts%2Ftest-1");
@@ -41,9 +43,11 @@ test("실제 백엔드 상세 → 카트 → 주문서와 미승인 완료 차�
   await page.goto(
     `/checkout/${process.env.LIVE_ORDER_ID}/complete?result=success`,
   );
-  await expect(page.getByText("결제 완료가 확인되지 않았습니다")).toBeVisible();
+  await expect(page.getByText("결제 완료가 확인되지 않았습니다")).toBeVisible({
+    timeout: 30000,
+  });
   await page.goto(`/mypage/orders/${process.env.LIVE_ORDER_ID}`);
   await expect(
     page.getByText("API 연동 검증 찻잔", { exact: true }).first(),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 30000 });
 });
