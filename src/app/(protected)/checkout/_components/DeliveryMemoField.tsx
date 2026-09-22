@@ -26,6 +26,7 @@ export function DeliveryMemoField() {
             value={field.value || null}
             onValueChange={(value) => field.onChange(value ?? "")}
             ariaLabel="배송 메모"
+            alignItemWithTrigger={false}
             placeholder="배송 메모를 선택해 주세요."
           >
             {DELIVERY_MEMOS.map((value) => (

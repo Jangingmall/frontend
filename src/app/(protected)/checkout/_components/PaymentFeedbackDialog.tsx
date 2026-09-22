@@ -19,11 +19,13 @@ const COPY = {
 };
 interface PaymentFeedbackDialogProps {
   outcome: PaymentFailure | null;
+  message?: string;
   onClose: () => void;
   onCart: () => void;
 }
 export function PaymentFeedbackDialog({
   outcome,
+  message,
   onClose,
   onCart,
 }: PaymentFeedbackDialogProps) {
@@ -37,7 +39,9 @@ export function PaymentFeedbackDialog({
       variant="confirmation"
       title={copy.title}
       description={
-        <span className="whitespace-pre-line">{copy.description}</span>
+        <span className="whitespace-pre-line">
+          {message ?? copy.description}
+        </span>
       }
     >
       <div className="flex gap-3 max-sm:flex-col">

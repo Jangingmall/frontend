@@ -266,31 +266,15 @@ describe("SignupFlow", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it("목업이 꺼져 소셜 버튼이 실패하면 조용히 끝나지 않고 에러를 보여준다(리뷰 F1)", async () => {
-    // `startMockOAuthLogin`이 던지는 유일한 경로 — 실제 배포에서 apiMocking이 꺼진 채
-    // 아직 실제 OAuth 리다이렉트로 안 바꾼 상태를 흉내낸다.
+  it("실제 소셜 버튼은 제공자 이동 정보를 보존하고 추가정보를 임의 생성하지 않는다", async () => {
     Object.assign(publicEnv, { apiMocking: false });
-    const user = userEvent.setup();
-    renderSignupFlow();
-
-    await user.click(
+    renderSignupFlow("/cart");
+    await userEvent.click(
       screen.getByRole("button", { name: "카카오톡으로 빠르게 가입하기" }),
     );
-
-    expect(await screen.findByRole("alert")).toBeInTheDocument();
-    // 추가정보 입력 화면으로는 넘어가지 않고 01단계에 그대로 남는다.
-    expect(
-      screen.getByRole("button", { name: "이메일,비밀번호로 가입하기" }),
-    ).toBeInTheDocument();
-  });
-
-  it("목업이 꺼진 채 /login에서 provider로 진입하면 01단계로 빠져나오며 에러를 보여준다(리뷰 F1)", async () => {
-    Object.assign(publicEnv, { apiMocking: false });
-    renderSignupFlow(null, "kakao");
-
-    expect(await screen.findByRole("alert")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "이메일,비밀번호로 가입하기" }),
-    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(sessionStorage.getItem("oauth-provider")).toBe("kakao"),
+    );
+    expect(screen.queryByText("이름")).not.toBeInTheDocument();
   });
 });

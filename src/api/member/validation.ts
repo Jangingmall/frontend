@@ -18,11 +18,7 @@ export const accessTokenResponseDto = z
   .object({ accessToken: z.string().min(1) })
   .passthrough();
 
-/**
- * 로그인 방식. **BE 계약 미확정 — 이 작업에서 가정 추가**(design.md 참고). `MemberProfileResponse`엔
- * 아직 이 필드가 없다 — DB(`MemberSocialAccount`)엔 연동 정보가 있으나 응답에 노출되지 않아
- * 필드 추가를 요청한 상태. `null`은 `LOCAL`과 동일하게 취급한다.
- */
+/** 기존 목업의 authProvider와 실제 응답의 provider를 모두 지원한다. */
 const authProviderSchema = z.enum(["LOCAL", "NAVER", "KAKAO"]).nullable();
 
 export const memberProfileResponseDto = z
@@ -37,9 +33,10 @@ export const memberProfileResponseDto = z
     // 판매자는 "ARTISAN" 단일 값. 배열이 아니다. (docs/api-contract.md §3)
     role: roleSchema,
     profileImageUrl: z.string().nullable(),
-    // 회원가입이 필수로 받는 값이라 항상 존재한다고 가정(BE `Member.phone` non-null 컬럼).
-    phone: z.string(),
-    authProvider: authProviderSchema,
+    // MemberProfileResponse는 전화번호를 내려주지 않는다. 폼에서 직접 입력받는다.
+    phone: z.string().optional(),
+    authProvider: authProviderSchema.optional(),
+    provider: z.enum(["naver", "kakao"]).nullable().optional(),
   })
   .passthrough();
 
@@ -63,13 +60,10 @@ export const emailVerificationResponseDto = z
   .object({ expiresInSeconds: z.number().int().positive() })
   .passthrough();
 
-/**
- * `POST /api/member/signup` 응답. **BE에 변경을 요청한 형태**(design.md §0.2) — 로그인과
- * 동일하게 세션(`accessToken`+`member`)을 받는다고 가정한다. 실제로 지금 BE가 주는 건
- * `{ memberId, email, status }`뿐이라(세션 없음) BE가 이 변경을 배포하기 전엔 실제 서버로
- * 가입할 때마다 이 스키마의 `parse`가 실패한다 — 알고 진행하는 배포 순서 리스크.
- */
-export const signupResponseDto = loginResponseDto;
+/** 최신 가입 응답: member 정보와 nullable accessToken. */
+export const signupResponseDto = loginResponseDto.extend({
+  accessToken: z.string().min(1).nullable(),
+});
 
 export type EmailVerificationResponseDto = z.infer<
   typeof emailVerificationResponseDto

@@ -1,4 +1,7 @@
-import type { ProductDetail } from "@/types/product-detail";
+import type {
+  ProductContentBlock,
+  ProductDetail,
+} from "@/types/product-detail";
 
 import type {
   ProductDetailDto,
@@ -15,7 +18,20 @@ export function mapProductDetail(dto: ProductDetailDto): ProductDetail | null {
     price: dto.price,
     stock: dto.stock ?? null,
     status: dto.status,
-    images: dto.thumbnailUrl ? [{ src: dto.thumbnailUrl, alt: dto.title }] : [],
+    images: dto.images?.some((image) => image.variants?.length)
+      ? dto.images.flatMap((image) =>
+          image.variants?.length
+            ? [
+                {
+                  src: image.variants[image.variants.length - 1].url,
+                  alt: image.alt ?? dto.title,
+                },
+              ]
+            : [],
+        )
+      : dto.thumbnailUrl
+        ? [{ src: dto.thumbnailUrl, alt: dto.title }]
+        : [],
     artisan: null,
     rating: null,
     reviewCount: 0,
@@ -29,7 +45,25 @@ export function mapProductDetail(dto: ProductDetailDto): ProductDetail | null {
           },
     optionGroups: [],
     variants: null,
-    content: [],
+    content: [...(dto.detailPageBlocks ?? [])]
+      .sort((a, b) => a.order - b.order)
+      .flatMap((block): ProductContentBlock[] => {
+        const content: ProductContentBlock[] = [];
+        if (block.hasImage && block.imageVariants?.length)
+          content.push({
+            type: "image",
+            image: {
+              src: block.imageVariants[block.imageVariants.length - 1].url,
+              alt: dto.title,
+            },
+          });
+        if (block.text)
+          content.push({
+            type: /^h[1-6]$/i.test(block.tag) ? "heading" : "paragraph",
+            text: block.text,
+          });
+        return content;
+      }),
     specifications: [],
     notices: [],
     shippingInformation: [],

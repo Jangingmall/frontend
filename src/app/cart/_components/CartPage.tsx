@@ -35,6 +35,7 @@ export interface CartPageProps {
   onLogin?: () => void;
   onHome?: () => void;
   onArtisanClick?: (id: number) => void;
+  onEditOptions?: (path: string) => void;
 }
 export function CartPage({
   initialLines,
@@ -44,6 +45,7 @@ export function CartPage({
   onLogin,
   onHome,
   onArtisanClick,
+  onEditOptions,
 }: CartPageProps) {
   const [lines, setLines] = useState(initialLines);
   const [deleteIds, setDeleteIds] = useState<string[]>([]);
@@ -181,6 +183,10 @@ export function CartPage({
                           }
                           onDelete={() => requestDelete([line.lineId])}
                           onOptions={() => {
+                            if (line.productPath) {
+                              onEditOptions?.(line.productPath);
+                              return;
+                            }
                             rememberTrigger();
                             setOptionLine(line);
                           }}

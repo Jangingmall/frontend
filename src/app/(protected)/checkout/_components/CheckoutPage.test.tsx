@@ -19,8 +19,8 @@ describe("주문 결제", () => {
     ).toHaveLength(1);
     await user.type(screen.getByLabelText("주문자 이름"), "홍길동");
     const prefix = screen.getByLabelText("주문자 휴대전화 앞자리");
-    await user.clear(prefix);
-    await user.type(prefix, "011");
+    await user.click(prefix);
+    await user.click(await screen.findByRole("option", { name: "011" }));
     await user.click(
       screen.getByRole("checkbox", { name: "주문자 정보와 동일" }),
     );
@@ -175,8 +175,8 @@ it("동일 배송 체크 후 주문자 수정은 동기화하고 해제 후 수�
   await user.clear(screen.getByLabelText("주문자 이름"));
   await user.type(screen.getByLabelText("주문자 이름"), "이주문");
   const prefix = screen.getByLabelText("주문자 휴대전화 앞자리");
-  await user.clear(prefix);
-  await user.type(prefix, "011");
+  await user.click(prefix);
+  await user.click(await screen.findByRole("option", { name: "011" }));
   expect(screen.getByLabelText("수령인 이름")).toHaveValue("이주문");
   expect(screen.getByLabelText("수령인 휴대전화 앞자리")).toHaveValue("011");
   await user.click(

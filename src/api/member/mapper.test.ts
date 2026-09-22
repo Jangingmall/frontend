@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { mapAddress, mapMemberDetail, mapMemberProfile } from "./mapper";
+import { memberProfileResponseDto } from "./validation";
 
 describe("mapMemberProfile", () => {
   it("DTO를 AuthUser 형태로 좁힌다 (memberId → id, role 단일값)", () => {
@@ -43,6 +44,21 @@ describe("mapMemberProfile", () => {
 });
 
 describe("mapMemberDetail", () => {
+  it("백엔드 provider를 매핑하고 누락된 전화번호는 빈 입력으로 남긴다", () => {
+    const dto = memberProfileResponseDto.parse({
+      memberId: 7,
+      email: "buyer@example.test",
+      name: "구매자",
+      nickname: null,
+      role: "USER",
+      profileImageUrl: null,
+      provider: "kakao",
+    });
+    expect(mapMemberDetail(dto)).toMatchObject({
+      phone: "",
+      authProvider: "kakao",
+    });
+  });
   it("email·phone·authProvider까지 포함한 마이페이지 전용 모델로 변환한다", () => {
     expect(
       mapMemberDetail({

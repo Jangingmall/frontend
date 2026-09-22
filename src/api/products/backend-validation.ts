@@ -5,7 +5,7 @@ const natural = z.number().int().nonnegative().safe();
 export const backendProductListDto = z.object({
   content: z.array(
     productDetailDto.extend({
-      status: z.literal("ON_SALE"),
+      status: z.enum(["ON_SALE", "SOLD_OUT"]),
       categoryId: natural.positive().nullable(),
       categoryName: z.string().nullable(),
       subcategoryId: natural.positive().nullable(),

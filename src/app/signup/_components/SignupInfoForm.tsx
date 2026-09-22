@@ -18,6 +18,7 @@ import {
   passwordStrengthState,
 } from "@/constants/password";
 import { PHONE_PREFIXES } from "@/constants/phone";
+import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useCompleteOAuthProfileMutation,
@@ -28,6 +29,7 @@ import {
 import { useAuthStore } from "@/stores/auth";
 import type { OAuthProvider } from "@/types/auth";
 
+import { EmailVerificationPending } from "./EmailVerificationPending";
 import { TermsAgreementFields } from "./TermsAgreementFields";
 
 /**
@@ -179,6 +181,8 @@ export function SignupInfoForm({
   socialContext,
 }: SignupInfoFormProps) {
   const router = useRouter();
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const liveSocial = !publicEnv.apiMocking && socialContext !== null;
   const [formError, setFormError] = useState<string | null>(null);
   // 소셜 로그인이 이미 인증된 이메일을 줬으면(카카오) 처음부터 "인증 완료" 상태로 시작해
   // 이메일 입력·인증 UI 전체를 건너뛴다 — 네이버(이메일 미제공)·일반 이메일 가입은 기존과
@@ -206,7 +210,13 @@ export function SignupInfoForm({
     setValue,
     formState: { errors },
   } = useForm<SignupInfoFormValues>({
-    resolver: zodResolver(socialContext ? socialInfoSchema : signupInfoSchema),
+    resolver: zodResolver(
+      socialContext
+        ? liveSocial
+          ? socialInfoSchema.extend({ email: z.string() })
+          : socialInfoSchema
+        : signupInfoSchema,
+    ),
     defaultValues: {
       name: "",
       email: socialContext?.suggestedEmail ?? "",
@@ -235,7 +245,9 @@ export function SignupInfoForm({
     ],
   });
   const requiredTermsAgreed = requiredTerms.every(Boolean);
-  const canSubmit = verificationStatus === "verified" && requiredTermsAgreed;
+  const canSubmit =
+    (!publicEnv.apiMocking || verificationStatus === "verified") &&
+    requiredTermsAgreed;
   const strength = passwordStrengthState(password);
   // "만료"는 별도 state가 아니라 파생값이다 — effect 안에서 다른 state를 또 setState하는
   // cascading render를 피한다(react-hooks/set-state-in-effect).
@@ -312,6 +324,12 @@ export function SignupInfoForm({
             email: values.email,
             name: values.name,
             phone,
+            agreements: {
+              age14OrOlder: values.age14OrOlder,
+              termsOfService: values.termsOfService,
+              privacyCollection: values.privacyCollection,
+              marketing: values.marketing || values.eventPromotion,
+            },
           })
         : await signupMutation.mutateAsync({
             email: values.email,
@@ -328,6 +346,11 @@ export function SignupInfoForm({
             },
           });
       // 로그인과 동일하게 세션을 만든다(design.md §0.2 — BE 응답 계약 변경 반영 전제).
+      if (!accessToken) {
+        setPendingEmail(values.email);
+        return;
+      }
+      if (liveSocial) sessionStorage.removeItem("oauth-provider");
       useAuthStore.getState().setSession(accessToken, user);
       const target = returnUrl
         ? `/signup/complete?returnUrl=${encodeURIComponent(returnUrl)}`
@@ -354,6 +377,10 @@ export function SignupInfoForm({
     verificationStatus === "idle" ? "인증 메일 발송" : "재발송";
   const isEmailLocked = verificationStatus === "verified";
 
+  if (pendingEmail)
+    return (
+      <EmailVerificationPending email={pendingEmail} returnUrl={returnUrl} />
+    );
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -369,79 +396,86 @@ export function SignupInfoForm({
           />
         </FieldRow>
 
-        <FieldRow label="이메일">
-          <div className="flex items-start gap-2">
-            <div className="flex-1">
-              <InputField
-                type="text"
-                placeholder="example@email.com"
-                disabled={isEmailLocked}
-                error={errors.email?.message}
-                {...register("email")}
-              />
-            </div>
-            {/* 카카오처럼 provider가 이미 인증된 이메일을 준 경우 인증요청 자체가 필요 없다. */}
-            {!isSocialEmailProvided && (
-              <Button
-                type="button"
-                variant="outline"
-                size="s"
-                disabled={
-                  isEmailLocked ||
-                  resendCooldown > 0 ||
-                  requestVerificationMutation.isPending
-                }
-                onClick={handleSendVerification}
-              >
-                {verificationActionLabel}
-              </Button>
-            )}
-          </div>
-
-          {verificationStatus === "sent" && (
+        {!liveSocial && (
+          <FieldRow label="이메일">
             <div className="flex items-start gap-2">
               <div className="flex-1">
                 <InputField
-                  placeholder="인증코드를 입력해주세요"
-                  inputMode="numeric"
-                  value={verificationCode}
-                  onValueChange={setVerificationCode}
-                  error={
-                    codeError ??
-                    (isVerificationExpired
-                      ? "인증 시간이 지났습니다."
-                      : undefined)
-                  }
-                  helperText={
-                    isVerificationExpired
-                      ? undefined
-                      : `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")} 남음`
-                  }
+                  type="text"
+                  placeholder="example@email.com"
+                  disabled={isEmailLocked}
+                  error={errors.email?.message}
+                  {...register("email")}
                 />
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="s"
-                disabled={
-                  isVerificationExpired ||
-                  verifyCodeMutation.isPending ||
-                  verificationCode.length === 0
-                }
-                onClick={handleVerifyCode}
-              >
-                인증 확인
-              </Button>
+              {/* 카카오처럼 provider가 이미 인증된 이메일을 준 경우 인증요청 자체가 필요 없다. */}
+              {publicEnv.apiMocking && !isSocialEmailProvided && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="s"
+                  disabled={
+                    isEmailLocked ||
+                    resendCooldown > 0 ||
+                    requestVerificationMutation.isPending
+                  }
+                  onClick={handleSendVerification}
+                >
+                  {verificationActionLabel}
+                </Button>
+              )}
             </div>
-          )}
-          {verificationStatus === "verified" && (
-            <p className="px-2 py-1 text-caption text-font-dark-subtle">
-              {isSocialEmailProvided
-                ? "제공자가 인증한 이메일이에요."
-                : "인증 완료"}
-            </p>
-          )}
-        </FieldRow>
+
+            {verificationStatus === "sent" && (
+              <div className="flex items-start gap-2">
+                <div className="flex-1">
+                  <InputField
+                    placeholder="인증코드를 입력해주세요"
+                    inputMode="numeric"
+                    value={verificationCode}
+                    onValueChange={setVerificationCode}
+                    error={
+                      codeError ??
+                      (isVerificationExpired
+                        ? "인증 시간이 지났습니다."
+                        : undefined)
+                    }
+                    helperText={
+                      isVerificationExpired
+                        ? undefined
+                        : `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(secondsLeft % 60).padStart(2, "0")} 남음`
+                    }
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="s"
+                  disabled={
+                    isVerificationExpired ||
+                    verifyCodeMutation.isPending ||
+                    verificationCode.length === 0
+                  }
+                  onClick={handleVerifyCode}
+                >
+                  인증 확인
+                </Button>
+              </div>
+            )}
+            {verificationStatus === "verified" && (
+              <p className="px-2 py-1 text-caption text-font-dark-subtle">
+                {isSocialEmailProvided
+                  ? "제공자가 인증한 이메일이에요."
+                  : "인증 완료"}
+              </p>
+            )}
+            {!publicEnv.apiMocking && (
+              <p className="text-caption">
+                가입 후 이메일로 발송된 링크에서 인증해 주세요.
+              </p>
+            )}
+          </FieldRow>
+        )}
 
         {socialContext == null && (
           <>

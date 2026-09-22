@@ -20,6 +20,7 @@ interface BankAccountInfo {
 
 interface PaymentsMethodProps {
   value?: PaymentMethod;
+  disabledMethods?: PaymentMethod[];
   onChange?: (value: PaymentMethod) => void;
   /** 무통장입금 안내 박스에 표시할 계좌 정보. 없으면 Figma 플레이스홀더 텍스트를 그대로 보여준다 */
   bankAccountInfo?: BankAccountInfo;
@@ -36,6 +37,7 @@ export function PaymentsMethod({
   value,
   onChange,
   bankAccountInfo = PLACEHOLDER_BANK_ACCOUNT,
+  disabledMethods = [],
 }: PaymentsMethodProps) {
   return (
     <div className="flex flex-col gap-3 text-font-dark">
@@ -50,6 +52,7 @@ export function PaymentsMethod({
         ).map((method) => (
           <Radio
             key={method}
+            disabled={disabledMethods.includes(method)}
             value={method}
             className="border-b border-border-jade-weak px-2 py-3 last:border-0 [&_[data-slot=radio]]:size-5 [&>span]:text-body-s"
           >

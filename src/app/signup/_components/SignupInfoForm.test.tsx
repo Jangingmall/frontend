@@ -7,12 +7,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SEED_LOGIN, SEED_VERIFICATION_CODE } from "@/api/member/mock/fixtures";
 import { __resetEmailVerificationState } from "@/api/member/mock/handlers";
+import { publicEnv } from "@/lib/env";
 import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
 import { SignupInfoForm, type SocialSignupContext } from "./SignupInfoForm";
 
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 const push = vi.fn();
 const onCancel = vi.fn();
 
@@ -67,6 +69,7 @@ async function agreeAllTerms(user: ReturnType<typeof userEvent.setup>) {
 }
 
 beforeEach(() => {
+  Object.assign(publicEnv, { apiMocking: true });
   push.mockClear();
   onCancel.mockClear();
   useAuthStore.setState({ status: "anonymous", accessToken: null, user: null });
@@ -322,4 +325,68 @@ describe("SignupInfoForm", () => {
       screen.getByRole("button", { name: "인증 메일 발송" }),
     ).toBeInTheDocument();
   });
+});
+it("live signup waits for email verification without creating a session", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  server.use(
+    http.post("*/api/member/signup", () =>
+      mockOk({
+        accessToken: null,
+        member: {
+          memberId: 99,
+          email: "newbie@midam.test",
+          name: "홍길동",
+          nickname: null,
+          role: "USER",
+          profileImageUrl: null,
+          provider: null,
+        },
+      }),
+    ),
+  );
+  renderSignupInfoForm("/cart");
+  const user = userEvent.setup();
+  expect(
+    screen.queryByRole("button", { name: "인증 메일 발송" }),
+  ).not.toBeInTheDocument();
+  await fillBaseFields(user);
+  await agreeAllTerms(user);
+  await user.click(screen.getByRole("button", { name: "가입하기" }));
+  expect(
+    await screen.findByRole("heading", {
+      name: "이메일 인증 후 로그인해 주세요",
+    }),
+  ).toBeVisible();
+  expect(useAuthStore.getState().status).toBe("anonymous");
+  expect(screen.getByRole("link", { name: "로그인하기" })).toHaveAttribute(
+    "href",
+    "/login?returnUrl=%2Fcart",
+  );
+});
+it("live social completion clears its consumed ticket marker before authentication", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  sessionStorage.setItem("oauth-provider", "naver");
+  server.use(
+    http.post("*/api/member/oauth2/complete-profile", () =>
+      mockOk({
+        accessToken: "session",
+        memberId: 99,
+        email: "buyer@example.com",
+        role: "USER",
+        provider: "naver",
+      }),
+    ),
+  );
+  renderSignupInfoForm("/cart", { provider: "naver", suggestedEmail: null });
+  const user = userEvent.setup();
+  await user.type(screen.getByPlaceholderText("홍길동"), "홍길동");
+  const [middle, last] = screen.getAllByPlaceholderText("0000");
+  await user.type(middle, "1234");
+  await user.type(last, "5678");
+  await agreeAllTerms(user);
+  await user.click(screen.getByRole("button", { name: "가입하기" }));
+  await waitFor(() =>
+    expect(useAuthStore.getState().status).toBe("authenticated"),
+  );
+  expect(sessionStorage.getItem("oauth-provider")).toBeNull();
 });

@@ -48,7 +48,7 @@ it("실제 API 모드에서 비활성 소재 조회를 기다리지 않고 가�
     );
     expect(screen.queryByRole("button", { name: "소재" })).toBeInTheDocument();
     expect(
-      screen.getByRole("checkbox", { name: "선물 포장 가능" }),
+      screen.getByRole("checkbox", { name: "선물 포장 가능 (준비 중)" }),
     ).toBeVisible();
     expect(
       screen.queryByRole("navigation", { name: "실제 상품 분류" }),

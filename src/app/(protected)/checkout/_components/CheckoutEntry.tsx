@@ -9,6 +9,7 @@ import { PURCHASE_PREVIEW_ORDER_ID } from "@/types/purchase-preview";
 
 import { CheckoutPage } from "./CheckoutPage";
 import type { PaymentFailure } from "./PaymentFeedbackDialog";
+import { RealCheckoutPage } from "./RealCheckoutPage";
 interface CheckoutEntryProps {
   orderId: string;
   initialFeedback?: PaymentFailure;
@@ -20,13 +21,9 @@ export function CheckoutEntry({
   const router = useRouter();
   const snapshot = usePurchasePreviewStore((state) => state.checkoutLines);
   const beginCheckout = usePurchasePreviewStore((state) => state.beginCheckout);
+  if (orderId === "new") return <RealCheckoutPage />;
   if (!publicEnv.apiMocking || orderId !== PURCHASE_PREVIEW_ORDER_ID)
-    return (
-      <div className="mx-auto py-32 text-center">
-        <h1 className="text-title-l">주문 결제를 준비 중입니다.</h1>
-        <p className="mt-3 text-body-m">주문 정보를 확인할 수 없습니다.</p>
-      </div>
-    );
+    return <RealCheckoutPage allowOrder={false} />;
   const lines = snapshot.length ? snapshot : CHECKOUT_PREVIEW_LINES;
   return (
     <CheckoutPage

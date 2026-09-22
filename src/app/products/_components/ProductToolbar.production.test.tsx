@@ -14,8 +14,7 @@ it.each(["popular", "sales", "wishlist"] as const)(
       "newest",
     );
     expect(toProductListSearchParams({ sort }).getAll("sort")).toEqual([
-      "createdAt,desc",
-      "id,asc",
+      "NEWEST",
     ]);
   },
 );

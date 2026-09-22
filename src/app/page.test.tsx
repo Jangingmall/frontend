@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { mapProductListPage } from "@/api/products/mapper";
 import { productListPage1 } from "@/api/products/mock/fixtures";
 
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 vi.mock("@/api/products/api", () => ({
   fetchProductList: vi.fn(),
 }));

@@ -88,12 +88,12 @@ describe("memberProfileResponseDto", () => {
     ).toBe(false);
   });
 
-  it("phone 누락은 거부한다", () => {
+  it("실제 백엔드의 phone·authProvider 없는 회원 응답도 허용한다", () => {
     const withoutPhone: Record<string, unknown> = { ...memberMeUser };
     delete withoutPhone.phone;
-    expect(memberProfileResponseDto.safeParse(withoutPhone).success).toBe(
-      false,
-    );
+    delete withoutPhone.authProvider;
+    withoutPhone.provider = "kakao";
+    expect(memberProfileResponseDto.safeParse(withoutPhone).success).toBe(true);
   });
 });
 

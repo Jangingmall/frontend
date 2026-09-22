@@ -23,7 +23,7 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
       // 쿼리스트링이 붙은 템플릿 리터럴이라 `/login` 라우트 존재 여부와 무관하게
       // typedRoutes가 검증 못 한다 — 캐스팅은 계속 필요하다.
       router.replace(
-        `/login?returnUrl=${encodeURIComponent(pathname)}` as Route,
+        `/login?returnUrl=${encodeURIComponent(pathname + window.location.search)}` as Route,
       );
     }
   }, [status, pathname, router]);

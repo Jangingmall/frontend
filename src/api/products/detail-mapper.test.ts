@@ -94,3 +94,26 @@ describe("상품 상세 응답 경계", () => {
     ).toBe(false);
   });
 });
+it("maps gallery and ordered content blocks from the backend", () => {
+  const image = {
+    url: "/images/detail.webp",
+    width: 640,
+    height: 640,
+    format: "webp",
+  };
+  const product = mapProductDetail(
+    productDetailDto.parse({
+      ...base,
+      images: [{ imageId: "i", alt: "작품 사진", variants: [image] }],
+      detailPageBlocks: [
+        { order: 2, tag: "P", hasImage: false, text: "설명" },
+        { order: 1, tag: "IMG", hasImage: true, imageVariants: [image] },
+      ],
+    }),
+  );
+  expect(product?.images).toEqual([{ src: image.url, alt: "작품 사진" }]);
+  expect(product?.content).toEqual([
+    { type: "image", image: { src: image.url, alt: "백자 달항아리" } },
+    { type: "paragraph", text: "설명" },
+  ]);
+});
