@@ -2,7 +2,6 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import { fetchHomeArtisans } from "@/api/home/api";
 import { fetchProductList } from "@/api/products/api";
-import { FloatingActions } from "@/components/common/floating-actions";
 import { publicEnv } from "@/lib/env";
 import { getQueryClient } from "@/lib/query/server";
 import { productKeys } from "@/queries/products/keys";
@@ -13,6 +12,7 @@ import { GiftSection } from "./_components/GiftSection";
 import { HeroBanner } from "./_components/HeroBanner";
 import { ProductCarouselSection } from "./_components/ProductCarouselSection";
 import { PromotionSection } from "./_components/PromotionSection";
+import { SiteFloatingActions } from "./site-floating-actions";
 
 const INITIAL_GIFT_THEME = GIFT_THEMES[0].id;
 
@@ -35,9 +35,10 @@ const INITIAL_GIFT_THEME = GIFT_THEMES[0].id;
  * (`lib/query/server.ts`). ISR 캐시 태그·재검증은 이 호출 방식과 무관하게 `fetchProductList`
  * 자체(`api/products/api.ts`)가 담당한다(docs/isr.md §2).
  *
- * `FloatingActions`(CM-5 맨 위로·AI 챗봇)는 IA상 이 화면에만 있는 게 아니라 PL-1·
- * PL-2·PL-3에도 떠야 해서 `components/common/`에 공용으로 두고 여기서 개별 연결한다
- * (그 화면들은 아직 미착수 — 착수 시 같은 import만 추가하면 됨).
+ * `FloatingActions`(CM-5 맨 위로·미담 챗봇)는 IA상 이 화면에만 있는 게 아니라 PL-1·
+ * PL-2·PL-3에도 떠야 해서 `components/common/`에 공용으로 두고, `stores/auth`·
+ * `queries/chatbot`을 잇는 `SiteFloatingActions`(`app/site-floating-actions.tsx`)를
+ * 화면마다 개별 연결한다.
  */
 export default async function HomePage() {
   const artisans = await fetchHomeArtisans().catch(() => []);
@@ -83,7 +84,7 @@ export default async function HomePage() {
         data={newProducts}
       />
       <PromotionSection items={promotions?.items ?? []} />
-      <FloatingActions />
+      <SiteFloatingActions />
     </>
   );
 }

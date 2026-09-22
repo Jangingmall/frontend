@@ -9,6 +9,9 @@ vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 vi.mock("@/api/products/api", () => ({
   fetchProductList: vi.fn(),
 }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
 
 import { fetchProductList } from "@/api/products/api";
 

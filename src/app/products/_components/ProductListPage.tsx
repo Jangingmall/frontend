@@ -12,8 +12,8 @@ import {
   parseProductSearchParams,
   updateProductSearchParams,
 } from "@/app/products/_lib/search-params";
+import { SiteFloatingActions } from "@/app/site-floating-actions";
 import { ErrorState } from "@/components/common/error-state";
-import { FloatingActions } from "@/components/common/floating-actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isMockProductQuery } from "@/lib/data-mode";
 import { publicEnv } from "@/lib/env";
@@ -181,7 +181,7 @@ export function ProductListPage({
           </div>
         </div>
       )}
-      {query.category && <FloatingActions />}
+      {query.category && <SiteFloatingActions />}
     </main>
   );
 }
