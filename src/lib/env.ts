@@ -9,6 +9,10 @@ const schema = z.object({
   NEXT_PUBLIC_TOSS_CLIENT_KEY: z.string().optional().or(z.literal("")),
   // "enabled"이면 MSW 목업으로 동작(백엔드 불필요). 비어 있으면 실제 백엔드.
   NEXT_PUBLIC_API_MOCKING: z.enum(["enabled"]).optional().or(z.literal("")),
+  NEXT_PUBLIC_ALLOW_PRODUCTION_MOCK: z
+    .enum(["enabled"])
+    .optional()
+    .or(z.literal("")),
 });
 
 export function validateEnvironment(environment: NodeJS.ProcessEnv) {
@@ -38,6 +42,9 @@ export function validateEnvironment(environment: NodeJS.ProcessEnv) {
  */
 export const publicEnv = {
   apiMocking: process.env.NEXT_PUBLIC_API_MOCKING === "enabled",
+  /** 공유 테스트 배포에서만 명시적으로 활성화한다. MSW 자체를 켜지는 않는다. */
+  allowProductionMock:
+    process.env.NEXT_PUBLIC_ALLOW_PRODUCTION_MOCK === "enabled",
   tossClientKey: process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "",
   /**
    * Vercel이 실제 production 배포에서만 자동으로 심어주는 값이다 — `NODE_ENV`와 달리
