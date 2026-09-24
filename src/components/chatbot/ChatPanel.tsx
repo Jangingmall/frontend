@@ -109,18 +109,19 @@ export function ChatPanel({
         </button>
       </header>
 
-      {/* `justify-end`로 메시지가 적을 때 대화가 입력창 쪽 하단에 붙는다(일반 채팅 UI
-       * 관례) — 메시지가 늘어나 영역을 채우면 자연히 위로 쌓이고 스크롤된다. */}
+      {/* 대화(실제 메시지)는 일반 채팅처럼 위에서부터 순서대로 쌓인다 — 컨테이너 자체는
+       * 그냥 위→아래 flex 흐름이다. 빈 상태의 예시 칩만 `mt-auto`로 따로 하단(입력창 쪽)에
+       * 붙인다 — 인사 버블은 그대로 맨 위, 칩 박스만 남은 공간을 전부 흡수해 내려간다. */}
       <div
         ref={scrollRef}
-        className="flex flex-1 flex-col justify-end gap-4 overflow-y-auto px-4 py-4"
+        className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-4"
       >
         {messages.length === 0 ? (
-          <div className="flex flex-col gap-2">
+          <>
             <div className="w-70 rounded-xl rounded-tl-none border border-border-neutral-subtle bg-bg-default px-3 py-2 text-body-s whitespace-pre-line text-font-dark">
               {GREETING}
             </div>
-            <div className="flex flex-col gap-6 bg-fill-neutral-weak p-3 pb-6">
+            <div className="mt-auto flex flex-col gap-6 bg-fill-neutral-weak p-3 pb-6">
               <div className="flex flex-col gap-1">
                 {suggestions.map((suggestion) => (
                   <button
@@ -142,7 +143,7 @@ export function ChatPanel({
                 다른 질문 보기
               </button>
             </div>
-          </div>
+          </>
         ) : (
           messages.map((message, index) => (
             <ChatMessageBubble
