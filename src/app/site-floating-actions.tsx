@@ -213,7 +213,6 @@ export function SiteFloatingActions({
               ),
             )
           }
-          onCollapse={() => setIsOpen(false)}
           onRequestClose={handleRequestClose}
         />
       )}

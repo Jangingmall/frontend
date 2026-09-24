@@ -3,12 +3,7 @@
 import type { FormEvent } from "react";
 import { useEffect, useRef } from "react";
 
-import {
-  CancelIcon,
-  ChevronLeftIcon,
-  RefreshIcon,
-  SendIcon,
-} from "@/components/ui/icons";
+import { CancelIcon, RefreshIcon, SendIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/types/chatbot";
 
@@ -34,8 +29,6 @@ interface ChatPanelProps {
   onSuggestionClick: (text: string) => void;
   /** "↻ 다른 질문 보기" — 빈 상태에서만 노출. */
   onReshuffleSuggestions: () => void;
-  /** 헤더 좌측 화살표 — 플로팅 "접기" 버튼과 같은 동작(패널만 숨김, 대화는 유지). */
-  onCollapse: () => void;
   /** 헤더 우측 "X" — 종료 확인 모달을 띄우라는 신호(모달 자체는 호출부가 소유). */
   onRequestClose: () => void;
   className?: string;
@@ -50,8 +43,10 @@ interface ChatPanelProps {
  * `2169:52038` "AI-chatbot")를 직접 대조해 맞췄다 — 패널 바탕은 흰색이 아니라
  * `bg-bg-subtle`(`#fafbfc`, Figma `jade-blue-50`)이고, 입력 푸터만 흰색(`bg-bg-default`)
  * 이라 그 경계에서 자연스럽게 구분된다(별도 `border-b`를 넣지 않는다 — 헤더엔 테두리가
- * 없다). 헤더는 좌측 화살표(`icon=chevron-left`) + 제목 + 우측 닫기(`icon=cancel`) 3분할
- * `space-between` 구조다.
+ * 없다). 헤더는 제목 + 우측 닫기(`icon=cancel`)만 있다 — GUI 파일 실제 화면(§0-2)엔
+ * 좌측 아이콘이 없다(디자인 시스템 `message-header` 컴포넌트의 좌측 아이콘은 실제 화면엔
+ * 반영 안 됨, GUI 파일이 우선). 패널을 숨기는 동작은 헤더가 아니라 별도 플로팅 "접기"
+ * 버튼(`floating-actions.tsx`)의 몫이다.
  */
 export function ChatPanel({
   messages,
@@ -64,7 +59,6 @@ export function ChatPanel({
   suggestions,
   onSuggestionClick,
   onReshuffleSuggestions,
-  onCollapse,
   onRequestClose,
   className,
 }: ChatPanelProps) {
@@ -90,14 +84,6 @@ export function ChatPanel({
       )}
     >
       <header className="flex h-18 shrink-0 items-center justify-between bg-bg-subtle px-4">
-        <button
-          type="button"
-          onClick={onCollapse}
-          aria-label="패널 접기"
-          className="flex size-6 items-center justify-center text-font-dark [&_path]:fill-current"
-        >
-          <ChevronLeftIcon className="size-4" />
-        </button>
         <span className="text-title-m text-font-dark">미담 AI</span>
         <button
           type="button"

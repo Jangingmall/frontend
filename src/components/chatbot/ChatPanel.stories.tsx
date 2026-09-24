@@ -16,7 +16,6 @@ const meta = {
     onSend: () => {},
     onSuggestionClick: () => {},
     onReshuffleSuggestions: () => {},
-    onCollapse: () => {},
     onRequestClose: () => {},
   },
   decorators: [
@@ -52,7 +51,6 @@ function Interactive() {
       suggestions={SUGGESTIONS}
       onSuggestionClick={() => {}}
       onReshuffleSuggestions={() => {}}
-      onCollapse={() => {}}
       onRequestClose={() => {}}
     />
   );

@@ -24,7 +24,6 @@ function renderPanel(
     suggestions: SUGGESTIONS,
     onSuggestionClick: vi.fn(),
     onReshuffleSuggestions: vi.fn(),
-    onCollapse: vi.fn(),
     onRequestClose: vi.fn(),
     ...overrides,
   };
@@ -153,11 +152,5 @@ describe("ChatPanel", () => {
     const props = renderPanel();
     fireEvent.click(screen.getByRole("button", { name: "챗봇 종료" }));
     expect(props.onRequestClose).toHaveBeenCalledOnce();
-  });
-
-  it("헤더 화살표 버튼을 누르면 onCollapse가 호출된다", () => {
-    const props = renderPanel();
-    fireEvent.click(screen.getByRole("button", { name: "패널 접기" }));
-    expect(props.onCollapse).toHaveBeenCalledOnce();
   });
 });
