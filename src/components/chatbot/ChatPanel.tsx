@@ -109,41 +109,41 @@ export function ChatPanel({
         </button>
       </header>
 
-      {/* 대화(실제 메시지)는 일반 채팅처럼 위에서부터 순서대로 쌓인다 — 컨테이너 자체는
-       * 그냥 위→아래 flex 흐름이다. 빈 상태의 예시 칩만 `mt-auto`로 따로 하단(입력창 쪽)에
-       * 붙인다 — 인사 버블은 그대로 맨 위, 칩 박스만 남은 공간을 전부 흡수해 내려간다. */}
+      {/* 인사 버블은 첫 메시지를 보낸 뒤에도 대화의 첫 항목으로 그대로 남는다 — 칩을
+       * 눌러도 "질문했던 맥락"인 인사말이 사라지면 안 된다(사용자 피드백). 그래서 조건문
+       * 밖, 메시지 목록보다 항상 먼저 렌더한다. 예시 칩(빈 상태 전용)만 `mt-auto`로 따로
+       * 하단(입력창 쪽)에 붙이고, 실제 대화가 시작되면(칩은 사라지고) 메시지가 일반
+       * 채팅처럼 그 아래로 위→아래 순서로 쌓인다. */}
       <div
         ref={scrollRef}
         className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-4"
       >
+        <div className="w-70 rounded-xl rounded-tl-none border border-border-neutral-subtle bg-bg-default px-3 py-2 text-body-s whitespace-pre-line text-font-dark">
+          {GREETING}
+        </div>
         {messages.length === 0 ? (
-          <>
-            <div className="w-70 rounded-xl rounded-tl-none border border-border-neutral-subtle bg-bg-default px-3 py-2 text-body-s whitespace-pre-line text-font-dark">
-              {GREETING}
+          <div className="mt-auto flex flex-col gap-6 bg-fill-neutral-weak p-3 pb-6">
+            <div className="flex flex-col gap-1">
+              {suggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => onSuggestionClick(suggestion)}
+                  className="rounded border border-border-neutral-subtle bg-bg-default px-3 py-2 text-center text-caption text-font-dark hover:bg-bg-subtle"
+                >
+                  {suggestion}
+                </button>
+              ))}
             </div>
-            <div className="mt-auto flex flex-col gap-6 bg-fill-neutral-weak p-3 pb-6">
-              <div className="flex flex-col gap-1">
-                {suggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    onClick={() => onSuggestionClick(suggestion)}
-                    className="rounded border border-border-neutral-subtle bg-bg-default px-3 py-2 text-center text-caption text-font-dark hover:bg-bg-subtle"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                onClick={onReshuffleSuggestions}
-                className="flex w-fit items-center gap-1 self-center text-caption text-font-dark-secondary [&_path]:fill-current"
-              >
-                <RefreshIcon className="size-3" />
-                다른 질문 보기
-              </button>
-            </div>
-          </>
+            <button
+              type="button"
+              onClick={onReshuffleSuggestions}
+              className="flex w-fit items-center gap-1 self-center text-caption text-font-dark-secondary [&_path]:fill-current"
+            >
+              <RefreshIcon className="size-3" />
+              다른 질문 보기
+            </button>
+          </div>
         ) : (
           messages.map((message, index) => (
             <ChatMessageBubble

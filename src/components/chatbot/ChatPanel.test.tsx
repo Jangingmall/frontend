@@ -74,9 +74,13 @@ describe("ChatPanel", () => {
     });
     expect(screen.getByText("선물 추천해줘")).toBeInTheDocument();
     expect(screen.getByText("이런 상품은 어떠세요?")).toBeInTheDocument();
-    // 빈 상태 인사 버블은 메시지가 있을 땐 안 보인다.
+    // 인사 버블은 첫 메시지를 보낸 뒤에도 대화의 첫 항목으로 남아있는다.
+    expect(screen.getByText(/안녕하세요, 미담AI입니다/)).toBeInTheDocument();
+    // 예시 칩(빈 상태 전용)만 사라진다.
     expect(
-      screen.queryByText(/안녕하세요, 미담AI입니다/),
+      screen.queryByRole("button", {
+        name: /외국 친구에게 선물할 기념품 추천/,
+      }),
     ).not.toBeInTheDocument();
   });
 
