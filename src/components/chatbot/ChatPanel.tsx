@@ -125,7 +125,7 @@ export function ChatPanel({
                     key={suggestion}
                     type="button"
                     onClick={() => onSuggestionClick(suggestion)}
-                    className="rounded border border-border-neutral-subtle bg-bg-default px-3 py-2 text-left text-caption text-font-dark hover:bg-bg-subtle"
+                    className="rounded border border-border-neutral-subtle bg-bg-default px-3 py-2 text-center text-caption text-font-dark hover:bg-bg-subtle"
                   >
                     {suggestion}
                   </button>
