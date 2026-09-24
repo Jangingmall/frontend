@@ -32,7 +32,7 @@ export function ChatMessageBubble({
     >
       <div
         className={cn(
-          "max-w-70 rounded-xl px-3 py-2 text-body-s whitespace-pre-line text-font-dark",
+          "max-w-70 rounded-xl border border-border-neutral-subtle px-3 py-2 text-body-s whitespace-pre-line text-font-dark",
           isUser ? "bg-fill-neutral-weak" : "bg-bg-default",
           isGroupStart && (isUser ? "rounded-tr-none" : "rounded-tl-none"),
         )}
@@ -40,13 +40,13 @@ export function ChatMessageBubble({
         {message.content}
       </div>
       {!isUser && message.suggestions && message.suggestions.length > 0 && (
-        <div className="flex w-70 flex-col gap-2">
+        <div className="flex w-70 flex-col gap-1">
           {message.suggestions.map((suggestion) => (
             <button
               key={suggestion}
               type="button"
               onClick={() => onSuggestionClick(suggestion)}
-              className="rounded-xl border border-border-neutral-subtle bg-bg-default px-3 py-2 text-left text-body-s text-font-dark hover:bg-fill-neutral-weak"
+              className="rounded border border-border-neutral-subtle bg-bg-default px-3 py-2 text-left text-caption text-font-dark hover:bg-bg-subtle"
             >
               {suggestion}
             </button>
@@ -54,9 +54,9 @@ export function ChatMessageBubble({
         </div>
       )}
       {!isUser && message.products && message.products.length > 0 && (
-        <div className="flex w-70 gap-3 overflow-x-auto pb-1">
+        <div className="flex max-w-95 gap-3 overflow-x-auto rounded-xl border border-border-neutral-subtle bg-bg-default p-3 pb-2">
           {message.products.map(({ product, reason }) => (
-            <div key={product.id} className="w-35 shrink-0">
+            <div key={product.id} className="w-40 shrink-0">
               <p className="mb-1 text-caption text-font-dark-subtle">
                 {reason}
               </p>

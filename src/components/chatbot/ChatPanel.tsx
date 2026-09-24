@@ -3,7 +3,12 @@
 import type { FormEvent } from "react";
 import { useEffect, useRef } from "react";
 
-import { CancelIcon, RefreshIcon, SendIcon } from "@/components/ui/icons";
+import {
+  CancelIcon,
+  ChevronLeftIcon,
+  RefreshIcon,
+  SendIcon,
+} from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/types/chatbot";
 
@@ -29,7 +34,9 @@ interface ChatPanelProps {
   onSuggestionClick: (text: string) => void;
   /** "↻ 다른 질문 보기" — 빈 상태에서만 노출. */
   onReshuffleSuggestions: () => void;
-  /** 헤더 "X" — 종료 확인 모달을 띄우라는 신호(모달 자체는 호출부가 소유). */
+  /** 헤더 좌측 화살표 — 플로팅 "접기" 버튼과 같은 동작(패널만 숨김, 대화는 유지). */
+  onCollapse: () => void;
+  /** 헤더 우측 "X" — 종료 확인 모달을 띄우라는 신호(모달 자체는 호출부가 소유). */
   onRequestClose: () => void;
   className?: string;
 }
@@ -38,6 +45,13 @@ interface ChatPanelProps {
  * 챗봇 패널 — 전체 높이 우측 도킹(`fixed inset-y-0 right-0`, 호출부가 위치·z-index를
  * 맡긴다). `components/{domain}`은 `api`·`queries`를 직접 참조하지 않는다
  * (`docs/architecture.md` §8.2) — 데이터·핸들러는 전부 props로 받는 순수 프레젠테이션이다.
+ *
+ * 배경·테두리·헤더 구성은 GUI 파일 실제 인스턴스(`ZSESuanQor1IT8mr67JjmI`, 노드
+ * `2169:52038` "AI-chatbot")를 직접 대조해 맞췄다 — 패널 바탕은 흰색이 아니라
+ * `bg-bg-subtle`(`#fafbfc`, Figma `jade-blue-50`)이고, 입력 푸터만 흰색(`bg-bg-default`)
+ * 이라 그 경계에서 자연스럽게 구분된다(별도 `border-b`를 넣지 않는다 — 헤더엔 테두리가
+ * 없다). 헤더는 좌측 화살표(`icon=chevron-left`) + 제목 + 우측 닫기(`icon=cancel`) 3분할
+ * `space-between` 구조다.
  */
 export function ChatPanel({
   messages,
@@ -50,6 +64,7 @@ export function ChatPanel({
   suggestions,
   onSuggestionClick,
   onReshuffleSuggestions,
+  onCollapse,
   onRequestClose,
   className,
 }: ChatPanelProps) {
@@ -70,19 +85,27 @@ export function ChatPanel({
     <div
       data-slot="chat-panel"
       className={cn(
-        "fixed inset-y-0 right-0 z-55 flex w-120 flex-col bg-bg-default shadow-nav",
+        "fixed inset-y-0 right-0 z-55 flex w-120 animate-in flex-col bg-bg-subtle shadow-nav duration-200 slide-in-from-right",
         className,
       )}
     >
-      <header className="flex h-18 shrink-0 items-center justify-between border-b border-border-neutral-subtle px-4">
+      <header className="flex h-18 shrink-0 items-center justify-between bg-bg-subtle px-4">
+        <button
+          type="button"
+          onClick={onCollapse}
+          aria-label="패널 접기"
+          className="flex size-6 items-center justify-center text-font-dark [&_path]:fill-current"
+        >
+          <ChevronLeftIcon className="size-4" />
+        </button>
         <span className="text-title-m text-font-dark">미담 AI</span>
         <button
           type="button"
           onClick={onRequestClose}
           aria-label="챗봇 종료"
-          className="flex size-8 items-center justify-center text-font-dark [&_path]:fill-current"
+          className="flex size-6 items-center justify-center text-font-dark [&_path]:fill-current"
         >
-          <CancelIcon className="size-4" />
+          <CancelIcon className="size-6" />
         </button>
       </header>
 
@@ -92,24 +115,26 @@ export function ChatPanel({
       >
         {messages.length === 0 ? (
           <div className="flex flex-col gap-2">
-            <div className="w-70 rounded-xl rounded-tl-none bg-bg-default px-3 py-2 text-body-s whitespace-pre-line text-font-dark">
+            <div className="w-70 rounded-xl rounded-tl-none border border-border-neutral-subtle bg-bg-default px-3 py-2 text-body-s whitespace-pre-line text-font-dark">
               {GREETING}
             </div>
-            <div className="flex w-70 flex-col gap-2">
-              {suggestions.map((suggestion) => (
-                <button
-                  key={suggestion}
-                  type="button"
-                  onClick={() => onSuggestionClick(suggestion)}
-                  className="rounded-xl border border-border-neutral-subtle bg-bg-default px-3 py-2 text-left text-body-s text-font-dark hover:bg-fill-neutral-weak"
-                >
-                  {suggestion}
-                </button>
-              ))}
+            <div className="flex flex-col gap-6 bg-fill-neutral-weak p-3 pb-6">
+              <div className="flex flex-col gap-1">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    type="button"
+                    onClick={() => onSuggestionClick(suggestion)}
+                    className="rounded border border-border-neutral-subtle bg-bg-default px-3 py-2 text-left text-caption text-font-dark hover:bg-bg-subtle"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
               <button
                 type="button"
                 onClick={onReshuffleSuggestions}
-                className="flex w-fit items-center gap-1 self-center px-2 py-1 text-caption text-font-dark-subtle [&_path]:fill-current"
+                className="flex w-fit items-center gap-1 self-center text-caption text-font-dark-secondary [&_path]:fill-current"
               >
                 <RefreshIcon className="size-3" />
                 다른 질문 보기
@@ -130,7 +155,7 @@ export function ChatPanel({
       </div>
 
       {sendError && (
-        <div className="flex items-center justify-between gap-2 border-t border-border-neutral-subtle bg-bg-default px-4 py-2 text-body-s text-font-dark">
+        <div className="flex items-center justify-between gap-2 bg-bg-default px-4 py-2 text-body-s text-font-dark">
           <span>일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</span>
           <button
             type="button"
@@ -142,25 +167,22 @@ export function ChatPanel({
         </div>
       )}
 
-      <form
-        onSubmit={handleSubmit}
-        className="shrink-0 border-t border-border-neutral-subtle p-4"
-      >
-        <div className="flex items-center gap-2 rounded-xl bg-fill-neutral-weak px-3 py-1">
+      <form onSubmit={handleSubmit} className="shrink-0 bg-bg-default p-4">
+        <div className="flex items-center gap-2 rounded-xl border border-border-neutral-subtle bg-bg-subtle py-1 pr-1 pl-3">
           <input
             type="text"
             value={inputValue}
             onChange={(event) => onInputChange(event.target.value)}
             placeholder="궁금한 내용을 입력해주세요."
-            className="min-w-0 flex-1 bg-transparent py-2 text-body-s text-font-dark outline-none placeholder:text-font-dark-subtle"
+            className="min-w-0 flex-1 bg-transparent text-body-s text-font-dark outline-none placeholder:text-font-dark-subtle"
           />
           <button
             type="submit"
             aria-label="전송"
             disabled={!inputValue.trim()}
-            className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-fill-neutral-impact text-font-white disabled:opacity-40 [&_path]:fill-current"
+            className="flex h-9 w-14 shrink-0 items-center justify-center rounded-lg bg-fill-neutral-impact text-font-white disabled:opacity-40 [&_path]:fill-current"
           >
-            <SendIcon className="size-4" />
+            <SendIcon className="size-5" />
           </button>
         </div>
         <p className="mt-2 text-center text-caption text-font-dark-subtle">
