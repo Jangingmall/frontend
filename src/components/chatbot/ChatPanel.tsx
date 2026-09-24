@@ -109,9 +109,11 @@ export function ChatPanel({
         </button>
       </header>
 
+      {/* `justify-end`로 메시지가 적을 때 대화가 입력창 쪽 하단에 붙는다(일반 채팅 UI
+       * 관례) — 메시지가 늘어나 영역을 채우면 자연히 위로 쌓이고 스크롤된다. */}
       <div
         ref={scrollRef}
-        className="flex-1 space-y-4 overflow-y-auto px-4 py-4"
+        className="flex flex-1 flex-col justify-end gap-4 overflow-y-auto px-4 py-4"
       >
         {messages.length === 0 ? (
           <div className="flex flex-col gap-2">
