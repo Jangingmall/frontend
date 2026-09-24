@@ -83,8 +83,10 @@ export function ChatPanel({
         className,
       )}
     >
-      <header className="flex h-18 shrink-0 items-center justify-between bg-bg-subtle px-4">
-        <span className="text-title-m text-font-dark">미담 AI</span>
+      <header className="relative flex h-18 shrink-0 items-center justify-end bg-bg-subtle px-4">
+        <span className="absolute left-1/2 -translate-x-1/2 text-title-m text-font-dark">
+          미담 AI
+        </span>
         <button
           type="button"
           onClick={onRequestClose}
