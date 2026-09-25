@@ -207,13 +207,16 @@ describe("SignupInfoForm", () => {
     await user.click(submitButton);
 
     const errorText = await screen.findByText("이미 가입된 이메일이에요.");
-    // 텍스트만 보면 폼 상단 `formError`로 회귀해도 같은 문구라 통과해버린다 — 실제로
-    // 이메일 필드에 연결됐는지는 `aria-describedby`로 확인해야 한다(리뷰 nit). 이 시점엔
-    // 인증 완료로 이메일 input이 `disabled`라 base-ui가 `aria-invalid`는 일부러 안 붙인다
-    // (`useFieldValidation.js`: `!state.disabled && !disabled`) — `aria-describedby`는
-    // disabled 여부와 무관하게 항상 연결되므로 이쪽이 신뢰할 수 있는 신호다.
+    // 오류를 이메일 필드에 연결하고 즉시 다른 이메일로 인증할 수 있어야 한다.
     const emailInput = screen.getByPlaceholderText("example@email.com");
     expect(emailInput.getAttribute("aria-describedby")).toBe(errorText.id);
+    expect(emailInput).not.toBeDisabled();
+    await user.clear(emailInput);
+    await user.type(emailInput, "another@example.com");
+    expect(
+      screen.getByRole("button", { name: "인증 메일 발송" }),
+    ).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "가입하기" })).toBeDisabled();
     expect(push).not.toHaveBeenCalled();
   });
 

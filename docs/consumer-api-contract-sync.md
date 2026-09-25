@@ -49,7 +49,9 @@ NEXT_PUBLIC_TOSS_CLIENT_KEY=<Toss 테스트용 공개 클라이언트 키>
 ### 이번 브랜치 검증 결과
 
 - `npm run typecheck`, `npm run lint`: 통과.
-- `npm run test -- --maxWorkers=3`: 185개 파일, 1,133개 테스트 통과.
+- `npm run test -- --maxWorkers=3`: 185개 파일, 1,135개 테스트 통과.
 - `npm run build -- --webpack`: MSW 로컬 프로덕션 빌드 통과.
 - Playwright: 가입·로그인·회원정보·구매 흐름 7개 및 구매 확정/취소/목록 반영 1개 통과.
 - 구매 확정 확인창을 브라우저 캡처로 확인했다: [화면](screenshots/api92-purchase-confirmation.png).
+
+리뷰 보완: 인증의 null 성공 응답을 런타임 검증하고, 중복 이메일 가입 충돌 시 인증 상태를 초기화해 다시 입력할 수 있게 했다. 후기 입력 UI는 유지하며 서버 최소 1점 미만 제출을 안내/차단한다.

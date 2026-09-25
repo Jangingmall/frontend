@@ -25,6 +25,7 @@ import {
   accessTokenResponseDto,
   addressListResponseDto,
   addressResponseDto,
+  emailVerificationNullResponseDto,
   emailVerificationResponseDto,
   loginResponseDto,
   memberProfileResponseDto,
@@ -125,20 +126,21 @@ export async function requestEmailVerification(
       : "/api/member/email/verification-code",
     { method: "POST", body, auth: false },
   );
-  return publicEnv.apiMocking
-    ? emailVerificationResponseDto.parse(data)
-    : { expiresInSeconds: 300 };
+  if (publicEnv.apiMocking) return emailVerificationResponseDto.parse(data);
+  emailVerificationNullResponseDto.parse(data);
+  return { expiresInSeconds: 300 };
 }
 
 export async function verifyEmailCode(
   body: VerifyEmailCodeRequest,
 ): Promise<void> {
-  await clientFetch<null>(
+  const data = await clientFetch<unknown>(
     publicEnv.apiMocking
       ? "/api/member/email-verifications/verify"
       : "/api/member/email/verify",
     { method: "POST", body, auth: false },
   );
+  emailVerificationNullResponseDto.parse(data);
 }
 
 /** 가입 응답은 세션을 발급하지 않는다. 화면이 별도 로그인 성공 후 세션을 설정한다. */

@@ -403,6 +403,12 @@ export function SignupInfoForm({
         error instanceof ApiError &&
         error.code === "CONFLICT"
       ) {
+        setVerifiedEmail(null);
+        setVerificationStatus("idle");
+        setVerificationCode("");
+        setCodeError(null);
+        setSecondsLeft(0);
+        setResendCooldown(0);
         setError("email", { message: mapSignupError(error) });
       } else {
         setFormError(mapSignupError(error));

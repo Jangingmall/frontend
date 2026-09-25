@@ -132,3 +132,5 @@ export const memberSettingsResponseDto = z
 export type MemberSettingsResponseDto = z.infer<
   typeof memberSettingsResponseDto
 >;
+
+export const emailVerificationNullResponseDto = z.null();

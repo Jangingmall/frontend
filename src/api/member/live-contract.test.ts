@@ -115,3 +115,19 @@ it("실제 이메일 인증 확인은 email/verify로 코드와 이메일을 전
   await verifyEmailCode({ email: "buyer@example.com", code: "123456" });
   expect(body).toEqual({ email: "buyer@example.com", code: "123456" });
 });
+
+it("실제 인증 발송과 검증은 잘못된 성공 응답을 거부한다", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  server.use(
+    http.post("*/api/member/email/verification-code", () =>
+      mockOk({ unexpected: true }),
+    ),
+    http.post("*/api/member/email/verify", () => mockOk({ verified: false })),
+  );
+  await expect(
+    requestEmailVerification({ email: "buyer@example.com" }),
+  ).rejects.toThrow();
+  await expect(
+    verifyEmailCode({ email: "buyer@example.com", code: "123456" }),
+  ).rejects.toThrow();
+});
