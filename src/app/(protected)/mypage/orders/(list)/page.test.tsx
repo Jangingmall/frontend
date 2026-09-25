@@ -124,3 +124,5 @@ describe("MypageOrdersPage", () => {
     ).toBeInTheDocument();
   });
 });
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));

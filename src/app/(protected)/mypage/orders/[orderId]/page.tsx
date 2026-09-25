@@ -2,16 +2,18 @@
 
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import type { ChangeOrderAddressRequest } from "@/api/orders/api";
 import { ErrorState } from "@/components/common/error-state";
 import { OrderCancelRequestModal } from "@/components/order/OrderCancelRequestModal";
 import { OrderExchangeRefundRequestModal } from "@/components/order/OrderExchangeRefundRequestModal";
+import { PurchaseConfirmationDialog } from "@/components/order/PurchaseConfirmationDialog";
 import { ReviewFormModal } from "@/components/review/ReviewFormModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import type { OrderCardActionType } from "@/constants/order";
+import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useChangeOrderAddressMutation,
@@ -65,8 +67,13 @@ export default function OrderDetailPage() {
   const orderId = Number(params.orderId);
 
   const detailQuery = useOrderDetailQuery(orderId);
+  const actionInFlight = useRef(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
+  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [confirmationError, setConfirmationError] = useState<string | null>(
+    null,
+  );
   const [actionError, setActionError] = useState<string | null>(null);
   // 배송지 변경 모달 전용 에러 — `actionError`(페이지 배너)와 같은 값을 쓰면 모달이
   // 열린 채로 변경이 실패했을 때 배너·모달 두 군데에 같은 문구가 중복 표시된다
@@ -144,6 +151,8 @@ export default function OrderDetailPage() {
     item: OrderDetailItem,
     action: OrderCardActionType,
   ) {
+    if (actionInFlight.current) return;
+    actionInFlight.current = true;
     setActionError(null);
     try {
       switch (action) {
@@ -156,7 +165,8 @@ export default function OrderDetailPage() {
           setExchangeTarget(item);
           break;
         case "confirmPurchase":
-          await confirmPurchaseMutation.mutateAsync();
+          setConfirmationError(null);
+          setConfirmationOpen(true);
           break;
         case "checkDelivery":
           setIsDeliveryModalOpen(true);
@@ -172,6 +182,22 @@ export default function OrderDetailPage() {
       }
     } catch (error) {
       setActionError(resolveActionErrorMessage(error));
+    } finally {
+      actionInFlight.current = false;
+    }
+  }
+
+  async function handleConfirmPurchase() {
+    if (actionInFlight.current || !confirmationOpen) return;
+    actionInFlight.current = true;
+    setConfirmationError(null);
+    try {
+      await confirmPurchaseMutation.mutateAsync();
+      setConfirmationOpen(false);
+    } catch (error) {
+      setConfirmationError(resolveActionErrorMessage(error));
+    } finally {
+      actionInFlight.current = false;
     }
   }
 
@@ -186,6 +212,11 @@ export default function OrderDetailPage() {
   }
 
   async function handleCancelSubmit(input: OrderCancelRequest) {
+    if (
+      cancelMutation.isPending ||
+      (!publicEnv.apiMocking && cancelTarget?.status !== "PAYMENT_PENDING")
+    )
+      return;
     setCancelError(null);
     try {
       await cancelMutation.mutateAsync(input);
@@ -238,7 +269,10 @@ export default function OrderDetailPage() {
         )}
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-          <div className="flex min-w-0 flex-1 flex-col gap-6">
+          <fieldset
+            disabled={confirmPurchaseMutation.isPending}
+            className="flex min-w-0 flex-1 flex-col gap-6"
+          >
             {order.groups.map((group) => (
               <OrderDetailArtisanGroup
                 key={group.artisanName ?? "unknown-artisan"}
@@ -249,7 +283,7 @@ export default function OrderDetailPage() {
                 onAction={(item, action) => void handleAction(item, action)}
               />
             ))}
-          </div>
+          </fieldset>
 
           <OrderShippingPaymentPanel
             address={order.shippingAddress}
@@ -259,6 +293,14 @@ export default function OrderDetailPage() {
           />
         </div>
 
+        <PurchaseConfirmationDialog
+          open={confirmationOpen}
+          orderNumber={order.orderNumber}
+          submitting={confirmPurchaseMutation.isPending}
+          error={confirmationError}
+          onOpenChange={setConfirmationOpen}
+          onConfirm={() => void handleConfirmPurchase()}
+        />
         <OrderAddressChangeModal
           open={isAddressModalOpen}
           onOpenChange={(open) => {
@@ -284,6 +326,17 @@ export default function OrderDetailPage() {
 
         {cancelTarget && (
           <OrderCancelRequestModal
+            supportsAttachments={publicEnv.apiMocking}
+            notice={
+              publicEnv.apiMocking
+                ? undefined
+                : "이 주문에 포함된 모든 상품이 함께 취소됩니다. 취소 사유·사진 저장은 준비 중입니다."
+            }
+            unavailableReason={
+              !publicEnv.apiMocking && cancelTarget.status !== "PAYMENT_PENDING"
+                ? "현재 결제 대기 주문만 취소할 수 있습니다."
+                : undefined
+            }
             open
             onOpenChange={(open) => {
               if (!open) {

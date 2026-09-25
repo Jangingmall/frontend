@@ -25,6 +25,7 @@ import {
   accessTokenResponseDto,
   addressListResponseDto,
   addressResponseDto,
+  emailVerificationNullResponseDto,
   emailVerificationResponseDto,
   loginResponseDto,
   memberProfileResponseDto,
@@ -115,38 +116,34 @@ export interface SignupRequest {
   };
 }
 
-/**
- * `POST /api/member/email-verifications` → 이메일 인증 코드 발송.
- * **placeholder 계약**(design.md §0.1·§7-2) — 실제 BE 엔드포인트는 재전송 전용이고 코드가
- * 아니라 magic-link 방식이다. BE가 코드 입력 방식을 실제로 배포하면 다시 대조해야 한다.
- */
+/** 실제 인증코드 발송은 null 응답이며 EmailVerificationService의 TTL은 5분이다. */
 export async function requestEmailVerification(
   body: RequestEmailVerificationRequest,
 ): Promise<{ expiresInSeconds: number }> {
-  const data = await clientFetch<unknown>("/api/member/email-verifications", {
-    method: "POST",
-    body,
-    auth: false,
-  });
-  return emailVerificationResponseDto.parse(data);
+  const data = await clientFetch<unknown>(
+    publicEnv.apiMocking
+      ? "/api/member/email-verifications"
+      : "/api/member/email/verification-code",
+    { method: "POST", body, auth: false },
+  );
+  if (publicEnv.apiMocking) return emailVerificationResponseDto.parse(data);
+  emailVerificationNullResponseDto.parse(data);
+  return { expiresInSeconds: 300 };
 }
 
-/**
- * `POST /api/member/email-verifications/verify` → 이메일 인증 코드 확인.
- * **placeholder 계약**(design.md §0.1·§7-2) — 실제 BE는 `GET .../verify?token=` magic-link라
- * 경로·메서드가 다르다.
- */
 export async function verifyEmailCode(
   body: VerifyEmailCodeRequest,
 ): Promise<void> {
-  await clientFetch<null>("/api/member/email-verifications/verify", {
-    method: "POST",
-    body,
-    auth: false,
-  });
+  const data = await clientFetch<unknown>(
+    publicEnv.apiMocking
+      ? "/api/member/email-verifications/verify"
+      : "/api/member/email/verify",
+    { method: "POST", body, auth: false },
+  );
+  emailVerificationNullResponseDto.parse(data);
 }
 
-/** 실제 가입은 토큰 없이 이메일 인증 대기 상태를 반환한다. MSW는 기존 자동 로그인 시연을 유지한다. */
+/** 가입 응답은 세션을 발급하지 않는다. 화면이 별도 로그인 성공 후 세션을 설정한다. */
 export async function signup(
   body: SignupRequest,
 ): Promise<{ accessToken: string | null; user: AuthUser }> {

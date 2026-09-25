@@ -60,6 +60,9 @@ interface OrderCancelRequestModalProps {
   purchasedAt: string;
   orderNumber: string;
   submitting?: boolean;
+  notice?: string;
+  unavailableReason?: string;
+  supportsAttachments?: boolean;
   submitError?: string | null;
   onSubmit: (input: OrderCancelRequest) => void;
 }
@@ -72,6 +75,9 @@ export function OrderCancelRequestModal({
   purchasedAt,
   orderNumber,
   submitting = false,
+  notice,
+  unavailableReason,
+  supportsAttachments = true,
   submitError = null,
   onSubmit,
 }: OrderCancelRequestModalProps) {
@@ -93,6 +99,7 @@ export function OrderCancelRequestModal({
   }
 
   function submit(values: CancelFormValues) {
+    if (submitting || unavailableReason) return;
     onSubmit({
       reason: values.reason.freeText?.trim() || values.reason.label,
       photos: values.photos,
@@ -129,6 +136,7 @@ export function OrderCancelRequestModal({
             size="xl"
             className="min-w-0 flex-1"
             loading={submitting}
+            disabled={!!unavailableReason}
           >
             등록하기
           </Button>
@@ -147,6 +155,14 @@ export function OrderCancelRequestModal({
           </p>
         )}
 
+        {notice && (
+          <p className="text-body-s text-font-dark-secondary">{notice}</p>
+        )}
+        {unavailableReason && (
+          <p role="status" className="text-body-s text-red-font">
+            {unavailableReason}
+          </p>
+        )}
         <OrderClaimProductSummary item={item} purchasedAt={purchasedAt} />
 
         <Controller
@@ -171,10 +187,12 @@ export function OrderCancelRequestModal({
           control={control}
           name="photos"
           render={({ field }) => (
-            <OrderClaimPhotoField
-              value={field.value}
-              onChange={field.onChange}
-            />
+            <fieldset disabled={!supportsAttachments}>
+              <OrderClaimPhotoField
+                value={field.value}
+                onChange={field.onChange}
+              />
+            </fieldset>
           )}
         />
 

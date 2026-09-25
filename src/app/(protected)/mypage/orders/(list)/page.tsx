@@ -1,10 +1,11 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { OrderCancelRequestModal } from "@/components/order/OrderCancelRequestModal";
 import { OrderExchangeRefundRequestModal } from "@/components/order/OrderExchangeRefundRequestModal";
+import { PurchaseConfirmationDialog } from "@/components/order/PurchaseConfirmationDialog";
 import { ReviewFormModal } from "@/components/review/ReviewFormModal";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import {
@@ -13,8 +14,10 @@ import {
   type OrderStatusGroupKey,
   resolveOrderPeriod,
 } from "@/constants/order";
+import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import {
+  useConfirmPurchaseMutation,
   useRequestOrderCancelMutation,
   useRequestOrderExchangeRefundMutation,
 } from "@/queries/orders/mutations";
@@ -74,6 +77,15 @@ export default function MypageOrdersPage() {
     null,
   );
   const [reviewTarget, setReviewTarget] = useState<ClaimTarget | null>(null);
+  const [confirmationTarget, setConfirmationTarget] =
+    useState<OrderGroup | null>(null);
+  const [confirmationError, setConfirmationError] = useState<string | null>(
+    null,
+  );
+  const confirmationInFlight = useRef(false);
+  const confirmMutation = useConfirmPurchaseMutation(
+    confirmationTarget?.orderId ?? -1,
+  );
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [exchangeError, setExchangeError] = useState<string | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
@@ -116,6 +128,10 @@ export default function MypageOrdersPage() {
       item,
     };
     switch (action) {
+      case "confirmPurchase":
+        setConfirmationError(null);
+        setConfirmationTarget(order);
+        break;
       case "cancelOrder":
         setCancelError(null);
         setCancelTarget(target);
@@ -134,7 +150,26 @@ export default function MypageOrdersPage() {
     }
   }
 
+  async function handleConfirmPurchase() {
+    if (!confirmationTarget || confirmationInFlight.current) return;
+    confirmationInFlight.current = true;
+    setConfirmationError(null);
+    try {
+      await confirmMutation.mutateAsync();
+      setConfirmationTarget(null);
+    } catch (error) {
+      setConfirmationError(resolveActionErrorMessage(error));
+    } finally {
+      confirmationInFlight.current = false;
+    }
+  }
+
   async function handleCancelSubmit(input: OrderCancelRequest) {
+    if (
+      cancelMutation.isPending ||
+      (!publicEnv.apiMocking && cancelTarget?.item.status !== "PAYMENT_PENDING")
+    )
+      return;
     setCancelError(null);
     try {
       await cancelMutation.mutateAsync(input);
@@ -209,8 +244,32 @@ export default function MypageOrdersPage() {
         onAction={handleAction}
       />
 
+      {confirmationTarget && (
+        <PurchaseConfirmationDialog
+          open
+          orderNumber={confirmationTarget.orderNumber}
+          submitting={confirmMutation.isPending}
+          error={confirmationError}
+          onOpenChange={(open) => {
+            if (!open) setConfirmationTarget(null);
+          }}
+          onConfirm={() => void handleConfirmPurchase()}
+        />
+      )}
       {cancelTarget && (
         <OrderCancelRequestModal
+          supportsAttachments={publicEnv.apiMocking}
+          notice={
+            publicEnv.apiMocking
+              ? undefined
+              : "이 주문에 포함된 모든 상품이 함께 취소됩니다. 취소 사유·사진 저장은 준비 중입니다."
+          }
+          unavailableReason={
+            !publicEnv.apiMocking &&
+            cancelTarget.item.status !== "PAYMENT_PENDING"
+              ? "현재 결제 대기 주문만 취소할 수 있습니다."
+              : undefined
+          }
           open
           onOpenChange={(open) => {
             if (!open) {

@@ -44,23 +44,13 @@ export function resolveOrdersListPaging(query: OrdersListQuery): {
   };
 }
 
-/**
- * FE 필터 탭(`ORDER_STATUS_GROUP`, Figma 8종 기준) → BE `status` 쿼리 파라미터(6종 원본 +
- * `IN_DELIVERY` 가정, 계약서 §3-1). BE는 FE 그룹 키를 모른다 — 이 표가 유일한 변환 지점이다.
- *
- * - `PURCHASE_CONFIRMED`("구매 확정")는 대응하는 BE 상태가 없어 `DELIVERED`로 보낸다 — BE가
- *   구분 필드를 추가하기 전까지는 "배송 완료" 탭과 결과가 같다(design.md §9, 2026-09-18 확인).
- * - `SHIPPING`("배송 중")은 `IN_DELIVERY`로 보낸다 — 계약서 §3-1 허용값 목록엔 없고 §3-3에만
- *   등장해 실제로 필터링되는지 BE 확인 요청함. 확인 전까지 동작한다고 가정.
- * - `EXCHANGE_REFUND`("교환·환불")는 BE의 `RETURN_REQUESTED` 하나가 Figma 7개 세부 상태를
- *   전부 포괄한다(계약서 §4) — 그대로 1:1 대응.
- */
+/** 화면 필터를 BE 주문 상태로 변환한다. 구매 확정은 독립 상태로 조회한다. */
 const STATUS_GROUP_TO_RAW: Record<OrderStatusGroupKey, string> = {
   PAYMENT_PENDING: "CREATED",
   PREPARING: "PAID",
   SHIPPING: "IN_DELIVERY",
   DELIVERED: "DELIVERED",
-  PURCHASE_CONFIRMED: "DELIVERED",
+  PURCHASE_CONFIRMED: "PURCHASE_CONFIRMED",
   EXCHANGE_REFUND: "RETURN_REQUESTED",
   CANCELED: "CANCELED",
 };

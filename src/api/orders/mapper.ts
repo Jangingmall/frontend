@@ -1,3 +1,4 @@
+import { imageUrl } from "@/api/images/read-model";
 import { ORDER_STATUS, type OrderStatus } from "@/constants/order";
 import type { Page } from "@/types/api";
 import type {
@@ -31,8 +32,7 @@ import type {
  *   `ORDER_PENDING`을 `PREPARING` 그룹에 합치기로 한 필터 탭 결정과도 맞아떨어진다.
  * - `IN_DELIVERY` → `SHIPPING`("배송 중"). 계약서 §3-1엔 이 값이 없고 §3-3에만 등장 —
  *   실제로 필터링되는지 BE 확인 요청함, 확인 전까지 있다고 가정.
- * - `DELIVERED` → `DELIVERED`("배송 완료"). "구매 확정"(`PURCHASE_CONFIRMED`)을 구분할 필드가
- *   BE에 아직 없다(향후 추가 예정으로 확인) — 지금은 전부 `DELIVERED`로만 나온다.
+ * - `DELIVERED`와 `PURCHASE_CONFIRMED`는 각각 배송 완료와 구매 확정으로 표시한다.
  * - `CANCELED` → `CANCELED`.
  * - `PAYMENT_FAILED` → `null`. 마이페이지 주문 목록엔 노출하지 않기로 확정(2026-09-18) —
  *   호출측(`mapOrderGroup`)이 이 값을 받으면 해당 주문 전체를 걸러낸다.
@@ -52,6 +52,8 @@ function mapRawOrderStatus(
       return ORDER_STATUS.SHIPPING;
     case "DELIVERED":
       return ORDER_STATUS.DELIVERED;
+    case "PURCHASE_CONFIRMED":
+      return ORDER_STATUS.PURCHASE_CONFIRMED;
     case "CANCELED":
       return ORDER_STATUS.CANCELED;
     case "PAYMENT_FAILED":
@@ -104,7 +106,7 @@ function mapOrderItem(
     price: dto.price,
     quantity: dto.quantity,
     // BE는 단일 URL을 배열로 감싸 내려준다(variants 없음) — 첫 항목만 쓴다.
-    thumbnailUrl: dto.thumbnail[0]?.url ?? null,
+    thumbnailUrl: imageUrl(dto.thumbnail, dto.legacyThumbnailUrl),
     status,
     reason,
     reviewId: dto.reviewId ?? null,
@@ -149,10 +151,10 @@ function mapOrderDetailItem(
     productName: dto.productName,
     price: dto.price,
     quantity: dto.quantity,
-    thumbnailUrl: dto.thumbnail[0]?.url ?? null,
+    thumbnailUrl: imageUrl(dto.thumbnail, dto.legacyThumbnailUrl),
     options: dto.options ?? [],
     status,
-    artisanName: dto.artisanName ?? null,
+    artisanName: dto.artisan?.businessName ?? dto.artisanName ?? null,
     reason,
     cancelInitiator,
     reviewId: dto.reviewId ?? null,

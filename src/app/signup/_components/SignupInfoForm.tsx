@@ -2,9 +2,10 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Route } from "next";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -22,6 +23,7 @@ import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useCompleteOAuthProfileMutation,
+  useLoginMutation,
   useRequestEmailVerificationMutation,
   useSignupMutation,
   useVerifyEmailCodeMutation,
@@ -29,7 +31,6 @@ import {
 import { useAuthStore } from "@/stores/auth";
 import type { OAuthProvider } from "@/types/auth";
 
-import { EmailVerificationPending } from "./EmailVerificationPending";
 import { TermsAgreementFields } from "./TermsAgreementFields";
 
 /**
@@ -40,7 +41,7 @@ import { TermsAgreementFields } from "./TermsAgreementFields";
  * 나란히 있는 888px 폭 행(라벨 90px + 입력창 774px)인 건 맞았지만, 이메일 필드는 로컬파트+
  * 도메인 select가 아니라 **"example@email.com" placeholder 하나짜리 단일 입력**이다.
  *
- * 이메일 인증은 실제 BE 계약이 아니라 placeholder다(design.md §0.1·§7-2).
+ * 이메일 코드 입력 레이아웃은 실제 발송·검증 API와 MSW가 공유한다.
  */
 
 const nameSchema = z
@@ -181,7 +182,12 @@ export function SignupInfoForm({
   socialContext,
 }: SignupInfoFormProps) {
   const router = useRouter();
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [signupCompleted, setSignupCompleted] = useState(false);
+  const submittingRef = useRef(false);
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(
+    socialContext?.suggestedEmail ?? null,
+  );
+  const loginMutation = useLoginMutation();
   const liveSocial = !publicEnv.apiMocking && socialContext !== null;
   const [formError, setFormError] = useState<string | null>(null);
   // 소셜 로그인이 이미 인증된 이메일을 줬으면(카카오) 처음부터 "인증 완료" 상태로 시작해
@@ -246,8 +252,9 @@ export function SignupInfoForm({
   });
   const requiredTermsAgreed = requiredTerms.every(Boolean);
   const canSubmit =
-    (!publicEnv.apiMocking || verificationStatus === "verified") &&
-    requiredTermsAgreed;
+    (liveSocial || verificationStatus === "verified") &&
+    requiredTermsAgreed &&
+    !signupCompleted;
   const strength = passwordStrengthState(password);
   // "만료"는 별도 state가 아니라 파생값이다 — effect 안에서 다른 state를 또 setState하는
   // cascading render를 피한다(react-hooks/set-state-in-effect).
@@ -278,6 +285,8 @@ export function SignupInfoForm({
         await requestVerificationMutation.mutateAsync({
           email,
         });
+      if (getValues("email") !== email) return;
+      setVerifiedEmail(null);
       setVerificationStatus("sent");
       setVerificationCode("");
       setCodeError(null);
@@ -301,6 +310,8 @@ export function SignupInfoForm({
     const { email } = getValues();
     try {
       await verifyCodeMutation.mutateAsync({ email, code: verificationCode });
+      if (getValues("email") !== email) return;
+      setVerifiedEmail(email);
       setVerificationStatus("verified");
     } catch (error) {
       if (error instanceof ApiError && error.code === "RESOURCE_EXPIRED") {
@@ -308,17 +319,33 @@ export function SignupInfoForm({
         // 맞춘다 — `isVerificationExpired`는 `secondsLeft`에서 파생되므로 이렇게 강제한다.
         setSecondsLeft(0);
         setCodeError("인증 시간이 지났습니다. 재발송해주세요.");
+      } else if (
+        !publicEnv.apiMocking &&
+        error instanceof ApiError &&
+        error.code === "INVALID_INPUT"
+      ) {
+        // 서버는 일치하지 않는 코드도 소비한다. 같은 코드 재시도 대신 재발송을 허용한다.
+        setSecondsLeft(0);
+        setResendCooldown(0);
+        setCodeError("인증코드가 올바르지 않아요. 재발송해주세요.");
       } else {
-        setCodeError("인증코드가 올바르지 않아요.");
+        setCodeError(
+          publicEnv.apiMocking
+            ? "인증코드가 올바르지 않아요."
+            : "인증코드를 확인하지 못했습니다. 다시 시도해주세요.",
+        );
       }
     }
   }
 
   async function onSubmit(values: SignupInfoFormValues) {
+    if (submittingRef.current || signupCompleted || !canSubmit) return;
+    if (!liveSocial && verifiedEmail !== values.email) return;
+    submittingRef.current = true;
     setFormError(null);
     const phone = `${values.phonePrefix}${values.phoneMiddle}${values.phoneLast}`;
     try {
-      const { accessToken, user } = socialContext
+      let { accessToken, user } = socialContext
         ? await completeOAuthProfileMutation.mutateAsync({
             provider: socialContext.provider,
             email: values.email,
@@ -347,8 +374,18 @@ export function SignupInfoForm({
           });
       // 로그인과 동일하게 세션을 만든다(design.md §0.2 — BE 응답 계약 변경 반영 전제).
       if (!accessToken) {
-        setPendingEmail(values.email);
-        return;
+        setSignupCompleted(true);
+        try {
+          const session = await loginMutation.mutateAsync({
+            email: values.email,
+            password: values.password,
+          });
+          accessToken = session.accessToken;
+          user = session.user;
+        } catch {
+          setFormError("회원가입이 완료되었습니다. 로그인 후 이용해 주세요.");
+          return;
+        }
       }
       if (liveSocial) sessionStorage.removeItem("oauth-provider");
       useAuthStore.getState().setSession(accessToken, user);
@@ -366,10 +403,18 @@ export function SignupInfoForm({
         error instanceof ApiError &&
         error.code === "CONFLICT"
       ) {
+        setVerifiedEmail(null);
+        setVerificationStatus("idle");
+        setVerificationCode("");
+        setCodeError(null);
+        setSecondsLeft(0);
+        setResendCooldown(0);
         setError("email", { message: mapSignupError(error) });
       } else {
         setFormError(mapSignupError(error));
       }
+    } finally {
+      submittingRef.current = false;
     }
   }
 
@@ -377,13 +422,9 @@ export function SignupInfoForm({
     verificationStatus === "idle" ? "인증 메일 발송" : "재발송";
   const isEmailLocked = verificationStatus === "verified";
 
-  if (pendingEmail)
-    return (
-      <EmailVerificationPending email={pendingEmail} returnUrl={returnUrl} />
-    );
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={(event) => void handleSubmit(onSubmit)(event)}
       noValidate
       className="flex w-full flex-col gap-16"
     >
@@ -403,13 +444,25 @@ export function SignupInfoForm({
                 <InputField
                   type="text"
                   placeholder="example@email.com"
-                  disabled={isEmailLocked}
+                  disabled={
+                    isEmailLocked ||
+                    requestVerificationMutation.isPending ||
+                    verifyCodeMutation.isPending
+                  }
                   error={errors.email?.message}
-                  {...register("email")}
+                  {...register("email", {
+                    onChange: () => {
+                      setVerifiedEmail(null);
+                      setVerificationStatus("idle");
+                      setVerificationCode("");
+                      setCodeError(null);
+                      setSecondsLeft(0);
+                    },
+                  })}
                 />
               </div>
               {/* 카카오처럼 provider가 이미 인증된 이메일을 준 경우 인증요청 자체가 필요 없다. */}
-              {publicEnv.apiMocking && !isSocialEmailProvided && (
+              {!isSocialEmailProvided && (
                 <Button
                   type="button"
                   variant="outline"
@@ -467,11 +520,6 @@ export function SignupInfoForm({
                 {isSocialEmailProvided
                   ? "제공자가 인증한 이메일이에요."
                   : "인증 완료"}
-              </p>
-            )}
-            {!publicEnv.apiMocking && (
-              <p className="text-caption">
-                가입 후 이메일로 발송된 링크에서 인증해 주세요.
               </p>
             )}
           </FieldRow>
@@ -566,6 +614,16 @@ export function SignupInfoForm({
         </p>
       )}
 
+      {signupCompleted && formError && (
+        <Link
+          className="text-body-m underline"
+          href={
+            `/login?returnUrl=${encodeURIComponent(returnUrl ?? "/")}` as Route
+          }
+        >
+          로그인하기
+        </Link>
+      )}
       <div className="flex w-full justify-center gap-3">
         <Button type="button" variant="outline" size="xl" onClick={onCancel}>
           취소
@@ -578,7 +636,7 @@ export function SignupInfoForm({
           loading={
             socialContext
               ? completeOAuthProfileMutation.isPending
-              : signupMutation.isPending
+              : signupMutation.isPending || loginMutation.isPending
           }
         >
           가입하기
