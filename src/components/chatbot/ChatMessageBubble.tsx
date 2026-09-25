@@ -16,6 +16,15 @@ interface ChatMessageBubbleProps {
   onSuggestionClick: (text: string) => void;
 }
 
+/**
+ * 결과 없음 상태의 후속 질문 칩은 별도 버블이 아니라 **같은 `message-box`
+ * 안에 답변 텍스트와 함께** 들어간다(Figma GUI 파일 결과 없음 프레임, 노드
+ * `2204:219323` — 버블 하나(`radius=[0,12,12,12]`, `bg-bg-subtle` 아님 흰색)
+ * 안에 텍스트 + 칩 프레임이 `gap-3`로 같이 배치돼 있다). 칩 자체는
+ * `bg-bg-subtle`/`rounded-xs`(2px)/가운데 정렬 — 인사 칩(`bg-bg-default`/`rounded`)과는
+ * 다른 하위 컴포넌트다.
+ */
+
 export function ChatMessageBubble({
   message,
   isGroupStart,
@@ -32,27 +41,27 @@ export function ChatMessageBubble({
     >
       <div
         className={cn(
-          "max-w-70 rounded-xl border border-border-neutral-subtle px-3 py-2 text-body-s whitespace-pre-line text-font-dark",
+          "flex max-w-70 flex-col gap-3 rounded-xl border border-border-neutral-subtle px-3 py-2 text-body-s whitespace-pre-line text-font-dark",
           isUser ? "bg-fill-neutral-weak" : "bg-bg-default",
           isGroupStart && (isUser ? "rounded-tr-none" : "rounded-tl-none"),
         )}
       >
         {message.content}
+        {!isUser && message.suggestions && message.suggestions.length > 0 && (
+          <div className="flex flex-col gap-1">
+            {message.suggestions.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => onSuggestionClick(suggestion)}
+                className="rounded-xs border border-border-neutral-subtle bg-bg-subtle px-3 py-2 text-center text-caption text-font-dark hover:bg-bg-default"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-      {!isUser && message.suggestions && message.suggestions.length > 0 && (
-        <div className="flex w-70 flex-col gap-1">
-          {message.suggestions.map((suggestion) => (
-            <button
-              key={suggestion}
-              type="button"
-              onClick={() => onSuggestionClick(suggestion)}
-              className="rounded border border-border-neutral-subtle bg-bg-default px-3 py-2 text-left text-caption text-font-dark hover:bg-bg-subtle"
-            >
-              {suggestion}
-            </button>
-          ))}
-        </div>
-      )}
       {!isUser && message.products && message.products.length > 0 && (
         <div className="flex max-w-95 gap-3 overflow-x-auto rounded-xl border border-border-neutral-subtle bg-bg-default p-3 pb-2">
           {message.products.map(({ product, reason }) => (

@@ -27,7 +27,11 @@ function buildBotReply(content: string) {
       products: buildRecommendProducts(),
     };
   }
-  if (content.includes("없는") || content.includes("품절")) {
+  if (
+    content.includes("없는") ||
+    content.includes("없음") ||
+    content.includes("품절")
+  ) {
     return {
       reply: NO_RESULT_REPLY,
       intent: null,
