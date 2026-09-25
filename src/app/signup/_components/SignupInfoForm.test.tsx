@@ -326,43 +326,63 @@ describe("SignupInfoForm", () => {
     ).toBeInTheDocument();
   });
 });
-it("live signup waits for email verification without creating a session", async () => {
-  Object.assign(publicEnv, { apiMocking: false });
-  server.use(
-    http.post("*/api/member/signup", () =>
-      mockOk({
-        accessToken: null,
-        member: {
-          memberId: 99,
-          email: "newbie@midam.test",
-          name: "홍길동",
-          nickname: null,
-          role: "USER",
-          profileImageUrl: null,
-          provider: null,
-        },
+it.each([true, false])(
+  "실제 코드 인증 후 가입하며 자동 로그인 성공=%s",
+  async (loginSucceeds) => {
+    Object.assign(publicEnv, { apiMocking: false });
+    const member = {
+      memberId: 99,
+      email: "newbie@midam.test",
+      name: "홍길동",
+      nickname: null,
+      role: "USER",
+      profileImageUrl: null,
+      provider: null,
+      phone: null,
+    };
+    const signupCall = vi.fn();
+    server.use(
+      http.post("*/api/member/email/verification-code", () => mockOk(null)),
+      http.post("*/api/member/email/verify", () => mockOk(null)),
+      http.post("*/api/member/signup", () => {
+        signupCall();
+        return mockOk({ accessToken: null, member });
       }),
-    ),
-  );
-  renderSignupInfoForm("/cart");
-  const user = userEvent.setup();
-  expect(
-    screen.queryByRole("button", { name: "인증 메일 발송" }),
-  ).not.toBeInTheDocument();
-  await fillBaseFields(user);
-  await agreeAllTerms(user);
-  await user.click(screen.getByRole("button", { name: "가입하기" }));
-  expect(
-    await screen.findByRole("heading", {
-      name: "이메일 인증 후 로그인해 주세요",
-    }),
-  ).toBeVisible();
-  expect(useAuthStore.getState().status).toBe("anonymous");
-  expect(screen.getByRole("link", { name: "로그인하기" })).toHaveAttribute(
-    "href",
-    "/login?returnUrl=%2Fcart",
-  );
-});
+      http.post("*/api/member/login", (): Response =>
+        loginSucceeds
+          ? mockOk({ accessToken: "live-session", member })
+          : mockError(503, "INTERNAL_ERROR"),
+      ),
+    );
+    renderSignupInfoForm("/cart");
+    const user = userEvent.setup();
+    await fillBaseFields(user);
+    await agreeAllTerms(user);
+    expect(screen.getByRole("button", { name: "가입하기" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "인증 메일 발송" }));
+    expect(await screen.findByText("05:00 남음")).toBeVisible();
+    await user.type(
+      screen.getByPlaceholderText("인증코드를 입력해주세요"),
+      "123456",
+    );
+    await user.click(screen.getByRole("button", { name: "인증 확인" }));
+    await screen.findByText("인증 완료");
+    await user.click(screen.getByRole("button", { name: "가입하기" }));
+    if (loginSucceeds) {
+      await waitFor(() =>
+        expect(push).toHaveBeenCalledWith("/signup/complete?returnUrl=%2Fcart"),
+      );
+      expect(useAuthStore.getState().accessToken).toBe("live-session");
+    } else {
+      expect(
+        await screen.findByRole("link", { name: "로그인하기" }),
+      ).toHaveAttribute("href", "/login?returnUrl=%2Fcart");
+      expect(screen.getByRole("button", { name: "가입하기" })).toBeDisabled();
+      expect(useAuthStore.getState().status).toBe("anonymous");
+    }
+    expect(signupCall).toHaveBeenCalledOnce();
+  },
+);
 it("live social completion clears its consumed ticket marker before authentication", async () => {
   Object.assign(publicEnv, { apiMocking: false });
   sessionStorage.setItem("oauth-provider", "naver");

@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+  optionSnapshotDto,
+  reviewImageDto,
+  thumbnailDto,
+} from "@/api/images/read-model";
+
 export const reviewDto = z
   .object({
     id: z.number().int(),
@@ -30,7 +36,8 @@ export const backendReviewPageDto = z.object({
       reviewId: z.number().int().positive().safe(),
       productId: z.number().int().positive().safe(),
       writerId: z.number().int().positive().safe(),
-      rating: z.number().int().min(1).max(5),
+      rating: z.number().min(0.5).max(5).multipleOf(0.5),
+      images: z.array(z.string()).optional(),
       content: z.string(),
       createdAt: z.string(),
     }),
@@ -67,8 +74,10 @@ export const reviewableItemDto = z
     orderItemId: z.number().int(),
     productId: z.number().int(),
     productName: z.string(),
-    thumbnailUrl: z.string().nullable(),
-    options: z.array(z.string()).optional(),
+    thumbnailUrl: z.string().nullish(),
+    thumbnail: thumbnailDto,
+    legacyThumbnailUrl: z.string().nullish(),
+    options: optionSnapshotDto.optional(),
     purchasedAt: z.string().nullish(),
     rewardPoints: z.number().int().nullish(),
   })
@@ -94,11 +103,11 @@ export const myReviewDto = z
     productId: z.number().int(),
     productName: z.string().nullish(),
     thumbnailUrl: z.string().nullish(),
+    thumbnail: thumbnailDto,
+    legacyThumbnailUrl: z.string().nullish(),
     rating: z.number().min(0.5).max(5),
     content: z.string(),
-    images: z.array(
-      z.object({ src: z.string(), alt: z.string() }).passthrough(),
-    ),
+    images: z.array(reviewImageDto),
     createdAt: z.string(),
   })
   .passthrough();

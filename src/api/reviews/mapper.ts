@@ -1,3 +1,4 @@
+import { imageUrl, reviewImage } from "@/api/images/read-model";
 import type {
   MyReview,
   MyReviewPage,
@@ -35,7 +36,10 @@ export function mapReviewableItem(dto: ReviewableItemDto): ReviewableItem {
     orderItemId: dto.orderItemId,
     productId: dto.productId,
     productName: dto.productName,
-    thumbnailUrl: dto.thumbnailUrl,
+    thumbnailUrl: imageUrl(
+      dto.thumbnail,
+      dto.legacyThumbnailUrl ?? dto.thumbnailUrl,
+    ),
     options: dto.options ?? [],
     purchasedAt: dto.purchasedAt ?? null,
     rewardPoints: dto.rewardPoints ?? null,
@@ -48,10 +52,13 @@ function mapMyReview(dto: MyReviewPageDto["content"][number]): MyReview {
     orderItemId: dto.orderItemId ?? null,
     productId: dto.productId,
     productName: dto.productName ?? null,
-    thumbnailUrl: dto.thumbnailUrl ?? null,
+    thumbnailUrl: imageUrl(
+      dto.thumbnail,
+      dto.legacyThumbnailUrl ?? dto.thumbnailUrl,
+    ),
     rating: dto.rating,
     content: dto.content,
-    images: dto.images.map(({ src, alt }) => ({ src, alt })),
+    images: dto.images.map(reviewImage).filter((image) => image !== null),
     createdAt: dto.createdAt,
   };
 }

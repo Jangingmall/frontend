@@ -11,6 +11,9 @@ import {
   requestOrderExchangeRefund,
 } from "@/api/orders/api";
 import { ORDER_RETURN_REASON_MAP } from "@/constants/order";
+import { publicEnv } from "@/lib/env";
+import { memberKeys } from "@/queries/member/keys";
+import { reviewKeys } from "@/queries/reviews/keys";
 import type {
   OrderCancelRequest,
   OrderExchangeRefundRequest,
@@ -20,20 +23,21 @@ import { orderKeys } from "./keys";
 
 /**
  * 주문 도메인 mutation 모음. 취소·교환환불 요청은 목록(MY-1/MY-2)·상세(주문 상세) 양쪽에서
- * 쓴다(주문 취소·교환환불 신청 모달 공용 — `components/order/`). 나머지는 상세 전용이다.
+ * 쓴다(주문 취소·교환환불 신청 모달 공용 — `components/order/`). 구매 확정도 목록과 상세에서 공유한다.
  * 목록·상태 요약이 읽는 공유 fixture/서버 데이터도 같이 바뀌므로 전부 `orderKeys.all`
  * (접두사 `["orders"]`)까지 무효화한다(CodeRabbit 리뷰 — 기존 취소 mutation과 동일 원칙).
  */
 
 /**
- * 주문 취소 요청(사유·사진) — 목업 전용 엔드포인트(대응 BE 없음, `be-requests.md` #6).
- * 사진은 실제로 업로드는 하되(§`api/images`) 받는 쪽이 목업이라 저장되지 않는다.
+ * 실제 취소 API가 받지 않는 첨부 파일은 업로드하지 않는다. MSW 시연은 유지한다.
  */
 export function useRequestOrderCancelMutation(orderId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: OrderCancelRequest) => {
-      const imageIds = await Promise.all(input.photos.map(uploadReturnPhoto));
+      const imageIds = publicEnv.apiMocking
+        ? await Promise.all(input.photos.map(uploadReturnPhoto))
+        : [];
       await requestOrderCancel(orderId, { reason: input.reason, imageIds });
     },
     onSuccess: () => {
@@ -76,9 +80,8 @@ export function useConfirmPurchaseMutation(orderId: number) {
   return useMutation({
     mutationFn: () => confirmPurchase(orderId),
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: orderKeys.detail(orderId),
-      });
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      void queryClient.invalidateQueries({ queryKey: reviewKeys.all });
     },
   });
 }
@@ -90,9 +93,8 @@ export function useChangeOrderAddressMutation(orderId: number) {
     mutationFn: (input: ChangeOrderAddressRequest) =>
       changeOrderAddress(orderId, input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: orderKeys.detail(orderId),
-      });
+      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
+      void queryClient.invalidateQueries({ queryKey: memberKeys.addresses() });
     },
   });
 }

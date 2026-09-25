@@ -5,7 +5,12 @@ import { publicEnv } from "@/lib/env";
 import { mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 
-import { completeOAuthProfile, signup } from "./api";
+import {
+  completeOAuthProfile,
+  requestEmailVerification,
+  signup,
+  verifyEmailCode,
+} from "./api";
 
 afterEach(() => Object.assign(publicEnv, { apiMocking: true }));
 
@@ -82,4 +87,31 @@ it("sends OAuth agreements without client supplied identity", async () => {
       marketing: false,
     },
   });
+});
+
+it("실제 인증코드 발송의 null 응답을 5분 타이머로 연결한다", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  let body: unknown;
+  server.use(
+    http.post("*/api/member/email/verification-code", async ({ request }) => {
+      body = await request.json();
+      return mockOk(null);
+    }),
+  );
+  expect(
+    await requestEmailVerification({ email: "buyer@example.com" }),
+  ).toEqual({ expiresInSeconds: 300 });
+  expect(body).toEqual({ email: "buyer@example.com" });
+});
+it("실제 이메일 인증 확인은 email/verify로 코드와 이메일을 전송한다", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  let body: unknown;
+  server.use(
+    http.post("*/api/member/email/verify", async ({ request }) => {
+      body = await request.json();
+      return mockOk(null);
+    }),
+  );
+  await verifyEmailCode({ email: "buyer@example.com", code: "123456" });
+  expect(body).toEqual({ email: "buyer@example.com", code: "123456" });
 });
