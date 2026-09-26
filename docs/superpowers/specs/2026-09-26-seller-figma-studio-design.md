@@ -6,9 +6,9 @@
 
 Figma의 정보 입력 → AI 생성 → 편집 → 최종 확인 흐름을 Jangingmall/frontend에 구현한다. 기능의 참고 기준은 ele-003/midam-ai-detail-studio의 codex/ai-detail-studio 브랜치다. 실제 요청·응답과 인증은 Jangingmall/backend의 develop 구현에 맞춘다.
 
-- 브랜치: codex/seller-figma-studio
+- 브랜치: feat/seller-detail-studio
 - 시작점: origin/dev, dc18fd848e30354b51044c8ca8a2faf1506645c1
-- 작업 공간: C:/Users/dlwnd/.codex/worktrees/seller-figma-studio/미담
+- 작업 공간: 기존 미커밋 변경과 분리한 Git worktree.
 - 기존 작업 폴더의 미커밋 변경은 그대로 보존한다.
 - 구매자 홈을 스튜디오로 바꾸지 않는다. 판매자 경로에 화면을 추가한다.
 
@@ -112,4 +112,4 @@ Figma의 샘플 상품 상세 스크린샷은 완성 화면 자산으로 사용�
 
 ## 현재 상태
 
-새 브랜치와 의존성 설치를 완료했다. 구현 전 전체 테스트: 182개 파일 중 181개 통과, 1,117개 테스트 중 1,116개 통과. ProductToolbar.production.test.tsx의 옵션 표시 테스트 1개가 실패했다. 해당 파일만 재실행하면 5개 모두 통과했다. 간헐적 실패 가능성이 있으며 원인은 아직 확정하지 않았다. 범위 A/B 결정 후 문서와 구현 계획을 확정한다. 아직 제품 코드·백엔드 코드·원격 브랜치를 변경하지 않았다.
+새 브랜치와 의존성 설치를 완료했다. 구현 전 전체 테스트: 182개 파일 중 181개 통과, 1,117개 테스트 중 1,116개 통과. ProductToolbar.production.test.tsx의 옵션 표시 테스트 1개가 실패했다. 해당 파일만 재실행하면 5개 모두 통과했다. 간헐적 실패 가능성이 있으며 원인은 아직 확정하지 않았다. 범위 A/B 결정 후 문서와 구현 계획을 확정한다. 제품 코드·백엔드 코드는 아직 변경하지 않았다. 팀 저장소의 feat/seller-detail-studio 브랜치와 Draft PR에서 진행한다.
