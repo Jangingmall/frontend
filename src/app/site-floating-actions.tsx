@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ChatPanel } from "@/components/chatbot/ChatPanel";
 import { FloatingActions } from "@/components/common/floating-actions";
@@ -65,6 +65,7 @@ export function SiteFloatingActions({
 }: SiteFloatingActionsProps) {
   const status = useAuthStore((state) => state.status);
   const router = useRouter();
+  const chatPanelRef = useRef<HTMLDivElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -196,6 +197,7 @@ export function SiteFloatingActions({
       />
       {isOpen && (
         <ChatPanel
+          ref={chatPanelRef}
           messages={messages}
           isSending={createSession.isPending || sendMessage.isPending}
           sendError={sendMessage.isError}
@@ -251,6 +253,7 @@ export function SiteFloatingActions({
         title="종료 시 챗봇 대화 내역은 모두 삭제됩니다."
         description="챗봇을 종료하시겠습니까?"
         variant="confirmation"
+        container={chatPanelRef}
       >
         <div className="flex gap-2.5">
           <Button

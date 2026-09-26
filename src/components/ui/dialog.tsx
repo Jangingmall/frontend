@@ -2,7 +2,7 @@
 
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { cva, type VariantProps } from "class-variance-authority";
-import type { MouseEventHandler, ReactNode } from "react";
+import type { MouseEventHandler, ReactNode, RefObject } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,13 @@ interface DialogProps extends VariantProps<typeof dialogVariants> {
   description?: ReactNode;
   className?: string;
   hideTitle?: boolean;
+  /**
+   * 특정 컨테이너(예: 챗봇 패널 자체) 안에만 떠야 하는 모달용 — 주면 `document.body`
+   * 전체 대신 이 요소 안에 포털링되고, 백드롭·뷰포트도 `fixed inset-0`(뷰포트 전체)
+   * 대신 `absolute inset-0`(컨테이너 기준)로 바뀐다. 컨테이너는 포지셔닝 컨텍스트를
+   * 가진 요소(예: `fixed`)여야 한다.
+   */
+  container?: RefObject<HTMLElement | null>;
   /** form 헤더의 필터 등 제목 옆에 놓이는 컨트롤 */
   headerAction?: ReactNode;
   /** form 본문 스크롤과 분리되는 하단 액션 */
@@ -59,17 +66,29 @@ export function Dialog({
   showClose = variant === "default",
   scrollableContent = true,
   onClick,
+  container,
   children,
 }: DialogProps) {
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       {/* 하위 Select 포털은 이 포털 아래에 붙는다. 모달 내부 z-10보다 Select z-50이 높다. */}
-      <DialogPrimitive.Portal className="relative z-60">
+      <DialogPrimitive.Portal
+        className={cn(container ? "absolute inset-0" : "relative", "z-60")}
+        container={container}
+      >
         <DialogPrimitive.Backdrop
           data-slot="dialog-backdrop"
-          className="fixed inset-0 bg-bg-deam"
+          className={cn(
+            container ? "absolute inset-0" : "fixed inset-0",
+            "bg-bg-deam",
+          )}
         />
-        <DialogPrimitive.Viewport className="fixed inset-0 z-10 flex items-center justify-center overflow-y-auto p-6">
+        <DialogPrimitive.Viewport
+          className={cn(
+            container ? "absolute inset-0" : "fixed inset-0",
+            "z-10 flex items-center justify-center overflow-y-auto p-6",
+          )}
+        >
           <DialogPrimitive.Popup
             onClick={onClick}
             data-slot="dialog-popup"
