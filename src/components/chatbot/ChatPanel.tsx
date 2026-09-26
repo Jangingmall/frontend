@@ -145,13 +145,17 @@ export function ChatPanel({
         {isSending && <ChatThinkingIndicator />}
       </div>
 
+      {/* Figma GUI 파일 "오류" 프레임(노드 `2355:113535` toast 인스턴스) 실측 —
+       * 컨테이너는 `--bg-deam`(순수 검정 75%, `rounded-sm`), 버튼은 `l-jade` variant
+       * (`--fill-jade-weak`, `rounded-xs`, `h-7.5`) — 디자인 시스템 `Toast` 컴포넌트의
+       * 기본 색(`bg-fill-neutral-impact`/`bg-fill-jade`)과 다른, 이 화면 전용 오버라이드다. */}
       {sendError && (
-        <div className="flex items-center justify-between gap-2 bg-bg-default px-4 py-2 text-body-s text-font-dark">
+        <div className="mx-4 mb-4 flex items-center justify-between gap-6 rounded-sm bg-bg-deam py-2 pr-2 pl-3 text-body-s text-font-white">
           <span>일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.</span>
           <button
             type="button"
             onClick={onRetry}
-            className="shrink-0 rounded-lg bg-fill-neutral-impact px-3 py-1.5 text-caption-b text-font-white"
+            className="h-7.5 shrink-0 rounded-xs bg-fill-jade-weak px-6 text-caption-b text-font-dark"
           >
             다시 시도
           </button>
