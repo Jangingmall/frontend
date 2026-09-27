@@ -2,6 +2,8 @@
 
 작성: 2026-09-26. 상태: 구현 범위 확인 대기. 제품 코드는 아직 변경하지 않았다.
 
+2026-09-28 추가 확인: [백엔드 API 명세·구현 대조 문서](../../backend/api-implementation-audit-2026-09-28.md)에 전체 경로, 실제 DTO, 서비스 구현 차이와 판매자 연동 전 보완 사항을 정리했다. API 계약은 해당 문서가 고정한 backend 커밋을 기준으로 다시 확인한다.
+
 ## 목표와 작업 공간
 
 Figma의 정보 입력 → AI 생성 → 편집 → 최종 확인 흐름을 Jangingmall/frontend에 구현한다. 기능의 참고 기준은 ele-003/midam-ai-detail-studio의 codex/ai-detail-studio 브랜치다. 실제 요청·응답과 인증은 Jangingmall/backend의 develop 구현에 맞춘다.
