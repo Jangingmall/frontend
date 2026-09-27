@@ -11,6 +11,34 @@ const item = {
 };
 
 describe("ReviewFormModal", () => {
+  it("0.5점은 서버 최소 별점 안내 후 제출을 막는다", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <ReviewFormModal
+        open
+        onOpenChange={() => {}}
+        item={item}
+        purchasedAt={null}
+        onSubmit={onSubmit}
+      />,
+    );
+    const star = screen.getByTestId("review-rating-star-0");
+    vi.spyOn(star, "getBoundingClientRect").mockReturnValue({
+      left: 0,
+      width: 40,
+    } as DOMRect);
+    fireEvent.click(star, { clientX: 5 });
+    await user.type(
+      screen.getByRole("textbox", { name: "후기 본문" }),
+      "후기 내용",
+    );
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+    expect(
+      await screen.findByText("별점은 1점 이상 입력해주세요."),
+    ).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
   it("별점을 고르지 않으면 제출되지 않는다", async () => {
     const user = userEvent.setup();
     const handleSubmit = vi.fn();

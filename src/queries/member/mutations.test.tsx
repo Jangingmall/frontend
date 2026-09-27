@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import { http } from "msw";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   SEED_ACCESS_TOKEN,
@@ -330,3 +330,5 @@ describe("useUpdateSettingsMutation", () => {
     });
   });
 });
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));

@@ -134,6 +134,7 @@ export const ORDER_DETAIL_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
  * `onAction`이 있어도 `OrderProductCard`가 비활성 처리한다.
  */
 export const ORDER_LIST_IMPLEMENTED_ACTIONS = new Set<OrderCardActionType>([
+  "confirmPurchase",
   "cancelOrder",
   "requestExchangeRefund",
   "writeReview",

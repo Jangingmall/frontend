@@ -1,4 +1,8 @@
+import { z } from "zod";
+
+import { createAddress, fetchAddresses } from "@/api/member/api";
 import type { OrderStatusGroupKey, ReturnReason } from "@/constants/order";
+import { publicEnv } from "@/lib/env";
 import { clientFetch } from "@/lib/http/client";
 import type { Page } from "@/types/api";
 import type {
@@ -132,15 +136,21 @@ export async function fetchOrderDelivery(
   return mapOrderDelivery(orderDeliveryResponseDto.parse(data));
 }
 
-/**
- * 주문 취소 요청(사유·사진 첨부) — 목업 전용 엔드포인트. 결제 전 주문을 취소하는 실제 API가
- * BE에 없다(`be-requests.md` #6) — 답변 전까지 화면 흐름만 보여준다. `imageIds`는 실제로
- * 업로드는 됐지만(§`api/images`) 받는 쪽이 목업이라 그냥 저장 안 되고 버려진다.
- */
+/** 실제 취소는 CREATED 주문 전체에 적용되며 사유·사진을 받지 않는다. */
 export async function requestOrderCancel(
   orderId: number,
   input: { reason: string; imageIds: string[] },
 ): Promise<void> {
+  if (!publicEnv.apiMocking) {
+    const data = await clientFetch(`/api/payments/orders/${orderId}/cancel`, {
+      method: "POST",
+    });
+    z.object({
+      orderId: z.literal(orderId),
+      status: z.literal("CANCELED"),
+    }).parse(data);
+    return;
+  }
   await clientFetch<null>(`/api/payments/orders/${orderId}/cancel-request`, {
     method: "POST",
     body: input,
@@ -175,11 +185,19 @@ export async function requestOrderExchangeRefund(
   });
 }
 
-/**
- * 구매 확정(배송 완료 상태 전용) — 목업 전용 엔드포인트. "구매 확정" 개념·상태값 자체가
- * BE에 없다(`be-requests.md` #6).
- */
+/** 배송 완료 주문의 구매 확정. */
 export async function confirmPurchase(orderId: number): Promise<void> {
+  if (!publicEnv.apiMocking) {
+    const data = await clientFetch(
+      `/api/payments/orders/${orderId}/purchase-confirmation`,
+      { method: "POST" },
+    );
+    z.object({
+      orderId: z.literal(orderId),
+      status: z.literal("PURCHASE_CONFIRMED"),
+    }).parse(data);
+    return;
+  }
   await clientFetch<null>(`/api/member/me/orders/${orderId}/confirm-purchase`, {
     method: "POST",
   });
@@ -193,14 +211,36 @@ export interface ChangeOrderAddressRequest {
   address2: string;
 }
 
-/**
- * 주문 배송지 변경(입금 확인 중·상품 준비 중 상태 전용) — 목업 전용 엔드포인트. 회원 배송지
- * 목록 CRUD와 별개로 이 주문 1건의 배송지만 바꾸는 API가 BE에 없다(`be-requests.md` #7).
- */
+/** 기존 주소를 재사용하거나 생성한 뒤 주문의 배송지 스냅샷만 변경한다. */
 export async function changeOrderAddress(
   orderId: number,
   input: ChangeOrderAddressRequest,
 ): Promise<void> {
+  if (!publicEnv.apiMocking) {
+    const addresses = await fetchAddresses();
+    const existing = addresses.find(
+      (address) =>
+        address.recipientName === input.recipientName &&
+        address.phone === input.phone &&
+        address.zipCode === input.zipCode &&
+        address.address1 === input.address1 &&
+        address.address2 === input.address2,
+    );
+    const address =
+      existing ?? (await createAddress({ ...input, isDefault: false }));
+    const data = await clientFetch(
+      `/api/payments/orders/${orderId}/shipping-address`,
+      {
+        method: "PATCH",
+        body: { addressId: address.id },
+      },
+    );
+    z.object({
+      orderId: z.literal(orderId),
+      addressId: z.literal(address.id),
+    }).parse(data);
+    return;
+  }
   await clientFetch<null>(`/api/payments/orders/${orderId}/address`, {
     method: "PATCH",
     body: input,

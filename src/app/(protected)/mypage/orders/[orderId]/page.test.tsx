@@ -111,6 +111,12 @@ describe("OrderDetailPage", () => {
 
     await user.click(await screen.findByRole("button", { name: "구매 확정" }));
 
+    expect(
+      await screen.findByText(/포함된 모든 상품이 함께 구매 확정/),
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole("button", { name: "주문 전체 구매 확정" }),
+    );
     await waitFor(() =>
       expect(
         screen.queryByRole("button", { name: "구매 확정" }),
@@ -277,3 +283,5 @@ describe("OrderDetailPage", () => {
     );
   });
 });
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));

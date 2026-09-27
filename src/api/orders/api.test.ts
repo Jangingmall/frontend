@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { http } from "msw";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
@@ -337,3 +337,5 @@ describe("changeOrderAddress", () => {
     ).rejects.toMatchObject({ status: 422 });
   });
 });
+
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));

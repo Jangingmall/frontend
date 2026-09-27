@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { optionSnapshotDto, thumbnailDto } from "@/api/images/read-model";
+
 /**
  * `GET /api/member/me/orders` 응답 검증 스키마.
  * (`장인몰 주문 이력 API 계약서` v1.0, 2026-09-18 BE 확정 — 강정훈)
@@ -18,12 +20,8 @@ const returnInfoDto = z
   })
   .passthrough();
 
-/**
- * BE는 이미지를 `docs/api-contract.md` §2.2의 `ImageRef`(variants 배열) 계약이 아니라,
- * 원본 URL 하나를 담은 배열로 내려준다(`MemberReadRepositoryImpl#thumbnail` 직접 확인,
- * 이미지 없으면 `[]`). CodeRabbit 리뷰로 발견 — 이 계약 괴리 자체는 BE에 별도 확인 요청함.
- */
-const orderThumbnailDto = z.array(z.object({ url: z.string() }).passthrough());
+/** 최신 ImageRef 및 기존 목업/레거시 배열 썸네일을 함께 읽는다. */
+const orderThumbnailDto = thumbnailDto;
 
 const orderItemDto = z
   .object({
@@ -33,6 +31,7 @@ const orderItemDto = z
     price: z.number().int(),
     quantity: z.number().int(),
     thumbnail: orderThumbnailDto,
+    legacyThumbnailUrl: z.string().nullish(),
     /** 목업 전용 필드 — 이미 작성된 후기 id. 실제 계약엔 이 연결이 없다(BE 미제공). */
     reviewId: z.number().int().nullish(),
   })
@@ -50,6 +49,7 @@ const orderStatusDto = z.enum([
   "PAYMENT_FAILED",
   "CANCELED",
   "DELIVERED",
+  "PURCHASE_CONFIRMED",
   "RETURN_REQUESTED",
   "IN_DELIVERY",
 ]);
@@ -113,8 +113,12 @@ const orderDetailItemDto = z
     price: z.number().int(),
     quantity: z.number().int(),
     thumbnail: orderThumbnailDto,
+    legacyThumbnailUrl: z.string().nullish(),
     artisanName: z.string().nullish(),
-    options: z.array(z.string()).optional(),
+    options: optionSnapshotDto.optional(),
+    artisan: z
+      .object({ artisanId: z.number(), businessName: z.string().nullable() })
+      .nullish(),
     /** `orderItemDto.reviewId`와 같은 목업 전용 필드. */
     reviewId: z.number().int().nullish(),
   })

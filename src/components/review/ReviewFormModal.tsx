@@ -19,7 +19,14 @@ import { ReviewRatingInput } from "./ReviewRatingInput";
 const CONTENT_MAX_LENGTH = 2000;
 
 const reviewFormSchema = z.object({
-  rating: z.number().min(0.5, { message: "별점을 입력해주세요." }),
+  rating: z
+    .number()
+    .min(0.5, { message: "별점을 입력해주세요." })
+    .refine((rating) => rating >= 1, {
+      message: "별점은 1점 이상 입력해주세요.",
+    })
+    .max(5)
+    .multipleOf(0.5),
   content: z
     .string()
     .trim()

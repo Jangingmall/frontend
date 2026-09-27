@@ -33,8 +33,8 @@ export const memberProfileResponseDto = z
     // 판매자는 "ARTISAN" 단일 값. 배열이 아니다. (docs/api-contract.md §3)
     role: roleSchema,
     profileImageUrl: z.string().nullable(),
-    // MemberProfileResponse는 전화번호를 내려주지 않는다. 폼에서 직접 입력받는다.
-    phone: z.string().optional(),
+    // 기존 회원의 전화번호는 null일 수 있다.
+    phone: z.string().nullish(),
     authProvider: authProviderSchema.optional(),
     provider: z.enum(["naver", "kakao"]).nullable().optional(),
   })
@@ -132,3 +132,5 @@ export const memberSettingsResponseDto = z
 export type MemberSettingsResponseDto = z.infer<
   typeof memberSettingsResponseDto
 >;
+
+export const emailVerificationNullResponseDto = z.null();

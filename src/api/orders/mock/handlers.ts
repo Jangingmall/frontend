@@ -230,6 +230,9 @@ export const orderHandlers = [
         );
       }
       detail.purchaseConfirmed = true;
+      detail.status = "PURCHASE_CONFIRMED";
+      const order = orderFixtures.find((item) => item.orderId === orderId);
+      if (order) order.status = "PURCHASE_CONFIRMED";
       return mockOk(null);
     },
   ),

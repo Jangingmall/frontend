@@ -1,5 +1,6 @@
 import { type DefaultBodyType, http, type PathParams } from "msw";
 
+import { imageUrl } from "@/api/images/read-model";
 import { orderDetailFixtures, orderFixtures } from "@/api/orders/mock/fixtures";
 import {
   createReviewResponseDto,
@@ -73,8 +74,8 @@ export const reviewHandlers = [
   /**
    * `GET /api/member/me/reviews/writable` — 실제 BE 엔드포인트가 있다(`validation.ts`
    * 주석 참고). 매번 `orderDetailFixtures`에서 실시간으로 계산한다(정적 배열로 미리
-   * 만들어두면 후기 작성 직후에도 계속 보이는 stale 문제가 생긴다) — DELIVERED
-   * 상태(구매확정 여부 무관, BE 목록 응답엔 이 구분이 없다)면서 아직 `reviewId`가 없는
+   * 만들어두면 후기 작성 직후에도 계속 보이는 stale 문제가 생긴다) — 배송 완료 또는
+   * 구매 확정 상태면서 아직 `reviewId`가 없는
    * 아이템만 뽑는다. BE가 아직 안 주는 `options`·`purchasedAt`·`rewardPoints`는 mock이
    * 목표 계약대로 채운다.
    */
@@ -84,7 +85,9 @@ export const reviewHandlers = [
     const page = Math.max(0, Number(search.get("page")) || 0);
     const size = Math.min(100, Math.max(1, Number(search.get("size")) || 20));
     const all = [...orderDetailFixtures.values()]
-      .filter((detail) => detail.status === "DELIVERED")
+      .filter((detail) =>
+        ["DELIVERED", "PURCHASE_CONFIRMED"].includes(detail.status),
+      )
       .flatMap((detail) =>
         detail.items
           .filter((item) => item.reviewId == null)
@@ -92,7 +95,7 @@ export const reviewHandlers = [
             orderItemId: item.orderItemId,
             productId: item.productId,
             productName: item.productName,
-            thumbnailUrl: item.thumbnail[0]?.url ?? null,
+            thumbnailUrl: imageUrl(item.thumbnail, item.legacyThumbnailUrl),
             options: item.options,
             purchasedAt: detail.createdAt,
             rewardPoints: 100,
@@ -176,11 +179,13 @@ export const reviewHandlers = [
         .flatMap((order) => order.items)
         .find((item) => item.orderItemId === body.orderItemId)?.productName ??
       "상품명";
-    const thumbnailUrl =
-      orderFixtures
-        .flatMap((order) => order.items)
-        .find((item) => item.orderItemId === body.orderItemId)?.thumbnail[0]
-        ?.url ?? null;
+    const orderItem = orderFixtures
+      .flatMap((order) => order.items)
+      .find((item) => item.orderItemId === body.orderItemId);
+    const thumbnailUrl = imageUrl(
+      orderItem?.thumbnail,
+      orderItem?.legacyThumbnailUrl,
+    );
     const createdAt = new Date().toISOString();
     MY_REVIEW_FIXTURES.unshift({
       id: reviewId,

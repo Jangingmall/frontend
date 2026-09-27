@@ -55,7 +55,9 @@ export async function fetchReviews(
         createdAt: item.createdAt,
         body: item.content,
         optionLabel: "",
-        images: [],
+        images: (item.images ?? [])
+          .filter((src) => /^https?:\/\//.test(src))
+          .map((src, index) => ({ src, alt: `후기 사진 ${index + 1}` })),
       })),
       totalCount: page.totalElements,
       reviewCount: page.totalElements,
@@ -96,9 +98,7 @@ export async function fetchMyReviews(page: number): Promise<MyReviewPage> {
 
 /**
  * 후기 작성 — 실제 BE 계약 그대로(`POST /api/products/{productId}/reviews`). `rating`은
- * FE가 0.5 단위로 받은 값을 그대로 보낸다 — BE는 현재 정수만 받으므로 mock-off 시
- * 서버가 정수로 반올림·절사하거나 거부할 수 있다(BE에 0.5 단위 지원 요청함, be-requests.md
- * #10).
+ * FE의 0.5 단위 평점을 최신 BE BigDecimal 계약 그대로 보낸다.
  */
 export async function createReview(
   productId: number,
