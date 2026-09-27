@@ -1,0 +1,3034 @@
+﻿구분,문서도메인,문서메소드,문서경로,문서기능,원본문서상태,문서인증,문서요청_원문,문서응답_원문,실제메소드,실제경로,실제인증_요약,실제핸들러_입력과반환형,처리호출,코드근거,주의사항
+경로 대응,회원,POST,/api/member/signup,이메일 회원가입,예정,Public,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/signup"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""body"": {
+    ""email"": ""string · 필수 — 이메일 주소"",
+    ""password"": ""string · 필수 — 비밀번호(평문 전송, 서버는 해시 저장)"",
+    ""passwordConfirm"": ""string · 필수"",
+    ""name"": ""string · 필수 — 이름/명칭"",
+    ""phone"": ""string · 필수 — 전화번호(하이픈 제외 숫자만)"",
+    ""role"": ""string (enum: `USER`(소비자)) · 필수 — 공개 회원가입은 USER만 허용"",
+    ""agreements"": {
+      ""age14OrOlder"": ""boolean · 필수"",
+      ""termsOfService"": ""boolean · 필수"",
+      ""privacyCollection"": ""boolean · 필수"",
+      ""marketing"": ""boolean · 선택""
+    }
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""accessToken"": null,
+    ""member"": {
+      ""memberId"": ""number — 회원 고유 ID"",
+      ""email"": ""string — 이메일 주소"",
+      ""name"": ""string — 사용자 이름"",
+      ""nickname"": ""string | null — 닉네임"",
+      ""role"": ""string (enum: `USER`)"",
+      ""profileImageUrl"": ""string | null — 프로필 이미지 URL"",
+      ""provider"": ""string | null — 가입 provider (`kakao` | `naver`), 이메일 가입은 null""
+    }
+  }
+}",POST,/api/member/signup,Public; 쿠키/본문 조건 별도,public ResponseEntity<ApiResponse<MemberSignupResponse>> signUp( @Valid @RequestBody MemberSignupRequest request ),MemberService.signUp,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberController.java#L56,이메일 코드 검증과 가입 상태가 연결되지 않음 (감사 문서 D03)
+동일 경로 없음,회원,POST,/api/member/email-verifications,인증 이메일 재전송,예정,Public,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/email-verifications"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""body"": {
+    ""email"": ""string · 필수 — 이메일 주소""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""expiresInSeconds"": ""number — 유효시간(초)""
+  }
+}",,,,,,,감사 문서의 경로 변경/미확인 표 참조; 미등록 경로의 HTTP 상태는 보안 필터에 따라 달라짐
+동일 경로 없음,회원,GET,/api/member/email-verifications/verify,이메일 인증 링크 확인,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/email-verifications/verify"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""queryParams"": {
+    ""token"": ""string · 선택""
+  }
+}","{
+  ""description"": ""302 Redirect → 인증 성공 시 프론트 홈('/')으로 이동(PM 확정, 전용 완료 페이지는 프론트에서 추후 URI 생성 예정). 토큰 만료/위조 등 실패 시의 리다이렉트 대상은 아직 미정""
+}",,,,,,,감사 문서의 경로 변경/미확인 표 참조; 미등록 경로의 HTTP 상태는 보안 필터에 따라 달라짐
+경로 대응,회원,GET,/api/member/oauth2/kakao,카카오 로그인,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/oauth2/kakao"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  }
+}","{
+  ""description"": ""302 Redirect → OAuth2 Provider 인가 페이지와 콜백을 거친 뒤 프론트 OAuth 콜백으로 이동한다. 세션 발급은 POST /api/member/oauth2/exchange가 담당한다.""
+}",GET,/api/member/oauth2/kakao,Public; 쿠키/본문 조건 별도,public ResponseEntity<Void> kakao(),,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/OAuthController.java#L23,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+동일 경로 없음,회원,GET,/api/member/oauth2/naver,네이버 로그인,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/oauth2/naver"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  }
+}","{
+  ""description"": ""302 Redirect → OAuth2 Provider 인가 페이지와 콜백을 거친 뒤 프론트 OAuth 콜백으로 이동한다. 세션 발급은 POST /api/member/oauth2/exchange가 담당한다.""
+}",,,,,,,감사 문서의 경로 변경/미확인 표 참조; 미등록 경로의 HTTP 상태는 보안 필터에 따라 달라짐
+경로 대응,회원,POST,/api/member/oauth2/exchange,OAuth 결과 교환,예정,Public,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/oauth2/exchange"",
+  ""headers"": {
+    ""Cookie"": ""oauthTicket={opaqueToken} · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""onboardingRequired"": ""boolean — true면 oauthOnboarding Cookie로 추가정보 입력 필요"",
+    ""accessToken"": ""string | null — 기존 회원일 때만 반환""
+  }
+}",POST,/api/member/oauth2/exchange,Public; 쿠키/본문 조건 별도,"public ResponseEntity<ExchangeResponse> exchange(@CookieValue(value=""oauthTicket"",required=false) String ticket)",OAuthMemberService.exchange; OAuthMemberService.onboarding; MemberAuthenticationService.socialSession,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/OAuthController.java#L28,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,POST,/api/member/login,로그인,예정,Public,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/login"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""body"": {
+    ""email"": ""string · 필수 — 이메일 주소"",
+    ""password"": ""string · 필수 — 비밀번호(평문 전송, 서버는 해시 저장)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""accessToken"": ""string"",
+    ""member"": {
+      ""memberId"": ""number — 회원 고유 ID"",
+      ""email"": ""string — 이메일 주소"",
+      ""name"": ""string — 이름/명칭"",
+      ""nickname"": ""string — 닉네임"",
+      ""role"": ""string (enum: `USER`(소비자) | `ARTISAN`(장인(판매자)) | `ADMIN`(관리자)) — 회원 역할"",
+      ""profileImageUrl"": ""string — 프로필 이미지 URL"",
+      ""provider"": ""string | null — 가입 provider (`kakao` | `naver`), 이메일 가입은 null""
+    }
+  }
+}",POST,/api/member/login,Public; 쿠키/본문 조건 별도,public ResponseEntity<ApiResponse<MemberLoginResponse>> login( @Valid @RequestBody MemberLoginRequest request ),MemberAuthenticationService.login,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberController.java#L64,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,POST,/api/member/logout,로그아웃,예정,Authenticated,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/logout"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",POST,/api/member/logout,Authenticated; 서비스 역할·소유권 검사 별도,public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal Long memberId),MemberAuthenticationService.logout,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberController.java#L87,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,POST,/api/member/token/refresh,액세스 토큰 재발급,예정,Public,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/token/refresh"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""accessToken"": ""string — 새로 발급된 Access Token"",
+    ""expiresIn"": ""number — 만료까지 남은 초(기본 1800)""
+  }
+}",POST,/api/member/token/refresh,Public; 쿠키/본문 조건 별도,"public ResponseEntity<ApiResponse<MemberTokenRefreshResponse>> refresh( @CookieValue(value = ""refreshToken"", required = false) String refreshToken )",MemberAuthenticationService.refresh,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberController.java#L74,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,GET,/api/member/me,내 정보 조회,예정,Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/me"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""memberId"": ""number — 회원 고유 ID"",
+    ""email"": ""string — 이메일 주소"",
+    ""name"": ""string — 이름/명칭"",
+    ""nickname"": ""string — 닉네임"",
+    ""role"": ""string (enum: `USER`(소비자) | `ARTISAN`(장인(판매자)) | `ADMIN`(관리자)) — 회원 역할"",
+    ""profileImageUrl"": ""string — 프로필 이미지 URL"",
+    ""provider"": ""string | null — 가입 provider (`kakao` | `naver`), 이메일 가입은 null""
+  }
+}",GET,/api/member/me,Authenticated; 서비스 역할·소유권 검사 별도,public ApiResponse<MemberProfileResponse> getMe(@AuthenticationPrincipal Long memberId),MemberAuthenticationService.getProfile,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberController.java#L95,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,PATCH,/api/member/me,내 정보 수정,예정,Authenticated,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/member/me"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""name"": ""string · 선택 — 이름/명칭"",
+    ""nickname"": ""string · 선택 — 닉네임"",
+    ""phone"": ""string · 선택 — 전화번호(하이픈 제외 숫자만)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""memberId"": ""number — 회원 고유 ID"",
+    ""email"": ""string — 이메일 주소"",
+    ""name"": ""string — 이름/명칭"",
+    ""nickname"": ""string — 닉네임"",
+    ""role"": ""string (enum: `USER`(소비자) | `ARTISAN`(장인(판매자)) | `ADMIN`(관리자)) — 회원 역할"",
+    ""profileImageUrl"": ""string — 프로필 이미지 URL"",
+    ""provider"": ""string | null — 가입 provider (`kakao` | `naver`), 이메일 가입은 null""
+  }
+}",PATCH,/api/member/me,Authenticated; 서비스 역할·소유권 검사 별도,"public MemberProfileResponse update(@AuthenticationPrincipal Long memberId, @Valid @RequestBody MemberAccountRequests.Profile request)",MemberAccountService.update,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberAccountController.java#L19,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,PATCH,/api/member/me/password,비밀번호 변경,예정,Authenticated,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/member/me/password"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""currentPassword"": ""string · 선택"",
+    ""newPassword"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",PATCH,/api/member/me/password,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> changePassword(@AuthenticationPrincipal Long memberId, @Valid @RequestBody MemberAccountRequests.Password request)",MemberAccountService.changePassword,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberAccountController.java#L26,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,DELETE,/api/member/me,회원 탈퇴,예정,Authenticated,"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/member/me"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""reason"": ""string · 필수 — AI가 생성한 추천 이유""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/member/me,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> withdraw(@AuthenticationPrincipal Long memberId, @Valid @RequestBody MemberAccountRequests.Withdrawal request)",MemberAccountService.withdraw,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberAccountController.java#L33,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,GET,/api/member/me/addresses,배송지 목록 조회,예정,USER,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/me/addresses"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": [
+    {
+      ""addressId"": ""number — 배송지 ID"",
+      ""recipientName"": ""string — 수령인명"",
+      ""phone"": ""string — 전화번호(하이픈 제외 숫자만)"",
+      ""zipCode"": ""string — 우편번호"",
+      ""address1"": ""string — 기본주소"",
+      ""address2"": ""string — 상세주소"",
+      ""isDefault"": ""boolean — 기본값 여부""
+    }
+  ]
+}",GET,/api/member/me/addresses,Authenticated; 서비스 역할·소유권 검사 별도,public List<AddressData> list(@AuthenticationPrincipal Long memberId),AddressService.list,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/AddressController.java#L20,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,POST,/api/member/me/addresses,배송지 등록,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/me/addresses"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""recipientName"": ""string · 필수 — 수령인명"",
+    ""phone"": ""string · 필수 — 전화번호(하이픈 제외 숫자만)"",
+    ""zipCode"": ""string · 필수 — 우편번호"",
+    ""address1"": ""string · 필수 — 기본주소"",
+    ""address2"": ""string · 필수 — 상세주소"",
+    ""isDefault"": ""boolean · 필수 — 기본값 여부""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""addressId"": ""number — 배송지 ID"",
+    ""recipientName"": ""string — 수령인명"",
+    ""phone"": ""string — 전화번호(하이픈 제외 숫자만)"",
+    ""zipCode"": ""string — 우편번호"",
+    ""address1"": ""string — 기본주소"",
+    ""address2"": ""string — 상세주소"",
+    ""isDefault"": ""boolean — 기본값 여부""
+  }
+}",POST,/api/member/me/addresses,Authenticated; 서비스 역할·소유권 검사 별도,"public ResponseEntity<AddressData> create(@AuthenticationPrincipal Long memberId, @Valid @RequestBody MemberAccountRequests.CreateAddress request)",AddressService.create,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/AddressController.java#L25,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,PATCH,/api/member/me/addresses/{addressId},배송지 수정,예정,USER,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/member/me/addresses/{addressId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""recipientName"": ""string · 선택 — 수령인명"",
+    ""phone"": ""string · 선택 — 전화번호(하이픈 제외 숫자만)"",
+    ""zipCode"": ""string · 선택 — 우편번호"",
+    ""address1"": ""string · 선택 — 기본주소"",
+    ""address2"": ""string · 선택 — 상세주소"",
+    ""isDefault"": ""boolean · 선택 — 기본값 여부""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""addressId"": ""number — 배송지 ID"",
+    ""recipientName"": ""string — 수령인명"",
+    ""phone"": ""string — 전화번호(하이픈 제외 숫자만)"",
+    ""zipCode"": ""string — 우편번호"",
+    ""address1"": ""string — 기본주소"",
+    ""address2"": ""string — 상세주소"",
+    ""isDefault"": ""boolean — 기본값 여부""
+  }
+}",PATCH,/api/member/me/addresses/{addressId},Authenticated; 서비스 역할·소유권 검사 별도,"public AddressData update(@AuthenticationPrincipal Long memberId, @PathVariable Long addressId, @Valid @RequestBody MemberAccountRequests.UpdateAddress request)",AddressService.update,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/AddressController.java#L31,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,DELETE,/api/member/me/addresses/{addressId},배송지 삭제,예정,USER,"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/member/me/addresses/{addressId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/member/me/addresses/{addressId},Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> delete(@AuthenticationPrincipal Long memberId, @PathVariable Long addressId)",AddressService.delete,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/AddressController.java#L37,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,GET,/api/member/me/wishes,찜 목록 조회,예정,USER,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/me/wishes"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""page"": ""integer · 선택 — 1-based 페이지 번호(cursor 미제공 시 page 모드 진입, 기본 1)"",
+    ""limit"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""productId"": ""number — 상품 고유 ID"",
+        ""name"": ""string — 이름/명칭"",
+        ""price"": ""number — 가격, 원 단위 정수"",
+        ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""status"": ""string (enum, 예: `ON_SALE`, 동적 값)"",
+        ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+        ""subcategory"": ""string"",
+        ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) — 컬러 코드"",
+        ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) — 선물테마 코드"",
+        ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+        ""isLimited"": ""boolean — 한정수량 여부"",
+        ""isCustomOrder"": ""boolean — 주문제작 여부"",
+        ""isSingleItem"": ""boolean — 총재고 1, 재입고 없음 여부"",
+        ""isNew"": ""boolean — 신작 여부(최근 등록된 상품)"",
+        ""hasGiftWrap"": ""boolean — 선물포장 가능 여부"",
+        ""hasOptions"": ""boolean — 옵션 존재 여부"",
+        ""purposeTags"": [
+          ""string — 용도 태그 배열(선물/다도 등)""
+        ],
+        ""primaryBadge"": ""string (enum: `LIMITED`(한정수량) | `NEW`(신작) | `POPULAR`(인기)) — 서버가 계산한 대표 배지 1개(우선순위: 한정수량>신작>인기, 해당 없으면 null). 품절은 배지가 아니라 이미지 오버레이로 별도 표현(FE), 단하나/주문제작/선물포장 배지는 폐지(PM 최종 확정). FE는 primaryBadge 값 하나만 그대로 렌더링"",
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string""
+      }
+    ],
+    ""nextCursor"": ""string · cursor 모드 시 다음 커서, page 모드 시 null"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number"",
+    ""page"": ""number · nullable — page 모드 현재 페이지(1-based), cursor 모드는 null"",
+    ""totalPages"": ""number · nullable — page 모드 전체 페이지 수, cursor 모드는 null""
+  }
+}",GET,/api/member/me/wishes,hasRole('USER'),"public ApiResponse<Page<Map<String, Object>>> wishes( @AuthenticationPrincipal Long memberId, @PageableDefault(size = 20) Pageable pageable )",MemberQueryService.wishes,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberQueryController.java#L27,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,회원,GET,/api/member/me/orders,주문 목록 조회,예정,USER,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/me/orders"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""page"": ""integer · 선택 — 1-based 페이지 번호(cursor 미제공 시 page 모드 진입, 기본 1)"",
+    ""limit"": ""string · 선택"",
+    ""status"": ""string (enum, 예: `ALL`, 동적 값) · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""orderId"": ""number — 주문 고유 ID"",
+        ""orderNumber"": ""string (enum, 예: `ORD20260825001`, 동적 값) — 사람이 보는 주문번호(orderId와 별개 식별자)"",
+        ""status"": ""string (enum, 예: `PAID`, 동적 값)"",
+        ""totalAmount"": ""number — 총 주문 금액"",
+        ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601""
+      }
+    ],
+    ""nextCursor"": ""string · cursor 모드 시 다음 커서, page 모드 시 null"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number"",
+    ""page"": ""number · nullable — page 모드 현재 페이지(1-based), cursor 모드는 null"",
+    ""totalPages"": ""number · nullable — page 모드 전체 페이지 수, cursor 모드는 null""
+  }
+}",GET,/api/member/me/orders,hasRole('USER'),"public ApiResponse<Page<Map<String, Object>>> orders( @AuthenticationPrincipal Long memberId, @PageableDefault(size = 20) Pageable pageable, @RequestParam(defaultValue = ""ALL"") List<String> status, @RequestParam(required = false) String from, @RequestParam(required = false) String to, @RequestParam(required = false) String artisanName )",MemberQueryService.orders,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberQueryController.java#L55,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,회원,GET,/api/member/me/orders/{orderId},주문 상세 조회,예정,USER,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/me/orders/{orderId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""orderId"": ""number — 주문 고유 ID"",
+    ""orderNumber"": ""string (enum, 예: `ORD20260825001`, 동적 값) — 사람이 보는 주문번호(orderId와 별개 식별자)"",
+    ""status"": ""string (enum, 예: `PAID`, 동적 값)"",
+    ""totalAmount"": ""number — 총 주문 금액"",
+    ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601"",
+    ""items"": [
+      {
+        ""orderItemId"": ""number"",
+        ""productId"": ""number — 상품 고유 ID"",
+        ""productName"": ""string"",
+        ""price"": ""number — 가격, 원 단위 정수"",
+        ""quantity"": ""number — 수량""
+      }
+    ],
+    ""address"": {
+      ""addressId"": ""number — 배송지 ID"",
+      ""recipientName"": ""string — 수령인명"",
+      ""phone"": ""string — 전화번호(하이픈 제외 숫자만)"",
+      ""zipCode"": ""string — 우편번호"",
+      ""address1"": ""string — 기본주소"",
+      ""address2"": ""string — 상세주소"",
+      ""isDefault"": ""boolean — 기본값 여부""
+    }
+  }
+}",GET,/api/member/me/orders/{orderId},hasRole('USER'),"public ApiResponse<Map<String, Object>> order( @AuthenticationPrincipal Long memberId, @PathVariable Long orderId )",MemberQueryService.order,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberQueryController.java#L69,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,GET,/api/member/me/reviews/writable,작성 가능 후기 조회,예정,USER,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/me/reviews/writable"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""page"": ""integer · 선택 — 1-based 페이지 번호(cursor 미제공 시 page 모드 진입, 기본 1)"",
+    ""limit"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""orderItemId"": ""number"",
+        ""productId"": ""number — 상품 고유 ID"",
+        ""productName"": ""string"",
+        ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)""
+      }
+    ],
+    ""nextCursor"": ""string · cursor 모드 시 다음 커서, page 모드 시 null"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number"",
+    ""page"": ""number · nullable — page 모드 현재 페이지(1-based), cursor 모드는 null"",
+    ""totalPages"": ""number · nullable — page 모드 전체 페이지 수, cursor 모드는 null""
+  }
+}",GET,/api/member/me/reviews/writable,hasRole('USER'),"public ApiResponse<Page<Map<String, Object>>> writable( @AuthenticationPrincipal Long memberId, @PageableDefault(size = 20) Pageable pageable )",MemberQueryService.reviews,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberQueryController.java#L87,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,회원,GET,/api/member/me/reviews,내 후기 조회,예정,USER,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/me/reviews"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""page"": ""integer · 선택 — 1-based 페이지 번호(cursor 미제공 시 page 모드 진입, 기본 1)"",
+    ""limit"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""reviewId"": ""number — 후기 ID"",
+        ""productId"": ""number — 상품 고유 ID"",
+        ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+        ""content"": ""string — 본문 내용"",
+        ""images"": [
+          ""string""
+        ],
+        ""writerNickname"": ""string"",
+        ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601""
+      }
+    ],
+    ""nextCursor"": ""string · cursor 모드 시 다음 커서, page 모드 시 null"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number"",
+    ""page"": ""number · nullable — page 모드 현재 페이지(1-based), cursor 모드는 null"",
+    ""totalPages"": ""number · nullable — page 모드 전체 페이지 수, cursor 모드는 null""
+  }
+}",GET,/api/member/me/reviews,hasRole('USER'),"public ApiResponse<Page<Map<String, Object>>> reviews( @AuthenticationPrincipal Long memberId, @PageableDefault(size = 20) Pageable pageable )",MemberQueryService.reviews,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberQueryController.java#L78,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,회원,GET,/api/member/artisans/{artisanId},장인 정보 조회,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/artisans/{artisanId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""artisanId"": ""number — 장인 고유 ID"",
+    ""businessName"": ""string — 공방명"",
+    ""introduction"": ""string — 한 줄 소개"",
+    ""profileImageUrl"": ""string — 프로필 이미지 URL"",
+    ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+    ""isOrganization"": ""boolean — 단체 지정 여부"",
+    ""certificationStatus"": ""string (enum, 예: `APPROVED`, 동적 값)"",
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+    ""region"": ""string — 활동 지역"",
+    ""careerYears"": ""number — 경력 연수"",
+    ""productCount"": ""number — 등록 작품 총수"",
+    ""topProducts"": [
+      {
+        ""productId"": ""number — 상품 고유 ID"",
+        ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)""
+      }
+    ],
+    ""certifiedYear"": ""number — 지정 연도"",
+    ""lineage"": ""string — 계보"",
+    ""quote"": ""string — 인용문"",
+    ""bio"": ""string — 상세 소개 본문"",
+    ""videoUrl"": ""string — 영상 URL(등록 방식)"",
+    ""careerTimeline"": [
+      {
+        ""year"": ""number"",
+        ""title"": ""string"",
+        ""description"": ""string — 설명""
+      }
+    ]
+  }
+}",GET,/api/member/artisans/{artisanId},Public,"public Map<String, Object> detail(@PathVariable Long artisanId)",ArtisanService.detail,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/ArtisanController.java#L28,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,GET,/api/member/artisans/me,내 장인 정보 조회,예정,ARTISAN,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/artisans/me"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""artisanId"": ""number — 장인 고유 ID"",
+    ""businessName"": ""string — 공방명"",
+    ""introduction"": ""string — 한 줄 소개"",
+    ""profileImageUrl"": ""string — 프로필 이미지 URL"",
+    ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+    ""isOrganization"": ""boolean — 단체 지정 여부"",
+    ""certificationStatus"": ""string (enum, 예: `APPROVED`, 동적 값)"",
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+    ""region"": ""string — 활동 지역"",
+    ""careerYears"": ""number — 경력 연수"",
+    ""productCount"": ""number — 등록 작품 총수"",
+    ""topProducts"": [
+      {
+        ""productId"": ""number — 상품 고유 ID"",
+        ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)""
+      }
+    ],
+    ""certifiedYear"": ""number — 지정 연도"",
+    ""lineage"": ""string — 계보"",
+    ""quote"": ""string — 인용문"",
+    ""bio"": ""string — 상세 소개 본문"",
+    ""videoUrl"": ""string — 영상 URL(등록 방식)"",
+    ""careerTimeline"": [
+      {
+        ""year"": ""number"",
+        ""title"": ""string"",
+        ""description"": ""string — 설명""
+      }
+    ]
+  }
+}",GET,/api/member/artisans/me,ARTISAN (서비스 검사),"public Map<String, Object> mine(@AuthenticationPrincipal Long memberId)",ArtisanService.mine,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/ArtisanController.java#L33,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,PATCH,/api/member/artisans/me,장인 정보 수정,예정,ARTISAN,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/member/artisans/me"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""businessName"": ""string · 선택 — 공방명"",
+    ""introduction"": ""string · 선택 — 한 줄 소개"",
+    ""profileImageUrl"": ""string · 선택 — 프로필 이미지 URL"",
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) · 선택 — 종목/카테고리 코드"",
+    ""region"": ""string · 선택 — 활동 지역"",
+    ""careerYears"": ""number · 선택 — 경력 연수"",
+    ""certifiedYear"": ""number · 선택 — 지정 연도"",
+    ""lineage"": ""string · 선택 — 계보"",
+    ""quote"": ""string · 선택 — 인용문"",
+    ""bio"": ""string · 선택 — 상세 소개 본문"",
+    ""videoUrl"": ""string · 선택 — 영상 URL(등록 방식)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""artisanId"": ""number — 장인 고유 ID"",
+    ""businessName"": ""string — 공방명"",
+    ""introduction"": ""string — 한 줄 소개"",
+    ""profileImageUrl"": ""string — 프로필 이미지 URL"",
+    ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+    ""isOrganization"": ""boolean — 단체 지정 여부"",
+    ""certificationStatus"": ""string (enum, 예: `APPROVED`, 동적 값)"",
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+    ""region"": ""string — 활동 지역"",
+    ""careerYears"": ""number — 경력 연수"",
+    ""productCount"": ""number — 등록 작품 총수"",
+    ""topProducts"": [
+      {
+        ""productId"": ""number — 상품 고유 ID"",
+        ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)""
+      }
+    ],
+    ""certifiedYear"": ""number — 지정 연도"",
+    ""lineage"": ""string — 계보"",
+    ""quote"": ""string — 인용문"",
+    ""bio"": ""string — 상세 소개 본문"",
+    ""videoUrl"": ""string — 영상 URL(등록 방식)"",
+    ""careerTimeline"": [
+      {
+        ""year"": ""number"",
+        ""title"": ""string"",
+        ""description"": ""string — 설명""
+      }
+    ]
+  }
+}",PATCH,/api/member/artisans/me,ARTISAN (서비스 검사),"public Map<String, Object> update(@AuthenticationPrincipal Long memberId, @Valid @RequestBody Profile request)",ArtisanService.update,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/ArtisanController.java#L38,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,POST,/api/member/artisans/applications,장인 가입 신청,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/artisans/applications"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""businessName"": ""string · 필수 — 공방명"",
+    ""introduction"": ""string · 필수 — 한 줄 소개"",
+    ""businessLicenseImageUrl"": ""string · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""applicationId"": ""number — 장인 가입 신청 ID"",
+    ""memberId"": ""number — 회원 고유 ID"",
+    ""businessName"": ""string — 공방명"",
+    ""status"": ""string (enum: `PENDING`(심사대기) | `APPROVED`(승인됨 — 회원 role이 ARTISAN으로 전환) | `REJECTED`(반려됨(사유 포함)))"",
+    ""submittedAt"": ""string (ISO 8601 datetime) — 제출 일시, ISO 8601""
+  }
+}",POST,/api/member/artisans/applications,Authenticated; 서비스 역할·소유권 검사 별도,"public ResponseEntity<SellerApplicationData> apply(@AuthenticationPrincipal Long memberId, @Valid @RequestBody ApplicationRequest request)",SellerApplicationService.apply,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/SellerApplicationController.java#L17,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,상품,GET,/api/products/me,내 상품 목록 조회,예정,ARTISAN,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/products/me"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""limit"": ""string · 선택"",
+    ""status"": ""string (enum, 예: `ALL`, 동적 값) · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""productId"": ""number — 상품 고유 ID"",
+        ""name"": ""string — 이름/명칭"",
+        ""price"": ""number — 가격, 원 단위 정수"",
+        ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""status"": ""string (enum, 예: `ON_SALE`, 동적 값)"",
+        ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+        ""subcategory"": ""string"",
+        ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) — 컬러 코드"",
+        ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) — 선물테마 코드"",
+        ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+        ""isLimited"": ""boolean — 한정수량 여부"",
+        ""isCustomOrder"": ""boolean — 주문제작 여부"",
+        ""isSingleItem"": ""boolean — 총재고 1, 재입고 없음 여부"",
+        ""isNew"": ""boolean — 신작 여부(최근 등록된 상품)"",
+        ""hasGiftWrap"": ""boolean — 선물포장 가능 여부"",
+        ""hasOptions"": ""boolean — 옵션 존재 여부"",
+        ""purposeTags"": [
+          ""string — 용도 태그 배열(선물/다도 등)""
+        ],
+        ""primaryBadge"": ""string (enum: `LIMITED`(한정수량) | `NEW`(신작) | `POPULAR`(인기)) — 서버가 계산한 대표 배지 1개(우선순위: 한정수량>신작>인기, 해당 없으면 null). 품절은 배지가 아니라 이미지 오버레이로 별도 표현(FE), 단하나/주문제작/선물포장 배지는 폐지(PM 최종 확정). FE는 primaryBadge 값 하나만 그대로 렌더링"",
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string""
+      }
+    ],
+    ""nextCursor"": ""string · cursor 모드 시 다음 커서, page 모드 시 null"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number"",
+    ""page"": ""number · nullable — page 모드 현재 페이지(1-based), cursor 모드는 null"",
+    ""totalPages"": ""number · nullable — page 모드 전체 페이지 수, cursor 모드는 null""
+  }
+}",GET,/api/products/me,hasRole('ARTISAN'),"public ApiResponse<Page<ProductResponse>> myProducts( @AuthenticationPrincipal Long memberId, @PageableDefault(size = 20) Pageable pageable )",ProductService.findByArtisan,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L68,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,상품,POST,/api/products,상품 등록,예정,ARTISAN,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/products"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""name"": ""string · 필수 — 이름/명칭"",
+    ""price"": ""number · 필수 — 가격, 원 단위 정수"",
+    ""description"": ""string · 필수 — 설명"",
+    ""modelName"": ""string · 필수"",
+    ""size"": ""string · 필수"",
+    ""material"": ""string · 필수 — 소재 코드"",
+    ""components"": [
+      ""string · 필수""
+    ],
+    ""manufacturer"": ""string · 필수"",
+    ""countryOfOrigin"": ""string · 필수"",
+    ""asManagerContact"": ""string · 필수"",
+    ""warrantyPolicy"": ""string · 필수"",
+    ""stock"": ""number · 필수 — 재고 수량"",
+    ""productionPeriodDays"": ""number · 필수 — 제작 소요일수"",
+    ""isLimited"": ""boolean · 필수 — 한정수량 여부"",
+    ""isCustomOrder"": ""boolean · 필수 — 주문제작 여부"",
+    ""hasGiftWrap"": ""boolean · 필수 — 선물포장 가능 여부"",
+    ""engravingAvailable"": ""boolean · 필수"",
+    ""shippingFee"": ""number · 필수 — 배송비"",
+    ""freeShippingThreshold"": ""number · 필수 — 무료배송 조건 금액(없으면 null)"",
+    ""images"": [
+      ""string · 필수""
+    ],
+    ""optionGroups"": [
+      {
+        ""type"": ""string (enum: `REQUIRED`(필수 옵션 — 선택해야 구매 가능, 실질적 SKU) | `OPTIONAL`(선택 옵션 — 안 골라도 구매 가능, 가격 가산) | `TEXT`(입력형 옵션 — 사용자가 텍스트 직접 입력)) · 필수"",
+        ""name"": ""string · 필수 — 이름/명칭"",
+        ""choices"": [
+          {
+            ""name"": ""string · 필수 — 이름/명칭"",
+            ""priceDelta"": ""number · 필수 — 기본가 대비 가감액"",
+            ""stock"": ""number · 필수 — 재고 수량""
+          }
+        ]
+      }
+    ]
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""productId"": ""number — 상품 고유 ID"",
+    ""name"": ""string — 이름/명칭"",
+    ""price"": ""number — 가격, 원 단위 정수"",
+    ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+    ""status"": ""string (enum: `DRAFT`(임시저장 — 등록만 됨, 콘텐츠 미게시, 공개 API 항상 404) | `ON_SALE`(판매중 — 콘텐츠 게시 완료, 공개 노출, 구매 가능) | `SOLD_OUT`(품절 — 공개 노출 유지, 구매 불가) | `HIDDEN`(비공개 — 장인이 직접 비공개 처리))"",
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+    ""subcategory"": ""string"",
+    ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) — 컬러 코드"",
+    ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) — 선물테마 코드"",
+    ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+    ""isLimited"": ""boolean — 한정수량 여부"",
+    ""isCustomOrder"": ""boolean — 주문제작 여부"",
+    ""isSingleItem"": ""boolean — 총재고 1, 재입고 없음 여부"",
+    ""isNew"": ""boolean — 신작 여부(최근 등록된 상품)"",
+    ""hasGiftWrap"": ""boolean — 선물포장 가능 여부"",
+    ""hasOptions"": ""boolean — 옵션 존재 여부"",
+    ""purposeTags"": [
+      ""string — 용도 태그 배열(선물/다도 등)""
+    ],
+    ""primaryBadge"": ""string (enum: `LIMITED`(한정수량) | `NEW`(신작) | `POPULAR`(인기)) — 서버가 계산한 대표 배지 1개(우선순위: 한정수량>신작>인기, 해당 없으면 null). 품절은 배지가 아니라 이미지 오버레이로 별도 표현(FE), 단하나/주문제작/선물포장 배지는 폐지(PM 최종 확정). FE는 primaryBadge 값 하나만 그대로 렌더링"",
+    ""artisanId"": ""number — 장인 고유 ID"",
+    ""artisanName"": ""string"",
+    ""modelName"": ""string"",
+    ""size"": ""string"",
+    ""material"": ""string — 소재 코드"",
+    ""components"": [
+      ""string""
+    ],
+    ""manufacturer"": ""string"",
+    ""countryOfOrigin"": ""string"",
+    ""asManagerContact"": ""string"",
+    ""warrantyPolicy"": ""string"",
+    ""description"": ""string — 설명"",
+    ""stock"": ""number — 재고 수량"",
+    ""stockAvailable"": ""boolean — 구매 가능 재고 존재 여부"",
+    ""productionPeriodDays"": ""number — 제작 소요일수"",
+    ""engravingAvailable"": ""boolean"",
+    ""shippingFee"": ""number — 배송비"",
+    ""freeShippingThreshold"": ""number — 무료배송 조건 금액(없으면 null)"",
+    ""detailPageBlocks"": [
+      {
+        ""order"": ""number — 표시 순서(드래그앤드롭 시 재정렬됨)"",
+        ""tag"": ""string (enum: `h2`(소제목 블록) | `p`(본문 문단 블록) | `img`(이미지 블록) | `video`(영상 블록(URL 등록 방식))) — 블록 태그(h2/p/img/video)"",
+        ""hasImage"": ""boolean"",
+        ""imageVariants"": ""array · nullable — 이미지 variants, tag=img일 때만 값 [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""videoUrl"": ""string · nullable — 영상 URL(등록 방식)"",
+        ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+      }
+    ],
+    ""optionGroups"": [
+      {
+        ""optionGroupId"": ""number — 옵션 그룹 ID"",
+        ""type"": ""string (enum: `REQUIRED`(필수 옵션 — 선택해야 구매 가능, 실질적 SKU) | `OPTIONAL`(선택 옵션 — 안 골라도 구매 가능, 가격 가산) | `TEXT`(입력형 옵션 — 사용자가 텍스트 직접 입력))"",
+        ""name"": ""string — 이름/명칭"",
+        ""choices"": [
+          {
+            ""choiceId"": ""number — 옵션 선택지 ID"",
+            ""name"": ""string — 이름/명칭"",
+            ""priceDelta"": ""number — 기본가 대비 가감액"",
+            ""stock"": ""number — 재고 수량""
+          }
+        ]
+      }
+    ],
+    ""images"": [
+      {
+        ""imageId"": ""string — 이미지 그룹 ID, ULID 형식(예: image_01HXYZ)"",
+        ""alt"": ""string"",
+        ""variants"": [
+          {
+            ""url"": ""string"",
+            ""width"": ""number"",
+            ""height"": ""number"",
+            ""format"": ""string""
+          }
+        ]
+      }
+    ],
+    ""artisan"": {
+      ""artisanId"": ""number — 장인 고유 ID"",
+      ""businessName"": ""string — 공방명"",
+      ""introduction"": ""string — 한 줄 소개"",
+      ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)""
+    }
+  }
+}",POST,/api/products,hasRole('ARTISAN'),"public ResponseEntity<ApiResponse<ProductResponse>> create( @AuthenticationPrincipal Long memberId, @Valid @RequestBody ProductRequest.Create request )",ProductService.create,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L43,상품 DTO·검색 필터가 공개조회 계약과 다름 (D04)
+경로 대응,상품,PATCH,/api/products/{productId},상품 수정,예정,ARTISAN,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/products/{productId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""name"": ""string · 선택 — 이름/명칭"",
+    ""price"": ""number · 선택 — 가격, 원 단위 정수"",
+    ""description"": ""string · 선택 — 설명"",
+    ""stock"": ""number · 선택 — 재고 수량"",
+    ""productionPeriodDays"": ""number · 선택 — 제작 소요일수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""productId"": ""number — 상품 고유 ID"",
+    ""name"": ""string — 이름/명칭"",
+    ""price"": ""number — 가격, 원 단위 정수"",
+    ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+    ""status"": ""string (enum: `DRAFT`(임시저장 — 등록만 됨, 콘텐츠 미게시, 공개 API 항상 404) | `ON_SALE`(판매중 — 콘텐츠 게시 완료, 공개 노출, 구매 가능) | `SOLD_OUT`(품절 — 공개 노출 유지, 구매 불가) | `HIDDEN`(비공개 — 장인이 직접 비공개 처리))"",
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+    ""subcategory"": ""string"",
+    ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) — 컬러 코드"",
+    ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) — 선물테마 코드"",
+    ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+    ""isLimited"": ""boolean — 한정수량 여부"",
+    ""isCustomOrder"": ""boolean — 주문제작 여부"",
+    ""isSingleItem"": ""boolean — 총재고 1, 재입고 없음 여부"",
+    ""isNew"": ""boolean — 신작 여부(최근 등록된 상품)"",
+    ""hasGiftWrap"": ""boolean — 선물포장 가능 여부"",
+    ""hasOptions"": ""boolean — 옵션 존재 여부"",
+    ""purposeTags"": [
+      ""string — 용도 태그 배열(선물/다도 등)""
+    ],
+    ""primaryBadge"": ""string (enum: `LIMITED`(한정수량) | `NEW`(신작) | `POPULAR`(인기)) — 서버가 계산한 대표 배지 1개(우선순위: 한정수량>신작>인기, 해당 없으면 null). 품절은 배지가 아니라 이미지 오버레이로 별도 표현(FE), 단하나/주문제작/선물포장 배지는 폐지(PM 최종 확정). FE는 primaryBadge 값 하나만 그대로 렌더링"",
+    ""artisanId"": ""number — 장인 고유 ID"",
+    ""artisanName"": ""string"",
+    ""modelName"": ""string"",
+    ""size"": ""string"",
+    ""material"": ""string — 소재 코드"",
+    ""components"": [
+      ""string""
+    ],
+    ""manufacturer"": ""string"",
+    ""countryOfOrigin"": ""string"",
+    ""asManagerContact"": ""string"",
+    ""warrantyPolicy"": ""string"",
+    ""description"": ""string — 설명"",
+    ""stock"": ""number — 재고 수량"",
+    ""stockAvailable"": ""boolean — 구매 가능 재고 존재 여부"",
+    ""productionPeriodDays"": ""number — 제작 소요일수"",
+    ""engravingAvailable"": ""boolean"",
+    ""shippingFee"": ""number — 배송비"",
+    ""freeShippingThreshold"": ""number — 무료배송 조건 금액(없으면 null)"",
+    ""detailPageBlocks"": [
+      {
+        ""order"": ""number — 표시 순서(드래그앤드롭 시 재정렬됨)"",
+        ""tag"": ""string (enum: `h2`(소제목 블록) | `p`(본문 문단 블록) | `img`(이미지 블록) | `video`(영상 블록(URL 등록 방식))) — 블록 태그(h2/p/img/video)"",
+        ""hasImage"": ""boolean"",
+        ""imageVariants"": ""array · nullable — 이미지 variants, tag=img일 때만 값 [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""videoUrl"": ""string · nullable — 영상 URL(등록 방식)"",
+        ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+      }
+    ],
+    ""optionGroups"": [
+      {
+        ""optionGroupId"": ""number — 옵션 그룹 ID"",
+        ""type"": ""string (enum: `REQUIRED`(필수 옵션 — 선택해야 구매 가능, 실질적 SKU) | `OPTIONAL`(선택 옵션 — 안 골라도 구매 가능, 가격 가산) | `TEXT`(입력형 옵션 — 사용자가 텍스트 직접 입력))"",
+        ""name"": ""string — 이름/명칭"",
+        ""choices"": [
+          {
+            ""choiceId"": ""number — 옵션 선택지 ID"",
+            ""name"": ""string — 이름/명칭"",
+            ""priceDelta"": ""number — 기본가 대비 가감액"",
+            ""stock"": ""number — 재고 수량""
+          }
+        ]
+      }
+    ],
+    ""images"": [
+      {
+        ""imageId"": ""string — 이미지 그룹 ID, ULID 형식(예: image_01HXYZ)"",
+        ""alt"": ""string"",
+        ""variants"": [
+          {
+            ""url"": ""string"",
+            ""width"": ""number"",
+            ""height"": ""number"",
+            ""format"": ""string""
+          }
+        ]
+      }
+    ],
+    ""artisan"": {
+      ""artisanId"": ""number — 장인 고유 ID"",
+      ""businessName"": ""string — 공방명"",
+      ""introduction"": ""string — 한 줄 소개"",
+      ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)""
+    }
+  }
+}",PATCH,/api/products/{productId},hasRole('ARTISAN'),"public ApiResponse<ProductResponse> update( @AuthenticationPrincipal Long memberId, @PathVariable Long productId, @Valid @RequestBody ProductRequest.Update request )",ProductService.update,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L102,상품 DTO·검색 필터가 공개조회 계약과 다름 (D04)
+경로 대응,상품,DELETE,/api/products/{productId},상품 삭제,예정,ARTISAN,"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/products/{productId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/products/{productId},hasRole('ARTISAN'),"public ApiResponse<Void> delete( @AuthenticationPrincipal Long memberId, @PathVariable Long productId )",ProductService.delete,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L139,본문 status=204와 실제 HTTP 상태를 구분 (D08)
+경로 대응,상품,PATCH,/api/products/{productId}/status,상품 상태 변경,예정,ARTISAN,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/products/{productId}/status"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""status"": ""string (enum: `DRAFT`(임시저장 — 등록만 됨, 콘텐츠 미게시, 공개 API 항상 404) | `ON_SALE`(판매중 — 콘텐츠 게시 완료, 공개 노출, 구매 가능) | `SOLD_OUT`(품절 — 공개 노출 유지, 구매 불가) | `HIDDEN`(비공개 — 장인이 직접 비공개 처리)) · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""productId"": ""number — 상품 고유 ID"",
+    ""name"": ""string — 이름/명칭"",
+    ""price"": ""number — 가격, 원 단위 정수"",
+    ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+    ""status"": ""string (enum: `DRAFT`(임시저장 — 등록만 됨, 콘텐츠 미게시, 공개 API 항상 404) | `ON_SALE`(판매중 — 콘텐츠 게시 완료, 공개 노출, 구매 가능) | `SOLD_OUT`(품절 — 공개 노출 유지, 구매 불가) | `HIDDEN`(비공개 — 장인이 직접 비공개 처리))"",
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+    ""subcategory"": ""string"",
+    ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) — 컬러 코드"",
+    ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) — 선물테마 코드"",
+    ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+    ""isLimited"": ""boolean — 한정수량 여부"",
+    ""isCustomOrder"": ""boolean — 주문제작 여부"",
+    ""isSingleItem"": ""boolean — 총재고 1, 재입고 없음 여부"",
+    ""isNew"": ""boolean — 신작 여부(최근 등록된 상품)"",
+    ""hasGiftWrap"": ""boolean — 선물포장 가능 여부"",
+    ""hasOptions"": ""boolean — 옵션 존재 여부"",
+    ""purposeTags"": [
+      ""string — 용도 태그 배열(선물/다도 등)""
+    ],
+    ""primaryBadge"": ""string (enum: `LIMITED`(한정수량) | `NEW`(신작) | `POPULAR`(인기)) — 서버가 계산한 대표 배지 1개(우선순위: 한정수량>신작>인기, 해당 없으면 null). 품절은 배지가 아니라 이미지 오버레이로 별도 표현(FE), 단하나/주문제작/선물포장 배지는 폐지(PM 최종 확정). FE는 primaryBadge 값 하나만 그대로 렌더링"",
+    ""artisanId"": ""number — 장인 고유 ID"",
+    ""artisanName"": ""string""
+  }
+}",PATCH,/api/products/{productId}/status,hasRole('ARTISAN'),"public ApiResponse<Void> changeStatus( @AuthenticationPrincipal Long memberId, @PathVariable Long productId, @Valid @RequestBody ProductRequest.ChangeStatus request )",ProductService.changeStatus,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L128,본문 status=204와 실제 HTTP 상태를 구분 (D08)
+경로 대응,상품,GET,/api/products,상품 목록 조회/검색/필터,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/products"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""limit"": ""string · 선택"",
+    ""artisanId"": ""string · 선택 — 장인 고유 ID"",
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) · 선택 — 종목/카테고리 코드"",
+    ""subcategory"": ""string · 선택"",
+    ""material"": ""string · 선택 — 소재 코드"",
+    ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) · 선택 — 선물테마 코드"",
+    ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) · 선택 — 컬러 코드"",
+    ""sort"": ""string (enum: `POPULAR`(인기순(기본값)) | `NEWEST`(최신순) | `WISHLIST_COUNT`(찜많은순) | `SALES_COUNT`(판매많은순) | `PRICE_ASC`(낮은가격순) | `PRICE_DESC`(높은가격순)) · 선택"",
+    ""minPrice"": ""string · 선택"",
+    ""maxPrice"": ""string · 선택"",
+    ""hasGiftWrap"": ""string · 선택 — 선물포장 가능 여부"",
+    ""excludeSoldOut"": ""string · 선택"",
+    ""keyword"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""productId"": ""number — 상품 고유 ID"",
+        ""name"": ""string — 이름/명칭"",
+        ""price"": ""number — 가격, 원 단위 정수"",
+        ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""status"": ""string (enum: `DRAFT`(임시저장 — 등록만 됨, 콘텐츠 미게시, 공개 API 항상 404) | `ON_SALE`(판매중 — 콘텐츠 게시 완료, 공개 노출, 구매 가능) | `SOLD_OUT`(품절 — 공개 노출 유지, 구매 불가) | `HIDDEN`(비공개 — 장인이 직접 비공개 처리))"",
+        ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+        ""subcategory"": ""string"",
+        ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) — 컬러 코드"",
+        ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) — 선물테마 코드"",
+        ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+        ""isLimited"": ""boolean — 한정수량 여부"",
+        ""isCustomOrder"": ""boolean — 주문제작 여부"",
+        ""isSingleItem"": ""boolean — 총재고 1, 재입고 없음 여부"",
+        ""isNew"": ""boolean — 신작 여부(최근 등록된 상품)"",
+        ""hasGiftWrap"": ""boolean — 선물포장 가능 여부"",
+        ""hasOptions"": ""boolean — 옵션 존재 여부"",
+        ""purposeTags"": [
+          ""string — 용도 태그 배열(선물/다도 등)""
+        ],
+        ""primaryBadge"": ""string (enum: `POPULAR`(인기순(기본값)) | `NEWEST`(최신순) | `WISHLIST_COUNT`(찜많은순) | `SALES_COUNT`(판매많은순) | `PRICE_ASC`(낮은가격순) | `PRICE_DESC`(높은가격순)) — 서버가 계산한 대표 배지 1개(우선순위: 한정수량>신작>인기, 해당 없으면 null). 품절은 배지가 아니라 이미지 오버레이로 별도 표현(FE), 단하나/주문제작/선물포장 배지는 폐지(PM 최종 확정). FE는 primaryBadge 값 하나만 그대로 렌더링"",
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string""
+      }
+    ],
+    ""nextCursor"": ""string · cursor 모드 시 다음 커서, page 모드 시 null"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number"",
+    ""page"": ""number · nullable — page 모드 현재 페이지(1-based), cursor 모드는 null"",
+    ""totalPages"": ""number · nullable — page 모드 전체 페이지 수, cursor 모드는 null""
+  }
+}",GET,/api/products,Public,"public ApiResponse<Page<ProductResponse>> list( @RequestParam(required = false) String keyword, @RequestParam(required = false) Long categoryId, @RequestParam(required = false) Long subcategoryId, @RequestParam(required = false) String giftTheme, @RequestParam(required = false) String sort, @RequestParam(required = false) Integer minPrice, @RequestParam(required = false) Integer maxPrice, @RequestParam(required = false) Boolean excludeSoldOut, @RequestParam(required = false) Long artisanId, @PageableDefault(size = 20) Pageable pageable )",ProductService.findOnSale,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L77,"page(0-based), size; cursor/limit 계약과 다름; 상품 DTO·검색 필터가 공개조회 계약과 다름 (D04)"
+경로 대응,상품,GET,/api/products/{productId},상품 상세 조회,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/products/{productId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""productId"": ""number — 상품 고유 ID"",
+    ""name"": ""string — 이름/명칭"",
+    ""price"": ""number — 가격, 원 단위 정수"",
+    ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+    ""status"": ""string (enum: `DRAFT`(임시저장 — 등록만 됨, 콘텐츠 미게시, 공개 API 항상 404) | `ON_SALE`(판매중 — 콘텐츠 게시 완료, 공개 노출, 구매 가능) | `SOLD_OUT`(품절 — 공개 노출 유지, 구매 불가) | `HIDDEN`(비공개 — 장인이 직접 비공개 처리))"",
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+    ""subcategory"": ""string"",
+    ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) — 컬러 코드"",
+    ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) — 선물테마 코드"",
+    ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+    ""isLimited"": ""boolean — 한정수량 여부"",
+    ""isCustomOrder"": ""boolean — 주문제작 여부"",
+    ""isSingleItem"": ""boolean — 총재고 1, 재입고 없음 여부"",
+    ""isNew"": ""boolean — 신작 여부(최근 등록된 상품)"",
+    ""hasGiftWrap"": ""boolean — 선물포장 가능 여부"",
+    ""hasOptions"": ""boolean — 옵션 존재 여부"",
+    ""purposeTags"": [
+      ""string — 용도 태그 배열(선물/다도 등)""
+    ],
+    ""primaryBadge"": ""string (enum: `LIMITED`(한정수량) | `NEW`(신작) | `POPULAR`(인기)) — 서버가 계산한 대표 배지 1개(우선순위: 한정수량>신작>인기, 해당 없으면 null). 품절은 배지가 아니라 이미지 오버레이로 별도 표현(FE), 단하나/주문제작/선물포장 배지는 폐지(PM 최종 확정). FE는 primaryBadge 값 하나만 그대로 렌더링"",
+    ""artisanId"": ""number — 장인 고유 ID"",
+    ""artisanName"": ""string"",
+    ""modelName"": ""string"",
+    ""size"": ""string"",
+    ""material"": ""string — 소재 코드"",
+    ""components"": [
+      ""string""
+    ],
+    ""manufacturer"": ""string"",
+    ""countryOfOrigin"": ""string"",
+    ""asManagerContact"": ""string"",
+    ""warrantyPolicy"": ""string"",
+    ""description"": ""string — 설명"",
+    ""stock"": ""number — 재고 수량"",
+    ""stockAvailable"": ""boolean — 구매 가능 재고 존재 여부"",
+    ""productionPeriodDays"": ""number — 제작 소요일수"",
+    ""engravingAvailable"": ""boolean"",
+    ""shippingFee"": ""number — 배송비"",
+    ""freeShippingThreshold"": ""number — 무료배송 조건 금액(없으면 null)"",
+    ""detailPageBlocks"": [
+      {
+        ""order"": ""number — 표시 순서(드래그앤드롭 시 재정렬됨)"",
+        ""tag"": ""string (enum: `h2`(소제목 블록) | `p`(본문 문단 블록) | `img`(이미지 블록) | `video`(영상 블록(URL 등록 방식))) — 블록 태그(h2/p/img/video)"",
+        ""hasImage"": ""boolean"",
+        ""imageVariants"": ""array · nullable — 이미지 variants, tag=img일 때만 값 [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""videoUrl"": ""string · nullable — 영상 URL(등록 방식)"",
+        ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+      }
+    ],
+    ""optionGroups"": [
+      {
+        ""optionGroupId"": ""number — 옵션 그룹 ID"",
+        ""type"": ""string (enum: `REQUIRED`(필수 옵션 — 선택해야 구매 가능, 실질적 SKU) | `OPTIONAL`(선택 옵션 — 안 골라도 구매 가능, 가격 가산) | `TEXT`(입력형 옵션 — 사용자가 텍스트 직접 입력))"",
+        ""name"": ""string — 이름/명칭"",
+        ""choices"": [
+          {
+            ""choiceId"": ""number — 옵션 선택지 ID"",
+            ""name"": ""string — 이름/명칭"",
+            ""priceDelta"": ""number — 기본가 대비 가감액"",
+            ""stock"": ""number — 재고 수량""
+          }
+        ]
+      }
+    ],
+    ""images"": [
+      {
+        ""imageId"": ""string — 이미지 그룹 ID, ULID 형식(예: image_01HXYZ)"",
+        ""alt"": ""string"",
+        ""variants"": [
+          {
+            ""url"": ""string"",
+            ""width"": ""number"",
+            ""height"": ""number"",
+            ""format"": ""string""
+          }
+        ]
+      }
+    ],
+    ""artisan"": {
+      ""artisanId"": ""number — 장인 고유 ID"",
+      ""businessName"": ""string — 공방명"",
+      ""introduction"": ""string — 한 줄 소개"",
+      ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)""
+    }
+  }
+}",GET,/api/products/{productId},Public,public ApiResponse<ProductResponse> detail(@PathVariable Long productId),ProductService.findById,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L97,공개 상세 서비스에 판매/발행 상태 필터 없음 (D10)
+경로 대응,상품,POST,/api/products/{productId}/wish,상품 찜,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/products/{productId}/wish"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": ""null""
+}",POST,/api/products/{productId}/wish,hasRole('USER'),"public ApiResponse<Void> wish( @AuthenticationPrincipal Long memberId, @PathVariable Long productId )",MemberActivityService.wish,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L149,본문 status=204와 실제 HTTP 상태를 구분 (D08)
+경로 대응,상품,DELETE,/api/products/{productId}/wish,상품 찜 취소,예정,USER,"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/products/{productId}/wish"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/products/{productId}/wish,hasRole('USER'),"public ApiResponse<Void> unwish( @AuthenticationPrincipal Long memberId, @PathVariable Long productId )",MemberActivityService.unwish,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L159,본문 status=204와 실제 HTTP 상태를 구분 (D08)
+경로 대응,상품,GET,/api/products/{productId}/questions,상품 문의 조회,예정,Public/ARTISAN,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/products/{productId}/questions"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""page"": ""integer · 선택 — 1-based 페이지 번호(cursor 미제공 시 page 모드 진입, 기본 1)"",
+    ""limit"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""questionId"": ""number — 문의 ID"",
+        ""productId"": ""number — 상품 고유 ID"",
+        ""content"": ""string — 본문 내용"",
+        ""answer"": ""string · nullable"",
+        ""writerNickname"": ""string"",
+        ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601""
+      }
+    ],
+    ""nextCursor"": ""string · cursor 모드 시 다음 커서, page 모드 시 null"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number"",
+    ""page"": ""number · nullable — page 모드 현재 페이지(1-based), cursor 모드는 null"",
+    ""totalPages"": ""number · nullable — page 모드 전체 페이지 수, cursor 모드는 null""
+  }
+}",GET,/api/products/{productId}/questions,Public,"public ApiResponse<Page<ProductQnaResponse.QuestionView>> questions( @AuthenticationPrincipal Long memberId, @PathVariable Long productId, @PageableDefault(size = 20) Pageable pageable )",ProductQnaService.findQuestions,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L169,"page(0-based), size; cursor/limit 계약과 다름; 비밀 질문의 답변 마스킹 별도 확인 필요 (D09)"
+경로 대응,상품,POST,/api/products/{productId}/questions,상품 문의 작성,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/products/{productId}/questions"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""content"": ""string · 필수 — 본문 내용""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""questionId"": ""number — 문의 ID"",
+    ""productId"": ""number — 상품 고유 ID"",
+    ""content"": ""string — 본문 내용"",
+    ""answer"": ""string · nullable"",
+    ""writerNickname"": ""string"",
+    ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601""
+  }
+}",POST,/api/products/{productId}/questions,hasRole('USER'),"public ResponseEntity<ApiResponse<ProductQnaResponse.QuestionView>> ask( @AuthenticationPrincipal Long memberId, @PathVariable Long productId, @Valid @RequestBody ProductQnaRequest.Ask request )",ProductQnaService.ask,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L178,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+동일 경로 없음,상품,POST,/api/products/questions/{questionId}/answer,상품 문의 답변,예정,ARTISAN,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/products/questions/{questionId}/answer"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""answer"": ""string · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""questionId"": ""number — 문의 ID"",
+    ""productId"": ""number — 상품 고유 ID"",
+    ""content"": ""string — 본문 내용"",
+    ""answer"": ""string"",
+    ""writerNickname"": ""string"",
+    ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601""
+  }
+}",,,,,,,감사 문서의 경로 변경/미확인 표 참조; 미등록 경로의 HTTP 상태는 보안 필터에 따라 달라짐
+경로 대응,상품,GET,/api/products/{productId}/reviews,상품 후기 조회,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/products/{productId}/reviews"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""page"": ""integer · 선택 — 1-based 페이지 번호(cursor 미제공 시 page 모드 진입, 기본 1)"",
+    ""limit"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""reviewId"": ""number — 후기 ID"",
+        ""productId"": ""number — 상품 고유 ID"",
+        ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+        ""content"": ""string — 본문 내용"",
+        ""images"": [
+          ""string""
+        ],
+        ""writerNickname"": ""string"",
+        ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601""
+      }
+    ],
+    ""nextCursor"": ""string · cursor 모드 시 다음 커서, page 모드 시 null"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number"",
+    ""page"": ""number · nullable — page 모드 현재 페이지(1-based), cursor 모드는 null"",
+    ""totalPages"": ""number · nullable — page 모드 전체 페이지 수, cursor 모드는 null""
+  }
+}",GET,/api/products/{productId}/reviews,Public,"public ApiResponse<Page<ProductReviewResponse.ReviewView>> reviews( @PathVariable Long productId, @PageableDefault(size = 20) Pageable pageable )",ProductReviewService.findReviews,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L205,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,상품,POST,/api/products/{productId}/reviews,상품 후기 작성,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/products/{productId}/reviews"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""orderItemId"": ""number · 필수"",
+    ""rating"": ""number · 필수 — 평균 평점(후기 없으면 null)"",
+    ""content"": ""string · 필수 — 본문 내용"",
+    ""images"": [
+      ""string · 필수""
+    ]
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""reviewId"": ""number — 후기 ID"",
+    ""productId"": ""number — 상품 고유 ID"",
+    ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+    ""content"": ""string — 본문 내용"",
+    ""images"": [
+      ""string""
+    ],
+    ""writerNickname"": ""string"",
+    ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601""
+  }
+}",POST,/api/products/{productId}/reviews,hasRole('USER'),"public ResponseEntity<ApiResponse<ProductReviewResponse.ReviewView>> writeReview( @AuthenticationPrincipal Long memberId, @PathVariable Long productId, @Valid @RequestBody ProductReviewRequest.Write request )",ProductReviewService.write,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L213,서비스에서 구매 소유권/후기 작성 자격 검증 누락 (D09)
+경로 대응,결제,GET,/api/payments/cart,장바구니 조회,예정,Public(게스트 허용),"{
+  ""method"": ""GET"",
+  ""url"": ""/api/payments/cart"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken} (선택 — 로그인 상태면 회원 장바구니, 없으면 쿠키의 guestCartId로 게스트 장바구니 식별)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""sections"": [
+      {
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string"",
+        ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+        ""items"": [
+          {
+            ""cartItemId"": ""number — 장바구니 항목 ID"",
+            ""productId"": ""number — 상품 고유 ID"",
+            ""productName"": ""string"",
+            ""unitPrice"": ""number — 옵션 반영된 단가"",
+            ""quantity"": ""number — 수량"",
+            ""subtotal"": ""number — 항목별 소계"",
+            ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+            ""isCustomOrder"": ""boolean — 주문제작 여부"",
+            ""soldOut"": ""boolean — 품절 스냅샷 여부"",
+            ""selected"": ""boolean — 체크(선택) 상태"",
+            ""selectedOptions"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""choiceId"": ""number — 옵션 선택지 ID"",
+                ""choiceName"": ""string"",
+                ""priceDelta"": ""number — 기본가 대비 가감액""
+              }
+            ],
+            ""textInputs"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+              }
+            ]
+          }
+        ],
+        ""shippingFee"": ""number — 배송비"",
+        ""freeShippingThreshold"": ""number — 무료배송 조건 금액(없으면 null)""
+      }
+    ],
+    ""totalPrice"": ""number — 합계 금액"",
+    ""totalShippingFee"": ""number"",
+    ""totalCount"": ""number""
+  }
+}",GET,/api/payments/cart,게스트 쿠키 또는 회원,"public ApiResponse<CartService.CartData> cart(@AuthenticationPrincipal Long memberId, @CookieValue(value = GUEST_CART_COOKIE, required = false) String guestCartId)",CartService.get,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L83,현재 카탈로그 어댑터는 옵션 추가금 미계산·배송비 0 (D07)
+경로 대응,결제,POST,/api/payments/cart/items,장바구니 상품 추가,구현완료,Public(게스트 허용),"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments/cart/items"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken} (선택 — 로그인 상태면 회원 장바구니, 없으면 쿠키의 guestCartId로 게스트 장바구니 식별)""
+  },
+  ""body"": {
+    ""productId"": ""number · 필수 — 상품 고유 ID"",
+    ""quantity"": ""number · 필수 — 수량"",
+    ""selectedOptions"": [
+      {
+        ""optionGroupId"": ""number · 필수 — 옵션 그룹 ID"",
+        ""choiceId"": ""number · 필수 — 옵션 선택지 ID""
+      }
+    ],
+    ""textInputs"": [
+      {
+        ""optionGroupId"": ""number · 필수 — 옵션 그룹 ID"",
+        ""text"": ""string · 필수 — 텍스트 블록 내용(img/video 블록은 null)""
+      }
+    ]
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""sections"": [
+      {
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string"",
+        ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+        ""items"": [
+          {
+            ""cartItemId"": ""number — 장바구니 항목 ID"",
+            ""productId"": ""number — 상품 고유 ID"",
+            ""productName"": ""string"",
+            ""unitPrice"": ""number — 옵션 반영된 단가"",
+            ""quantity"": ""number — 수량"",
+            ""subtotal"": ""number — 항목별 소계"",
+            ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+            ""isCustomOrder"": ""boolean — 주문제작 여부"",
+            ""soldOut"": ""boolean — 품절 스냅샷 여부"",
+            ""selected"": ""boolean — 체크(선택) 상태"",
+            ""selectedOptions"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""choiceId"": ""number — 옵션 선택지 ID"",
+                ""choiceName"": ""string"",
+                ""priceDelta"": ""number — 기본가 대비 가감액""
+              }
+            ],
+            ""textInputs"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+              }
+            ]
+          }
+        ],
+        ""shippingFee"": ""number — 배송비"",
+        ""freeShippingThreshold"": ""number — 무료배송 조건 금액(없으면 null)""
+      }
+    ],
+    ""totalPrice"": ""number — 합계 금액"",
+    ""totalShippingFee"": ""number"",
+    ""totalCount"": ""number""
+  }
+}",POST,/api/payments/cart/items,게스트 쿠키 또는 회원,"public ResponseEntity<ApiResponse<CartService.CartData>> addCartItem( @AuthenticationPrincipal Long memberId, @CookieValue(value = GUEST_CART_COOKIE, required = false) String guestCartId, @Valid @RequestBody CartItemRequest request )",CartService.add,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L89,현재 카탈로그 어댑터는 옵션 추가금 미계산·배송비 0 (D07)
+경로 대응,결제,PATCH,/api/payments/cart/items/{cartItemId},장바구니 수량 변경,예정,Public(게스트 허용),"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/payments/cart/items/{cartItemId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken} (선택 — 로그인 상태면 회원 장바구니, 없으면 쿠키의 guestCartId로 게스트 장바구니 식별)""
+  },
+  ""body"": {
+    ""quantity"": ""number · 선택 — 수량""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""sections"": [
+      {
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string"",
+        ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+        ""items"": [
+          {
+            ""cartItemId"": ""number — 장바구니 항목 ID"",
+            ""productId"": ""number — 상품 고유 ID"",
+            ""productName"": ""string"",
+            ""unitPrice"": ""number — 옵션 반영된 단가"",
+            ""quantity"": ""number — 수량"",
+            ""subtotal"": ""number — 항목별 소계"",
+            ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+            ""isCustomOrder"": ""boolean — 주문제작 여부"",
+            ""soldOut"": ""boolean — 품절 스냅샷 여부"",
+            ""selected"": ""boolean — 체크(선택) 상태"",
+            ""selectedOptions"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""choiceId"": ""number — 옵션 선택지 ID"",
+                ""choiceName"": ""string"",
+                ""priceDelta"": ""number — 기본가 대비 가감액""
+              }
+            ],
+            ""textInputs"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+              }
+            ]
+          }
+        ],
+        ""shippingFee"": ""number — 배송비"",
+        ""freeShippingThreshold"": ""number — 무료배송 조건 금액(없으면 null)""
+      }
+    ],
+    ""totalPrice"": ""number — 합계 금액"",
+    ""totalShippingFee"": ""number"",
+    ""totalCount"": ""number""
+  }
+}",PATCH,/api/payments/cart/items/{cartItemId},게스트 쿠키 또는 회원,"public ResponseEntity<ApiResponse<CartService.CartData>> changeQuantity( @AuthenticationPrincipal Long memberId, @CookieValue(value = GUEST_CART_COOKIE, required = false) String guestCartId, @PathVariable Long cartItemId, @Valid @RequestBody QuantityRequest request )",CartService.changeQuantity,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L99,현재 카탈로그 어댑터는 옵션 추가금 미계산·배송비 0 (D07)
+경로 대응,결제,DELETE,/api/payments/cart/items/{cartItemId},장바구니 상품 삭제,예정,Public(게스트 허용),"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/payments/cart/items/{cartItemId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken} (선택 — 로그인 상태면 회원 장바구니, 없으면 쿠키의 guestCartId로 게스트 장바구니 식별)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""sections"": [
+      {
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string"",
+        ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+        ""items"": [
+          {
+            ""cartItemId"": ""number — 장바구니 항목 ID"",
+            ""productId"": ""number — 상품 고유 ID"",
+            ""productName"": ""string"",
+            ""unitPrice"": ""number — 옵션 반영된 단가"",
+            ""quantity"": ""number — 수량"",
+            ""subtotal"": ""number — 항목별 소계"",
+            ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+            ""isCustomOrder"": ""boolean — 주문제작 여부"",
+            ""soldOut"": ""boolean — 품절 스냅샷 여부"",
+            ""selected"": ""boolean — 체크(선택) 상태"",
+            ""selectedOptions"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""choiceId"": ""number — 옵션 선택지 ID"",
+                ""choiceName"": ""string"",
+                ""priceDelta"": ""number — 기본가 대비 가감액""
+              }
+            ],
+            ""textInputs"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+              }
+            ]
+          }
+        ],
+        ""shippingFee"": ""number — 배송비"",
+        ""freeShippingThreshold"": ""number — 무료배송 조건 금액(없으면 null)""
+      }
+    ],
+    ""totalPrice"": ""number — 합계 금액"",
+    ""totalShippingFee"": ""number"",
+    ""totalCount"": ""number""
+  }
+}",DELETE,/api/payments/cart/items/{cartItemId},게스트 쿠키 또는 회원,"public ApiResponse<Void> deleteCartItem(@AuthenticationPrincipal Long memberId, @CookieValue(value = GUEST_CART_COOKIE, required = false) String guestCartId, @PathVariable Long cartItemId)",CartService.delete,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L109,현재 카탈로그 어댑터는 옵션 추가금 미계산·배송비 0 (D07)
+경로 대응,결제,DELETE,/api/payments/cart/items,장바구니 전체 삭제,예정,Public(게스트 허용),"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/payments/cart/items"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken} (선택 — 로그인 상태면 회원 장바구니, 없으면 쿠키의 guestCartId로 게스트 장바구니 식별)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/payments/cart/items,게스트 쿠키 또는 회원,"public ApiResponse<Void> deleteAllCartItems(@AuthenticationPrincipal Long memberId, @CookieValue(value = GUEST_CART_COOKIE, required = false) String guestCartId)",CartService.deleteAll,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L117,현재 카탈로그 어댑터는 옵션 추가금 미계산·배송비 0 (D07)
+경로 대응,결제,POST,/api/payments/orders,주문 생성,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments/orders"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""cartItemIds"": [
+      ""number · 필수""
+    ],
+    ""addressId"": ""number · 필수 — 배송지 ID"",
+    ""paymentMethod"": ""string (enum, 예: `CARD`, 동적 값) · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""orderId"": ""number — 주문 고유 ID"",
+    ""orderNumber"": ""string (enum, 예: `ORD20260825001`, 동적 값) — 사람이 보는 주문번호(orderId와 별개 식별자)"",
+    ""status"": ""string (enum: `CREATED`(주문 생성됨 — 결제 전) | `PAID`(결제완료) | `PAYMENT_FAILED`(결제실패) | `CANCELED`(주문 취소됨) | `DELIVERED`(배송완료) | `RETURN_REQUESTED`(반품·교환 접수))"",
+    ""totalAmount"": ""number — 총 주문 금액"",
+    ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601"",
+    ""items"": [
+      {
+        ""orderItemId"": ""number"",
+        ""productId"": ""number — 상품 고유 ID"",
+        ""productName"": ""string"",
+        ""price"": ""number — 가격, 원 단위 정수"",
+        ""quantity"": ""number — 수량""
+      }
+    ],
+    ""address"": {
+      ""addressId"": ""number — 배송지 ID"",
+      ""recipientName"": ""string — 수령인명"",
+      ""phone"": ""string — 전화번호(하이픈 제외 숫자만)"",
+      ""zipCode"": ""string — 우편번호"",
+      ""address1"": ""string — 기본주소"",
+      ""address2"": ""string — 상세주소"",
+      ""isDefault"": ""boolean — 기본값 여부""
+    }
+  }
+}",POST,/api/payments/orders,Authenticated; 서비스 역할·소유권 검사 별도,"public ResponseEntity<ApiResponse<PaymentService.OrderData>> createOrder( @AuthenticationPrincipal Long memberId, @RequestHeader(value = ""Idempotency-Key"", required = false) String idempotencyKey, @Valid @RequestBody CreateOrderRequest request )",PaymentService.createOrder,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L143,현재 카탈로그 어댑터는 옵션 추가금 미계산·배송비 0 (D07)
+경로 대응,결제,GET,/api/payments/orders/{orderId}/delivery,배송 조회,예정,Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/payments/orders/{orderId}/delivery"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""orderId"": ""number — 주문 고유 ID"",
+    ""carrier"": ""string — 택배사명"",
+    ""trackingNumber"": ""string — 운송장 번호"",
+    ""status"": ""string (enum, 예: `IN_TRANSIT`, 동적 값)""
+  }
+}",GET,/api/payments/orders/{orderId}/delivery,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<DeliveryService.DeliveryData> delivery(@AuthenticationPrincipal Long memberId, @PathVariable Long orderId)",DeliveryService.get,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L214,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,결제,POST,/api/payments,결제 준비,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""orderId"": ""number · 필수 — 주문 고유 ID"",
+    ""amount"": ""number · 필수 — 금액, 원 단위 정수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""paymentId"": ""number — 결제 고유 ID"",
+    ""orderId"": ""number — 주문 고유 ID"",
+    ""amount"": ""number — 금액, 원 단위 정수"",
+    ""tossClientKey"": ""string""
+  }
+}",POST,/api/payments,Authenticated; 서비스 역할·소유권 검사 별도,"public ResponseEntity<ApiResponse<PaymentService.PreparedPayment>> prepare( @AuthenticationPrincipal Long memberId, @Valid @RequestBody PreparePaymentRequest request )",PaymentService.prepare,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L152,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,결제,POST,/api/payments/confirm,결제 승인,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments/confirm"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""paymentKey"": ""string · 필수"",
+    ""orderId"": ""string (enum, 예: `ORD20260825001`, 동적 값) · 필수 — 주문 고유 ID"",
+    ""amount"": ""number · 필수 — 금액, 원 단위 정수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""paymentId"": ""number — 결제 고유 ID"",
+    ""orderId"": ""number — 주문 고유 ID"",
+    ""amount"": ""number — 금액, 원 단위 정수"",
+    ""method"": ""string (enum, 예: `CARD`, 동적 값)"",
+    ""status"": ""string (enum: `DONE`(결제완료) | `CANCELED`(결제취소) | `FAILED`(결제실패))"",
+    ""approvedAt"": ""string (ISO 8601 datetime) — 승인/처리 일시, ISO 8601""
+  }
+}",POST,/api/payments/confirm,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<PaymentService.PaymentData> confirm(@AuthenticationPrincipal Long memberId, @Valid @RequestBody ConfirmPaymentRequest request)",PaymentService.confirm,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L163,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,결제,POST,/api/payments/fail,결제 실패 처리,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments/fail"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""orderId"": ""string (enum, 예: `ORD20260825001`, 동적 값) · 필수 — 주문 고유 ID"",
+    ""errorCode"": ""string (enum, 예: `PAY_PROCESS_CANCELED`, 동적 값) · 필수"",
+    ""errorMessage"": ""string · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",POST,/api/payments/fail,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> fail(@AuthenticationPrincipal Long memberId, @Valid @RequestBody FailPaymentRequest request)",PaymentService.fail,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L175,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,결제,POST,/api/payments/{paymentId}/cancel,결제 취소/환불,예정,Authenticated,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments/{paymentId}/cancel"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""reason"": ""string · 필수 — AI가 생성한 추천 이유""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""paymentId"": ""number — 결제 고유 ID"",
+    ""orderId"": ""number — 주문 고유 ID"",
+    ""amount"": ""number — 금액, 원 단위 정수"",
+    ""method"": ""string (enum, 예: `CARD`, 동적 값)"",
+    ""status"": ""string (enum: `DONE`(결제완료) | `CANCELED`(결제취소) | `FAILED`(결제실패))"",
+    ""approvedAt"": ""string (ISO 8601 datetime) — 승인/처리 일시, ISO 8601""
+  }
+}",POST,/api/payments/{paymentId}/cancel,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<PaymentService.PaymentData> cancel(@AuthenticationPrincipal Long memberId, @PathVariable Long paymentId, @Valid @RequestBody CancelPaymentRequest request)",PaymentService.cancel,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L181,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,결제,POST,/api/payments/returns,교환·반품 신청,예정,USER,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments/returns"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""orderId"": ""number · 필수 — 주문 고유 ID"",
+    ""type"": ""string (enum: `RETURN`(반품) | `EXCHANGE`(교환)) · 필수"",
+    ""orderItemIds"": ""number[] · 필수 — 반품/교환 대상 주문 상품 ID 목록"",
+    ""reason"": ""string (enum: `CHANGE_OF_MIND`(단순 변심) | `DEFECTIVE`(파손·불량) | `WRONG_DELIVERY`(오배송) | `OTHER`(기타)) · 필수"",
+    ""reasonDetail"": ""string · 선택 — 기타 사유 상세 (reason=OTHER 시 필수)"",
+    ""imageIds"": ""number[] · 선택 — 첨부 이미지 ID 목록 (reason=DEFECTIVE 시 필수, 최대 5장)"",
+    ""returnAddressId"": ""number · 필수 — 회수지 배송지 ID""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""returnId"": ""number — 반품 접수 고유 ID"",
+    ""orderId"": ""number — 주문 고유 ID"",
+    ""type"": ""string (enum: `RETURN` | `EXCHANGE`)"",
+    ""status"": ""string (enum: `REQUESTED`(접수)) — 초기 상태"",
+    ""requestedAt"": ""string (ISO 8601 datetime) — 접수 일시""
+  }
+}",POST,/api/payments/returns,Authenticated; 서비스 역할·소유권 검사 별도,"public ResponseEntity<ApiResponse<ReturnService.ReturnData>> requestReturn( @AuthenticationPrincipal Long memberId, @Valid @RequestBody ReturnRequest request )",ReturnService.request,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L219,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,알림,GET,/api/notifications,알림 목록 조회,백로그(MVP 제외),Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/notifications"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""limit"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""notificationId"": ""number — 알림 ID"",
+        ""type"": ""string (enum, 예: `ORDER`, 동적 값)"",
+        ""title"": ""string"",
+        ""content"": ""string — 본문 내용"",
+        ""isRead"": ""boolean — 읽음 여부"",
+        ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601""
+      }
+    ],
+    ""nextCursor"": ""string"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number""
+  }
+}",GET,/api/notifications,hasRole('USER'),public ApiResponse<List<NotificationResponse>> findAll( @AuthenticationPrincipal Long memberId ),NotificationService.findAll,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/notification/presentation/NotificationController.java#L54,페이지 객체가 아닌 List 반환
+경로 대응,알림,GET,/api/notifications/unread-count,읽지 않은 알림 수,백로그(MVP 제외),Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/notifications/unread-count"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""unreadCount"": ""number — 읽지 않은 알림 수""
+  }
+}",GET,/api/notifications/unread-count,hasRole('USER'),public ApiResponse<UnreadCountResponse> countUnread( @AuthenticationPrincipal Long memberId ),NotificationService.countUnread,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/notification/presentation/NotificationController.java#L62,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+동일 경로 없음,알림,PATCH,/api/notifications/{notificationId},알림 읽음 처리,백로그(MVP 제외),Authenticated,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/notifications/{notificationId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""isRead"": ""boolean · 선택 — 읽음 여부""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",,,,,,,감사 문서의 경로 변경/미확인 표 참조; 미등록 경로의 HTTP 상태는 보안 필터에 따라 달라짐
+경로 대응,알림,PATCH,/api/notifications/read-all,전체 알림 읽음,백로그(MVP 제외),Authenticated,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/notifications/read-all"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",PATCH,/api/notifications/read-all,hasRole('USER'),public ApiResponse<Void> markAllAsRead( @AuthenticationPrincipal Long memberId ),NotificationService.markAllAsRead,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/notification/presentation/NotificationController.java#L70,본문 status=204와 실제 HTTP 상태를 구분 (D08)
+경로 대응,알림,GET,/api/notifications/stream,알림 SSE 연결,백로그(MVP 제외),Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/notifications/stream"",
+  ""headers"": {
+    ""Authorization"": ""Bearer {accessToken}"",
+    ""Accept"": ""text/event-stream"",
+    ""Last-Event-ID"": ""string · 선택 — 재연결 시 마지막으로 수신한 알림 ID""
+  }
+}","{
+  ""Content-Type"": ""text/event-stream"",
+  ""events"": {
+    ""notification"": {
+      ""id"": ""number — 알림 고유 ID (Last-Event-ID로 재사용됨)"",
+      ""type"": ""notification"",
+      ""data"": {
+        ""notificationId"": ""number"",
+        ""eventType"": ""string — 이벤트 타입(예: ORDER_STATUS_CHANGED)"",
+        ""title"": ""string — 알림 제목"",
+        ""message"": ""string — 알림 본문"",
+        ""createdAt"": ""string (ISO 8601)""
+      }
+    },
+    ""ping"": {
+      ""type"": ""ping"",
+      ""comment"": "": heartbeat — 30초 간격 전송. nginx·ALB idle timeout 방어용. id 없음""
+    }
+  }
+}",GET,/api/notifications/stream,hasRole('USER'),public SseEmitter stream( @AuthenticationPrincipal Long memberId ),NotificationSseService.subscribe,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/notification/presentation/NotificationController.java#L36,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,GET,/api/admin/seller-applications,장인 가입 신청 조회,예정,ADMIN,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/admin/seller-applications"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""page"": ""integer · 선택 — 0-based 페이지 번호 (기본 0)"",
+    ""size"": ""integer · 선택 — 페이지 크기 (기본 20)"",
+    ""status"": ""string (enum: `PENDING`(심사대기) | `APPROVED`(승인됨 — 회원 role이 ARTISAN으로 전환) | `REJECTED`(반려됨(사유 포함))) · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""content"": [
+      {
+        ""applicationId"": ""number — 장인 가입 신청 ID"",
+        ""memberId"": ""number — 회원 고유 ID"",
+        ""businessName"": ""string — 공방명"",
+        ""status"": ""string (enum: `PENDING`(심사대기) | `APPROVED`(승인됨 — 회원 role이 ARTISAN으로 전환) | `REJECTED`(반려됨(사유 포함)))"",
+        ""submittedAt"": ""string (ISO 8601 datetime) — 제출 일시, ISO 8601""
+      }
+    ],
+    ""totalElements"": ""number"",
+    ""totalPages"": ""number"",
+    ""number"": ""number — 현재 페이지(0-based)"",
+    ""size"": ""number — 페이지 크기"",
+    ""first"": ""boolean"",
+    ""last"": ""boolean""
+  }
+}",GET,/api/admin/seller-applications,ADMIN (서비스 검사),"public org.springframework.data.domain.Page<SellerApplicationData> list( @AuthenticationPrincipal Long memberId, @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable, @RequestParam(required = false) String status)",SellerApplicationService.list,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/SellerApplicationController.java#L29,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,회원,GET,/api/admin/seller-applications/{applicationId},장인 가입 신청 상세,예정,ADMIN,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/admin/seller-applications/{applicationId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""applicationId"": ""number — 장인 가입 신청 ID"",
+    ""memberId"": ""number — 회원 고유 ID"",
+    ""businessName"": ""string — 공방명"",
+    ""status"": ""string (enum: `PENDING`(심사대기) | `APPROVED`(승인됨 — 회원 role이 ARTISAN으로 전환) | `REJECTED`(반려됨(사유 포함)))"",
+    ""submittedAt"": ""string (ISO 8601 datetime) — 제출 일시, ISO 8601""
+  }
+}",GET,/api/admin/seller-applications/{applicationId},ADMIN (서비스 검사),"public SellerApplicationData detail(@AuthenticationPrincipal Long memberId, @PathVariable Long applicationId)",SellerApplicationService.detail,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/SellerApplicationController.java#L37,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,POST,/api/admin/seller-applications/{applicationId}/approve,장인 가입 승인,예정,ADMIN,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/admin/seller-applications/{applicationId}/approve"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""applicationId"": ""number — 장인 가입 신청 ID"",
+    ""memberId"": ""number — 회원 고유 ID"",
+    ""businessName"": ""string — 공방명"",
+    ""status"": ""string (enum: `PENDING`(심사대기) | `APPROVED`(승인됨 — 회원 role이 ARTISAN으로 전환) | `REJECTED`(반려됨(사유 포함)))"",
+    ""submittedAt"": ""string (ISO 8601 datetime) — 제출 일시, ISO 8601""
+  }
+}",POST,/api/admin/seller-applications/{applicationId}/approve,ADMIN (서비스 검사),"public SellerApplicationData approve(@AuthenticationPrincipal Long memberId, @PathVariable Long applicationId)",SellerApplicationService.approve,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/SellerApplicationController.java#L42,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,POST,/api/admin/seller-applications/{applicationId}/reject,장인 가입 반려,예정,ADMIN,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/admin/seller-applications/{applicationId}/reject"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""reason"": ""string · 필수 — AI가 생성한 추천 이유""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""applicationId"": ""number — 장인 가입 신청 ID"",
+    ""memberId"": ""number — 회원 고유 ID"",
+    ""businessName"": ""string — 공방명"",
+    ""status"": ""string (enum: `PENDING`(심사대기) | `APPROVED`(승인됨 — 회원 role이 ARTISAN으로 전환) | `REJECTED`(반려됨(사유 포함)))"",
+    ""submittedAt"": ""string (ISO 8601 datetime) — 제출 일시, ISO 8601""
+  }
+}",POST,/api/admin/seller-applications/{applicationId}/reject,ADMIN (서비스 검사),"public SellerApplicationData reject(@AuthenticationPrincipal Long memberId, @PathVariable Long applicationId, @Valid @RequestBody Rejection request)",SellerApplicationService.reject,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/SellerApplicationController.java#L47,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,컨텐츠,POST,/api/content/products/{productId}/interview,취재 데이터 등록,예정,ARTISAN,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/content/products/{productId}/interview"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""productId"": ""number · 필수 — 상품 고유 ID"",
+    ""process"": ""string · 필수"",
+    ""materials"": ""string · 필수"",
+    ""technique"": ""string · 필수"",
+    ""story"": ""string · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""productId"": ""number — 상품 고유 ID"",
+    ""process"": ""string"",
+    ""materials"": ""string"",
+    ""technique"": ""string"",
+    ""story"": ""string""
+  }
+}",POST,/api/content/products/{productId}/interview,hasRole('ARTISAN'),"public ResponseEntity<ApiResponse<InterviewResponse>> create( @PathVariable Long productId, @AuthenticationPrincipal Long memberId, @Valid @RequestBody InterviewRequest.Create request )",InterviewService.create,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/InterviewController.java#L27,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,컨텐츠,GET,/api/content/products/{productId}/interview,취재 데이터 조회,예정,ARTISAN,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/content/products/{productId}/interview"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""productId"": ""number — 상품 고유 ID"",
+    ""process"": ""string"",
+    ""materials"": ""string"",
+    ""technique"": ""string"",
+    ""story"": ""string""
+  }
+}",GET,/api/content/products/{productId}/interview,hasRole('ARTISAN'),"public ApiResponse<InterviewResponse> find( @PathVariable Long productId, @AuthenticationPrincipal Long memberId )",InterviewService.find,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/InterviewController.java#L45,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,컨텐츠,PATCH,/api/content/products/{productId}/interview,취재 데이터 수정,예정,ARTISAN,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/content/products/{productId}/interview"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""productId"": ""number · 선택 — 상품 고유 ID"",
+    ""process"": ""string · 선택"",
+    ""materials"": ""string · 선택"",
+    ""technique"": ""string · 선택"",
+    ""story"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""productId"": ""number — 상품 고유 ID"",
+    ""process"": ""string"",
+    ""materials"": ""string"",
+    ""technique"": ""string"",
+    ""story"": ""string""
+  }
+}",PATCH,/api/content/products/{productId}/interview,hasRole('ARTISAN'),"public ApiResponse<InterviewResponse> update( @PathVariable Long productId, @AuthenticationPrincipal Long memberId, @Valid @RequestBody InterviewRequest.Update request )",InterviewService.update,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/InterviewController.java#L54,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,컨텐츠,POST,/api/content/products/{productId}/generations,AI 상세페이지 생성 요청,예정,ARTISAN,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/content/products/{productId}/generations"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""images"": [
+      ""string · 필수""
+    ],
+    ""productName"": ""string · 필수"",
+    ""howMade"": ""string · 필수"",
+    ""careTips"": ""string · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 202,
+  ""data"": {
+    ""generationId"": ""number"",
+    ""productId"": ""number — 상품 고유 ID"",
+    ""status"": ""string (enum, 예: `PROCESSING`, 동적 값)"",
+    ""requestedAt"": ""string (ISO 8601 datetime)"",
+    ""completedAt"": ""?(타입 미상) · nullable""
+  }
+}",POST,/api/content/products/{productId}/generations,hasRole('ARTISAN'),"public ResponseEntity<ApiResponse<GenerationResponse>> request( @PathVariable Long productId, @AuthenticationPrincipal Long memberId, @Valid @RequestBody GenerationRequest.Create request )",GenerationService.request,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/GenerationController.java#L26,생성 상태 6종; 실제 AI 완료/콜백은 런타임 검증 필요
+경로 대응,컨텐츠,GET,/api/content/products/{productId}/generations/{generationId},AI 생성 상태 조회,예정,ARTISAN,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/content/products/{productId}/generations/{generationId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""generationId"": ""number"",
+    ""productId"": ""number — 상품 고유 ID"",
+    ""status"": ""string (enum, 예: `COMPLETED`, 동적 값)"",
+    ""requestedAt"": ""string (ISO 8601 datetime)"",
+    ""completedAt"": ""string (ISO 8601 datetime)""
+  }
+}",GET,/api/content/products/{productId}/generations/{generationId},hasRole('ARTISAN'),"public ApiResponse<GenerationResponse> poll( @PathVariable Long productId, @PathVariable Long generationId, @AuthenticationPrincipal Long memberId )",GenerationService.poll,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/GenerationController.java#L44,생성 상태 6종; 실제 AI 완료/콜백은 런타임 검증 필요
+경로 대응,컨텐츠,GET,/api/content/products/{productId}/contents,생성 결과 조회,예정,ARTISAN,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/content/products/{productId}/contents"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": [
+    {
+      ""contentId"": ""number — 콘텐츠 ID"",
+      ""productId"": ""number — 상품 고유 ID"",
+      ""status"": ""string (enum: `DRAFT`(초안 — AI 생성 직후, 장인 편집 가능) | `PENDING_REVIEW`(장인 검토 대기) | `APPROVED`(승인됨 — 사실확인·사진일치 체크 완료) | `REJECTED`(반려됨(사유 포함)) | `PUBLISHED`(게시완료 — 상품 상세페이지에 노출))"",
+      ""version"": ""number — 콘텐츠 버전 번호"",
+      ""blocks"": [
+        {
+          ""order"": ""number — 표시 순서(드래그앤드롭 시 재정렬됨)"",
+          ""tag"": ""string (enum: `h2`(소제목 블록) | `p`(본문 문단 블록) | `img`(이미지 블록) | `video`(영상 블록(URL 등록 방식))) — 블록 태그(h2/p/img/video)"",
+          ""hasImage"": ""boolean"",
+          ""imageVariants"": ""array · nullable — 이미지 variants, tag=img일 때만 값 [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+          ""videoUrl"": ""string · nullable — 영상 URL(등록 방식)"",
+          ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+        }
+      ]
+    }
+  ]
+}",GET,/api/content/products/{productId}/contents,hasRole('ARTISAN'),"public ApiResponse<ContentResponse.Detail> getContent( @PathVariable Long productId, @AuthenticationPrincipal Long memberId )",ContentService.getContent,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/ContentController.java#L28,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,컨텐츠,PATCH,/api/content/products/{productId}/contents/{contentId},문단 일괄 수정,예정,ARTISAN,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/content/products/{productId}/contents/{contentId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""blocks"": [
+      {
+        ""order"": ""number · 선택 — 표시 순서(드래그앤드롭 시 재정렬됨)"",
+        ""tag"": ""string (enum: `h2`(소제목 블록) | `p`(본문 문단 블록) | `img`(이미지 블록) | `video`(영상 블록(URL 등록 방식))) · 선택 — 블록 태그(h2/p/img/video)"",
+        ""hasImage"": ""boolean · 선택"",
+        ""imageUrl"": ""string · 선택 · nullable — 이미지 원본 URL(tag=img일 때만 유효, BE가 S3 presigned URL로 처리 후 응답은 imageVariants 배열로 반환됨)"",
+        ""text"": ""string · 선택 — 텍스트 블록 내용(img/video 블록은 null)""
+      }
+    ]
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""contentId"": ""number — 콘텐츠 ID"",
+    ""productId"": ""number — 상품 고유 ID"",
+    ""status"": ""string (enum: `DRAFT`(초안 — AI 생성 직후, 장인 편집 가능) | `PENDING_REVIEW`(장인 검토 대기) | `APPROVED`(승인됨 — 사실확인·사진일치 체크 완료) | `REJECTED`(반려됨(사유 포함)) | `PUBLISHED`(게시완료 — 상품 상세페이지에 노출))"",
+    ""version"": ""number — 콘텐츠 버전 번호"",
+    ""blocks"": [
+      {
+        ""order"": ""number — 표시 순서(드래그앤드롭 시 재정렬됨)"",
+        ""tag"": ""string (enum: `h2`(소제목 블록) | `p`(본문 문단 블록) | `img`(이미지 블록) | `video`(영상 블록(URL 등록 방식))) — 블록 태그(h2/p/img/video)"",
+        ""hasImage"": ""boolean"",
+        ""imageVariants"": ""array · nullable — 이미지 variants, tag=img일 때만 값 [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""videoUrl"": ""string · nullable — 영상 URL(등록 방식)"",
+        ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+      }
+    ]
+  }
+}",PATCH,/api/content/products/{productId}/contents/{contentId},hasRole('ARTISAN'),"public ApiResponse<ContentResponse.BulkUpdated> bulkUpdate( @PathVariable Long productId, @PathVariable Long contentId, @AuthenticationPrincipal Long memberId, @Valid @RequestBody ContentRequest.BulkUpdate request )",ContentService.bulkUpdate,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/ContentController.java#L83,nodeId 기반 text/imageId 패치만; 블록 투영 갱신 없음 (D05)
+경로 대응,컨텐츠,PATCH,/api/content/products/{productId}/contents/{contentId}/blocks/{blockOrder},단건 블록 수정,예정,ARTISAN,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/content/products/{productId}/contents/{contentId}/blocks/{blockOrder}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""tag"": ""string (enum: `h2` | `p` | `img` | `video`) · 선택 — 블록 태그"",
+    ""text"": ""string · 선택 · nullable — 텍스트 블록 내용(img/video 블록은 null)"",
+    ""imageUrl"": ""string · 선택 · nullable — 이미지 원본 URL(tag=img일 때만 유효, BE가 S3 presigned URL로 처리 후 imageVariants 배열로 응답)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""contentId"": ""number — 콘텐츠 ID"",
+    ""version"": ""number — 콘텐츠 버전 번호"",
+    ""block"": {
+      ""order"": ""number — 표시 순서"",
+      ""tag"": ""string (enum: `h2` | `p` | `img` | `video`)"",
+      ""hasImage"": ""boolean"",
+      ""imageVariants"": ""array · nullable — [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+      ""videoUrl"": ""string · nullable"",
+      ""text"": ""string · nullable""
+    }
+  }
+}",PATCH,/api/content/products/{productId}/contents/{contentId}/blocks/{nodeId},hasRole('ARTISAN'),"public ApiResponse<ContentResponse.BlockUpdated> updateBlock( @PathVariable Long productId, @PathVariable Long contentId, @PathVariable String nodeId, @AuthenticationPrincipal Long memberId, @Valid @RequestBody ContentRequest.BlockUpdate request )",ContentService.updateBlock,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/ContentController.java#L98,nodeId 기반 text/imageId 패치만; 블록 투영 갱신 없음 (D05)
+경로 대응,컨텐츠,GET,/api/content/products/{productId}/contents/versions,콘텐츠 버전 조회,예정,ARTISAN,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/content/products/{productId}/contents/versions"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": [
+    {
+      ""version"": ""number — 콘텐츠 버전 번호"",
+      ""editedAt"": ""string (ISO 8601 datetime)"",
+      ""editedBy"": ""string (enum: `AI`(AI 응답) | `ARTISAN`(장인 직접 수정))""
+    }
+  ]
+}",GET,/api/content/products/{productId}/contents/versions,hasRole('ARTISAN'),"public ApiResponse<List<ContentResponse.VersionHistory>> getVersionHistory( @PathVariable Long productId, @AuthenticationPrincipal Long memberId )",ContentService.getVersionHistory,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/ContentController.java#L37,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,컨텐츠,POST,/api/content/products/{productId}/contents/{contentId}/approve,콘텐츠 승인,예정,ARTISAN,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/content/products/{productId}/contents/{contentId}/approve"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""factCheckConfirmed"": ""boolean · 필수 — 사실확인 체크 여부(필수)"",
+    ""photoMatchConfirmed"": ""boolean · 필수 — 사진일치 체크 여부(필수)"",
+    ""displayApprovalBadge"": ""boolean · 선택 — 승인 사실 상세페이지 표시 동의 여부(선택)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""contentId"": ""number — 콘텐츠 ID"",
+    ""productId"": ""number — 상품 고유 ID"",
+    ""status"": ""string (enum: `DRAFT`(초안 — AI 생성 직후, 장인 편집 가능) | `PENDING_REVIEW`(장인 검토 대기) | `APPROVED`(승인됨 — 사실확인·사진일치 체크 완료) | `REJECTED`(반려됨(사유 포함)) | `PUBLISHED`(게시완료 — 상품 상세페이지에 노출))"",
+    ""version"": ""number — 콘텐츠 버전 번호"",
+    ""blocks"": [
+      {
+        ""order"": ""number — 표시 순서(드래그앤드롭 시 재정렬됨)"",
+        ""tag"": ""string (enum: `h2`(소제목 블록) | `p`(본문 문단 블록) | `img`(이미지 블록) | `video`(영상 블록(URL 등록 방식))) — 블록 태그(h2/p/img/video)"",
+        ""hasImage"": ""boolean"",
+        ""imageVariants"": ""array · nullable — 이미지 variants, tag=img일 때만 값 [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""videoUrl"": ""string · nullable — 영상 URL(등록 방식)"",
+        ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+      }
+    ]
+  }
+}",POST,/api/content/products/{productId}/contents/{contentId}/approve,hasRole('ARTISAN'),"public ApiResponse<ContentResponse.StatusChanged> approve( @PathVariable Long productId, @PathVariable Long contentId, @AuthenticationPrincipal Long memberId, @Valid @RequestBody ContentRequest.Approve request )",ContentService.approve,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/ContentController.java#L57,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,컨텐츠,POST,/api/content/products/{productId}/contents/{contentId}/reject,콘텐츠 반려,예정,ARTISAN,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/content/products/{productId}/contents/{contentId}/reject"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""reason"": ""string · 필수 — AI가 생성한 추천 이유""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""contentId"": ""number — 콘텐츠 ID"",
+    ""productId"": ""number — 상품 고유 ID"",
+    ""status"": ""string (enum: `DRAFT`(초안 — AI 생성 직후, 장인 편집 가능) | `PENDING_REVIEW`(장인 검토 대기) | `APPROVED`(승인됨 — 사실확인·사진일치 체크 완료) | `REJECTED`(반려됨(사유 포함)) | `PUBLISHED`(게시완료 — 상품 상세페이지에 노출))"",
+    ""version"": ""number — 콘텐츠 버전 번호"",
+    ""blocks"": [
+      {
+        ""order"": ""number — 표시 순서(드래그앤드롭 시 재정렬됨)"",
+        ""tag"": ""string (enum: `h2`(소제목 블록) | `p`(본문 문단 블록) | `img`(이미지 블록) | `video`(영상 블록(URL 등록 방식))) — 블록 태그(h2/p/img/video)"",
+        ""hasImage"": ""boolean"",
+        ""imageVariants"": ""array · nullable — 이미지 variants, tag=img일 때만 값 [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""videoUrl"": ""string · nullable — 영상 URL(등록 방식)"",
+        ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+      }
+    ]
+  }
+}",POST,/api/content/products/{productId}/contents/{contentId}/reject,hasRole('ARTISAN'),"public ApiResponse<ContentResponse.StatusChanged> reject( @PathVariable Long productId, @PathVariable Long contentId, @AuthenticationPrincipal Long memberId )",ContentService.reject,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/ContentController.java#L72,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,컨텐츠,POST,/api/content/products/{productId}/publish,상품 게시,예정,ARTISAN,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/content/products/{productId}/publish"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""productId"": ""number — 상품 고유 ID"",
+    ""status"": ""string (enum, 예: `ON_SALE`, 동적 값)"",
+    ""publishedAt"": ""string (ISO 8601 datetime) — 게시 일시, ISO 8601""
+  }
+}",POST,/api/content/products/{productId}/publish,hasRole('ARTISAN'),"public ApiResponse<ContentResponse.StatusChanged> publish( @PathVariable Long productId, @AuthenticationPrincipal Long memberId )",ContentService.publish,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/ContentController.java#L112,콘텐츠 PUBLISHED 전이; 상품 판매 상태 별도
+경로 대응,회원,POST,/api/member/oauth2/complete-profile,SNS 회원가입 추가정보 입력,예정,Authenticated(OAuth 임시세션),"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/oauth2/complete-profile"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Cookie"": ""oauthOnboarding={opaqueToken} · 필수 — 10분 1회용 HttpOnly Cookie""
+  },
+  ""body"": {
+    ""name"": ""string · 필수 — 이름/명칭"",
+    ""phone"": ""string · 필수 — 전화번호(하이픈 제외 숫자만)"",
+    ""agreements"": {
+      ""age14OrOlder"": ""boolean · 필수"",
+      ""termsOfService"": ""boolean · 필수"",
+      ""privacyCollection"": ""boolean · 필수"",
+      ""marketing"": ""boolean · 선택""
+    }
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""memberId"": ""number — 회원 고유 ID"",
+    ""email"": ""string — 이메일 주소"",
+    ""role"": ""string (enum: `USER`(소비자) | `ARTISAN`(장인(판매자)) | `ADMIN`(관리자)) — 회원 역할""
+  }
+}",POST,/api/member/oauth2/complete-profile,Public; 쿠키/본문 조건 별도,"public ResponseEntity<CompletionResponse> complete(@CookieValue(value=""oauthOnboarding"",required=false) String token, @Valid @RequestBody CompleteProfile request)",OAuthMemberService.complete; MemberAuthenticationService.socialSession,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/OAuthController.java#L42,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,결제,POST,/api/payments/cart/merge,장바구니 병합,구현완료,Authenticated,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments/cart/merge"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""sections"": [
+      {
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string"",
+        ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+        ""items"": [
+          {
+            ""cartItemId"": ""number — 장바구니 항목 ID"",
+            ""productId"": ""number — 상품 고유 ID"",
+            ""productName"": ""string"",
+            ""unitPrice"": ""number — 옵션 반영된 단가"",
+            ""quantity"": ""number — 수량"",
+            ""subtotal"": ""number — 항목별 소계"",
+            ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+            ""isCustomOrder"": ""boolean — 주문제작 여부"",
+            ""soldOut"": ""boolean — 품절 스냅샷 여부"",
+            ""selected"": ""boolean — 체크(선택) 상태"",
+            ""selectedOptions"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""choiceId"": ""number — 옵션 선택지 ID"",
+                ""choiceName"": ""string"",
+                ""priceDelta"": ""number — 기본가 대비 가감액""
+              }
+            ],
+            ""textInputs"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+              }
+            ]
+          }
+        ],
+        ""shippingFee"": ""number — 배송비"",
+        ""freeShippingThreshold"": ""number — 무료배송 조건 금액(없으면 null)""
+      }
+    ],
+    ""totalPrice"": ""number — 합계 금액"",
+    ""totalShippingFee"": ""number"",
+    ""totalCount"": ""number""
+  }
+}",POST,/api/payments/cart/merge,Authenticated,"public ResponseEntity<ApiResponse<CartService.CartData>> mergeCart(@AuthenticationPrincipal Long memberId, @CookieValue(value = GUEST_CART_COOKIE, required = false) String guestCartId)",CartService.merge,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L124,현재 카탈로그 어댑터는 옵션 추가금 미계산·배송비 0 (D07)
+경로 대응,결제,PATCH,/api/payments/cart/items/{cartItemId}/options,장바구니 옵션 변경,예정,Authenticated,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/payments/cart/items/{cartItemId}/options"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""quantity"": ""number · 선택 — 수량"",
+    ""selectedOptions"": [
+      {
+        ""optionGroupId"": ""number · 선택 — 옵션 그룹 ID"",
+        ""choiceId"": ""number · 선택 — 옵션 선택지 ID""
+      }
+    ],
+    ""textInputs"": ""array (빈 배열 가능) · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""sections"": [
+      {
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string"",
+        ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+        ""items"": [
+          {
+            ""cartItemId"": ""number — 장바구니 항목 ID"",
+            ""productId"": ""number — 상품 고유 ID"",
+            ""productName"": ""string"",
+            ""unitPrice"": ""number — 옵션 반영된 단가"",
+            ""quantity"": ""number — 수량"",
+            ""subtotal"": ""number — 항목별 소계"",
+            ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+            ""isCustomOrder"": ""boolean — 주문제작 여부"",
+            ""soldOut"": ""boolean — 품절 스냅샷 여부"",
+            ""selected"": ""boolean — 체크(선택) 상태"",
+            ""selectedOptions"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""choiceId"": ""number — 옵션 선택지 ID"",
+                ""choiceName"": ""string"",
+                ""priceDelta"": ""number — 기본가 대비 가감액""
+              }
+            ],
+            ""textInputs"": [
+              {
+                ""optionGroupId"": ""number — 옵션 그룹 ID"",
+                ""name"": ""string — 이름/명칭"",
+                ""text"": ""string — 텍스트 블록 내용(img/video 블록은 null)""
+              }
+            ]
+          }
+        ],
+        ""shippingFee"": ""number — 배송비"",
+        ""freeShippingThreshold"": ""number — 무료배송 조건 금액(없으면 null)""
+      }
+    ],
+    ""totalPrice"": ""number — 합계 금액"",
+    ""totalShippingFee"": ""number"",
+    ""totalCount"": ""number""
+  }
+}",PATCH,/api/payments/cart/items/{cartItemId}/options,Authenticated,"public ResponseEntity<ApiResponse<CartService.CartData>> changeOptions( @AuthenticationPrincipal Long memberId, @CookieValue(value = GUEST_CART_COOKIE, required = false) String guestCartId, @PathVariable Long cartItemId, @Valid @RequestBody CartOptionsRequest request )",CartService.changeOptions,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L133,현재 카탈로그 어댑터는 옵션 추가금 미계산·배송비 0 (D07)
+경로 대응,회원,GET,/api/member/artisans/subscriptions,관심 장인(구독) 목록 조회,백로그(MVP 제외),Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/artisans/subscriptions"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""page"": ""integer · 선택 — 0-based 페이지 번호 (기본 0)"",
+    ""size"": ""integer · 선택 — 페이지 크기 (기본 20)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""content"": [
+      {
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""businessName"": ""string — 공방명"",
+        ""introduction"": ""string — 한 줄 소개"",
+        ""profileImageUrl"": ""string — 프로필 이미지 URL"",
+        ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+        ""isOrganization"": ""boolean — 단체 지정 여부"",
+        ""certificationStatus"": ""string (enum, 예: `APPROVED`, 동적 값)"",
+        ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+        ""region"": ""string — 활동 지역"",
+        ""careerYears"": ""number — 경력 연수"",
+        ""productCount"": ""number — 등록 작품 총수"",
+        ""topProducts"": [
+          {
+            ""productId"": ""number — 상품 고유 ID"",
+            ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)""
+          }
+        ],
+        ""newProductCount"": ""number"",
+        ""notificationsEnabled"": ""boolean — 신작 알림 수신 여부""
+      }
+    ],
+    ""totalElements"": ""number"",
+    ""totalPages"": ""number"",
+    ""number"": ""number — 현재 페이지(0-based)"",
+    ""size"": ""number — 페이지 크기"",
+    ""first"": ""boolean"",
+    ""last"": ""boolean""
+  }
+}",GET,/api/member/artisans/subscriptions,Authenticated; 서비스 역할·소유권 검사 별도,"public org.springframework.data.domain.Page<Map<String, Object>> subscriptions( @AuthenticationPrincipal Long memberId, @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable)",MemberActivityService.subscriptions,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L63,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,회원,PATCH,/api/member/artisans/subscriptions/notifications,관심 장인 전체 알림 일괄 켜기/끄기,백로그(MVP 제외),Authenticated,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/member/artisans/subscriptions/notifications"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""notificationsEnabled"": ""boolean · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",PATCH,/api/member/artisans/subscriptions/notifications,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> notifications(@AuthenticationPrincipal Long memberId, @Valid @RequestBody Notifications request)",MemberActivityService.notifications,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L70,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,POST,/api/member/recent-views/merge,최근 본 작품 병합,예정,Authenticated,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/recent-views/merge"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""productIds"": [
+      ""number · 필수""
+    ]
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",POST,/api/member/recent-views/merge,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> merge(@AuthenticationPrincipal Long memberId, @Valid @RequestBody RecentViews request)",MemberActivityService.mergeViews,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L32,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,DELETE,/api/member/recent-views,최근 본 작품 전체 삭제,예정,Authenticated,"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/member/recent-views"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/member/recent-views,Authenticated; 서비스 역할·소유권 검사 별도,public ApiResponse<Void> clear(@AuthenticationPrincipal Long memberId),MemberActivityService.clearViews,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L38,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,상품,GET,/api/products/subcategories,종목 목록 조회,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/products/subcategories"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""queryParams"": {
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) · 선택 — 종목/카테고리 코드""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": [
+    {
+      ""code"": ""string"",
+      ""name"": ""string — 이름/명칭""
+    }
+  ]
+}",GET,/api/products/subcategories,Public,public ApiResponse<List<CategoryResponse.SubcategoryItem>> subcategories(),CategoryQueryService.findAllSubcategories,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/CategoryController.java#L31,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,상품,GET,/api/products/materials,소재 목록 조회,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/products/materials"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""queryParams"": {
+    ""category"": ""string (enum, 예: `POTTERY`, 동적 값) · 선택 — 종목/카테고리 코드""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": [
+    {
+      ""code"": ""string (enum, 예: `CELADON`, 동적 값)"",
+      ""name"": ""string — 이름/명칭""
+    }
+  ]
+}",GET,/api/products/materials,Public,public ApiResponse<List<String>> materials( @RequestParam(required = false) Long subcategoryId ),CategoryQueryService.findMaterials,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/CategoryController.java#L36,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,상품,GET,/api/products/categories,종목(카테고리) 목록 조회,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/products/categories"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": [
+    {
+      ""code"": ""string (enum, 예: `POTTERY`, 동적 값)"",
+      ""name"": ""string — 이름/명칭"",
+      ""productCount"": ""number — 등록 작품 총수""
+    }
+  ]
+}",GET,/api/products/categories,Public,public ApiResponse<List<CategoryResponse.CategoryItem>> categories(),CategoryQueryService.findAllCategories,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/CategoryController.java#L21,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,GET,/api/member/recent-views,최근 본 상품 조회,예정,Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/recent-views"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""queryParams"": {
+    ""page"": ""integer · 선택 — 0-based 페이지 번호 (기본 0)"",
+    ""size"": ""integer · 선택 — 페이지 크기 (기본 20)""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""content"": [
+      {
+        ""productId"": ""number — 상품 고유 ID"",
+        ""name"": ""string — 이름/명칭"",
+        ""price"": ""number — 가격, 원 단위 정수"",
+        ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""status"": ""string (enum, 예: `ON_SALE`, 동적 값)"",
+        ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+        ""subcategory"": ""string"",
+        ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) — 컬러 코드"",
+        ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) — 선물테마 코드"",
+        ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+        ""isLimited"": ""boolean — 한정수량 여부"",
+        ""isCustomOrder"": ""boolean — 주문제작 여부"",
+        ""isSingleItem"": ""boolean — 총재고 1, 재입고 없음 여부"",
+        ""isNew"": ""boolean — 신작 여부(최근 등록된 상품)"",
+        ""hasGiftWrap"": ""boolean — 선물포장 가능 여부"",
+        ""hasOptions"": ""boolean — 옵션 존재 여부"",
+        ""purposeTags"": [
+          ""string — 용도 태그 배열(선물/다도 등)""
+        ],
+        ""primaryBadge"": ""string (enum: `LIMITED`(한정수량) | `NEW`(신작) | `POPULAR`(인기)) — 서버가 계산한 대표 배지 1개(우선순위: 한정수량>신작>인기, 해당 없으면 null)"",
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string"",
+        ""viewedAt"": ""string (ISO 8601 datetime) — 조회 일시, ISO 8601""
+      }
+    ],
+    ""totalElements"": ""number"",
+    ""totalPages"": ""number"",
+    ""number"": ""number — 현재 페이지(0-based)"",
+    ""size"": ""number — 페이지 크기"",
+    ""first"": ""boolean"",
+    ""last"": ""boolean""
+  }
+}",GET,/api/member/recent-views,Authenticated; 서비스 역할·소유권 검사 별도,"public org.springframework.data.domain.Page<Map<String, Object>> recent( @AuthenticationPrincipal Long memberId, @org.springframework.data.web.PageableDefault(size = 20) org.springframework.data.domain.Pageable pageable)",MemberActivityService.recentViews,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L44,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,회원,POST,/api/member/recent-views,최근 본 상품 기록,예정,Authenticated,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/recent-views"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""productId"": ""number · 필수 — 상품 고유 ID""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": ""null""
+}",POST,/api/member/recent-views,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> record(@AuthenticationPrincipal Long memberId, @Valid @RequestBody RecentView request)",MemberActivityService.recordView,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L26,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,GET,/api/member/settings,환경설정 조회,예정,Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/settings"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""darkMode"": ""boolean"",
+    ""marketing"": ""boolean""
+  }
+}",GET,/api/member/settings,Authenticated; 서비스 역할·소유권 검사 별도,public MemberActivityService.Settings settings(@AuthenticationPrincipal Long memberId),MemberActivityService.settings,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L16,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,PATCH,/api/member/settings,환경설정 수정,예정,Authenticated,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/member/settings"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""darkMode"": ""boolean · 선택"",
+    ""marketing"": ""boolean · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""darkMode"": ""boolean"",
+    ""marketing"": ""boolean""
+  }
+}",PATCH,/api/member/settings,Authenticated; 서비스 역할·소유권 검사 별도,"public MemberActivityService.Settings updateSettings(@AuthenticationPrincipal Long memberId, @Valid @RequestBody Settings request)",MemberActivityService.updateSettings,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L21,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,결제,GET,/api/payments/methods,결제수단 목록 조회,구현완료,Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/payments/methods"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": [
+    {
+      ""paymentMethodId"": ""number"",
+      ""type"": ""string (enum, 예: `CARD`, 동적 값)"",
+      ""cardCompany"": ""string — 카드사명"",
+      ""cardNumberMasked"": ""string — 마스킹된 카드번호"",
+      ""isDefault"": ""boolean — 기본값 여부""
+    }
+  ]
+}",GET,/api/payments/methods,Authenticated; 서비스 역할·소유권 검사 별도,public ApiResponse<List<PaymentProfileService.PaymentMethodData>> paymentMethods( @AuthenticationPrincipal Long memberId ),PaymentProfileService.methods,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L51,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,결제,POST,/api/payments/methods,결제수단 등록,구현완료,Authenticated,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments/methods"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""type"": ""string (enum, 예: `CARD`, 동적 값) · 필수"",
+    ""cardNumber"": ""string · 필수"",
+    ""expiry"": ""string · 필수"",
+    ""birthOrBusinessNo"": ""string · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""paymentMethodId"": ""number"",
+    ""type"": ""string (enum, 예: `CARD`, 동적 값)"",
+    ""cardCompany"": ""string — 카드사명"",
+    ""cardNumberMasked"": ""string — 마스킹된 카드번호"",
+    ""isDefault"": ""boolean — 기본값 여부""
+  }
+}",POST,/api/payments/methods,Authenticated; 서비스 역할·소유권 검사 별도,"public ResponseEntity<ApiResponse<PaymentProfileService.PaymentMethodData>> registerPaymentMethod( @AuthenticationPrincipal Long memberId, @Valid @RequestBody RegisterPaymentMethodRequest request )",PaymentProfileService.registerMethod,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L58,마스킹 카드 정보 저장; PG billing key 발급 아님
+경로 대응,결제,DELETE,/api/payments/methods/{paymentMethodId},결제수단 삭제,구현완료,Authenticated,"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/payments/methods/{paymentMethodId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/payments/methods/{paymentMethodId},Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> deletePaymentMethod(@AuthenticationPrincipal Long memberId, @PathVariable Long paymentMethodId)",PaymentProfileService.deleteMethod,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L67,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,결제,POST,/api/payments/refund-account,환불 계좌 등록,구현완료,Authenticated,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/payments/refund-account"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""bankName"": ""string · 필수 — 은행명"",
+    ""accountNumber"": ""string · 필수"",
+    ""accountHolder"": ""string · 필수 — 예금주명""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""refundAccountId"": ""number"",
+    ""bankName"": ""string — 은행명"",
+    ""accountNumberMasked"": ""string — 마스킹된 계좌번호"",
+    ""accountHolder"": ""string — 예금주명""
+  }
+}",POST,/api/payments/refund-account,Authenticated; 서비스 역할·소유권 검사 별도,"public ResponseEntity<ApiResponse<PaymentProfileService.RefundAccountData>> registerRefundAccount( @AuthenticationPrincipal Long memberId, @Valid @RequestBody RegisterRefundAccountRequest request )",PaymentProfileService.registerRefundAccount,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L74,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,이미지,POST,/api/images/presigned-url,이미지 업로드 Presigned URL 발급(다중 variant),예정,Authenticated,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/images/presigned-url"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""fileName"": ""string · 필수"",
+    ""contentType"": ""string · 필수"",
+    ""purpose"": ""string (enum: `PRODUCT`(상품 이미지) | `ARTISAN`(장인 프로필 이미지) | `CONTENT`(AI 상세페이지 콘텐츠 이미지)) · 필수"",
+    ""sourceWidth"": ""number · 필수 — 원본 이미지 픽셀 너비 (FE Canvas API 리사이즈 전 원본)"",
+    ""sourceHeight"": ""number · 필수 — 원본 이미지 픽셀 높이 (aspect ratio 보존용, variant height 산출 기준)"",
+    ""variants"": [
+      ""string · 필수""
+    ]
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""imageId"": ""string — 이미지 그룹 ID, ULID 형식(예: image_01HXYZ)"",
+    ""uploads"": [
+      {
+        ""variant"": ""string"",
+        ""objectKey"": ""string — S3 내부 저장 경로"",
+        ""presignedUrl"": ""string — S3 직접 업로드용 서명된 URL(짧은 유효시간)""
+      }
+    ],
+    ""expiresInSeconds"": ""number — 유효시간(초)""
+  }
+}",POST,/api/images/presigned-url,USER / ARTISAN / AGENT,"public ApiResponse<ImageService.PresignedUpload> createPresignedUrl( @AuthenticationPrincipal Long memberId, Authentication authentication, @Valid @RequestBody PresignedUrlRequest request)",ImageService.createPresignedUpload,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/image/presentation/ImageController.java#L34,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,이미지,DELETE,/api/images/{imageId},미사용 이미지 삭제,예정,Authenticated,"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/images/{imageId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/images/{imageId},Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> deleteUnused(@AuthenticationPrincipal Long memberId, @PathVariable String imageId)",ImageService.deleteUnused,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/image/presentation/ImageController.java#L48,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,이미지,POST,/internal/images/verify,이미지 소유권/존재 검증(내부 전용),예정,Internal(Service-to-Service),"{
+  ""method"": ""POST"",
+  ""url"": ""/internal/images/verify"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""body"": {
+    ""imageId"": ""string · 필수 — 이미지 그룹 ID, ULID 형식(예: image_01HXYZ)"",
+    ""requesterId"": ""number · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""exists"": ""boolean"",
+    ""ownerMatched"": ""boolean"",
+    ""variants"": [
+      ""string""
+    ]
+  }
+}",POST,/internal/images/verify,hasRole('AGENT'),public ApiResponse<ImageService.Verification> verify(@Valid @RequestBody VerifyImageRequest request),ImageService.verifyAndConsume,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/image/presentation/ImageController.java#L54,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,챗봇,POST,/api/chatbot/sessions,챗봇 세션 생성,예정,Public,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/chatbot/sessions"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": {
+    ""sessionId"": ""string — 챗봇 세션 ID(문자열)"",
+    ""expiresInSeconds"": ""number — 유효시간(초)""
+  }
+}",POST,/api/chatbot/sessions,hasRole('USER'),public ResponseEntity<ApiResponse<ChatResponse.SessionView>> createSession( @AuthenticationPrincipal Long memberId ),ChatService.createSession,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/chatbot/presentation/ChatController.java#L30,CSV Public과 달리 USER 필요; AI 장애 대체 응답 가능
+경로 대응,챗봇,POST,/api/chatbot/sessions/{sessionId}/messages,챗봇 메시지 전송,예정,Public,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/chatbot/sessions/{sessionId}/messages"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""body"": {
+    ""message"": ""string · 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""sessionId"": ""string — 챗봇 세션 ID(문자열)"",
+    ""messageId"": ""number"",
+    ""reply"": ""string — 챗봇 대화형 응답 텍스트"",
+    ""intent"": ""string — AI 의도분류 결과"",
+    ""suggestions"": [
+      ""string — 후속 질문 제안 (최대 3개)""
+    ],
+    ""products"": [
+      {
+        ""productId"": ""number — 상품 고유 ID"",
+        ""name"": ""string — 이름/명칭"",
+        ""price"": ""number — 가격, 원 단위 정수"",
+        ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)"",
+        ""status"": ""string (enum, 예: `ON_SALE`, 동적 값)"",
+        ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+        ""subcategory"": ""string"",
+        ""color"": ""string (enum: `WHITE`(화이트) | `BLACK`(블랙) | `GRAY`(그레이) | `RED`(레드) | `BLUE`(블루) | `GREEN`(그린) | `BROWN`(브라운)) — 컬러 코드"",
+        ""giftTheme"": ""string (enum: `HOUSEWARMING`(집들이) | `WEDDING`(웨딩) | `PARENTS`(부모님) | `PROMOTION`(승진) | `BIRTHDAY_60TH`(돌·환갑) | `BOSS`(상사) | `FRIEND`(친구) | `CORPORATE`(기업·단체) | `COUPLE`(연인)) — 선물테마 코드"",
+        ""rating"": ""number — 평균 평점(후기 없으면 null)"",
+        ""isLimited"": ""boolean — 한정수량 여부"",
+        ""isCustomOrder"": ""boolean — 주문제작 여부"",
+        ""isSingleItem"": ""boolean — 총재고 1, 재입고 없음 여부"",
+        ""isNew"": ""boolean — 신작 여부(최근 등록된 상품)"",
+        ""hasGiftWrap"": ""boolean — 선물포장 가능 여부"",
+        ""hasOptions"": ""boolean — 옵션 존재 여부"",
+        ""purposeTags"": [
+          ""string — 용도 태그 배열(선물/다도 등)""
+        ],
+        ""primaryBadge"": ""string (enum: `LIMITED`(한정수량) | `NEW`(신작) | `POPULAR`(인기)) — 서버가 계산한 대표 배지 1개(우선순위: 한정수량>신작>인기, 해당 없으면 null). 품절은 배지가 아니라 이미지 오버레이로 별도 표현(FE), 단하나/주문제작/선물포장 배지는 폐지(PM 최종 확정). FE는 primaryBadge 값 하나만 그대로 렌더링"",
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""artisanName"": ""string"",
+        ""reason"": ""string — AI가 생성한 추천 이유""
+      }
+    ]
+  }
+}",POST,/api/chatbot/sessions/{sessionId}/messages,hasRole('USER'),"public ResponseEntity<ApiResponse<ChatResponse.SendResult>> sendMessage( @AuthenticationPrincipal Long memberId, @PathVariable UUID sessionId, @Valid @RequestBody ChatRequest.SendMessage request )",ChatService.sendMessage,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/chatbot/presentation/ChatController.java#L39,CSV Public과 달리 USER 필요; AI 장애 대체 응답 가능
+경로 대응,챗봇,GET,/api/chatbot/sessions/{sessionId}/messages,챗봇 대화 히스토리 조회,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/chatbot/sessions/{sessionId}/messages"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""queryParams"": {
+    ""cursor"": ""string · 선택"",
+    ""limit"": ""string · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""messageId"": ""number"",
+        ""sender"": ""string (enum: `USER`(소비자) | `ARTISAN`(장인(판매자)) | `ADMIN`(관리자))"",
+        ""content"": ""string — 본문 내용"",
+        ""createdAt"": ""string (ISO 8601 datetime) — 생성 일시, ISO 8601""
+      }
+    ],
+    ""nextCursor"": ""string"",
+    ""hasNext"": ""boolean"",
+    ""totalCount"": ""number""
+  }
+}",GET,/api/chatbot/sessions/{sessionId}/messages,hasRole('USER'),"public ApiResponse<List<ChatResponse.MessageView>> messages( @AuthenticationPrincipal Long memberId, @PathVariable UUID sessionId )",ChatService.findMessages,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/chatbot/presentation/ChatController.java#L52,CSV Public과 달리 USER 필요; AI 장애 대체 응답 가능
+경로 대응,회원,POST,/api/member/artisans/{artisanId}/subscribe,장인 신작 알림 구독,백로그(MVP 제외),Authenticated,"{
+  ""method"": ""POST"",
+  ""url"": ""/api/member/artisans/{artisanId}/subscribe"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 201,
+  ""data"": ""null""
+}",POST,/api/member/artisans/{artisanId}/subscribe,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> subscribe(@AuthenticationPrincipal Long memberId, @PathVariable Long artisanId)",MemberActivityService.subscribe,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L51,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,DELETE,/api/member/artisans/{artisanId}/subscribe,장인 신작 알림 구독 취소,백로그(MVP 제외),Authenticated,"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/member/artisans/{artisanId}/subscribe"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/member/artisans/{artisanId}/subscribe,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<Void> unsubscribe(@AuthenticationPrincipal Long memberId, @PathVariable Long artisanId)",MemberActivityService.unsubscribe,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberActivityController.java#L57,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,회원,GET,/api/member/artisans,장인 목록 조회,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/artisans"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  },
+  ""queryParams"": {
+    ""page"": ""integer · 선택 — 0-based 페이지 번호 (기본 0)"",
+    ""size"": ""integer · 선택 — 페이지 크기 (기본 20)"",
+    ""certificationLevel"": ""string · 선택 — 인증 등급(전승 단계)"",
+    ""category"": ""string · 선택 — 종목/카테고리 코드"",
+    ""initial"": ""string · 선택"",
+    ""sort"": ""string (enum: `POPULAR`(인기순(기본값) — 최근 7일 조회·찜·구매 가중합산) | `MOST_PRODUCTS`(작품많은순) | `RECENTLY_JOINED`(최근입점순)) · 선택""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""content"": [
+      {
+        ""artisanId"": ""number — 장인 고유 ID"",
+        ""businessName"": ""string — 공방명"",
+        ""introduction"": ""string — 한 줄 소개"",
+        ""profileImageUrl"": ""string — 프로필 이미지 URL"",
+        ""certificationLevel"": ""string (enum: `보유자`(국가유산청 지정 국가무형유산 보유자) | `전승교육사`(지정 전승교육사) | `이수자`(이수증 취득자) | `일반`(인증 등급 없음)) — 인증 등급(전승 단계)"",
+        ""isOrganization"": ""boolean — 단체 지정 여부"",
+        ""certificationStatus"": ""string (enum, 예: `APPROVED`, 동적 값)"",
+        ""category"": ""string (enum, 예: `POTTERY`, 동적 값) — 종목/카테고리 코드"",
+        ""region"": ""string — 활동 지역"",
+        ""careerYears"": ""number — 경력 연수"",
+        ""productCount"": ""number — 등록 작품 총수"",
+        ""topProducts"": [
+          {
+            ""productId"": ""number — 상품 고유 ID"",
+            ""thumbnail"": ""array — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3] (320w·640w·1280w 순)""
+          }
+        ]
+      }
+    ],
+    ""totalElements"": ""number"",
+    ""totalPages"": ""number"",
+    ""number"": ""number — 현재 페이지(0-based)"",
+    ""size"": ""number — 페이지 크기"",
+    ""first"": ""boolean"",
+    ""last"": ""boolean""
+  }
+}",GET,/api/member/artisans,Public,"public Page<Map<String, Object>> list( @PageableDefault(size = 20) Pageable pageable, @RequestParam(required = false) String certificationLevel, @RequestParam(required = false) String category, @RequestParam(required = false) String initial, @RequestParam(defaultValue = ""POPULAR"") String sort)",ArtisanService.list,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/ArtisanController.java#L18,"page(0-based), size; cursor/limit 계약과 다름"
+경로 대응,챗봇,DELETE,/api/chatbot/sessions/{sessionId},챗봇 세션 종료,예정,Public,"{
+  ""method"": ""DELETE"",
+  ""url"": ""/api/chatbot/sessions/{sessionId}"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": ""null""
+}",DELETE,/api/chatbot/sessions/{sessionId},hasRole('USER'),"public ApiResponse<Void> endSession( @AuthenticationPrincipal Long memberId, @PathVariable UUID sessionId )",ChatService.endSession,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/chatbot/presentation/ChatController.java#L61,CSV Public과 달리 USER 필요; AI 장애 대체 응답 가능; 본문 status=204와 실제 HTTP 상태를 구분 (D08)
+경로 대응,회원,GET,/api/member/artisans/applications/me,내 장인 입점 신청 상태 조회,예정,Authenticated,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/member/artisans/applications/me"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""applicationId"": ""number — 신청 고유 ID"",
+    ""status"": ""string (enum: `PENDING`(심사대기) | `APPROVED`(승인됨) | `REJECTED`(반려됨)) — 전체 신청 상태"",
+    ""rejectReason"": ""string | null — 반려 사유(REJECTED 시 존재)"",
+    ""submittedAt"": ""string (ISO 8601 datetime)"",
+    ""pipeline"": {
+      ""documentReview"": ""string (enum: `PENDING` | `IN_PROGRESS` | `COMPLETED` | `FAILED`) — 1단계: 서류 접수·검토"",
+      ""craftsmanshipReview"": ""string (enum: `PENDING` | `IN_PROGRESS` | `COMPLETED` | `FAILED`) — 2단계: 수공정성 심사"",
+      ""digitalConversion"": ""string (enum: `PENDING` | `IN_PROGRESS` | `COMPLETED` | `FAILED`) — 3단계: 디지털 변환 지원"",
+      ""orderSystemIntegration"": ""string (enum: `PENDING` | `IN_PROGRESS` | `COMPLETED` | `FAILED`) — 4단계: 주문제작 시스템 연동""
+    },
+    ""qualificationTier"": ""string (enum: `NATIONAL_INTANGIBLE_HERITAGE`(국가무형유산 보유자) | `MASTER_CRAFTSMAN`(대한민국명장/공예명인) | `SENIOR_CRAFTSMAN`(전통공예 중견작가/이수자) | `YOUNG_CRAFTSMAN`(청년 전통 공예가)) | null — 심사 확정 후 부여되는 장인 등급""
+  }
+}",GET,/api/member/artisans/applications/me,Authenticated; 서비스 역할·소유권 검사 별도,public SellerApplicationData mine(@AuthenticationPrincipal Long memberId),SellerApplicationService.mine,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/SellerApplicationController.java#L24,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,상품,GET,/api/products/categories/main,메인 카테고리 목록 조회,예정,Public,"{
+  ""method"": ""GET"",
+  ""url"": ""/api/products/categories/main"",
+  ""headers"": {
+    ""Content-Type"": ""application/json""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""items"": [
+      {
+        ""categoryCode"": ""string — 카테고리 코드(예: POTTERY)"",
+        ""name"": ""string — 한국어 카테고리명(예: 도자공예)"",
+        ""artisanCount"": ""number — 해당 카테고리 활성 장인 수"",
+        ""productCount"": ""number — 해당 카테고리 판매 중 상품 수"",
+        ""thumbnail"": ""array | null — display_order=0 이미지의 variants [{url:string, width:number, height:number, format:webp}×3], 이미지 없으면 null""
+      }
+    ],
+    ""totalCount"": ""number""
+  }
+}",GET,/api/products/categories/main,Public,public ApiResponse<List<CategoryResponse.CategoryItem>> mainCategories(),CategoryQueryService.findAllCategories,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/CategoryController.java#L26,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+경로 대응,관리자,PATCH,/api/admin/artisans/applications/{applicationId}/pipeline,장인 입점 심사 단계 업데이트,예정,ADMIN,"{
+  ""method"": ""PATCH"",
+  ""url"": ""/api/admin/artisans/applications/{applicationId}/pipeline"",
+  ""headers"": {
+    ""Content-Type"": ""application/json"",
+    ""Authorization"": ""Bearer {accessToken}""
+  },
+  ""pathParams"": {
+    ""applicationId"": ""number · 필수 — 신청 고유 ID""
+  },
+  ""body"": {
+    ""step"": ""string (enum: `DOCUMENT_REVIEW` | `CRAFTSMANSHIP_REVIEW` | `DIGITAL_CONVERSION` | `ORDER_SYSTEM_INTEGRATION`) · 필수 — 업데이트할 단계"",
+    ""status"": ""string (enum: `IN_PROGRESS` | `COMPLETED` | `FAILED`) · 필수 — 변경할 상태"",
+    ""qualificationTier"": ""string (enum: `NATIONAL_INTANGIBLE_HERITAGE` | `MASTER_CRAFTSMAN` | `SENIOR_CRAFTSMAN` | `YOUNG_CRAFTSMAN`) · 선택 — step=CRAFTSMANSHIP_REVIEW·status=COMPLETED 시 필수""
+  }
+}","{
+  ""success"": true,
+  ""status"": 200,
+  ""data"": {
+    ""applicationId"": ""number"",
+    ""pipeline"": {
+      ""documentReview"": ""string"",
+      ""craftsmanshipReview"": ""string"",
+      ""digitalConversion"": ""string"",
+      ""orderSystemIntegration"": ""string""
+    },
+    ""overallStatus"": ""string (enum: `PENDING` | `APPROVED` | `REJECTED`)"",
+    ""qualificationTier"": ""string | null""
+  }
+}",PATCH,/api/admin/artisans/applications/{applicationId}/pipeline,ADMIN (서비스 검사),"public SellerApplicationPipelineResult updatePipeline(@AuthenticationPrincipal Long memberId, @PathVariable Long applicationId, @Valid @RequestBody Pipeline request)",SellerApplicationService.updatePipeline,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/SellerApplicationController.java#L53,컨트롤러와 처리 코드 연결 확인; 명세 전체 일치/실서버 통과 판정 아님
+CSV 외 실제 경로,,,,,,,,,POST,/internal/generations/{generationId}/completion,AGENT (내부 인증 필터),"public ResponseEntity<ApiResponse<BeToAiPersistAckResponse>> completeMultipart( @PathVariable Long generationId, @RequestHeader(""Idempotency-Key"") String idempotencyKey, @RequestPart(""metadata"") String metadataJson, @RequestPart(value = ""detail_page_image"", required = false) MultipartFile detailPageImage, HttpServletRequest rawRequest ) throws Exception",ObjectMapper.readTree; GenerationService.completeWithImages,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/AiCallbackController.java#L33,CSV에 없는 실제 경로; 생성 상태 6종; 실제 AI 완료/콜백은 런타임 검증 필요
+CSV 외 실제 경로,,,,,,,,,POST,/api/content/products/{productId}/contents/{contentId}/submit,hasRole('ARTISAN'),"public ApiResponse<ContentResponse.StatusChanged> submitForReview( @PathVariable Long productId, @PathVariable Long contentId, @AuthenticationPrincipal Long memberId )",ContentService.submitForReview,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/content/presentation/ContentController.java#L46,CSV에 없는 실제 경로
+CSV 외 실제 경로,,,,,,,,,POST,/dev/token,local 프로필 전용,"public ApiResponse<DevTokenResponse> token( @RequestParam(defaultValue = ""ARTISAN"") String role, @RequestParam(required = false) Long memberId )",JwtTokenProvider.createAccessToken,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/global/dev/DevAuthController.java#L35,CSV에 없는 실제 경로; 운영 FE에서 호출하지 않음
+CSV 외 실제 경로,,,,,,,,,POST,/dev/setup,local 프로필 전용,public ApiResponse<DevSetupResponse> setup(),JwtTokenProvider.createAccessToken,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/global/dev/DevAuthController.java#L49,CSV에 없는 실제 경로; 운영 FE에서 호출하지 않음
+CSV 외 실제 경로,,,,,,,,,POST,/api/member/email/verification-code,Public; 쿠키/본문 조건 별도,public ResponseEntity<ApiResponse<Void>> sendVerificationCode( @Valid @RequestBody EmailVerificationRequest.Send request ),EmailVerificationService.sendCode,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberController.java#L40,CSV에 없는 실제 경로; 이메일 코드 검증과 가입 상태가 연결되지 않음 (감사 문서 D03)
+CSV 외 실제 경로,,,,,,,,,POST,/api/member/email/verify,Public; 쿠키/본문 조건 별도,public ResponseEntity<ApiResponse<Void>> verifyEmail( @Valid @RequestBody EmailVerificationRequest.Verify request ),EmailVerificationService.verify,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberController.java#L48,CSV에 없는 실제 경로; 이메일 코드 검증과 가입 상태가 연결되지 않음 (감사 문서 D03)
+CSV 외 실제 경로,,,,,,,,,GET,/api/member/me/wishes/{productId},hasRole('USER'),"public ResponseEntity<Void> isWished( @AuthenticationPrincipal Long memberId, @PathVariable Long productId )",MemberQueryService.isWished,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberQueryController.java#L36,CSV에 없는 실제 경로
+CSV 외 실제 경로,,,,,,,,,GET,/api/member/me/orders/summary,hasRole('USER'),"public ApiResponse<Map<String, Object>> orderSummary( @AuthenticationPrincipal Long memberId )",MemberQueryService.orderCountSummary,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/member/presentation/MemberQueryController.java#L47,CSV에 없는 실제 경로
+CSV 외 실제 경로,,,,,,,,,POST,/api/notifications,hasRole('USER'),"public ApiResponse<NotificationResponse> create( @AuthenticationPrincipal Long memberId, @RequestBody @Valid NotificationCreateRequest request )",NotificationService.create,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/notification/presentation/NotificationController.java#L44,CSV에 없는 실제 경로
+CSV 외 실제 경로,,,,,,,,,GET,/api/notifications/{notificationId},hasRole('USER'),"public ApiResponse<NotificationResponse> findOne( @AuthenticationPrincipal Long memberId, @PathVariable Long notificationId )",NotificationService.findOne,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/notification/presentation/NotificationController.java#L79,CSV에 없는 실제 경로
+CSV 외 실제 경로,,,,,,,,,PATCH,/api/notifications/{notificationId}/read,hasRole('USER'),"public ApiResponse<Void> markAsRead( @AuthenticationPrincipal Long memberId, @PathVariable Long notificationId )",NotificationService.markAsRead,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/notification/presentation/NotificationController.java#L88,CSV에 없는 실제 경로; 본문 status=204와 실제 HTTP 상태를 구분 (D08)
+CSV 외 실제 경로,,,,,,,,,DELETE,/api/notifications/{notificationId},hasRole('USER'),"public ApiResponse<Void> delete( @AuthenticationPrincipal Long memberId, @PathVariable Long notificationId )",NotificationService.delete,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/notification/presentation/NotificationController.java#L98,CSV에 없는 실제 경로; 본문 status=204와 실제 HTTP 상태를 구분 (D08)
+CSV 외 실제 경로,,,,,,,,,POST,/api/payments/webhooks/toss,Public; PG 재조회 검증,public ApiResponse<Void> tossWebhook(@Valid @RequestBody TossWebhookRequest request),PaymentService.handleWebhook,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L169,CSV에 없는 실제 경로
+CSV 외 실제 경로,,,,,,,,,POST,/api/payments/orders/{orderId}/cancel,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<PaymentService.OrderActionData> cancelOrder( @AuthenticationPrincipal Long memberId, @PathVariable Long orderId )",PaymentService.cancelOrder,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L188,CSV에 없는 실제 경로
+CSV 외 실제 경로,,,,,,,,,PATCH,/api/payments/orders/{orderId}/shipping-address,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<PaymentService.ShippingAddressData> changeShippingAddress( @AuthenticationPrincipal Long memberId, @PathVariable Long orderId, @Valid @RequestBody ChangeShippingAddressRequest request )",PaymentService.changeShippingAddress,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L197,CSV에 없는 실제 경로
+CSV 외 실제 경로,,,,,,,,,POST,/api/payments/orders/{orderId}/purchase-confirmation,Authenticated; 서비스 역할·소유권 검사 별도,"public ApiResponse<PaymentService.OrderActionData> confirmPurchase( @AuthenticationPrincipal Long memberId, @PathVariable Long orderId )",PaymentService.confirmPurchase,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/payment/presentation/PaymentController.java#L206,CSV에 없는 실제 경로
+CSV 외 실제 경로,,,,,,,,,POST,/api/products/{productId}/questions/{questionId}/answer,hasRole('ARTISAN'),"public ResponseEntity<ApiResponse<ProductQnaResponse.AnswerView>> answer( @AuthenticationPrincipal Long memberId, @PathVariable Long productId, @PathVariable Long questionId, @Valid @RequestBody ProductQnaRequest.Answer request )",ProductQnaService.answer,https://github.com/Jangingmall/backend/blob/48417a651476c57606ff7567ea8b204962acf9c0/src/main/java/com/jangingmall/backend/product/presentation/ProductController.java#L191,CSV에 없는 실제 경로
