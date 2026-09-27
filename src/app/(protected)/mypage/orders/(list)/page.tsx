@@ -82,7 +82,7 @@ export default function MypageOrdersPage() {
   const [confirmationError, setConfirmationError] = useState<string | null>(
     null,
   );
-  const confirmationInFlight = useRef(false);
+  const isConfirmationInFlight = useRef(false);
   const confirmMutation = useConfirmPurchaseMutation(
     confirmationTarget?.orderId ?? -1,
   );
@@ -151,8 +151,8 @@ export default function MypageOrdersPage() {
   }
 
   async function handleConfirmPurchase() {
-    if (!confirmationTarget || confirmationInFlight.current) return;
-    confirmationInFlight.current = true;
+    if (!confirmationTarget || isConfirmationInFlight.current) return;
+    isConfirmationInFlight.current = true;
     setConfirmationError(null);
     try {
       await confirmMutation.mutateAsync();
@@ -160,7 +160,7 @@ export default function MypageOrdersPage() {
     } catch (error) {
       setConfirmationError(resolveActionErrorMessage(error));
     } finally {
-      confirmationInFlight.current = false;
+      isConfirmationInFlight.current = false;
     }
   }
 

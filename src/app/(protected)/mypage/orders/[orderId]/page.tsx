@@ -67,10 +67,10 @@ export default function OrderDetailPage() {
   const orderId = Number(params.orderId);
 
   const detailQuery = useOrderDetailQuery(orderId);
-  const actionInFlight = useRef(false);
+  const isActionInFlight = useRef(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
-  const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
   const [confirmationError, setConfirmationError] = useState<string | null>(
     null,
   );
@@ -151,8 +151,8 @@ export default function OrderDetailPage() {
     item: OrderDetailItem,
     action: OrderCardActionType,
   ) {
-    if (actionInFlight.current) return;
-    actionInFlight.current = true;
+    if (isActionInFlight.current) return;
+    isActionInFlight.current = true;
     setActionError(null);
     try {
       switch (action) {
@@ -166,7 +166,7 @@ export default function OrderDetailPage() {
           break;
         case "confirmPurchase":
           setConfirmationError(null);
-          setConfirmationOpen(true);
+          setIsConfirmationOpen(true);
           break;
         case "checkDelivery":
           setIsDeliveryModalOpen(true);
@@ -183,21 +183,21 @@ export default function OrderDetailPage() {
     } catch (error) {
       setActionError(resolveActionErrorMessage(error));
     } finally {
-      actionInFlight.current = false;
+      isActionInFlight.current = false;
     }
   }
 
   async function handleConfirmPurchase() {
-    if (actionInFlight.current || !confirmationOpen) return;
-    actionInFlight.current = true;
+    if (isActionInFlight.current || !isConfirmationOpen) return;
+    isActionInFlight.current = true;
     setConfirmationError(null);
     try {
       await confirmPurchaseMutation.mutateAsync();
-      setConfirmationOpen(false);
+      setIsConfirmationOpen(false);
     } catch (error) {
       setConfirmationError(resolveActionErrorMessage(error));
     } finally {
-      actionInFlight.current = false;
+      isActionInFlight.current = false;
     }
   }
 
@@ -294,11 +294,11 @@ export default function OrderDetailPage() {
         </div>
 
         <PurchaseConfirmationDialog
-          open={confirmationOpen}
+          open={isConfirmationOpen}
           orderNumber={order.orderNumber}
           submitting={confirmPurchaseMutation.isPending}
           error={confirmationError}
-          onOpenChange={setConfirmationOpen}
+          onOpenChange={setIsConfirmationOpen}
           onConfirm={() => void handleConfirmPurchase()}
         />
         <OrderAddressChangeModal
