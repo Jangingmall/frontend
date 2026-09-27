@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 
-import { ARTISAN_CAROUSEL_ITEMS } from "@/app/_lib/artisan-carousel-fixtures";
+import {
+  ARTISAN_CAROUSEL_ITEMS,
+  type ArtisanCarouselItem,
+} from "@/app/_lib/artisan-carousel-fixtures";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/icons";
 
@@ -36,11 +39,28 @@ import { SectionHeader } from "./SectionHeader";
  * 를 그대로 따라 `<a>`/`<button>` 대신 `aria-disabled` 요소로 렌더링한다 — 별도 안내 문구
  * 없음.
  */
-export function ArtisanCarousel() {
+export function ArtisanCarousel({
+  items = ARTISAN_CAROUSEL_ITEMS,
+}: {
+  items?: readonly ArtisanCarouselItem[];
+}) {
   const [index, setIndex] = useState(0);
-  const total = ARTISAN_CAROUSEL_ITEMS.length;
-  const item = ARTISAN_CAROUSEL_ITEMS[index];
+  const total = items.length;
+  const item = items[index % Math.max(1, total)];
 
+  if (!item)
+    return (
+      <section aria-label="장인관" className="mx-auto max-w-desktop p-12">
+        <SectionHeader
+          title="장인관"
+          description="한 사람의 작업을 처음부터 끝까지 들여다봅니다"
+          viewAll={{ disabled: true }}
+        />
+        <p className="mt-6">
+          장인 정보를 불러오지 못했거나 등록된 장인이 없습니다.
+        </p>
+      </section>
+    );
   return (
     <section
       aria-label="장인관"
@@ -55,7 +75,9 @@ export function ArtisanCarousel() {
         <ImagePlaceholder className="aspect-[774/520] w-full shrink-0 lg:w-[774px]" />
         <div className="flex flex-col gap-7 px-6 pb-16 lg:w-105.5 lg:shrink-0 lg:px-0 lg:pr-9.5 lg:pb-0">
           <div className="flex gap-2">
-            <Badge variant="jade">국가무형유산</Badge>
+            <Badge variant="jade">
+              {item.certificationTitle ?? "국가무형유산"}
+            </Badge>
             <Badge variant="jade">{item.badge}</Badge>
           </div>
           <div>

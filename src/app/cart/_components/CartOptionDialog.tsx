@@ -18,6 +18,7 @@ export interface CartOptionDialogProps {
   initialValues: string[];
   onApply: (values: string[]) => void;
   unavailableMessage?: string;
+  notice?: string;
   currentOptions?: string[];
   initialError?: boolean;
   initialOpenIndex?: number;
@@ -29,6 +30,7 @@ export function CartOptionDialog({
   initialValues,
   onApply,
   unavailableMessage,
+  notice,
   currentOptions = [],
   initialError = false,
   initialOpenIndex = -1,
@@ -102,6 +104,11 @@ export function CartOptionDialog({
       }
     >
       <div ref={container} className="flex min-h-full flex-col">
+        {notice && (
+          <p role="status" className="mb-6 text-body-s">
+            {notice}
+          </p>
+        )}
         {unavailableMessage && (
           <div className="mb-6 space-y-3">
             <p role="status" className="text-body-s text-font-dark-weak">

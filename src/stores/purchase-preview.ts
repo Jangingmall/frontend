@@ -20,6 +20,8 @@ export const usePurchasePreviewStore = create<PurchasePreviewState>(
   (set, get) => ({
     lines: [],
     checkoutLines: [],
+    checkoutTotal: null,
+    setCheckoutTotal: (checkoutTotal) => set({ checkoutTotal }),
     setLines: (lines) => set({ lines: copyLines(lines) }),
     addLines: (lines) => {
       const existing = get().lines;
@@ -38,12 +40,18 @@ export const usePurchasePreviewStore = create<PurchasePreviewState>(
           lines.filter((line) => line.selected && !line.soldOut),
         ),
       }),
-    resetPreview: () => set({ lines: [], checkoutLines: [] }),
+    resetPreview: () =>
+      set({ lines: [], checkoutLines: [], checkoutTotal: null }),
   }),
 );
 
 // 사용자 전환 시 이전 고객의 구매 시연 데이터를 남기지 않는다.
 useAuthStore.subscribe((state, previous) => {
-  if (previous.user?.id != null && state.user?.id !== previous.user.id)
+  if (
+    previous.user?.id != null &&
+    (state.user?.id !== previous.user.id ||
+      state.accessToken?.startsWith("mock-") !==
+        previous.accessToken?.startsWith("mock-"))
+  )
     usePurchasePreviewStore.getState().resetPreview();
 });

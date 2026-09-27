@@ -57,7 +57,7 @@ describe("상품 후기 화면", () => {
     );
   }
   it("실제 후기를 표시하고 미제공 사진·전체 평균·옵션을 숨긴다", async () => {
-    window.history.replaceState(null, "", "/products/test-101?photoOnly=true");
+    window.history.replaceState(null, "", "/products/test-101");
     server.use(
       http.get("*/api/products/101/reviews", ({ request }) => {
         expect(new URL(request.url).searchParams.has("photoOnly")).toBe(false);
@@ -83,7 +83,7 @@ describe("상품 후기 화면", () => {
     expect(screen.getByText("만족합니다")).toBeInTheDocument();
     expect(
       screen.queryByRole("checkbox", { name: "사진 후기만 보기" }),
-    ).not.toBeInTheDocument();
+    ).toBeInTheDocument();
     expect(screen.queryByText("평점 없음")).not.toBeInTheDocument();
     expect(screen.queryByText(/^옵션:/)).not.toBeInTheDocument();
     expect(

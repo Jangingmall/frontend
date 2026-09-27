@@ -53,7 +53,7 @@ function ReviewUrlState(props: ProductReviewsProps) {
       filters={{
         page: Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1,
         sort,
-        photoOnly: props.isMock && search.get("photoOnly") === "true",
+        photoOnly: search.get("photoOnly") === "true",
       }}
     />
   );
@@ -88,21 +88,28 @@ function ReviewContent({
       <h2 className="text-title-l leading-[1.3] font-bold text-font-dark">
         후기{reviewCount !== undefined ? ` (${reviewCount})` : ""}
       </h2>
+      {!isMock && filters.photoOnly && (
+        <p className="text-body-s">
+          사진 후기 필터는 시연 데이터로 보여드립니다.
+        </p>
+      )}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        {isMock && (
+        {
           <div className="flex items-center gap-2">
             <ReviewStars rating={rating} size="m" />
             <span className="text-title-l text-font-dark">
               {query.isPending
                 ? "—"
                 : rating === null
-                  ? "평점 없음"
+                  ? isMock || filters.photoOnly
+                    ? "평점 없음"
+                    : "평점 미제공"
                   : rating.toFixed(1)}
             </span>
           </div>
-        )}
+        }
         <div className="flex items-center gap-4">
-          {isMock && (
+          {
             <Checkbox
               checked={filters.photoOnly}
               onCheckedChange={(photoOnly) =>
@@ -111,7 +118,7 @@ function ReviewContent({
             >
               사진 후기만 보기
             </Checkbox>
-          )}
+          }
           <Select
             ariaLabel="후기 정렬"
             items={SORT_ITEMS}

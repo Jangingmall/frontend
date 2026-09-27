@@ -1,5 +1,8 @@
 import { setupWorker } from "msw/browser";
 
-import { handlers } from "./handlers";
+import { publicEnv } from "@/lib/env";
 
-export const worker = setupWorker(...handlers);
+import { createRuntimeHandlers } from "./runtime-handlers";
+export const worker = setupWorker(
+  ...createRuntimeHandlers(publicEnv.apiMocking ? "msw" : "api"),
+);

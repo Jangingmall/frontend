@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 const listen = vi.fn();
 
-vi.mock("@/mocks/server", () => ({ server: { listen } }));
+vi.mock("@/mocks/server", () => ({ startRuntimeServer: listen }));
 
 /**
  * `register()`는 `publicEnv.isVercelProduction`·`NEXT_RUNTIME`에 따라 MSW node
@@ -29,7 +29,7 @@ describe("register", () => {
 
     await register();
 
-    expect(listen).toHaveBeenCalledWith({ onUnhandledRequest: "bypass" });
+    expect(listen).toHaveBeenCalledWith("msw");
   });
 
   it("Vercel production이면 apiMocking이 켜져 있어도 띄우지 않는다", async () => {

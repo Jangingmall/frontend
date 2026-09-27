@@ -11,17 +11,19 @@ import type { ProductInquiry } from "@/types/inquiry";
 
 import { createInquiryFixtures, type StoredInquiry } from "./fixtures";
 
-const inquiries = new Map<number, StoredInquiry[]>();
+const inquiries = new Map<string, StoredInquiry[]>();
 export function resetInquiryMock() {
   inquiries.clear();
 }
-function getInquiries(productId: number) {
-  if (!inquiries.has(productId))
-    inquiries.set(productId, createInquiryFixtures(productId));
-  return inquiries.get(productId)!;
+function getInquiries(productId: number, viewer: number | string | null) {
+  const key = `${viewer ?? "anonymous"}:${productId}`;
+  if (!inquiries.has(key)) inquiries.set(key, createInquiryFixtures(productId));
+  return inquiries.get(key)!;
 }
 /** mock 회원의 발급·갱신 토큰만 인정한다. 그 외 문자열은 익명이다. */
 function getViewer(request: Request) {
+  const demoViewer = request.headers.get("X-Demo-Viewer");
+  if (demoViewer) return demoViewer;
   const token = request.headers.get("Authorization");
   return token === "Bearer mock-access-token" ||
     token === "Bearer mock-access-token-refreshed"
@@ -30,9 +32,12 @@ function getViewer(request: Request) {
 }
 function serializeInquiry(
   item: StoredInquiry,
-  viewer: number | null,
+  viewer: number | string | null,
 ): ProductInquiry {
-  const canRead = !item.isSecret || viewer === item.ownerId;
+  const fixtureOwner =
+    typeof item.ownerId === "number" &&
+    (viewer === `user-${item.ownerId}` || viewer === `demo-${item.ownerId}`);
+  const canRead = !item.isSecret || viewer === item.ownerId || fixtureOwner;
   // ownerId 및 비밀 데이터는 직렬화하기 전에 제거한다.
   return {
     id: item.id,
@@ -55,7 +60,7 @@ export const inquiryHandlers = [
   >("*/api/mock/products/:productId/inquiries", ({ params, request }) => {
     if (Number(params.productId) === 997)
       return mockError(503, "INTERNAL_ERROR");
-    const all = getInquiries(Number(params.productId));
+    const all = getInquiries(Number(params.productId), getViewer(request));
     const excludeSecret =
       new URL(request.url).searchParams.get("excludeSecret") === "true";
     return mockOk(
@@ -81,7 +86,7 @@ export const inquiryHandlers = [
     await delay(250);
     if (Number(params.productId) === 997)
       return mockError(503, "INTERNAL_ERROR");
-    const all = getInquiries(Number(params.productId));
+    const all = getInquiries(Number(params.productId), getViewer(request));
     const item: StoredInquiry = {
       ...input.data,
       id: Math.max(0, ...all.map((entry) => entry.id)) + 1,

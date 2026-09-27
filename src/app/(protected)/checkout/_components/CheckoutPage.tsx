@@ -3,6 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
+import { submitPreviewOrder } from "@/api/purchase-preview/api";
+import type { BenefitInput } from "@/api/purchase-preview/benefits";
 import { CHECKOUT_PREVIEW_LINES } from "@/app/(protected)/checkout/_lib/checkout-fixtures";
 import {
   checkoutFormSchema,
@@ -15,6 +17,7 @@ import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator"
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Toast } from "@/components/ui/toast";
+import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import type {
   CartPreviewLine,
   PreviewPaymentMethod,
@@ -64,18 +67,31 @@ export function CheckoutPage({
     ),
     [warning, setWarning] = useState(initialWarning ?? ""),
     [details, setDetails] = useState(false);
+  const [benefits, setBenefits] = useState<BenefitInput>();
+  const [discount, setDiscount] = useState(0);
   const amount = lines.reduce(
     (sum, line) => sum + line.unitPrice * line.quantity,
     0,
   );
-  const submit = form.handleSubmit(() => {
+  const submit = form.handleSubmit(async () => {
     if (!method) {
       setWarning("결제수단을 선택해 주세요.");
       return;
     }
     setWarning("");
-    const result =
-      outcome ?? (method === "BANK_TRANSFER" ? "bank-pending" : "success");
+    let result: PreviewPaymentOutcome;
+    try {
+      const response = await submitPreviewOrder(
+        lines,
+        outcome ?? (method === "BANK_TRANSFER" ? "bank-pending" : "success"),
+        benefits,
+      );
+      result = response.outcome;
+      usePurchasePreviewStore.getState().setCheckoutTotal(response.total);
+    } catch {
+      setWarning("시연 주문을 처리하지 못했습니다. 다시 시도해 주세요.");
+      return;
+    }
     if (result === "success" || result === "bank-pending") onComplete?.(result);
     else setFeedback(result);
   });
@@ -122,7 +138,13 @@ export function CheckoutPage({
               }
             />
             <hr className="border-border-jade-weak" />
-            <DiscountSlots />
+            <DiscountSlots
+              subtotal={amount}
+              onApply={(input, value) => {
+                setBenefits(input);
+                setDiscount(value);
+              }}
+            />
             <hr className="border-border-jade-weak" />
             <PaymentsMethod
               value={method}
@@ -136,7 +158,7 @@ export function CheckoutPage({
             <OrderSummary
               productAmount={amount}
               shippingAmount={0}
-              totalAmount={amount}
+              totalAmount={Math.max(0, amount - discount)}
               shippingLabel="무료"
               headingSize="m"
               totalLabel="총 주문금액"

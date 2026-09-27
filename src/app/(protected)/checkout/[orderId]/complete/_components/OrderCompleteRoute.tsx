@@ -16,6 +16,7 @@ interface OrderCompleteRouteProps {
 export function OrderCompleteRoute({ outcome }: OrderCompleteRouteProps) {
   const router = useRouter();
   const [showOrdersNotice, setShowOrdersNotice] = useState(false);
+  const checkoutTotal = usePurchasePreviewStore((state) => state.checkoutTotal);
   const totalAmount = usePurchasePreviewStore((state) =>
     state.checkoutLines.reduce(
       (sum, line) => sum + line.unitPrice * line.quantity,
@@ -33,7 +34,7 @@ export function OrderCompleteRoute({ outcome }: OrderCompleteRouteProps) {
     <>
       <OrderCompletePage
         outcome={outcome}
-        totalAmount={totalAmount || undefined}
+        totalAmount={checkoutTotal ?? (totalAmount || undefined)}
         onViewOrders={() => setShowOrdersNotice(true)}
         onContinueBrowsing={() => router.push("/")}
       />

@@ -1,7 +1,7 @@
 import type { ProductInquiry } from "@/types/inquiry";
 
 export interface StoredInquiry extends ProductInquiry {
-  ownerId: number;
+  ownerId: number | string;
 }
 export function createInquiryFixtures(productId: number): StoredInquiry[] {
   if (productId === 102) return [];

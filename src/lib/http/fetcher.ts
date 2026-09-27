@@ -1,6 +1,7 @@
 import { serverEnv } from "@/lib/env.server";
 
 import { resolveResponse } from "./response";
+import { resolveServerMock } from "./server-mock";
 
 type NextRequestInit = RequestInit & {
   next?: { revalidate?: number; tags?: string[] };
@@ -29,6 +30,10 @@ export async function apiFetch<T>(
   if (!baseUrl)
     throw new Error("API_BASE_URL is required for server API requests.");
 
+  const mocked = await resolveServerMock(
+    new Request(getUrl(path, baseUrl), { method: init.method, headers }),
+  );
+  if (mocked) return resolveResponse<T>(mocked);
   const response = await fetch(getUrl(path, baseUrl), {
     ...init,
     headers: new Headers({ Accept: "application/json", ...headers }),

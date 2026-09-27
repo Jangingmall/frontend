@@ -1,5 +1,6 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
+import { fetchHomeArtisans } from "@/api/home/api";
 import { fetchProductList } from "@/api/products/api";
 import { FloatingActions } from "@/components/common/floating-actions";
 import { publicEnv } from "@/lib/env";
@@ -39,15 +40,17 @@ const INITIAL_GIFT_THEME = GIFT_THEMES[0].id;
  * (그 화면들은 아직 미착수 — 착수 시 같은 import만 추가하면 됨).
  */
 export default async function HomePage() {
+  const artisans = await fetchHomeArtisans().catch(() => []);
   const queryClient = getQueryClient();
   const giftQuery = { giftTheme: INITIAL_GIFT_THEME, size: 3 };
 
-  const [bestProducts, newProducts] = await Promise.all([
+  const [bestProducts, newProducts, promotions] = await Promise.all([
     fetchProductList({
-      sort: publicEnv.apiMocking ? "sales" : "newest",
+      sort: "sales",
       size: 5,
     }).catch(() => undefined),
     fetchProductList({ sort: "newest", size: 4 }).catch(() => undefined),
+    fetchProductList({ sort: "wishlist", size: 4 }).catch(() => undefined),
     queryClient.prefetchQuery({
       queryKey: productKeys.list(giftQuery),
       queryFn: () => fetchProductList(giftQuery),
@@ -58,20 +61,20 @@ export default async function HomePage() {
     <>
       <HeroBanner />
       <ProductCarouselSection
-        title={publicEnv.apiMocking ? "베스트" : "최근 등록 작품"}
+        title="베스트"
         description={
           publicEnv.apiMocking
             ? "최근 4주 판매·조회 기준"
-            : "새로 등록된 작품을 만나보세요"
+            : "최근 4주 판매·조회 기준 (시연)"
         }
-        viewAllPreset={publicEnv.apiMocking ? "best" : "new"}
+        viewAllPreset="best"
         columns={5}
         data={bestProducts}
       />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <GiftSection initialTheme={INITIAL_GIFT_THEME} />
       </HydrationBoundary>
-      <ArtisanCarousel />
+      <ArtisanCarousel items={artisans} />
       <ProductCarouselSection
         title="신상품"
         description="새롭게 만나는 장인과 작품의 이야기"
@@ -79,7 +82,7 @@ export default async function HomePage() {
         columns={4}
         data={newProducts}
       />
-      <PromotionSection />
+      <PromotionSection items={promotions?.items ?? []} />
       <FloatingActions />
     </>
   );

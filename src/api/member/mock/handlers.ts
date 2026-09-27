@@ -28,6 +28,7 @@ import {
   clearDynamicMember,
   getDynamicMember,
   getMockIdentity,
+  getMockOAuthLinkedMember,
   setDynamicMember,
   setMockIdentity,
   setMockOAuthLinkedMember,
@@ -138,6 +139,30 @@ function requireAuth(request: Request): boolean {
 }
 
 export const memberHandlers = [
+  http.post(
+    "*/api/mock/member/oauth2/:provider/start",
+    ({ params }): Response => {
+      const provider = params.provider;
+      if (provider !== "kakao" && provider !== "naver")
+        return mockError(400, "INVALID_INPUT");
+      const linked = getMockOAuthLinkedMember(provider);
+      if (linked) {
+        setMockIdentity(linked.role);
+        setDynamicMember(linked);
+        return mockOk({
+          outcome: "authenticated",
+          accessToken: SEED_OAUTH_ACCESS_TOKEN,
+          member: linked,
+        });
+      }
+      return mockOk({
+        outcome: "needsProfile",
+        provider,
+        suggestedEmail:
+          provider === "kakao" ? `kakao-${Date.now()}@midam.test` : null,
+      });
+    },
+  ),
   http.post<PathParams, DefaultBodyType, Envelope>(
     "*/api/member/login",
     async ({ request }) => {

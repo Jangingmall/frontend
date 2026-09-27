@@ -16,11 +16,7 @@ export function parseProductSearchParams(
   const page = Number(params.get("page"));
   const requestedSort =
     params.get("sort") ?? (publicEnv.apiMocking ? "popular" : "newest");
-  const sort =
-    !publicEnv.apiMocking &&
-    !["newest", "price-asc", "price-desc"].includes(requestedSort)
-      ? "newest"
-      : requestedSort;
+  const sort = requestedSort;
   let minPrice = parsePrice(params.get("minPrice"));
   let maxPrice = parsePrice(params.get("maxPrice"));
   if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {

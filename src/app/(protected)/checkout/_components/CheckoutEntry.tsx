@@ -3,7 +3,6 @@ import type { Route } from "next";
 import { useRouter } from "next/navigation";
 
 import { CHECKOUT_PREVIEW_LINES } from "@/app/(protected)/checkout/_lib/checkout-fixtures";
-import { publicEnv } from "@/lib/env";
 import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import { PURCHASE_PREVIEW_ORDER_ID } from "@/types/purchase-preview";
 
@@ -22,20 +21,25 @@ export function CheckoutEntry({
   const snapshot = usePurchasePreviewStore((state) => state.checkoutLines);
   const beginCheckout = usePurchasePreviewStore((state) => state.beginCheckout);
   if (orderId === "new") return <RealCheckoutPage />;
-  if (!publicEnv.apiMocking || orderId !== PURCHASE_PREVIEW_ORDER_ID)
+  if (orderId !== PURCHASE_PREVIEW_ORDER_ID)
     return <RealCheckoutPage allowOrder={false} />;
   const lines = snapshot.length ? snapshot : CHECKOUT_PREVIEW_LINES;
   return (
-    <CheckoutPage
-      lines={lines}
-      initialFeedback={initialFeedback}
-      onCart={() => router.push("/cart" as Route)}
-      onComplete={(result) => {
-        beginCheckout(lines);
-        router.push(
-          `/checkout/${PURCHASE_PREVIEW_ORDER_ID}/complete?result=${result}` as Route,
-        );
-      }}
-    />
+    <>
+      <p role="status" className="p-3 text-center text-body-s">
+        주문·결제 시연 · 실제 결제되지 않습니다.
+      </p>
+      <CheckoutPage
+        lines={lines}
+        initialFeedback={initialFeedback}
+        onCart={() => router.push("/cart" as Route)}
+        onComplete={(result) => {
+          beginCheckout(lines);
+          router.push(
+            `/checkout/${PURCHASE_PREVIEW_ORDER_ID}/complete?result=${result}` as Route,
+          );
+        }}
+      />
+    </>
   );
 }

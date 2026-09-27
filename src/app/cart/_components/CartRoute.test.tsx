@@ -9,7 +9,10 @@ import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import { CartRoute } from "./CartRoute";
 
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+  useSearchParams: () => new URLSearchParams(),
+}));
 vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 afterEach(() => {

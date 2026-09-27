@@ -13,13 +13,17 @@ import { ProductDetailPage } from "./_components/ProductDetailPage";
 
 interface ProductPageProps {
   params: Promise<{ productSlug: string }>;
+  searchParams?: Promise<{ preview?: string }>;
 }
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: ProductPageProps): Promise<Metadata> {
   const id = parseProductId((await params).productSlug);
-  const product = id ? await fetchProductDetail(id) : null;
+  const product = id
+    ? await fetchProductDetail(id, (await searchParams)?.preview === "1")
+    : null;
   if (!product)
     return {
       title: "상품을 찾을 수 없습니다 | 장인몰",
@@ -37,15 +41,28 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage({
+  params,
+  searchParams,
+}: ProductPageProps) {
   const { productSlug } = await params;
   const id = parseProductId(productSlug);
   if (!id) notFound();
-  const product = await fetchProductDetail(id);
+  const preview = (await searchParams)?.preview === "1";
+  const product = await fetchProductDetail(id, preview);
   if (!product) notFound();
   const canonical = getProductPath(product);
   if (!isCanonicalProductSlug(product, productSlug)) {
-    permanentRedirect(canonical as Route);
+    permanentRedirect((canonical + (preview ? "?preview=1" : "")) as Route);
   }
-  return <ProductDetailPage key={product.id} product={product} />;
+  return (
+    <>
+      {preview && (
+        <p role="status" className="p-3 text-center text-body-s">
+          시연 상품 · 주문과 결제는 실제로 처리되지 않습니다.
+        </p>
+      )}
+      <ProductDetailPage key={product.id} product={product} />
+    </>
+  );
 }

@@ -23,9 +23,9 @@ vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: false } }));
 describe("실제 API 모드의 미지원 종목 필터", () => {
   const query = { category: "kitchen-1", crafts: ["1", "2"] };
 
-  it("목록 요청과 캐시 키에서 종목을 제외한다", () => {
-    expect(toProductListSearchParams(query).has("subcategory")).toBe(false);
-    expect(productKeys.list(query)).toEqual(
+  it("시연 요청과 캐시 키에 종목을 포함한다", () => {
+    expect(toProductListSearchParams(query).has("subcategory")).toBe(true);
+    expect(productKeys.list(query)).not.toEqual(
       productKeys.list({ category: query.category }),
     );
   });
@@ -34,17 +34,17 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
     const params = new URLSearchParams(
       "category=kitchen-1&subcategory=1&subcategory=2",
     );
-    expect(parseProductSearchParams(params).crafts).toEqual([]);
+    expect(parseProductSearchParams(params).crafts).toEqual(["1", "2"]);
     expect(
       getProductSeo({ category: "kitchen-1", subcategory: ["1", "2"] })
         .hasFilters,
-    ).toBe(false);
+    ).toBe(true);
     expect(
       updateProductSearchParams(params, { page: 2 }).has("subcategory"),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       updateProductSearchParams(params, { crafts: ["3"] }).has("subcategory"),
-    ).toBe(false);
+    ).toBe(true);
   });
 
   it("미지원 종목은 숨기되 분류·소재·선물 포장 UI는 표시한다", () => {
@@ -62,10 +62,10 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
     expect(screen.getByRole("button", { name: "다기 · 찻잔" })).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "사기장" }),
-    ).not.toBeInTheDocument();
+    ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "가격대" })).toBeVisible();
     expect(
-      screen.getByRole("checkbox", { name: "선물 포장 가능 (준비 중)" }),
+      screen.getByRole("checkbox", { name: "선물 포장 가능" }),
     ).toBeVisible();
     expect(screen.getByRole("button", { name: "소재" })).toBeVisible();
   });

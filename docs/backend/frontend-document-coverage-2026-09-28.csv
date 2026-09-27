@@ -1,0 +1,105 @@
+﻿document_method,document_path,feature,actual_method,actual_path,backend_status,api_mode_source,screen_or_reason
+POST,/api/member/signup,이메일 회원가입,POST,/api/member/signup,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+POST,/api/member/email-verifications,인증 이메일 재전송,POST,/api/member/email/verification-code,구현,실제 API,문서 링크 인증 대신 실제 코드 인증 흐름: /api/member/email/verification-code
+GET,/api/member/email-verifications/verify,이메일 인증 링크 확인,POST,/api/member/email/verify,구현,실제 API,문서 링크 인증 대신 실제 코드 인증 흐름: /api/member/email/verify
+GET,/api/member/oauth2/kakao,카카오 로그인,GET,/api/member/oauth2/kakao,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+GET,/api/member/oauth2/naver,네이버 로그인,,,미구현,MSW,/api/mock/member/oauth2/naver; 별도 demo session
+POST,/api/member/oauth2/exchange,OAuth 결과 교환,POST,/api/member/oauth2/exchange,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+POST,/api/member/login,로그인,POST,/api/member/login,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+POST,/api/member/logout,로그아웃,POST,/api/member/logout,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+POST,/api/member/token/refresh,액세스 토큰 재발급,POST,/api/member/token/refresh,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+GET,/api/member/me,내 정보 조회,GET,/api/member/me,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+PATCH,/api/member/me,내 정보 수정,PATCH,/api/member/me,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+PATCH,/api/member/me/password,비밀번호 변경,PATCH,/api/member/me/password,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+DELETE,/api/member/me,회원 탈퇴,DELETE,/api/member/me,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+GET,/api/member/me/addresses,배송지 목록 조회,GET,/api/member/me/addresses,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+POST,/api/member/me/addresses,배송지 등록,POST,/api/member/me/addresses,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+PATCH,/api/member/me/addresses/{addressId},배송지 수정,PATCH,/api/member/me/addresses/{addressId},구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+DELETE,/api/member/me/addresses/{addressId},배송지 삭제,DELETE,/api/member/me/addresses/{addressId},구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+GET,/api/member/me/wishes,찜 목록 조회,GET,/api/member/me/wishes,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/member/me/orders,주문 목록 조회,GET,/api/member/me/orders,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/member/me/orders/{orderId},주문 상세 조회,GET,/api/member/me/orders/{orderId},구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/member/me/reviews/writable,작성 가능 후기 조회,GET,/api/member/me/reviews/writable,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/member/me/reviews,내 후기 조회,GET,/api/member/me/reviews,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/member/artisans/{artisanId},장인 정보 조회,GET,/api/member/artisans/{artisanId},구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/member/artisans/me,내 장인 정보 조회,GET,/api/member/artisans/me,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/member/artisans/me,장인 정보 수정,PATCH,/api/member/artisans/me,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/member/artisans/applications,장인 가입 신청,POST,/api/member/artisans/applications,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/products/me,내 상품 목록 조회,GET,/api/products/me,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/products,상품 등록,POST,/api/products,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/products/{productId},상품 수정,PATCH,/api/products/{productId},구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+DELETE,/api/products/{productId},상품 삭제,DELETE,/api/products/{productId},구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/products/{productId}/status,상품 상태 변경,PATCH,/api/products/{productId}/status,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/products,상품 목록 조회/검색/필터,GET,/api/products,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/products/{productId},상품 상세 조회,GET,/api/products/{productId},구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+POST,/api/products/{productId}/wish,상품 찜,POST,/api/products/{productId}/wish,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+DELETE,/api/products/{productId}/wish,상품 찜 취소,DELETE,/api/products/{productId}/wish,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/products/{productId}/questions,상품 문의 조회,GET,/api/products/{productId}/questions,구현·제한,MSW,비밀문의 답변 노출: 조회/작성 함께 MSW 격리
+POST,/api/products/{productId}/questions,상품 문의 작성,POST,/api/products/{productId}/questions,구현·제한,MSW,실제 API 존재; 안전한 목록 계약 부재로 문의 전체 MSW 격리
+POST,/api/products/questions/{questionId}/answer,상품 문의 답변,POST,/api/products/{productId}/questions/{questionId}/answer,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/products/{productId}/reviews,상품 후기 조회,GET,/api/products/{productId}/reviews,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+POST,/api/products/{productId}/reviews,상품 후기 작성,POST,/api/products/{productId}/reviews,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/payments/cart,장바구니 조회,GET,/api/payments/cart,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+POST,/api/payments/cart/items,장바구니 상품 추가,POST,/api/payments/cart/items,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+PATCH,/api/payments/cart/items/{cartItemId},장바구니 수량 변경,PATCH,/api/payments/cart/items/{cartItemId},구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+DELETE,/api/payments/cart/items/{cartItemId},장바구니 상품 삭제,DELETE,/api/payments/cart/items/{cartItemId},구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+DELETE,/api/payments/cart/items,장바구니 전체 삭제,DELETE,/api/payments/cart/items,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+POST,/api/payments/orders,주문 생성,POST,/api/payments/orders,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/payments/orders/{orderId}/delivery,배송 조회,GET,/api/payments/orders/{orderId}/delivery,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+POST,/api/payments,결제 준비,POST,/api/payments,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+POST,/api/payments/confirm,결제 승인,POST,/api/payments/confirm,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+POST,/api/payments/fail,결제 실패 처리,POST,/api/payments/fail,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+POST,/api/payments/{paymentId}/cancel,결제 취소/환불,POST,/api/payments/{paymentId}/cancel,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/payments/returns,교환·반품 신청,POST,/api/payments/returns,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/notifications,알림 목록 조회,GET,/api/notifications,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/notifications/unread-count,읽지 않은 알림 수,GET,/api/notifications/unread-count,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/notifications/{notificationId},알림 읽음 처리,PATCH,/api/notifications/{notificationId}/read,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/notifications/read-all,전체 알림 읽음,PATCH,/api/notifications/read-all,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/notifications/stream,알림 SSE 연결,GET,/api/notifications/stream,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/admin/seller-applications,장인 가입 신청 조회,GET,/api/admin/seller-applications,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/admin/seller-applications/{applicationId},장인 가입 신청 상세,GET,/api/admin/seller-applications/{applicationId},구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/admin/seller-applications/{applicationId}/approve,장인 가입 승인,POST,/api/admin/seller-applications/{applicationId}/approve,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/admin/seller-applications/{applicationId}/reject,장인 가입 반려,POST,/api/admin/seller-applications/{applicationId}/reject,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/content/products/{productId}/interview,취재 데이터 등록,POST,/api/content/products/{productId}/interview,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/content/products/{productId}/interview,취재 데이터 조회,GET,/api/content/products/{productId}/interview,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/content/products/{productId}/interview,취재 데이터 수정,PATCH,/api/content/products/{productId}/interview,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/content/products/{productId}/generations,AI 상세페이지 생성 요청,POST,/api/content/products/{productId}/generations,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/content/products/{productId}/generations/{generationId},AI 생성 상태 조회,GET,/api/content/products/{productId}/generations/{generationId},구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/content/products/{productId}/contents,생성 결과 조회,GET,/api/content/products/{productId}/contents,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/content/products/{productId}/contents/{contentId},문단 일괄 수정,PATCH,/api/content/products/{productId}/contents/{contentId},구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/content/products/{productId}/contents/{contentId}/blocks/{blockOrder},단건 블록 수정,PATCH,/api/content/products/{productId}/contents/{contentId}/blocks/{nodeId},구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/content/products/{productId}/contents/versions,콘텐츠 버전 조회,GET,/api/content/products/{productId}/contents/versions,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/content/products/{productId}/contents/{contentId}/approve,콘텐츠 승인,POST,/api/content/products/{productId}/contents/{contentId}/approve,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/content/products/{productId}/contents/{contentId}/reject,콘텐츠 반려,POST,/api/content/products/{productId}/contents/{contentId}/reject,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/content/products/{productId}/publish,상품 게시,POST,/api/content/products/{productId}/publish,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/member/oauth2/complete-profile,SNS 회원가입 추가정보 입력,POST,/api/member/oauth2/complete-profile,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+POST,/api/payments/cart/merge,장바구니 병합,POST,/api/payments/cart/merge,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+PATCH,/api/payments/cart/items/{cartItemId}/options,장바구니 옵션 변경,PATCH,/api/payments/cart/items/{cartItemId}/options,구현·제한,MSW,옵션 정의·추가금액 미제공: 장바구니 전체를 시연 복사
+GET,/api/member/artisans/subscriptions,관심 장인(구독) 목록 조회,GET,/api/member/artisans/subscriptions,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/member/artisans/subscriptions/notifications,관심 장인 전체 알림 일괄 켜기/끄기,PATCH,/api/member/artisans/subscriptions/notifications,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/member/recent-views/merge,최근 본 작품 병합,POST,/api/member/recent-views/merge,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+DELETE,/api/member/recent-views,최근 본 작품 전체 삭제,DELETE,/api/member/recent-views,구현·호출 UI 없음,범위 밖,삭제 API 모듈; 최근 본 화면은 조회 중심
+GET,/api/products/subcategories,종목 목록 조회,GET,/api/products/subcategories,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/products/materials,소재 목록 조회,GET,/api/products/materials,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/products/categories,종목(카테고리) 목록 조회,GET,/api/products/categories,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/member/recent-views,최근 본 상품 조회,GET,/api/member/recent-views,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+POST,/api/member/recent-views,최근 본 상품 기록,POST,/api/member/recent-views,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+GET,/api/member/settings,환경설정 조회,GET,/api/member/settings,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+PATCH,/api/member/settings,환경설정 수정,PATCH,/api/member/settings,구현,실제 API,회원·계정·주소; DTO 검증 후 화면 모델로 변환
+GET,/api/payments/methods,결제수단 목록 조회,GET,/api/payments/methods,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/payments/methods,결제수단 등록,POST,/api/payments/methods,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+DELETE,/api/payments/methods/{paymentMethodId},결제수단 삭제,DELETE,/api/payments/methods/{paymentMethodId},구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/payments/refund-account,환불 계좌 등록,POST,/api/payments/refund-account,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/images/presigned-url,이미지 업로드 Presigned URL 발급(다중 variant),POST,/api/images/presigned-url,구현,실제 API,상품/구매/마이페이지; DTO 검증 후 화면 모델로 변환
+DELETE,/api/images/{imageId},미사용 이미지 삭제,DELETE,/api/images/{imageId},구현·호출 UI 없음,범위 밖,이미지 정리 API 모듈; 현재 업로드 완료 후 삭제 UI 없음
+POST,/internal/images/verify,이미지 소유권/존재 검증(내부 전용),POST,/internal/images/verify,서버 내부/개발용,호출하지 않음,브라우저 호출 대상 아님
+POST,/api/chatbot/sessions,챗봇 세션 생성,POST,/api/chatbot/sessions,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/chatbot/sessions/{sessionId}/messages,챗봇 메시지 전송,POST,/api/chatbot/sessions/{sessionId}/messages,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/chatbot/sessions/{sessionId}/messages,챗봇 대화 히스토리 조회,GET,/api/chatbot/sessions/{sessionId}/messages,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+POST,/api/member/artisans/{artisanId}/subscribe,장인 신작 알림 구독,POST,/api/member/artisans/{artisanId}/subscribe,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+DELETE,/api/member/artisans/{artisanId}/subscribe,장인 신작 알림 구독 취소,DELETE,/api/member/artisans/{artisanId}/subscribe,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/member/artisans,장인 목록 조회,GET,/api/member/artisans,구현,실제 API,홈; DTO 검증 후 화면 모델로 변환
+DELETE,/api/chatbot/sessions/{sessionId},챗봇 세션 종료,DELETE,/api/chatbot/sessions/{sessionId},구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/member/artisans/applications/me,내 장인 입점 신청 상태 조회,GET,/api/member/artisans/applications/me,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+GET,/api/products/categories/main,메인 카테고리 목록 조회,GET,/api/products/categories/main,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류
+PATCH,/api/admin/artisans/applications/{applicationId}/pipeline,장인 입점 심사 단계 업데이트,PATCH,/api/admin/artisans/applications/{applicationId}/pipeline,구현·현재 화면 없음,범위 밖,판매자/관리자/콘텐츠/알림/챗봇/구독/결제수단/장인 상세 등 신규 화면 제외; 자리표시자도 미구현 화면으로 분류

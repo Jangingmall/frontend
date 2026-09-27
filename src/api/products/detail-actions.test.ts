@@ -74,14 +74,24 @@ describe("product detail mock actions", () => {
     );
     expect(response.status).toBe(401);
   });
-  it("never requests unimplemented production endpoints", async () => {
+  it("미구현 재입고는 실제 모드에서 시연 경로만 호출한다", async () => {
     Object.assign(publicEnv, { apiMocking: false });
+    useAuthStore
+      .getState()
+      .setSession("live-test-token", { id: 1, name: "고객", role: "USER" });
     const fetchSpy = vi.spyOn(globalThis, "fetch");
-    await expect(requestProductRestock(101)).rejects.toThrow("아직");
-    expect(fetchSpy).not.toHaveBeenCalled();
+    await expect(requestProductRestock(9999)).resolves.toMatchObject({
+      duplicate: false,
+    });
+    expect(String(fetchSpy.mock.calls[0][0])).toContain(
+      "/api/mock/products/9999/restock",
+    );
   });
   it("실제 모드에서도 찜 여부를 같은 실제 경로 하나로 확인한다(데모 GET 안 탐)", async () => {
     Object.assign(publicEnv, { apiMocking: false });
+    useAuthStore
+      .getState()
+      .setSession("live-test-token", { id: 1, name: "고객", role: "USER" });
     // WISH_FIXTURES엔 101이 이미 있음(시드) — 실제 계약 경로(GET /wishes/{id})로 확인.
     expect(await fetchProductActionState(101)).toEqual({
       wished: true,

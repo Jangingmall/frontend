@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation";
 
-import { publicEnv } from "@/lib/env";
-
 import { resolveOrderCompleteOutcome } from "./_components/order-complete-state";
 import { OrderCompleteRoute } from "./_components/OrderCompleteRoute";
 import { RealOrderComplete } from "./_components/RealOrderComplete";
@@ -18,11 +16,7 @@ export default async function OrderCompleteRoutePage({
   const [{ orderId }, { result }] = await Promise.all([params, searchParams]);
   if (/^[1-9]\d*$/.test(orderId) && Number.isSafeInteger(Number(orderId)))
     return <RealOrderComplete orderId={Number(orderId)} />;
-  const outcome = resolveOrderCompleteOutcome(
-    orderId,
-    result,
-    publicEnv.apiMocking && !publicEnv.isVercelProduction,
-  );
+  const outcome = resolveOrderCompleteOutcome(orderId, result, true);
 
   if (!outcome) notFound();
   return <OrderCompleteRoute outcome={outcome} />;

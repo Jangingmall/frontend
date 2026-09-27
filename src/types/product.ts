@@ -4,6 +4,7 @@ import type { Money } from "@/types/money";
 /** 공개 상품 목록과 카드가 공유하는 표시 모델. */
 export interface ProductSummary {
   id: number;
+  isDemo?: boolean;
   name: string;
   price: Money;
   thumbnail: ImageRef | null;

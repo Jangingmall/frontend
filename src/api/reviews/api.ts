@@ -20,9 +20,7 @@ export async function fetchReviews(
   filters: ReviewFilters,
   isMock: boolean,
 ) {
-  if (!isMock) {
-    if (filters.photoOnly)
-      throw new Error("사진 후기는 아직 지원하지 않습니다.");
+  if (!isMock && !filters.photoOnly) {
     if (!Number.isSafeInteger(filters.page) || filters.page < 1)
       throw new Error("후기 페이지를 확인해 주세요.");
     const sorts = {

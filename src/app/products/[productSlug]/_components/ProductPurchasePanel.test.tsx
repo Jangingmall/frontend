@@ -94,7 +94,7 @@ it("loads real wish state and waits for server confirmation before changing it",
   Object.assign(publicEnv, { apiMocking: false });
   useAuthStore
     .getState()
-    .setSession("mock-access-token", { id: 1, name: "구매자", role: "USER" });
+    .setSession("live-test-token", { id: 1, name: "구매자", role: "USER" });
   let wished = true;
   server.use(
     http.get("*/api/member/me/wishes/102", () =>

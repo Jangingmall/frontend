@@ -11,7 +11,11 @@ import { SectionHeader } from "./SectionHeader";
  * 대신 각 카드를 `inert`로 감싼다 — 클릭·포커스·키보드 진입을 전부 막으면서(마우스만 막는
  * `pointer-events-none`과 달리 Tab·Enter도 막는다) 시각은 `ProductCard` 그대로 유지한다.
  */
-export function PromotionSection() {
+export function PromotionSection({
+  items = PROMOTION_PRODUCTS,
+}: {
+  items?: typeof PROMOTION_PRODUCTS;
+}) {
   return (
     <section
       aria-label="기획전"
@@ -23,7 +27,7 @@ export function PromotionSection() {
         viewAll={{ disabled: true }}
       />
       <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4">
-        {PROMOTION_PRODUCTS.map((product) => (
+        {items.map((product) => (
           <div key={product.id} inert>
             <ProductCard product={product} />
           </div>

@@ -3,8 +3,11 @@
 import { type ReactNode, useEffect } from "react";
 
 import { fetchMe, refreshToken } from "@/api/member/api";
+import { setRequestPreparation } from "@/lib/http/readiness";
 import { startMockWorker } from "@/mocks/start-browser";
 import { useAuthStore } from "@/stores/auth";
+
+setRequestPreparation(startMockWorker);
 
 /**
  * 부팅 silent refresh. (docs/routing-and-auth.md §4.2)
@@ -21,7 +24,7 @@ export function AuthBootstrap({ children }: { children: ReactNode }) {
 
     void (async () => {
       try {
-        // 목업 모드: 첫 /api 요청 전에 워커를 세운다. 플래그 off면 즉시 no-op.
+        // 양쪽 모드 모두 첫 요청 전에 등록: API 모드는 명시적 /api/mock 경로만 처리한다.
         await startMockWorker();
 
         const { accessToken } = await refreshToken();

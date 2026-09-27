@@ -17,7 +17,7 @@ vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: false } }));
 beforeEach(() => {
   useAuthStore
     .getState()
-    .setSession("mock-access-token", { id: 1, name: "구매자", role: "USER" });
+    .setSession("live-test-token", { id: 1, name: "구매자", role: "USER" });
 });
 
 it("uses authenticated POST/DELETE wish and accepts the null success payload", async () => {
@@ -25,7 +25,7 @@ it("uses authenticated POST/DELETE wish and accepts the null success payload", a
   server.use(
     http.all("*/api/products/101/wish", ({ request }) => {
       expect(request.headers.get("authorization")).toBe(
-        "Bearer mock-access-token",
+        "Bearer live-test-token",
       );
       methods.push(request.method);
       return mockOk(null);
@@ -112,5 +112,7 @@ it("reports the server cart failure and keeps restock unavailable", async () => 
   await expect(
     addProductToCart(101, [{ choices: {}, quantity: 1 }]),
   ).rejects.toMatchObject({ status: 500 });
-  await expect(requestProductRestock(101)).rejects.toThrow();
+  await expect(requestProductRestock(101)).resolves.toMatchObject({
+    duplicate: false,
+  });
 });

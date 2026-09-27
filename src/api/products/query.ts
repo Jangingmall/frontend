@@ -1,3 +1,4 @@
+import { isMockProductQuery } from "@/lib/data-mode";
 import { publicEnv } from "@/lib/env";
 import { type GiftThemeId, toGiftThemeApi } from "@/types/gift-theme";
 import { type ProductListSort, toProductListSortApi } from "@/types/sort";
@@ -69,10 +70,14 @@ export function toProductListSearchParams(
   query: ProductListQuery,
 ): URLSearchParams {
   const { page, size } = resolveProductListPaging(query);
+  const isMock = isMockProductQuery(
+    publicEnv.apiMocking ? "msw" : "api",
+    query,
+  );
   const params = new URLSearchParams();
-  params.set("page", String(publicEnv.apiMocking ? page : page - 1));
+  params.set("page", String(isMock ? page : page - 1));
   params.set("size", String(size));
-  if (!publicEnv.apiMocking) {
+  if (!isMock) {
     params.set(
       "sort",
       query.sort === "price-asc"

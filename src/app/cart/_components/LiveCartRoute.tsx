@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
+import { savePreviewCart } from "@/api/purchase-preview/api";
 import { ArtisanOrderGroup } from "@/components/order/ArtisanOrderGroup";
 import { OrderSummary } from "@/components/order/OrderSummary";
 import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator";
@@ -12,6 +13,7 @@ import { resolveErrorMessage } from "@/constants/error-messages";
 import { ApiError } from "@/lib/http/api-error";
 import { useCartMutations, useCartQuery } from "@/queries/cart";
 import { useAuthStore } from "@/stores/auth";
+import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import { type CartLine, getCartShippingAmount } from "@/types/cart";
 import type { CartPreviewLine } from "@/types/purchase-preview";
 
@@ -301,10 +303,30 @@ export function LiveCartRoute() {
             onOpenChange={(open) => {
               if (!open) setOptionLine(null);
             }}
-            definitions={[]}
+            definitions={[
+              {
+                label: "시연 포장",
+                values: ["기본 포장 (시연)", "선물 포장 (시연)"],
+              },
+            ]}
             initialValues={[]}
-            onApply={() => {}}
-            unavailableMessage="상품 옵션 정보와 변경 기능은 준비 중입니다. 현재 선택한 옵션은 아래에서 확인할 수 있습니다."
+            onApply={(options) => {
+              void run(async () => {
+                const saved = await savePreviewCart(
+                  lines.map((line) => ({
+                    ...line,
+                    options:
+                      line.lineId === optionLine.lineId
+                        ? options
+                        : line.options,
+                    note: "시연 장바구니 · 실제 주문에 적용되지 않습니다.",
+                  })),
+                );
+                usePurchasePreviewStore.getState().setLines(saved);
+                router.push("/cart?preview=1");
+              });
+            }}
+            notice="옵션 변경은 장바구니 전체를 MSW 시연으로 복사합니다. 실제 상품 옵션·가격과 무관하며 실제 결제되지 않습니다."
             currentOptions={optionLine.options}
           />
         )}

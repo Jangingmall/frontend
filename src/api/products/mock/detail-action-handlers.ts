@@ -26,7 +26,10 @@ export function resetProductDetailActionState() {
 }
 
 function getState(request: Request, id: string) {
-  const token = request.headers.get("Authorization")?.replace(/^Bearer /, "");
+  const viewer = request.headers.get("X-Demo-Viewer");
+  const token = viewer
+    ? `${SEED_ACCESS_TOKEN_PREFIX}-${viewer}`
+    : request.headers.get("Authorization")?.replace(/^Bearer /, "");
   if (!token?.startsWith(SEED_ACCESS_TOKEN_PREFIX)) return null;
   const user =
     token === SEED_ACCESS_TOKEN_REFRESHED ? SEED_ACCESS_TOKEN : token;
