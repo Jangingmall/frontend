@@ -55,7 +55,7 @@ describe("LoginForm", () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
-  it("유효한 자격으로 로그인하면 세션을 저장하고 returnUrl로 이동한다", async () => {
+  it("유효한 자격으로 로그인하면 세션을 저장하고 홈으로 이동한다", async () => {
     const user = userEvent.setup();
     renderLoginForm("/products");
 
@@ -77,7 +77,7 @@ describe("LoginForm", () => {
       name: "김미담",
       role: "USER",
     });
-    expect(replace).toHaveBeenCalledWith("/products");
+    expect(replace).toHaveBeenCalledWith("/");
   });
 
   it("returnUrl 없이 로그인하면 /mypage가 아니라 /로 이동한다", async () => {
@@ -228,9 +228,8 @@ describe("LoginForm", () => {
       screen.queryByPlaceholderText("이메일을 입력해주세요."),
     ).not.toBeInTheDocument();
     expect(screen.getByText("불러오는 중…")).toBeInTheDocument();
-    // /mypage가 아직 없어 로그인 성공(onSubmit) 때와 달리 fallback을 "/"로 명시한다 —
-    // returnUrl("/products")이 안전한 내부 경로면 그쪽이 우선.
-    await waitFor(() => expect(replace).toHaveBeenCalledWith("/products"));
+    // returnUrl과 관계없이 로그인 완료는 홈으로 이동한다.
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/"));
   });
 
   it("이미 인증된 상태에서 returnUrl이 없으면 /mypage가 아니라 /로 보낸다", async () => {

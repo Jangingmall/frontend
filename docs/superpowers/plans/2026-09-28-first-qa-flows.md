@@ -63,3 +63,16 @@
 - 별도 코드 리뷰: 실제 결함 없음. 권고된 직접 입력 테스트 추가 완료.
 - typecheck, lint, webpack production build 통과. 전체 테스트 최종 결과는 PR에 기록.
 - 전체 테스트 1차: 197파일 중 기존 ProductToolbar.production.test.tsx의 옵션 렌더 대기 1건 실패(1166 통과). 분리 실행 5/5 통과, 동시 빌드 없이 전체 재검증: 197파일, 1169테스트 모두 통과.
+
+## Stage 로그인 추가 수정 (2026-09-28)
+
+사용자가 QA 주소를 https://stg.midam.store/login으로 정정하고, 추가 범위를 이메일 로그인 완료 후 홈 이동과 카카오 로그인 경로 수정으로 지정했다.
+
+- [x] 이메일 로그인 완료와 인증된 사용자의 로그인 페이지 진입은 홈으로 통일(returnUrl 우선 복귀 정책 변경).
+- [x] 실제 Stage 카카오 시작: https://api.stg.midam.store/api/member/oauth2/kakao. 브라우저에서 카카오 동의 화면 및 backend redirect_uri 확인.
+- [x] 백엔드 MemberCookies의 host-only 쿠키와 Stage CORS allow-credentials 확인. Stage의 실제 /api/member/* 요청만 백엔드 호스트 + include로 통일하여 login, OAuth exchange, complete-profile, refresh, logout의 쿠키 위치 일치.
+- [x] mock API, MSW 모드, 로컬·운영 origin의 기존 same-origin 동작 유지. 외부 임의 URL 입력 금지 유지.
+- [x] 1차 회귀 검사에서 기존 Stage 요청 대상과 홈 이동 차이 실패 확인 후 수정. 관련 42개 테스트 통과.
+- [x] 별도 리뷰: 결함 없음. 명시적 same-origin 옵션 및 origin/모드 경계 테스트 추가.
+- 실제 이메일 계정 성공 응답과 카카오 동의 이후 최종 인증은 아직 미검증. 배포 전 변경이므로 현재 Stage에 반영됐다고 주장하지 않는다.
+- 최종 검증: 전체 198파일/1180테스트, Stage 인증 경계 11테스트, typecheck, 실제 API 모드 webpack build 통과.
