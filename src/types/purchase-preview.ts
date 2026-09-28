@@ -24,6 +24,8 @@ export interface CartPreviewLine {
 export interface PurchasePreviewState {
   lines: CartPreviewLine[];
   checkoutLines: CartPreviewLine[];
+  checkoutTotal: number | null;
+  setCheckoutTotal: (total: number) => void;
   setLines: (lines: CartPreviewLine[]) => void;
   addLines: (lines: CartPreviewLine[]) => boolean;
   beginCheckout: (selectedLines: CartPreviewLine[]) => void;

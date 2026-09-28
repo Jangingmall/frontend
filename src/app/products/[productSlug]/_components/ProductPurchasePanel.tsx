@@ -1,10 +1,10 @@
 "use client";
-
 import type { Route } from "next";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useRef, useState } from "react";
 
+import { savePreviewCart } from "@/api/purchase-preview/api";
 import { toCartPreviewLines } from "@/app/products/[productSlug]/_lib/purchase-preview";
 import {
   addSelection,
@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/icons";
 import { Select, SelectItem } from "@/components/ui/select";
 import { Stepper } from "@/components/ui/stepper";
+import { isDemoSession } from "@/lib/demo-session";
+import { publicEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import { useCartMutations } from "@/queries/cart";
 import { useProductActions } from "@/queries/products/detail-actions";
@@ -60,7 +62,12 @@ export function ProductPurchasePanel({
   } | null>(null);
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
   const userId = useAuthStore((state) => state.user?.id ?? null);
-  const actions = useProductActions(product.id, userId, isAuthenticated);
+  const actions = useProductActions(
+    product.id,
+    userId,
+    isAuthenticated,
+    product.isMock || isDemoSession(),
+  );
   const [choices, setChoices] = useState<ProductChoices>({});
   const [lines, setLines] = useState<PurchaseSelection[]>(() => {
     const initial = product.optionGroups.length
@@ -179,7 +186,12 @@ export function ProductPurchasePanel({
         if (added.length !== 1 || added[0].soldOut) {
           onNotify("장바구니에 담긴 작품 상태를 확인해 주세요.", {
             label: "장바구니 보기",
-            onClick: () => router.push("/cart"),
+            onClick: () =>
+              router.push(
+                product.isMock && !publicEnv.apiMocking
+                  ? "/cart?preview=1"
+                  : "/cart",
+              ),
           });
           return;
         }
@@ -198,7 +210,12 @@ export function ProductPurchasePanel({
       } else {
         onNotify("장바구니에 작품을 담았습니다.", {
           label: "장바구니 보기",
-          onClick: () => router.push("/cart"),
+          onClick: () =>
+            router.push(
+              product.isMock && !publicEnv.apiMocking
+                ? "/cart?preview=1"
+                : "/cart",
+            ),
         });
       }
     } catch {
@@ -211,7 +228,7 @@ export function ProductPurchasePanel({
   }
 
   function handlePurchase(checkout = false) {
-    if (!product.isMock) {
+    if (!product.isMock && !isDemoSession()) {
       void handleLivePurchase(checkout);
       return;
     }
@@ -220,24 +237,38 @@ export function ProductPurchasePanel({
     actions.cart.mutate(
       lines.map(({ choices, quantity }) => ({ choices, quantity })),
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           if (useAuthStore.getState().user?.id !== userId) return;
           if (checkout) {
             usePurchasePreviewStore.getState().beginCheckout(snapshot);
             router.push(`/checkout/${PURCHASE_PREVIEW_ORDER_ID}` as Route);
             return;
           }
-          // 삭제 후 다시 담기도 허용하도록 현재 카트를 기준으로 중복을 판정한다.
-          const duplicate = usePurchasePreviewStore
-            .getState()
-            .addLines(snapshot);
+          const existing = usePurchasePreviewStore.getState().lines;
+          const added = snapshot.filter(
+            (line) => !existing.some((item) => item.lineId === line.lineId),
+          );
+          const duplicate = added.length === 0;
+          try {
+            const saved = await savePreviewCart([...existing, ...added]);
+            if (useAuthStore.getState().user?.id !== userId) return;
+            usePurchasePreviewStore.getState().setLines(saved);
+          } catch {
+            onNotify("시연 장바구니를 저장하지 못했습니다.");
+            return;
+          }
           onNotify(
             duplicate
               ? "이미 장바구니에 담긴 작품입니다."
               : "장바구니에 작품을 담았습니다.",
             {
               label: "장바구니 보기",
-              onClick: () => router.push("/cart"),
+              onClick: () =>
+                router.push(
+                  product.isMock && !publicEnv.apiMocking
+                    ? "/cart?preview=1"
+                    : "/cart",
+                ),
             },
           );
         },
@@ -268,13 +299,8 @@ export function ProductPurchasePanel({
   }
 
   function handleRestock() {
-    if (!product.isMock) return;
     if (!isAuthenticated) {
       onRequireLogin(false);
-      return;
-    }
-    if (!product.isMock) {
-      onNotify("재입고 알림 기능은 준비 중입니다.");
       return;
     }
     actions.restock.mutate(undefined, {
@@ -282,7 +308,9 @@ export function ProductPurchasePanel({
         onNotify(
           duplicate
             ? "이미 재입고 알림을 신청한 작품입니다."
-            : "재입고 알림을 신청했습니다.",
+            : product.isMock
+              ? "재입고 알림을 신청했습니다."
+              : "재입고 알림 시연을 신청했습니다. 실제 알림은 발송되지 않습니다.",
         ),
       onError: () =>
         onNotify("재입고 알림을 신청하지 못했습니다. 다시 시도해 주세요."),
@@ -584,11 +612,7 @@ export function ProductPurchasePanel({
             variant="outline"
             size="xl"
             className="w-2/5 min-w-0 border-border-neutral-solid px-3 xl:w-50"
-            disabled={
-              unsupportedOptions ||
-              (!product.isMock && soldOut) ||
-              (unknownStock && !soldOut)
-            }
+            disabled={unsupportedOptions || (unknownStock && !soldOut)}
             loading={busy}
             onClick={soldOut ? handleRestock : () => handlePurchase()}
           >

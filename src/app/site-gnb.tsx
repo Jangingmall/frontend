@@ -1,7 +1,8 @@
 "use client";
 
 import { Gnb } from "@/components/common/gnb";
-import { publicEnv } from "@/lib/env";
+import { useDemoSession, useMockAccount } from "@/lib/demo-session";
+import { useCartQuery } from "@/queries/cart/queries";
 import { useAuthStore } from "@/stores/auth";
 import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 
@@ -24,10 +25,23 @@ import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 export function SiteGnb() {
   const status = useAuthStore((state) => state.status);
   const cartCount = usePurchasePreviewStore((state) => state.lines.length);
+  const demo = useDemoSession();
+  const mockAccount = useMockAccount();
+  if (!mockAccount) return <LiveSiteGnb />;
   return (
-    <Gnb
-      authStatus={status}
-      cartCount={publicEnv.apiMocking ? cartCount : undefined}
-    />
+    <>
+      {demo && (
+        <p role="status" className="bg-bg-default p-2 text-center text-body-s">
+          네이버 로그인 시연 · 계정 및 거래는 실제 서버에 저장되지 않습니다.
+        </p>
+      )}
+      <Gnb authStatus={status} cartCount={cartCount} />
+    </>
   );
+}
+function LiveSiteGnb() {
+  const status = useAuthStore((state) => state.status);
+  const userId = useAuthStore((state) => state.user?.id);
+  const cart = useCartQuery(status !== "loading", String(userId ?? "guest"));
+  return <Gnb authStatus={status} cartCount={cart.data?.totalCount} />;
 }

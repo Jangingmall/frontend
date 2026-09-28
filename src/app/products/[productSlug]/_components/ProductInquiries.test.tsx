@@ -52,46 +52,26 @@ describe("상품 문의 화면", () => {
       role: "USER",
     });
   }
-  it("실제 공개 문의는 유형 없이 1000자까지 등록하고 목록을 요청하지 않는다", async () => {
+  it("실제 상품에서도 문의 시연을 표시하며 실제 문의 API를 호출하지 않는다", async () => {
     login();
-    const listRequest = vi.fn();
+    const liveRequest = vi.fn();
     server.use(
-      http.get("*/api/products/101/questions", () => {
-        listRequest();
+      http.all("*/api/products/101/questions", () => {
+        liveRequest();
         return mockOk({});
       }),
-      http.post("*/api/products/101/questions", async ({ request }) => {
-        expect(await request.json()).toEqual({
-          content: "제작 기간 문의",
-          secret: false,
-        });
-        return mockOk({
-          questionId: 1,
-          productId: 101,
-          writerId: 1,
-          content: "제작 기간 문의",
-          secret: false,
-          createdAt: "2026-09-17T10:00:00",
-          answer: null,
-        });
-      }),
     );
-    const { onNotify } = mount(false);
+    mount(false);
+    expect(
+      await screen.findByText(/판매자에게 전송되지 않습니다/),
+    ).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "문의하기" }));
-    expect(
-      screen.queryByRole("combobox", { name: "문의 유형" }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("checkbox", { name: "비밀글 설정" }),
-    ).not.toBeInTheDocument();
-    const body = screen.getByRole("textbox", { name: "내용 *" });
-    expect(body).toHaveAttribute("maxlength", "1000");
-    await userEvent.type(body, "제작 기간 문의");
-    await userEvent.click(screen.getByRole("button", { name: "등록하기" }));
-    await waitFor(() =>
-      expect(onNotify).toHaveBeenCalledWith("문의가 등록되었습니다."),
+    expect(screen.getByRole("combobox", { name: "문의 유형" })).toBeVisible();
+    expect(screen.getByRole("textbox", { name: "내용 *" })).toHaveAttribute(
+      "maxlength",
+      "2000",
     );
-    expect(listRequest).not.toHaveBeenCalled();
+    expect(liveRequest).not.toHaveBeenCalled();
   });
   it("비로그인 작성 요청은 로그인 안내로 연결한다", async () => {
     const { onRequireLogin } = mount();

@@ -11,7 +11,7 @@ import {
   requestOrderExchangeRefund,
 } from "@/api/orders/api";
 import { ORDER_RETURN_REASON_MAP } from "@/constants/order";
-import { publicEnv } from "@/lib/env";
+import { usesMockAccount } from "@/lib/demo-session";
 import { memberKeys } from "@/queries/member/keys";
 import { reviewKeys } from "@/queries/reviews/keys";
 import type {
@@ -35,7 +35,7 @@ export function useRequestOrderCancelMutation(orderId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: OrderCancelRequest) => {
-      const imageIds = publicEnv.apiMocking
+      const imageIds = usesMockAccount()
         ? await Promise.all(input.photos.map(uploadReturnPhoto))
         : [];
       await requestOrderCancel(orderId, { reason: input.reason, imageIds });

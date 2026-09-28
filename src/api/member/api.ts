@@ -1,3 +1,6 @@
+import { z } from "zod";
+
+import { setDemoSession, usesMockAccount } from "@/lib/demo-session";
 import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import { clientFetch, refreshAccessToken } from "@/lib/http/client";
@@ -15,12 +18,6 @@ import {
   mapMemberProfile,
   mapMemberSettings,
 } from "./mapper";
-import { SEED_OAUTH_ACCESS_TOKEN } from "./mock/fixtures";
-import {
-  getMockOAuthLinkedMember,
-  setDynamicMember,
-  setMockIdentity,
-} from "./mock/mock-identity";
 import {
   accessTokenResponseDto,
   addressListResponseDto,
@@ -54,7 +51,9 @@ interface LoginRequest {
  */
 export async function login(
   body: LoginRequest,
+  preserveSession = false,
 ): Promise<{ accessToken: string; user: AuthUser }> {
+  if (!preserveSession) setDemoSession(false);
   const data = await clientFetch<unknown>("/api/member/login", {
     method: "POST",
     body,
@@ -87,6 +86,7 @@ export async function refreshToken(): Promise<{ accessToken: string }> {
 /** `POST /api/member/logout` — 서버 refresh 무효화. */
 export async function logout(): Promise<void> {
   await clientFetch<null>("/api/member/logout", { method: "POST" });
+  setDemoSession(false);
 }
 
 interface RequestEmailVerificationRequest {
@@ -169,7 +169,22 @@ export type OAuthLoginResult =
 export async function startMockOAuthLogin(
   provider: OAuthProvider,
 ): Promise<OAuthLoginResult> {
+  if (!publicEnv.apiMocking && provider === "naver") {
+    const result = loginResponseDto.parse(
+      await clientFetch("/api/mock/member/oauth2/naver", {
+        method: "POST",
+        auth: false,
+      }),
+    );
+    setDemoSession(true);
+    return {
+      outcome: "authenticated",
+      accessToken: result.accessToken,
+      user: mapMemberProfile(result.member),
+    };
+  }
   if (!publicEnv.apiMocking) {
+    setDemoSession(false);
     const returnUrl = new URL(window.location.href).searchParams.get(
       "returnUrl",
     );
@@ -181,23 +196,28 @@ export async function startMockOAuthLogin(
     return { outcome: "redirecting" };
   }
 
-  const linked = getMockOAuthLinkedMember(provider);
-  if (linked) {
-    setMockIdentity(linked.role);
-    setDynamicMember(linked);
-    return {
-      outcome: "authenticated",
-      accessToken: SEED_OAUTH_ACCESS_TOKEN,
-      user: mapMemberProfile(linked),
-    };
-  }
-
-  // IA의 두 분기를 provider별로 하나씩 재현한다: 카카오는 항상 인증된 이메일을 제공해
-  // 이메일 인증 단계를 생략하고, 네이버는 이메일을 제공하지 않아 직접 입력·인증이
-  // 필요하다. 실제 제공자·BE 계약이 확정되기 전까지의 목업 전용 가정이다.
-  const suggestedEmail =
-    provider === "kakao" ? `kakao-${Date.now()}@midam.test` : null;
-  return { outcome: "needsProfile", provider, suggestedEmail };
+  const response = z
+    .discriminatedUnion("outcome", [
+      z.object({
+        outcome: z.literal("authenticated"),
+        accessToken: z.string(),
+        member: memberProfileResponseDto,
+      }),
+      z.object({
+        outcome: z.literal("needsProfile"),
+        provider: z.enum(["kakao", "naver"]),
+        suggestedEmail: z.string().nullable(),
+      }),
+    ])
+    .parse(
+      await clientFetch(`/api/mock/member/oauth2/${provider}/start`, {
+        method: "POST",
+        auth: false,
+      }),
+    );
+  if (response.outcome === "authenticated")
+    return { ...response, user: mapMemberProfile(response.member) };
+  return response;
 }
 
 export interface CompleteOAuthProfileRequest {
@@ -221,7 +241,7 @@ export async function completeOAuthProfile(
     "/api/member/oauth2/complete-profile",
     {
       method: "POST",
-      body: publicEnv.apiMocking
+      body: usesMockAccount()
         ? body
         : { name: body.name, phone: body.phone, agreements: body.agreements },
       auth: false,
@@ -294,7 +314,7 @@ export async function verifyPassword(
   password: string,
 ): Promise<boolean> {
   try {
-    await login({ email, password });
+    await login({ email, password }, true);
     return true;
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return false;

@@ -1,7 +1,6 @@
-import { publicEnv } from "@/lib/env";
 export function canUseProductCrafts() {
-  return publicEnv.apiMocking;
+  return true;
 }
 export function canUseProductMaterials() {
-  return publicEnv.apiMocking;
+  return true;
 }

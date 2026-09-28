@@ -3,10 +3,13 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { recordRecentView } from "@/api/recent-views/api";
 import { FloatingActions } from "@/components/common/floating-actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Toast } from "@/components/ui/toast";
+import { publicEnv } from "@/lib/env";
+import { useAuthStore } from "@/stores/auth";
 import type { ProductDetail, ProductNotify } from "@/types/product-detail";
 
 import { ProductDetailGallery } from "./ProductDetailGallery";
@@ -22,6 +25,13 @@ interface ProductDetailPageProps {
 
 export function ProductDetailPage({ product }: ProductDetailPageProps) {
   const router = useRouter();
+  const userId = useAuthStore((state) => state.user?.id);
+  useEffect(() => {
+    if (!userId || (product.isMock && !publicEnv.apiMocking)) return;
+    void recordRecentView(product.id).catch(() => {
+      /* Nonessential history must not prevent viewing a product. */
+    });
+  }, [userId, product.id, product.isMock]);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [notice, setNotice] = useState<{
     id: number;

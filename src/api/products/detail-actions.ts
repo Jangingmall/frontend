@@ -6,6 +6,7 @@ import {
   backendCartDto,
   backendCartInput,
   productActionResultDto,
+  productActionStateDto,
   productCartInput,
   type ProductCartLine,
   restockDemoStateDto,
@@ -13,27 +14,41 @@ import {
 
 /** 상세 확장 시연 API는 MSW에서만 호출한다. */
 function actionPath(productId: number, action = "") {
-  if (!publicEnv.apiMocking) throw new Error("이 기능은 아직 준비 중입니다.");
-  return `/api/products/${productId}/detail-actions${action}`;
+  return `${publicEnv.apiMocking ? "/api" : "/api/mock/catalogue"}/products/${productId}/detail-actions${action}`;
 }
 
-/**
- * 찜 여부는 목업 상태와 무관하게 항상 실제 계약 경로(`api/wishlist`)로 확인한다 — 목업
- * 상태에 따라 다른 엔드포인트를 호출하지 않는다(원칙: API 호출은 목업 여부로 갈리지 않고,
- * 목업이냐 아니냐는 MSW가 그 경로를 가로채는지로만 갈린다). 재입고 알림(`restockRequested`)은
- * 대응하는 실제 BE 엔드포인트 자체가 없어(`requestProductRestock`과 동일 사유) 목업일 때만
- * 데모 전용 상태를 읽고, 아니면 항상 `false`다.
- */
-export async function fetchProductActionState(productId: number) {
+/** 실제 상품의 찜은 백엔드, 재입고와 시연 상품의 상태는 MSW에서 조회한다. */
+export async function fetchProductActionState(
+  productId: number,
+  preview = false,
+) {
+  if (preview && !publicEnv.apiMocking)
+    return productActionStateDto.parse(
+      await clientFetch(`/api/mock/products/${productId}/actions`),
+    );
   const wished = await checkWished(productId);
-  const restockRequested = publicEnv.apiMocking
-    ? restockDemoStateDto.parse(await clientFetch(actionPath(productId)))
-        .restockRequested
-    : false;
+  const restockRequested = restockDemoStateDto.parse(
+    await clientFetch(
+      publicEnv.apiMocking
+        ? actionPath(productId)
+        : `/api/mock/products/${productId}/restock`,
+    ),
+  ).restockRequested;
   return { wished, restockRequested };
 }
 
-export async function setProductWishlist(productId: number, wished: boolean) {
+export async function setProductWishlist(
+  productId: number,
+  wished: boolean,
+  preview = false,
+) {
+  if (preview && !publicEnv.apiMocking)
+    return productActionStateDto.parse(
+      await clientFetch(`/api/mock/products/${productId}/actions`, {
+        method: "PATCH",
+        body: { wished },
+      }),
+    );
   await (wished ? addWish(productId) : removeWish(productId));
   return { wished, restockRequested: false };
 }
@@ -41,8 +56,9 @@ export async function setProductWishlist(productId: number, wished: boolean) {
 export async function addProductToCart(
   productId: number,
   lines: ProductCartLine[],
+  preview = publicEnv.apiMocking,
 ) {
-  if (!publicEnv.apiMocking) {
+  if (!preview) {
     const input = productCartInput.parse({ lines });
     // 현 API는 한 항목씩 추가한다. 여러 줄의 부분 성공/재시도 중복을 만들지 않는다.
     if (input.lines.length !== 1)
@@ -67,7 +83,9 @@ export async function addProductToCart(
     // BE는 중복 여부 대신 갱신된 장바구니를 반환한다.
     return { duplicate: undefined };
   }
-  const path = actionPath(productId, "/cart-items");
+  const path = publicEnv.apiMocking
+    ? actionPath(productId, "/cart-items")
+    : `/api/mock/products/${productId}/cart-selections`;
   return productActionResultDto.parse(
     await clientFetch(path, {
       method: "POST",
@@ -78,6 +96,11 @@ export async function addProductToCart(
 
 export async function requestProductRestock(productId: number) {
   return productActionResultDto.parse(
-    await clientFetch(actionPath(productId, "/restock"), { method: "POST" }),
+    await clientFetch(
+      publicEnv.apiMocking
+        ? actionPath(productId, "/restock")
+        : `/api/mock/products/${productId}/restock`,
+      { method: "POST" },
+    ),
   );
 }

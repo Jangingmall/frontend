@@ -17,7 +17,7 @@ export function useProductInquiries(
       await startMockWorker();
       return fetchInquiries(id, excludeSecret, isMock, viewerId !== null);
     },
-    enabled: isMock,
+    enabled: true,
     gcTime: 0,
   });
 }

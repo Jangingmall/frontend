@@ -60,3 +60,7 @@ describe("startMockWorker", () => {
     vi.doUnmock("@/lib/env");
   });
 });
+
+beforeEach(() => {
+  vi.stubEnv("NODE_ENV", "development");
+});

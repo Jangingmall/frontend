@@ -43,7 +43,10 @@ export function ProductCard({
   return (
     <article className="min-w-0 pb-2 text-font-dark">
       <Link
-        href={{ pathname: href }}
+        href={{
+          pathname: href,
+          ...(product.isDemo ? { query: { preview: "1" } } : {}),
+        }}
         aria-label={product.name}
         className="relative block aspect-square overflow-hidden bg-fill-jade-weak focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill"
       >
@@ -79,7 +82,10 @@ export function ProductCard({
       >
         <div className="min-w-0">
           <Link
-            href={{ pathname: href }}
+            href={{
+              pathname: href,
+              ...(product.isDemo ? { query: { preview: "1" } } : {}),
+            }}
             tabIndex={-1}
             aria-hidden="true"
             className={cn(

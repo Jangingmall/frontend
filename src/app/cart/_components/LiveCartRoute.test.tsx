@@ -207,16 +207,16 @@ it("restores the exact variant and custom text instead of adding the base produc
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 });
 
-it("preserves the option dialog and explains unavailable editing", async () => {
+it("preserves option editing as an isolated preview", async () => {
   setup(true);
   await screen.findByText("상품91");
   await userEvent.click(
     screen.getAllByRole("button", { name: "옵션 변경" })[0],
   );
   expect(screen.getByRole("dialog")).toBeVisible();
-  expect(screen.getByRole("button", { name: "변경하기" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "변경하기" })).toBeEnabled();
   expect(
-    screen.getByText(/상품 옵션 정보와 변경 기능은 준비 중/),
+    screen.getByText(/옵션 변경은 장바구니 전체를 MSW 시연으로 복사/),
   ).toBeVisible();
 });
 

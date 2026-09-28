@@ -1,3 +1,4 @@
+import { publicEnv } from "@/lib/env";
 import type { Page } from "@/types/api";
 import type {
   ProductCategory,
@@ -44,6 +45,7 @@ export function mapProductSummary(
 ): ProductSummary & { thumbnail: ProductSummaryDto["thumbnail"] } {
   return {
     id: dto.id,
+    isDemo: !publicEnv.apiMocking,
     name: dto.name,
     price: dto.price,
     thumbnail: {

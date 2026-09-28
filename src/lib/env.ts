@@ -1,6 +1,9 @@
 import { z } from "zod";
 
+import { resolveDataMode } from "./data-mode";
+
 const schema = z.object({
+  NEXT_PUBLIC_DATA_MODE: z.enum(["msw", "api"]).optional().or(z.literal("")),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
@@ -13,6 +16,7 @@ const schema = z.object({
 
 export function validateEnvironment(environment: NodeJS.ProcessEnv) {
   const parsed = schema.parse(environment);
+  resolveDataMode(parsed.NEXT_PUBLIC_DATA_MODE, parsed.NEXT_PUBLIC_API_MOCKING);
   if (
     parsed.NODE_ENV === "production" &&
     (!parsed.API_BASE_URL || !parsed.REVALIDATE_WEBHOOK_SECRET)
@@ -37,7 +41,15 @@ export function validateEnvironment(environment: NodeJS.ProcessEnv) {
  * (docs/data-layer.md §9 — `process.env` 산발 읽기 대체)
  */
 export const publicEnv = {
-  apiMocking: process.env.NEXT_PUBLIC_API_MOCKING === "enabled",
+  apiMocking:
+    resolveDataMode(
+      process.env.NEXT_PUBLIC_DATA_MODE,
+      process.env.NEXT_PUBLIC_API_MOCKING,
+    ) === "msw",
+  dataMode: resolveDataMode(
+    process.env.NEXT_PUBLIC_DATA_MODE,
+    process.env.NEXT_PUBLIC_API_MOCKING,
+  ),
   tossClientKey: process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY ?? "",
   /**
    * Vercel이 실제 production 배포에서만 자동으로 심어주는 값이다 — `NODE_ENV`와 달리

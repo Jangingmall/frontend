@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { createAddress, fetchAddresses } from "@/api/member/api";
 import type { OrderStatusGroupKey, ReturnReason } from "@/constants/order";
-import { publicEnv } from "@/lib/env";
+import { usesMockAccount } from "@/lib/demo-session";
 import { clientFetch } from "@/lib/http/client";
 import type { Page } from "@/types/api";
 import type {
@@ -141,7 +141,7 @@ export async function requestOrderCancel(
   orderId: number,
   input: { reason: string; imageIds: string[] },
 ): Promise<void> {
-  if (!publicEnv.apiMocking) {
+  if (!usesMockAccount()) {
     const data = await clientFetch(`/api/payments/orders/${orderId}/cancel`, {
       method: "POST",
     });
@@ -172,7 +172,7 @@ export async function requestOrderExchangeRefund(
     imageIds: string[];
   },
 ): Promise<void> {
-  await clientFetch<null>("/api/payments/returns", {
+  const raw = await clientFetch<unknown>("/api/payments/returns", {
     method: "POST",
     body: {
       orderId,
@@ -183,11 +183,22 @@ export async function requestOrderExchangeRefund(
       imageIds: input.imageIds,
     },
   });
+  const result = z
+    .object({
+      returnId: z.number().int().nonnegative(),
+      orderId: z.number().int().positive(),
+      type: z.enum(["EXCHANGE", "RETURN"]),
+      status: z.literal("REQUESTED"),
+      requestedAt: z.string().min(1),
+    })
+    .parse(raw);
+  if (result.orderId !== orderId || result.type !== input.type)
+    throw new Error("교환·반품 접수 결과를 확인하지 못했습니다.");
 }
 
 /** 배송 완료 주문의 구매 확정. */
 export async function confirmPurchase(orderId: number): Promise<void> {
-  if (!publicEnv.apiMocking) {
+  if (!usesMockAccount()) {
     const data = await clientFetch(
       `/api/payments/orders/${orderId}/purchase-confirmation`,
       { method: "POST" },
@@ -216,7 +227,7 @@ export async function changeOrderAddress(
   orderId: number,
   input: ChangeOrderAddressRequest,
 ): Promise<void> {
-  if (!publicEnv.apiMocking) {
+  if (!usesMockAccount()) {
     const addresses = await fetchAddresses();
     const existing = addresses.find(
       (address) =>

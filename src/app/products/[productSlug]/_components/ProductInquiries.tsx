@@ -26,11 +26,12 @@ interface ProductInquiriesProps {
 }
 export function ProductInquiries({
   productId,
-  isMock,
+  isMock: isMockProduct,
   product,
   onNotify,
   onRequireLogin,
 }: ProductInquiriesProps) {
+  const isMock = true;
   const isAuthLoading = useAuthStore((state) => state.status === "loading");
   const viewerId = useAuthStore((state) =>
     state.status === "authenticated" ? (state.user?.id ?? null) : null,
@@ -55,6 +56,11 @@ export function ProductInquiries({
       id="product-inquiries"
       className="scroll-mt-40 border-t border-border-neutral-weak px-2 pt-4"
     >
+      {!isMockProduct && (
+        <p className="mb-2 text-body-s">
+          문의 기능은 시연 중입니다. 판매자에게 전송되지 않습니다.
+        </p>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-title-l leading-[1.3] font-bold">
           문의{query.data ? ` (${query.data.totalCount})` : ""}

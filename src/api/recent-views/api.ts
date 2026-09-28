@@ -26,3 +26,11 @@ export async function fetchRecentViews(
 export async function clearRecentViews(): Promise<void> {
   await clientFetch("/api/member/recent-views", { method: "DELETE" });
 }
+
+/** Record only genuine products; demo catalogue IDs are never sent to the backend. */
+export async function recordRecentView(productId: number) {
+  await clientFetch("/api/member/recent-views", {
+    method: "POST",
+    body: { productId },
+  });
+}

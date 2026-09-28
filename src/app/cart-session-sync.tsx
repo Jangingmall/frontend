@@ -3,7 +3,7 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { publicEnv } from "@/lib/env";
+import { useMockAccount } from "@/lib/demo-session";
 import { useMergeGuestCartMutation } from "@/queries/cart/mutations";
 import { useAuthStore } from "@/stores/auth";
 
@@ -13,12 +13,13 @@ interface CartSessionSyncProps {
 
 /** 로그인·세션 복원 후 게스트 상품을 병합한 다음 구매 화면을 연다. */
 export function CartSessionSync({ children }: CartSessionSyncProps) {
+  const mockAccount = useMockAccount();
   const userId = useAuthStore((state) =>
     state.status === "authenticated" && state.user?.role === "USER"
       ? state.user.id
       : null,
   );
-  if (publicEnv.apiMocking || userId === null) return children;
+  if (mockAccount || userId === null) return children;
   return (
     <AuthenticatedCartSync key={userId} userId={userId}>
       {children}

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 
 import type { ChangeOrderAddressRequest } from "@/api/orders/api";
+import { requestPreviewCancel } from "@/api/purchase-preview/api";
 import { ErrorState } from "@/components/common/error-state";
 import { OrderCancelRequestModal } from "@/components/order/OrderCancelRequestModal";
 import { OrderExchangeRefundRequestModal } from "@/components/order/OrderExchangeRefundRequestModal";
@@ -13,7 +14,7 @@ import { ReviewFormModal } from "@/components/review/ReviewFormModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import type { OrderCardActionType } from "@/constants/order";
-import { publicEnv } from "@/lib/env";
+import { usesMockAccount } from "@/lib/demo-session";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useChangeOrderAddressMutation,
@@ -212,13 +213,19 @@ export default function OrderDetailPage() {
   }
 
   async function handleCancelSubmit(input: OrderCancelRequest) {
-    if (
-      cancelMutation.isPending ||
-      (!publicEnv.apiMocking && cancelTarget?.status !== "PAYMENT_PENDING")
-    )
-      return;
+    if (cancelMutation.isPending || !cancelTarget) return;
     setCancelError(null);
     try {
+      if (
+        !usesMockAccount() &&
+        (cancelTarget?.status !== "PAYMENT_PENDING" || input.photos.length > 0)
+      ) {
+        await requestPreviewCancel(orderId, input.reason, input.photos);
+        setCancelError(
+          "시연 접수가 완료되었습니다. 실제 주문 취소·환불은 처리되지 않았습니다.",
+        );
+        return;
+      }
       await cancelMutation.mutateAsync(input);
       setCancelTarget(null);
     } catch (error) {
@@ -326,16 +333,11 @@ export default function OrderDetailPage() {
 
         {cancelTarget && (
           <OrderCancelRequestModal
-            supportsAttachments={publicEnv.apiMocking}
+            supportsAttachments
             notice={
-              publicEnv.apiMocking
+              usesMockAccount()
                 ? undefined
-                : "이 주문에 포함된 모든 상품이 함께 취소됩니다. 취소 사유·사진 저장은 준비 중입니다."
-            }
-            unavailableReason={
-              !publicEnv.apiMocking && cancelTarget.status !== "PAYMENT_PENDING"
-                ? "현재 결제 대기 주문만 취소할 수 있습니다."
-                : undefined
+                : "미결제 주문은 전체 취소됩니다. 결제된 주문 또는 사진을 첨부한 요청은 MSW 시연으로만 접수됩니다."
             }
             open
             onOpenChange={(open) => {

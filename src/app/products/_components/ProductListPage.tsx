@@ -15,6 +15,7 @@ import {
 import { ErrorState } from "@/components/common/error-state";
 import { FloatingActions } from "@/components/common/floating-actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isMockProductQuery } from "@/lib/data-mode";
 import { publicEnv } from "@/lib/env";
 import { startMockWorker } from "@/mocks/start-browser";
 import { productKeys } from "@/queries/products/keys";
@@ -126,7 +127,8 @@ export function ProductListPage({
                 category={category}
                 categories={view.categories}
                 materials={
-                  materials.data?.length ? materials.data : DESIGN_MATERIALS
+                  materials.data ??
+                  (publicEnv.apiMocking ? DESIGN_MATERIALS : [])
                 }
                 crafts={crafts.data ?? []}
                 isCraftsPending={crafts.isPending}
@@ -147,6 +149,12 @@ export function ProductListPage({
               sort={query.sort ?? (publicEnv.apiMocking ? "popular" : "newest")}
               onSortChange={(sort) => handleChange({ sort })}
             />
+            {!publicEnv.apiMocking && isMockProductQuery("api", query) && (
+              <p role="status" className="mt-4 text-body-s">
+                이 검색 조건은 시연 상품으로 보여드립니다. 시연 카탈로그는
+                키친·다이닝 분류를 지원합니다.
+              </p>
+            )}
             <ProductResults
               isCategoryList={Boolean(query.category)}
               isUnavailable={

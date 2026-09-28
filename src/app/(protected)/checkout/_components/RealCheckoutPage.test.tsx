@@ -17,6 +17,7 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams("items=1"),
+  useRouter: () => ({ push: vi.fn() }),
 }));
 vi.mock("@tosspayments/tosspayments-sdk", () => ({
   ANONYMOUS: "anonymous",
@@ -78,9 +79,14 @@ vi.mock("@/queries/payments", () => ({
 vi.mock("./CheckoutProducts", () => ({ CheckoutProducts: () => null }));
 vi.mock("@/components/order/PaymentsMethod", () => ({
   PaymentsMethod: ({ onChange }: { onChange: (value: string) => void }) => (
-    <button type="button" onClick={() => onChange("CARD")}>
-      카드 선택
-    </button>
+    <>
+      <button type="button" onClick={() => onChange("BANK_TRANSFER")}>
+        무통장 시연 선택
+      </button>
+      <button type="button" onClick={() => onChange("CARD")}>
+        카드 선택
+      </button>
+    </>
   ),
 }));
 beforeEach(() => {
@@ -241,4 +247,13 @@ it("retries the same reserved order after its final stock becomes sold out", asy
   fill();
   await waitFor(() => expect(state.prepare).toHaveBeenCalledTimes(2));
   expect(state.create.mock.calls[1][0].key).toBe(firstKey);
+});
+
+it("무통장입금 시연 전환은 실제 주문과 결제를 생성하지 않는다", async () => {
+  render(<RealCheckoutPage />);
+  fireEvent.click(screen.getByRole("button", { name: "무통장 시연 선택" }));
+  expect(await screen.findByText(/주문·결제 시연/)).toBeVisible();
+  expect(state.create).not.toHaveBeenCalled();
+  expect(state.prepare).not.toHaveBeenCalled();
+  expect(state.request).not.toHaveBeenCalled();
 });

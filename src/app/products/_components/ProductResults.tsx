@@ -7,7 +7,6 @@ import { ProductGridSkeleton } from "@/components/product/ProductGridSkeleton";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components/ui/pagination";
-import { publicEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import type { Page } from "@/types/api";
 import type { ProductSummary } from "@/types/product";
@@ -51,14 +50,14 @@ export function ProductResults({
                 ? "조회 실패"
                 : `총 ${(data?.totalCount ?? 0).toLocaleString("ko-KR")}개${isCategoryList ? "의 검색 결과" : ""}`}
         </p>
-        {publicEnv.apiMocking && (
+        {
           <Checkbox
             checked={excludeSoldOut}
             onCheckedChange={onExcludeSoldOutChange}
           >
             품절 상품 제외
           </Checkbox>
-        )}
+        }
       </div>
       {isUnavailable ? (
         <EmptyState

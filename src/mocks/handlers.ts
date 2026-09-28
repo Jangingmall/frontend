@@ -1,3 +1,5 @@
+import { getResponse, http, type HttpHandler } from "msw";
+
 import { imageHandlers } from "@/api/images/mock/handlers";
 import { inquiryHandlers } from "@/api/inquiries/mock/handlers";
 import { memberHandlers } from "@/api/member/mock/handlers";
@@ -9,12 +11,29 @@ import { recentViewHandlers } from "@/api/recent-views/mock/handlers";
 import { reviewHandlers } from "@/api/reviews/mock/handlers";
 import { wishlistHandlers } from "@/api/wishlist/mock/handlers";
 
+import { extensionHandlers } from "./extensions";
+
 /**
  * 전 도메인 MSW 핸들러 집계 지점. `browser`(worker)·`server`(node)·테스트가 이 배열을
  * 공유한다. 도메인 핸들러는 각 `api/{domain}/mock/handlers.ts`에 두고 여기서 spread로
  * 등록한다. (docs/testing.md §2)
  */
-export const handlers = [
+export const handlers: HttpHandler[] = [
+  http.all("*/api/mock/catalogue/*", async ({ request }) => {
+    const url = new URL(request.url);
+    url.pathname = url.pathname.replace("/api/mock/catalogue/", "/api/");
+    return getResponse(
+      handlers,
+      new Request(url, {
+        method: request.method,
+        headers: request.headers,
+        body: ["GET", "HEAD"].includes(request.method)
+          ? undefined
+          : await request.clone().text(),
+      }),
+    );
+  }),
+  ...extensionHandlers,
   ...productHandlers,
   ...productDetailHandlers,
   ...productDetailActionHandlers,

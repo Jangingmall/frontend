@@ -52,12 +52,17 @@ describe("상품 후기", () => {
     );
     expect(result).toMatchObject({ items: [], totalCount: 0, rating: null });
   });
-  it("실제 환경에서 지원하지 않는 사진 필터를 호출하지 않는다", async () => {
+  it("실제 환경의 사진 필터는 명시된 MSW 경로로 조회한다", async () => {
     const fetch = vi.spyOn(globalThis, "fetch");
-    await expect(
-      fetchReviews(101, { page: 1, sort: "latest", photoOnly: true }, false),
-    ).rejects.toThrow("사진");
-    expect(fetch).not.toHaveBeenCalled();
+    const result = await fetchReviews(
+      101,
+      { page: 1, sort: "latest", photoOnly: true },
+      false,
+    );
+    expect(result.items.length).toBeGreaterThan(0);
+    expect(String(fetch.mock.calls[0][0])).toContain(
+      "/api/mock/products/101/reviews",
+    );
   });
   it.each([
     ["latest", "createdAt,desc"],

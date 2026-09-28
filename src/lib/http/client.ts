@@ -1,10 +1,14 @@
 // 인증 배선 목적의 예외 — 클라이언트 fetcher는 모든 인증 요청의 단일 통로라
 // 메모리 access token을 여기서 읽고 401 refresh 결과를 반영해야 한다.
 // (docs/routing-and-auth.md §4.1, docs/architecture.md §8.2 각주). 실제 순환 없음.
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+
+import { isDemoSession, privateRequestPath } from "@/lib/demo-session";
+import { publicEnv } from "@/lib/env";
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports -- 공통 인증 요청의 토큰 주입 지점
 import { useAuthStore } from "@/stores/auth";
 
 import { ApiError } from "./api-error";
+import { prepareRequest } from "./readiness";
 import { parseBody, resolveResponse, unwrapSuccess } from "./response";
 
 /**
@@ -60,6 +64,15 @@ async function doFetch(
   path: string,
   { body, auth = true, headers, ...init }: ClientFetchOptions,
 ): Promise<Response> {
+  if (process.env.NODE_ENV !== "test") await prepareRequest();
+  path = privateRequestPath(path, auth, isDemoSession());
+  if (
+    !publicEnv.apiMocking &&
+    !path.startsWith("/api/mock/") &&
+    auth &&
+    useAuthStore.getState().accessToken?.startsWith("mock-access-token")
+  )
+    throw new Error("시연 세션으로 실제 API를 호출할 수 없습니다.");
   const finalHeaders = new Headers({ Accept: "application/json", ...headers });
 
   let finalBody: BodyInit | undefined;
@@ -72,6 +85,14 @@ async function doFetch(
     }
   }
 
+  if (path.startsWith("/api/mock/")) {
+    const user = useAuthStore.getState().user;
+    if (user)
+      finalHeaders.set(
+        "X-Demo-Viewer",
+        `${isDemoSession() ? "demo" : "user"}-${user.id}`,
+      );
+  }
   if (auth) {
     const { accessToken } = useAuthStore.getState();
     if (accessToken) finalHeaders.set("Authorization", `Bearer ${accessToken}`);
@@ -102,11 +123,17 @@ let refreshInFlight: Promise<string> | null = null;
  */
 export function refreshAccessToken(): Promise<string> {
   refreshInFlight ??= (async () => {
-    const response = await fetch(toUrl("/api/member/token/refresh"), {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { Accept: "application/json" },
-    });
+    if (process.env.NODE_ENV !== "test") await prepareRequest();
+    const response = await fetch(
+      toUrl(
+        privateRequestPath("/api/member/token/refresh", true, isDemoSession()),
+      ),
+      {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      },
+    );
     const body = await parseBody(response);
     if (!response.ok) throw new ApiError(response.status, body);
     const { accessToken } = unwrapSuccess<{ accessToken?: unknown }>(body);

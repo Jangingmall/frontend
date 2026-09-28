@@ -19,17 +19,22 @@ export function useProductActions(
   productId: number,
   userId: number | null,
   enabled: boolean,
+  preview?: boolean,
 ) {
   const client = useQueryClient();
-  const queryKey = productKeys.actionState(userId, productId);
+  const queryKey = [
+    ...productKeys.actionState(userId, productId),
+    preview ? "demo" : "api",
+  ];
   const state = useQuery({
     queryKey,
-    queryFn: () => fetchProductActionState(productId),
+    queryFn: () => fetchProductActionState(productId, preview),
     enabled: enabled && userId !== null,
     retry: false,
   });
   const wishlist = useMutation({
-    mutationFn: (wished: boolean) => setProductWishlist(productId, wished),
+    mutationFn: (wished: boolean) =>
+      setProductWishlist(productId, wished, preview),
     onMutate: async () => {
       await client.cancelQueries({ queryKey });
       const previous = client.getQueryData<ProductActionState>(queryKey);
@@ -52,7 +57,7 @@ export function useProductActions(
   });
   const cart = useMutation({
     mutationFn: (lines: ProductCartLine[]) =>
-      addProductToCart(productId, lines),
+      addProductToCart(productId, lines, preview),
   });
   const restock = useMutation({
     mutationFn: () => requestProductRestock(productId),

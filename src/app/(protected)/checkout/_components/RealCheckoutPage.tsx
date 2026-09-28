@@ -1,7 +1,7 @@
 "use client";
 import { ANONYMOUS, loadTossPayments } from "@tosspayments/tosspayments-sdk";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useKakaoPostcodePopup } from "react-daum-postcode";
 import { FormProvider, useForm } from "react-hook-form";
@@ -35,11 +35,13 @@ import {
   usePreparePaymentMutation,
 } from "@/queries/payments";
 import { useAuthStore } from "@/stores/auth";
+import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import { getCartShippingAmount } from "@/types/cart";
 import type { Address } from "@/types/member";
 import type { CreateOrderInput } from "@/types/payment";
 import type { PreviewPaymentMethod } from "@/types/purchase-preview";
 
+import { CheckoutPage } from "./CheckoutPage";
 import { CheckoutProducts } from "./CheckoutProducts";
 import { CustomerFields } from "./CustomerFields";
 import { DeliveryMemoField } from "./DeliveryMemoField";
@@ -51,6 +53,8 @@ export function RealCheckoutPage({
 }: {
   allowOrder?: boolean;
 }) {
+  const router = useRouter();
+  const [isPreview, setIsPreview] = useState(false);
   const params = useSearchParams();
   const ids = parseCartItemIds(params.get("items"));
   const user = useAuthStore((state) => state.user);
@@ -264,6 +268,32 @@ export function RealCheckoutPage({
       setBusy(false);
     }
   }
+  if (isPreview)
+    return (
+      <>
+        <p role="status" className="p-3 text-center text-body-s">
+          주문·결제 시연 · 실제 주문과 입금 계좌는 생성되지 않습니다.
+        </p>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setIsPreview(false);
+            setMethod(undefined);
+          }}
+        >
+          실제 결제로 돌아가기
+        </Button>
+        <CheckoutPage
+          lines={lines}
+          initialValues={form.getValues()}
+          initialMethod="BANK_TRANSFER"
+          onComplete={(result) => {
+            usePurchasePreviewStore.getState().beginCheckout(lines);
+            router.push(`/checkout/ui-preview-order/complete?result=${result}`);
+          }}
+        />
+      </>
+    );
   return (
     <FormProvider {...form}>
       <form
@@ -373,18 +403,20 @@ export function RealCheckoutPage({
               }
             />
             <hr className="border-border-jade-weak" />
-            <DiscountSlots unavailable />
+            <DiscountSlots onPreview={() => setIsPreview(true)} />
             <p className="text-caption text-font-dark-weak">
-              할인코드·쿠폰·적립금은 서비스 준비 중입니다.
+              할인코드·쿠폰·적립금은 MSW 시연 주문에서 적용됩니다.
             </p>
             <hr className="border-border-jade-weak" />
             <PaymentsMethod
               value={method}
-              onChange={setMethod}
-              disabledMethods={["BANK_TRANSFER"]}
+              onChange={(value) => {
+                if (value === "BANK_TRANSFER") setIsPreview(true);
+                else setMethod(value);
+              }}
             />
             <p className="text-caption text-font-dark-weak">
-              무통장입금은 입금 확인 기능 준비 중으로 사용할 수 없습니다.
+              무통장입금을 선택하면 실제 결제 없이 시연 화면으로 전환됩니다.
             </p>
           </fieldset>
           <aside className="space-y-4 md:pt-9">

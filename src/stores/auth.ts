@@ -1,5 +1,6 @@
 import { create } from "zustand";
 
+import { setDemoSession } from "@/lib/demo-session";
 import type { AuthUser } from "@/types/auth";
 
 /**
@@ -35,7 +36,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   setSession: (accessToken, user) =>
     set({ status: "authenticated", accessToken, user }),
   setAccessToken: (accessToken) => set({ accessToken }),
-  clear: () => set({ status: "anonymous", accessToken: null, user: null }),
+  clear: () => {
+    setDemoSession(false);
+    set({ status: "anonymous", accessToken: null, user: null });
+  },
 }));
 
 /**
