@@ -58,7 +58,7 @@ describe("SearchPanel", () => {
     fireEvent.change(input, { target: { value: "다기" } });
     fireEvent.submit(screen.getByRole("search"));
 
-    expect(push).toHaveBeenCalledWith("/search?q=%EB%8B%A4%EA%B8%B0");
+    expect(push).toHaveBeenCalledWith("/products?keyword=%EB%8B%A4%EA%B8%B0");
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -70,7 +70,7 @@ describe("SearchPanel", () => {
     fireEvent.change(input, { target: { value: "다기" } });
     fireEvent.click(screen.getByRole("button", { name: "검색 실행" }));
 
-    expect(push).toHaveBeenCalledWith("/search?q=%EB%8B%A4%EA%B8%B0");
+    expect(push).toHaveBeenCalledWith("/products?keyword=%EB%8B%A4%EA%B8%B0");
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -104,7 +104,7 @@ describe("SearchPanel", () => {
     fireEvent.submit(screen.getByRole("search"));
 
     expect(push).toHaveBeenCalledWith(
-      `/search?q=${encodeURIComponent("다기 & 찻잔")}`,
+      `/products?keyword=${encodeURIComponent("다기 & 찻잔")}`,
     );
   });
 });
