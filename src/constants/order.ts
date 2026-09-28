@@ -635,13 +635,7 @@ export const ORDER_EXCHANGE_REASON_OPTIONS = [
 ] as const;
 
 /** 교환·환불 신청 모달(MY-exchange)의 "환불" 선택 시 사유 옵션. */
-export const ORDER_REFUND_REASON_OPTIONS = [
-  "단순 변심",
-  "상품 파손/불량",
-  "배송 지연 및 오배송",
-  "판매자 요청",
-  "직접 입력",
-] as const;
+export const ORDER_REFUND_REASON_OPTIONS = ORDER_EXCHANGE_REASON_OPTIONS;
 
 /** BE `POST /api/payments/returns`의 `reason` enum. */
 export type ReturnReason =
