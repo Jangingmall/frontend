@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { Footer } from "@/components/common/footer";
 
 import { AuthBootstrap } from "./auth-bootstrap";
+import { ConsumerChrome } from "./ConsumerChrome";
 import { pretendard } from "./fonts";
 import { MockIdentitySwitcher } from "./mock-identity-switcher-loader";
 import { QueryProvider } from "./query-provider";
@@ -24,10 +25,16 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col">
         <QueryProvider>
           <AuthBootstrap>
-            <SiteGnb />
+            <ConsumerChrome>
+              <SiteGnb />
+            </ConsumerChrome>
             <main className="flex flex-1 flex-col">{children}</main>
-            <Footer />
-            <MockIdentitySwitcher />
+            <ConsumerChrome>
+              <Footer />
+            </ConsumerChrome>
+            <ConsumerChrome>
+              <MockIdentitySwitcher />
+            </ConsumerChrome>
           </AuthBootstrap>
         </QueryProvider>
       </body>

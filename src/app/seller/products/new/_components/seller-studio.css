@@ -1,0 +1,1025 @@
+.ss-shell {
+  --ss-ink: var(--font-dark, #121b29);
+  --ss-muted: var(--font-dark-subtle, #414954);
+  --ss-bg: var(--bg-subtle, #fafbfc);
+  min-height: 100vh;
+  color: var(--ss-ink);
+  background: var(--ss-bg);
+  font-family: var(--font-pretendard), sans-serif;
+}
+.ss-shell button {
+  cursor: pointer;
+}
+.ss-shell button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ss-shell button:focus-visible,
+.ss-shell a:focus-visible {
+  outline: 2px solid #487580;
+  outline-offset: 3px;
+}
+.ss-header {
+  height: 70px;
+  padding: 0 48px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: #121b29;
+  color: white;
+}
+.ss-header > span {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.ss-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 32px;
+  flex-shrink: 0;
+  background: #d3e1e3;
+  color: #414954;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
+}
+.ss-form-wrap {
+  max-width: 888px;
+  margin: 0 auto;
+  padding: 64px 0 80px;
+}
+.ss-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.ss-heading h1 {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.ss-heading ol {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.ss-heading li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.ss-heading li[aria-current] {
+  font-weight: 700;
+}
+.ss-heading li > span {
+  font-size: 20px;
+  font-weight: 400;
+  margin: 0 3px;
+}
+.ss-intro {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.ss-input-form {
+  margin-top: 52px;
+}
+.ss-input-form fieldset {
+  border: 0;
+  min-width: 0;
+}
+.ss-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+.ss-label > span {
+  color: #a14339;
+  margin-left: 2px;
+}
+.ss-upload {
+  height: 156px;
+  border: 1px dashed #8e9a9c;
+  border-radius: 4px;
+  background: white;
+}
+.ss-upload.is-dragging {
+  background: #eaf1f3;
+  border-color: #121b29;
+}
+.ss-upload-button {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  gap: 4px;
+}
+.ss-plus {
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 32px;
+  margin-bottom: 4px;
+}
+.ss-field {
+  display: block;
+  margin-top: 32px;
+}
+.ss-field input,
+.ss-field textarea {
+  display: block;
+  width: 100%;
+  border: 1px solid #8e9a9c;
+  border-radius: 2px;
+  background: white;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #121b29;
+}
+.ss-field input {
+  height: 36px;
+}
+.ss-field textarea {
+  height: 62px;
+  resize: vertical;
+}
+.ss-field small {
+  display: block;
+  text-align: right;
+  font-size: 10px;
+  line-height: 14px;
+  margin-top: 4px;
+}
+.ss-field input::placeholder,
+.ss-field textarea::placeholder {
+  color: #8e9a9c;
+}
+.ss-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 12px 24px;
+  border: 1px solid #121b29;
+  border-radius: 2px;
+  background: white;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  white-space: nowrap;
+}
+.ss-primary {
+  background: #121b29;
+  color: white;
+}
+.ss-button:hover {
+  filter: brightness(0.94);
+}
+.ss-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 48px;
+}
+.ss-demo-note {
+  font-size: 11px;
+  color: #657277;
+  margin-top: 24px;
+  line-height: 1.6;
+}
+.ss-demo-note a {
+  text-decoration: underline;
+  margin-left: 12px;
+}
+.ss-thumbnails {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  align-items: center;
+  height: 100%;
+  overflow-x: auto;
+}
+.ss-thumbnails > div {
+  position: relative;
+  flex-shrink: 0;
+}
+.ss-thumbnails img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+}
+.ss-thumbnails > div button {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: #121b29;
+  color: white;
+  width: 22px;
+  height: 22px;
+}
+.ss-thumbnails > button {
+  width: 72px;
+  height: 96px;
+  border: 1px dashed #8e9a9c;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.ss-error,
+.ss-global-error {
+  color: #aa3024;
+  font-size: 13px;
+  margin-top: 16px;
+}
+.ss-global-error {
+  position: relative;
+  z-index: 20;
+  padding: 12px 24px;
+  background: #fff0eb;
+  margin: 0;
+}
+.ss-generating {
+  text-align: center;
+  padding-top: 279px;
+  position: relative;
+  min-height: 675px;
+}
+.ss-loading-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  height: 18px;
+  align-items: center;
+  margin-bottom: 35px;
+}
+.ss-loading-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #414954;
+  animation: ss-pulse 1s ease-in-out infinite alternate;
+}
+.ss-loading-dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.ss-loading-dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.ss-generating h2 {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.ss-generating p {
+  font-size: 16px;
+  margin-top: 8px;
+}
+.ss-generating small {
+  display: block;
+  font-size: 16px;
+  color: #414954;
+  margin-top: 290px;
+}
+@keyframes ss-pulse {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.ss-editor {
+  position: relative;
+  background: #ecedee;
+  min-height: calc(100vh - 70px);
+}
+.ss-tools {
+  position: fixed;
+  left: 0;
+  top: 70px;
+  bottom: 0;
+  width: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 8px 16px;
+  background: white;
+  border-right: 1px solid #c8d9dc;
+  z-index: 30;
+}
+.ss-tools > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ss-tools button {
+  display: flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+}
+.ss-tools button[aria-pressed="true"] {
+  background: #d3e1e3;
+}
+.ss-tools > div:first-child button + button {
+  border-top: 1px solid #ecedee;
+}
+.ss-page-list {
+  position: fixed;
+  left: 50px;
+  top: 70px;
+  bottom: 0;
+  width: 220px;
+  padding: 24px 8px;
+  background: white;
+  border-right: 1px solid #c8d9dc;
+  box-shadow: 0 4px 6px #00000014;
+  overflow: auto;
+  z-index: 25;
+}
+.ss-page-list > button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #c8d9dc;
+  border-radius: 2px;
+  width: 100%;
+  padding: 4px 2px;
+  margin-bottom: 8px;
+  height: 28px;
+  font-size: 13px;
+  text-align: left;
+}
+.ss-page-list > button[aria-pressed="true"] {
+  background: #fafbfc;
+  border-color: #8e9a9c;
+  font-weight: 700;
+}
+.ss-page-list > button > span:last-child {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ss-page-list img {
+  flex-shrink: 0;
+}
+.ss-layout-panel {
+  margin-top: 24px;
+  font-size: 13px;
+  display: grid;
+  gap: 12px;
+}
+.ss-layout-panel h2 {
+  font-weight: 700;
+}
+.ss-layout-panel label {
+  display: grid;
+  gap: 8px;
+}
+.ss-layout-panel select {
+  padding: 8px;
+  border: 1px solid #8e9a9c;
+  width: 100%;
+}
+.ss-layout-panel .ss-button {
+  font-size: 13px;
+  min-height: 36px;
+}
+.ss-editor-actions {
+  position: sticky;
+  top: 16px;
+  z-index: 35;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  height: 64px;
+  padding: 16px 48px 0 286px;
+  pointer-events: none;
+}
+.ss-editor-actions > * {
+  pointer-events: auto;
+  box-shadow: 0 4px 12px #0000000d;
+}
+.ss-editor-actions > span {
+  font-size: 11px;
+  color: #414954;
+  box-shadow: none;
+  margin-right: 8px;
+}
+.ss-canvas {
+  margin-left: 270px;
+  padding: 36px 24px 100px;
+}
+.ss-page {
+  width: min(808px, 100%);
+  margin: 0 auto 24px;
+  position: relative;
+  scroll-margin-top: 150px;
+}
+.ss-page-bar {
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 0;
+  font-size: 13px;
+  color: #414954;
+}
+.ss-page-title {
+  padding: 4px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60%;
+  border-radius: 4px;
+  text-align: left;
+}
+.ss-page.is-selected .ss-page-title {
+  background: #414954;
+  color: white;
+}
+.ss-page-controls {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.ss-page-controls button {
+  width: 24px;
+  height: 24px;
+}
+.ss-page-controls .ss-swatch {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #8e9a9c;
+}
+.ss-swatch.paper {
+  background: white;
+}
+.ss-swatch.soft {
+  background: #fafbfc;
+}
+.ss-swatch.ink {
+  background: #121b29;
+}
+.ss-swatch[aria-pressed="true"] {
+  outline: 1px solid #414954;
+  outline-offset: 2px;
+}
+.ss-page-paper {
+  max-width: 774px;
+  margin: 0 auto;
+  position: relative;
+  background: white;
+}
+.ss-page.is-selected .ss-page-paper {
+  outline: 4px solid #414954;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.ss-page-select {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+.ss-property-panel {
+  position: absolute;
+  right: 16px;
+  top: 52px;
+  width: 292px;
+  background: #20262ef2;
+  color: white;
+  padding: 20px 16px;
+  z-index: 10;
+  box-shadow: 0 4px 12px #0003;
+  max-height: 550px;
+  overflow: auto;
+}
+.ss-property-panel h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.ss-property-panel label {
+  display: block;
+  font-size: 12px;
+  margin-top: 12px;
+}
+.ss-property-panel textarea,
+.ss-property-panel input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  background: #fff;
+  color: #121b29;
+  padding: 6px 8px;
+  border: 1px solid #8e9a9c;
+  font-size: 13px;
+  resize: vertical;
+}
+.ss-panel-close {
+  position: absolute;
+  right: 10px;
+  top: 8px;
+  font-size: 20px;
+}
+.ss-property-panel .ss-button {
+  width: 100%;
+  font-size: 13px;
+  min-height: 32px;
+  padding: 6px 12px;
+  margin-top: 12px;
+  background: transparent;
+  border-color: white;
+  color: white;
+}
+.ss-image-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.ss-image-picker img {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+}
+.ss-image-picker button {
+  border: 1px dashed #8e9a9c;
+  min-height: 80px;
+}
+.ss-image-picker button[aria-pressed="true"] {
+  outline: 2px solid white;
+}
+.ss-image-picker small {
+  display: block;
+  font-size: 10px;
+}
+.ss-expand {
+  position: fixed;
+  bottom: 32px;
+  right: 48px;
+  background: white;
+  z-index: 25;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+}
+.ss-editor.is-expanded .ss-tools,
+.ss-editor.is-expanded .ss-page-list {
+  display: none;
+}
+.ss-editor.is-expanded .ss-canvas {
+  margin-left: 0;
+}
+.ss-shell .cs-preview-host {
+  width: 100%;
+  max-width: 774px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.ss-shell .cs-document {
+  transform-origin: top left;
+  background: white;
+}
+.ss-shell .cs-document > section {
+  padding: 120px 0;
+  text-align: center;
+  color: #101010;
+}
+.ss-shell .cs-document > section > div {
+  max-width: 505px;
+  margin: auto;
+  width: 100%;
+}
+.ss-shell .cs-document h2 {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: pre-wrap;
+}
+.ss-shell .cs-document h3 {
+  font-size: 20px;
+  font-weight: 600;
+}
+.ss-shell .cs-document p {
+  font-size: 16px;
+  line-height: 1.4;
+  margin-top: 21px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ss-shell .cs-document span {
+  font-size: 12px;
+}
+.ss-shell .cs-document span:empty {
+  display: none;
+}
+.ss-shell .cs-document figure {
+  width: 100%;
+}
+.ss-shell .cs-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ss-shell .cs-document > section.cs-paper-ink {
+  background: #121b29;
+  color: white;
+}
+.ss-shell .cs-document > section.cs-paper-soft {
+  background: #fafbfc;
+}
+.ss-shell .cs-photo {
+  position: relative;
+}
+.ss-shell .cs-photo > span {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: #121b29;
+  color: white;
+  padding: 6px;
+}
+.ss-shell .cs-error {
+  padding: 24px;
+  color: #a14339;
+}
+.ss-review-header {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 48px;
+  background: white;
+  border-bottom: 1px solid #c8d9dc;
+  box-shadow: 0 4px 12px #00000014;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+.ss-review-header > button {
+  font-size: 14px;
+  padding: 8px;
+}
+.ss-devices {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  padding: 4px;
+  background: #ecedee;
+  border-radius: 4px;
+}
+.ss-devices button {
+  width: 80px;
+  height: 32px;
+  font-size: 14px;
+}
+.ss-devices button[aria-pressed="true"] {
+  background: white;
+  border: 1px solid #c8d9dc;
+  box-shadow: 0 4px 12px #00000014;
+}
+.ss-review-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.ss-review-actions .ss-button {
+  min-height: 40px;
+  padding: 7px 24px;
+}
+.ss-review-device {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 2px 12px #0000001f;
+}
+.ss-review-device.tablet {
+  max-width: 768px;
+}
+.ss-review-device.mobile {
+  max-width: 390px;
+}
+.ss-preview-shop {
+  background: #121b29;
+  color: white;
+  padding: 20px 48px;
+  font-size: 13px;
+}
+.ss-preview-shop > .ss-logo {
+  margin: auto;
+}
+.ss-preview-shop > div {
+  margin-top: 28px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.ss-product-summary {
+  padding: 48px;
+  display: grid;
+  grid-template-columns: minmax(0, 774fr) minmax(0, 522fr);
+  gap: 48px;
+}
+.ss-product-photos {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: 24px;
+}
+.ss-product-photos > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ss-product-photos img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+.ss-product-photos > img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  background: #fafbfc;
+}
+.ss-product-copy h1 {
+  font-size: 26px;
+  font-weight: 600;
+}
+.ss-product-copy p {
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.ss-product-copy strong {
+  font-size: 18px;
+}
+.ss-product-copy hr {
+  margin: 24px 0;
+  border-color: #c8d9dc;
+}
+.ss-product-copy dl {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 12px;
+  font-size: 13px;
+}
+.ss-preview-notice {
+  margin-top: 32px !important;
+  background: #fafbfc;
+  padding: 16px;
+  color: #414954;
+}
+.ss-product-detail {
+  max-width: 888px;
+  margin: 0 auto;
+  padding: 24px 24px 80px;
+}
+.ss-product-detail > h2 {
+  border-bottom: 1px solid #121b29;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  font-size: 16px;
+  font-weight: 600;
+}
+.ss-review-device.tablet .ss-product-summary,
+.ss-review-device.mobile .ss-product-summary {
+  grid-template-columns: 1fr;
+  padding: 24px;
+  gap: 24px;
+}
+.ss-review-device.mobile .ss-product-photos {
+  grid-template-columns: 1fr;
+}
+.ss-review-device.mobile .ss-product-photos > div {
+  flex-direction: row;
+  order: 2;
+  overflow: auto;
+}
+.ss-review-device.mobile .ss-product-photos button {
+  min-width: 60px;
+}
+.ss-review-device.mobile .ss-preview-shop {
+  padding: 16px;
+}
+.ss-review-status {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 16px;
+  background: #fafbfc;
+  border-top: 1px solid #c8d9dc;
+  text-align: center;
+  font-size: 12px;
+  z-index: 20;
+}
+.ss-loading {
+  padding: 80px;
+  text-align: center;
+}
+@media (max-width: 1000px) {
+  .ss-form-wrap {
+    margin: 0 32px;
+  }
+  .ss-editor-actions > span {
+    display: none;
+  }
+  .ss-review-header {
+    padding: 0 20px;
+  }
+  .ss-review-header > .ss-logo {
+    display: none;
+  }
+  .ss-review-actions .ss-button {
+    padding: 7px 12px;
+  }
+  .ss-product-summary {
+    gap: 24px;
+    padding: 24px;
+  }
+  .ss-product-photos {
+    grid-template-columns: 60px minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+@media (max-width: 700px) {
+  .ss-header {
+    padding: 0 20px;
+  }
+  .ss-header > span {
+    font-size: 18px;
+  }
+  .ss-form-wrap {
+    margin: 0 20px;
+    padding-top: 32px;
+  }
+  .ss-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .ss-heading h1 {
+    font-size: 24px;
+  }
+  .ss-heading ol {
+    font-size: 11px;
+  }
+  .ss-input-form {
+    margin-top: 32px;
+  }
+  .ss-form-actions {
+    margin-top: 32px;
+  }
+  .ss-demo-note {
+    font-size: 10px;
+  }
+  .ss-generating {
+    padding-top: 150px;
+    min-height: 550px;
+  }
+  .ss-generating h2 {
+    font-size: 18px;
+  }
+  .ss-generating p {
+    font-size: 13px;
+  }
+  .ss-generating small {
+    margin-top: 180px;
+  }
+  .ss-page-list {
+    display: none;
+  }
+  .ss-canvas {
+    margin-left: 50px;
+    padding: 30px 14px 100px;
+  }
+  .ss-editor-actions {
+    padding: 12px 16px 0 64px;
+  }
+  .ss-button {
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+  .ss-page-title {
+    max-width: 100%;
+    font-size: 11px;
+  }
+  .ss-page-bar {
+    flex-wrap: wrap;
+  }
+  .ss-property-panel {
+    right: 0;
+    width: min(292px, 100%);
+  }
+  .ss-expand {
+    right: 16px;
+    bottom: 16px;
+  }
+  .ss-review-header {
+    height: 112px;
+    align-items: flex-start;
+    padding-top: 12px;
+  }
+  .ss-devices {
+    top: 62px;
+  }
+  .ss-review-actions .ss-button {
+    font-size: 13px;
+  }
+  .ss-product-summary {
+    grid-template-columns: 1fr;
+  }
+  .ss-preview-shop {
+    padding: 16px;
+  }
+  .ss-preview-shop > div {
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-loading-dots i {
+    animation: none;
+  }
+}
+
+.ss-projects {
+  margin-top: 32px;
+}
+.ss-projects li {
+  border-bottom: 1px solid #c8d9dc;
+}
+.ss-projects a {
+  display: flex;
+  justify-content: space-between;
+  padding: 24px 0;
+}
+.ss-projects span {
+  font-size: 13px;
+}
+
+/* Figma 60:369의 입력 치수 및 텍스트 대비. */
+.ss-input-form {
+  margin-top: 48px;
+}
+.ss-label {
+  padding: 0 4px;
+}
+.ss-field input,
+.ss-field textarea {
+  border-color: #ecedee;
+  border-radius: 0;
+}
+.ss-field input::placeholder,
+.ss-field textarea::placeholder {
+  color: #414954;
+}
+.ss-field small {
+  color: #80858c;
+  padding: 0 4px;
+}
+.ss-form-actions {
+  margin-top: 40px;
+}
+.ss-form-actions .ss-button {
+  min-height: 56px;
+}
+.ss-heading ol {
+  min-width: 317px;
+  justify-content: space-between;
+}
+@media (max-width: 700px) {
+  .ss-input-form {
+    margin-top: 32px;
+  }
+  .ss-heading ol {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+.ss-image-help {
+  font-size: 11px;
+  margin-top: 8px;
+  color: #d3e1e3;
+}
+@media (max-width: 700px) {
+  .ss-editor.ss-panel-layout .ss-page-list {
+    display: block;
+  }
+}
