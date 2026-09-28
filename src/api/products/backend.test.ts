@@ -130,3 +130,50 @@ it("잘못된 단일 페이지 번호와 길이를 거부한다", async () => {
   mockPages((p) => ({ ...p, content: [] }));
   await expect(fetchProductListClient({})).rejects.toThrow();
 });
+
+it("잘못된 썸네일만 기본 이미지로 대체하고 상품과 전체 개수를 유지한다", async () => {
+  const thumbnails = [
+    "전남 담양",
+    "경기 남양주",
+    "송화가루 흑임자",
+    "javascript:alert(1)",
+    "//example.com/image.jpg",
+    "",
+    null,
+    "/images/product-placeholder.png",
+    "https://example.com/product.jpg",
+  ];
+  mockPages((page) => ({
+    ...page,
+    content: (page.content as typeof products).map((product, index) => ({
+      ...product,
+      thumbnailUrl: thumbnails[index % thumbnails.length],
+    })),
+  }));
+  for (const fetchList of [fetchProductList, fetchProductListClient]) {
+    const result = await fetchList({});
+    expect(result.totalCount).toBe(103);
+    expect(result.items).toHaveLength(20);
+    expect(result.items.slice(0, 7).map((item) => item.thumbnailUrl)).toEqual(
+      Array(7).fill(null),
+    );
+    expect(result.items[7].thumbnailUrl).toBe(
+      "/images/product-placeholder.png",
+    );
+    expect(result.items[8].thumbnailUrl).toBe(
+      "https://example.com/product.jpg",
+    );
+    expect(result.items[0]).toMatchObject({ id: 1, name: "접시", price: 104 });
+  }
+});
+
+it("썸네일을 허용해도 잘못된 상품 가격은 거부한다", async () => {
+  mockPages((page) => ({
+    ...page,
+    content: (page.content as typeof products).map((product) => ({
+      ...product,
+      price: -1,
+    })),
+  }));
+  await expect(fetchProductListClient({})).rejects.toThrow();
+});
