@@ -79,9 +79,15 @@ export function useConfirmPurchaseMutation(orderId: number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => confirmPurchase(orderId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: orderKeys.all });
-      void queryClient.invalidateQueries({ queryKey: reviewKeys.all });
+    onSuccess: async () => {
+      // 상세 화면에 머무는 동안 비활성화된 목록도 갱신한 뒤 완료 처리한다.
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: orderKeys.all,
+          refetchType: "all",
+        }),
+        queryClient.invalidateQueries({ queryKey: reviewKeys.all }),
+      ]);
     },
   });
 }
