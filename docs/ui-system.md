@@ -55,7 +55,7 @@ Figma 변수명과 FE 토큰명은 1:1 문자 일치를 요구하지 않는다. 
 
 - **텍스트 스타일**: Figma named text style → `--text-<name>` (+ `--line-height`, `--font-weight` 서브키). 예: `--text-title-l`. letter-spacing은 전부 0%라 건드리지 않는다. 폰트는 전체 Pretendard라 지정하지 않는다.
 - **그림자**: Figma "Drop Shadow" → Tailwind `--shadow-*` (box-shadow). 용도명으로 등록 (`--shadow-floating` 재사용, `--shadow-nav` Nav 전용).
-- **컨테이너·그리드**: Tailwind 기본 스케일로 커버되는 값은 새로 등록하지 않는다. 없는 값만 등록 (`--container-desktop: 90rem`). 그리드는 현재 desktop만 정의. tablet/mobile 추가 시 같은 브레이크포인트 이름 규칙으로 확장한다.
+- **브레이크포인트·컨테이너·그리드**: mobile-first. Figma 5종(mobile 375~767 · md 768 · lg 1024 · xl 1280 · 2xl 1440)이며 `md`·`lg`·`xl`은 Tailwind 기본값을 그대로 쓰고 `2xl`만 `--breakpoint-2xl: 90rem`으로 재정의한다. 컨테이너 최대폭은 `--container-desktop: 90rem`. 그리드는 거터 24 전 구간, 컬럼 lg 이상 12 / md 이하 4(`grid-cols-4 lg:grid-cols-12`), 좌우 마진 2xl·xl 48 / lg 32 / md·mobile 24(`page-gutter` 유틸). GNB 높이는 `--spacing-gnb`(mobile 64 / md 이상 122).
 - 다크 모드는 `@custom-variant dark (&:is(.dark *))`.
 
 ### 3.4 변경 반영 흐름
@@ -74,7 +74,7 @@ PD Figma 변수 변경·게시
 - 클래스 병합은 `cn()` (`@/lib/utils` — `clsx` + `tailwind-merge`).
 - variant가 있는 컴포넌트는 `class-variance-authority`(`cva`)로 정의한다.
 - 클래스 정렬은 `prettier-plugin-tailwindcss`가 담당한다 (수동 정렬 금지).
-- 반응형: 현재 desktop 우선. tablet/mobile 브레이크포인트는 PD 디자인이 나오면 확장한다.
+- 반응형: mobile-first(접두사 없음 = mobile, 첫 단계는 `md:`). 기존 화면이 쓰는 `sm:`(640)은 Figma에 없는 단계라 새 코드에서는 쓰지 않고, 각 화면의 반응형 작업에서 정리한다. 브레이크포인트별 카드 폭(2xl 260 / xl·lg 242 / md 220 / mobile 160)·좌측 카테고리 폭(2xl 318 / 그 외 256~260)은 목록 화면 작업이 이 값을 따른다.
 
 ## 5. 컴포넌트 분류
 
@@ -175,10 +175,9 @@ PD Figma 변수 변경·게시
 
 ## 8. 미확정 / 후속
 
-| 항목                         | 내용                                                                                                                                                         |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| tablet/mobile 브레이크포인트 | PD 반응형 디자인 제공 후 `@theme`에 브레이크포인트별 컨테이너·그리드 토큰 추가, mobile-first/desktop-first 방향 결정, 기존 desktop 컴포넌트 반응형 대응 일괄 |
-| 접근성 기준                  | PD 자료 없음. `addon-a11y` 자동 검사만 보조. WCAG 목표 레벨·키보드 내비게이션·포커스 관리·aria 패턴·이미지 alt 정책은 MVP 이후 정의                          |
-| 오류 문구 카피               | `error-messages.ts` 골격은 지금 작성. 최종 카피는 서비스 톤·디자인 확정 후, `BUSINESS_RULE_VIOLATION`/`CONFLICT`의 BE `message` 활용 케이스 정리             |
+| 항목           | 내용                                                                                                                                             |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 접근성 기준    | PD 자료 없음. `addon-a11y` 자동 검사만 보조. WCAG 목표 레벨·키보드 내비게이션·포커스 관리·aria 패턴·이미지 alt 정책은 MVP 이후 정의              |
+| 오류 문구 카피 | `error-messages.ts` 골격은 지금 작성. 최종 카피는 서비스 톤·디자인 확정 후, `BUSINESS_RULE_VIOLATION`/`CONFLICT`의 BE `message` 활용 케이스 정리 |
 
 컴포넌트별 props·variant·size는 별도 구현 설계(`feat/design-system-*` 브랜치)에서, `error.tsx` 배치는 §7.4, 자동 시각 회귀는 도입하지 않음(§1)으로 각각 정리됨.
