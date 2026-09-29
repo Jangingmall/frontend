@@ -1,4 +1,4 @@
-import { http } from "msw";
+import { delay, http } from "msw";
 import { describe, expect, it, vi } from "vitest";
 
 import { mockOk } from "@/mocks/envelope";
@@ -196,4 +196,30 @@ it("미지원 필터를 직접 넘겨도 서버와 클라이언트는 실제 목
     expect(params.has("subcategory")).toBe(false);
     expect(params.has("hasGiftWrap")).toBe(false);
   }
+});
+
+it("서버 분류 조회는 categories와 subcategories를 병렬로 요청한다", async () => {
+  let markSubcategoriesRequested!: () => void;
+  const subcategoriesRequested = new Promise<true>((resolve) => {
+    markSubcategoriesRequested = () => resolve(true);
+  });
+  let requestedWhileCategoriesPending = false;
+  server.use(
+    http.get("*/api/products/categories", async () => {
+      // 직렬이면 categories 응답 전에는 subcategories 요청이 시작되지 않는다.
+      requestedWhileCategoriesPending = await Promise.race([
+        subcategoriesRequested,
+        delay(500).then(() => false),
+      ]);
+      return mockOk([{ categoryId: 1, name: "도자기" }]);
+    }),
+    http.get("*/api/products/subcategories", () => {
+      markSubcategoriesRequested();
+      return mockOk([{ subcategoryId: 2, categoryId: 1, name: "찻잔" }]);
+    }),
+  );
+
+  await fetchProductCategoriesServer();
+
+  expect(requestedWhileCategoriesPending).toBe(true);
 });

@@ -26,10 +26,13 @@ const readTaxonomy = (path: string) =>
     signal: AbortSignal.timeout(3000),
   });
 export async function fetchProductCategoriesServer() {
-  return mapBackendProductCategories(
-    await readTaxonomy("/api/products/categories"),
-    await readTaxonomy("/api/products/subcategories"),
-  );
+  // 두 응답은 서로 독립이라 병렬로 받는다 — 직렬이면 타임아웃이 두 번 겹쳐 루트 layout이 최대
+  // 6초까지 멈출 수 있다.
+  const [categories, subcategories] = await Promise.all([
+    readTaxonomy("/api/products/categories"),
+    readTaxonomy("/api/products/subcategories"),
+  ]);
+  return mapBackendProductCategories(categories, subcategories);
 }
 export async function fetchProductList(query: ProductListQuery = {}) {
   if (!publicEnv.apiMocking)
