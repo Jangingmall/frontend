@@ -9,6 +9,7 @@ import { productDetailHandlers } from "@/api/products/mock/detail-handlers";
 import { productHandlers } from "@/api/products/mock/handlers";
 import { recentViewHandlers } from "@/api/recent-views/mock/handlers";
 import { reviewHandlers } from "@/api/reviews/mock/handlers";
+import { sellerHandlers } from "@/api/seller-studio/mock/handlers";
 import { wishlistHandlers } from "@/api/wishlist/mock/handlers";
 
 import { extensionHandlers } from "./extensions";
@@ -33,6 +34,7 @@ export const handlers: HttpHandler[] = [
       }),
     );
   }),
+  ...sellerHandlers,
   ...extensionHandlers,
   ...productHandlers,
   ...productDetailHandlers,
