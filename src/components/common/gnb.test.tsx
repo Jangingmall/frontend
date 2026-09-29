@@ -283,4 +283,79 @@ describe("Gnb", () => {
       vi.useRealTimers();
     });
   });
+
+  describe("모바일 메뉴", () => {
+    function mockMatchMedia() {
+      let listener: ((event: MediaQueryListEvent) => void) | undefined;
+      vi.stubGlobal("matchMedia", () => ({
+        matches: false,
+        addEventListener: (_: string, fn: typeof listener) => {
+          listener = fn;
+        },
+        removeEventListener: () => {
+          listener = undefined;
+        },
+      }));
+      return {
+        widen: () =>
+          act(() => listener?.({ matches: true } as MediaQueryListEvent)),
+      };
+    }
+
+    it("햄버거를 누르면 전체화면 메뉴가 열리고 닫기 버튼으로 닫힌다", () => {
+      mockMatchMedia();
+      render(<Gnb categories={gnbCategoriesFixture} />);
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "메뉴 열기" }));
+      expect(screen.getByRole("dialog", { name: "전체 메뉴" })).toBeVisible();
+
+      fireEvent.click(screen.getByRole("button", { name: "메뉴 닫기" }));
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("전체 카테고리 → 뒤로가기로 화면을 오가고, 닫았다 다시 열면 전체 메뉴부터 시작한다", () => {
+      mockMatchMedia();
+      render(<Gnb categories={gnbCategoriesFixture} />);
+      fireEvent.click(screen.getByRole("button", { name: "메뉴 열기" }));
+
+      fireEvent.click(screen.getByRole("button", { name: "전체 카테고리" }));
+      expect(
+        screen.getByRole("navigation", { name: "분류" }),
+      ).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "뒤로가기" }));
+      expect(
+        screen.getByRole("navigation", { name: "전체 메뉴" }),
+      ).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "전체 카테고리" }));
+      fireEvent.click(screen.getByRole("button", { name: "메뉴 닫기" }));
+      fireEvent.click(screen.getByRole("button", { name: "메뉴 열기" }));
+      expect(
+        screen.getByRole("navigation", { name: "전체 메뉴" }),
+      ).toBeInTheDocument();
+    });
+
+    it("열린 채로 화면이 md 이상으로 넓어지면 메뉴가 닫힌다", () => {
+      const media = mockMatchMedia();
+      render(<Gnb categories={gnbCategoriesFixture} />);
+      fireEvent.click(screen.getByRole("button", { name: "메뉴 열기" }));
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+      media.widen();
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
+    it("메뉴를 열면 열려 있던 검색 패널은 닫힌다", () => {
+      mockMatchMedia();
+      render(<Gnb categories={gnbCategoriesFixture} />);
+      fireEvent.click(screen.getByRole("button", { name: "검색" }));
+      expect(screen.getByRole("search")).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "메뉴 열기" }));
+
+      expect(screen.queryByRole("search")).not.toBeInTheDocument();
+    });
+  });
 });

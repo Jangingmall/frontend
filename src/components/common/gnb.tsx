@@ -13,6 +13,7 @@ import {
 } from "./category-mega-panel";
 import { GnbNav } from "./gnb-nav";
 import { Header } from "./header";
+import { MobileMenu, type MobileMenuView } from "./mobile-menu";
 import { SearchPanel } from "./search-panel";
 
 /**
@@ -94,6 +95,10 @@ function Gnb({
     null,
   );
   const activeCategoryId = selectedCategoryId ?? categories[0]?.id ?? "";
+  // null = 닫힘. 열려 있을 때는 어느 화면(전체 메뉴/대분류)을 보여주는지를 함께 담는다.
+  const [mobileMenuView, setMobileMenuView] = useState<MobileMenuView | null>(
+    null,
+  );
   const rootRef = useRef<HTMLDivElement>(null);
   const categoryTriggerRef = useRef<HTMLAnchorElement>(null);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
@@ -132,6 +137,26 @@ function Gnb({
     close();
     setOpenPanel("search");
   }
+
+  function handleMobileMenuOpen() {
+    close();
+    setOpenPanel(null);
+    setMobileMenuView("root");
+  }
+
+  // 모바일 메뉴가 열린 채로 화면이 `md` 이상으로 넓어지면 닫는다. CSS(`md:hidden`)는 메뉴를 화면에서만
+  // 숨길 뿐 모달의 스크롤 잠금·`aria-hidden`을 남기기 때문에(예: 폰 가로 회전) 상태를 정리해야 한다.
+  const isMobileMenuOpen = mobileMenuView !== null;
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const query = window.matchMedia?.("(min-width: 48rem)");
+    if (!query) return;
+    function handleChange(event: MediaQueryListEvent) {
+      if (event.matches) setMobileMenuView(null);
+    }
+    query.addEventListener("change", handleChange);
+    return () => query.removeEventListener("change", handleChange);
+  }, [isMobileMenuOpen]);
 
   // 열려 있는 패널이 무엇이든 닫는다 — ESC·바깥 클릭이 공유하는 경로. `close`는
   // `useHoverIntent`가 안정된 참조로 주므로, 이 콜백도 `isCategoryPanelOpen`·
@@ -197,6 +222,8 @@ function Gnb({
         isSearchPanelOpen={isSearchPanelOpen}
         onSearchTriggerClick={handleSearchTriggerClick}
         searchTriggerRef={searchTriggerRef}
+        onMenuOpen={handleMobileMenuOpen}
+        isMobileMenuOpen={isMobileMenuOpen}
       />
       <Suspense
         fallback={
@@ -227,6 +254,18 @@ function Gnb({
       {isSearchPanelOpen && (
         <SearchPanel onClose={() => setOpenPanel(null)} className="w-full" />
       )}
+      <MobileMenu
+        open={isMobileMenuOpen}
+        onOpenChange={(open) => {
+          if (!open) setMobileMenuView(null);
+        }}
+        view={mobileMenuView ?? "root"}
+        onViewChange={setMobileMenuView}
+        authStatus={authStatus}
+        categories={categories}
+        categoriesStatus={categoriesStatus}
+        onCategoriesRetry={onCategoriesRetry}
+      />
     </div>
   );
 }

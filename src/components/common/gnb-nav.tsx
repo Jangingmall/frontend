@@ -146,5 +146,5 @@ function GnbNav({
   );
 }
 
-export { GnbNav, isGnbNavItemActive };
+export { GNB_NAV_ITEMS, GnbNav, isGnbNavItemActive };
 export type { GnbNavItem, GnbNavProps };
