@@ -13,7 +13,9 @@ export interface CartItemInput {
 }
 export interface CartLine extends CartPreviewLine {
   selectedOptions: NonNullable<CartItemInput["selectedOptions"]>;
-  textInputs: NonNullable<CartItemInput["textInputs"]>;
+  textInputs: (NonNullable<CartItemInput["textInputs"]>[number] & {
+    name?: string;
+  })[];
 }
 export interface Cart {
   lines: CartLine[];

@@ -25,19 +25,14 @@ interface ProductInquiriesProps {
   onNotify: ProductNotify;
   onRequireLogin: () => void;
 }
-export function ProductInquiries(props: ProductInquiriesProps) {
-  if (!publicEnv.apiMocking) return null;
-  return <MockProductInquiries {...props} />;
-}
-
-function MockProductInquiries({
+export function ProductInquiries({
   productId,
   isMock: isMockProduct,
   product,
   onNotify,
   onRequireLogin,
 }: ProductInquiriesProps) {
-  const isMock = true;
+  const isMock = publicEnv.apiMocking;
   const isAuthLoading = useAuthStore((state) => state.status === "loading");
   const viewerId = useAuthStore((state) =>
     state.status === "authenticated" ? (state.user?.id ?? null) : null,
@@ -62,7 +57,7 @@ function MockProductInquiries({
       id="product-inquiries"
       className="scroll-mt-40 border-t border-border-neutral-weak px-2 pt-4"
     >
-      {!isMockProduct && (
+      {isMock && !isMockProduct && (
         <p className="mb-2 text-body-s">
           문의 기능은 시연 중입니다. 판매자에게 전송되지 않습니다.
         </p>

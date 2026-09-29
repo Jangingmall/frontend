@@ -18,6 +18,7 @@ import type { CartPreviewLine } from "@/types/purchase-preview";
 import { CartDeleteDialog } from "./CartDeleteDialog";
 import { CartLoginDialog } from "./CartLoginDialog";
 import { CartProductCard } from "./CartProductCard";
+import { LiveCartOptionDialog } from "./LiveCartOptionDialog";
 export function LiveCartRoute() {
   const router = useRouter();
   const status = useAuthStore((state) => state.status);
@@ -31,6 +32,7 @@ export function LiveCartRoute() {
   const [deleteIds, setDeleteIds] = useState<string[]>([]);
   const [undo, setUndo] = useState<CartLine[]>([]);
   const [error, setError] = useState("");
+  const [editingLine, setEditingLine] = useState<CartLine | null>(null);
   const [loginOpen, setLoginOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const busy = useRef(false);
@@ -82,7 +84,10 @@ export function LiveCartRoute() {
         productId: line.productId,
         quantity: line.quantity,
         selectedOptions: line.selectedOptions,
-        textInputs: line.textInputs,
+        textInputs: line.textInputs.map(({ optionGroupId, text }) => ({
+          optionGroupId,
+          text,
+        })),
       });
       remaining.shift();
       setUndo([...remaining]);
@@ -132,7 +137,7 @@ export function LiveCartRoute() {
           <h1 className="text-title-xl">장바구니</h1>
           <PurchaseStepIndicator current={1} />
         </div>
-        {error && (
+        {error && !editingLine && (
           <p role="alert" className="mt-4">
             {error}
           </p>
@@ -219,8 +224,10 @@ export function LiveCartRoute() {
                           line={line}
                           showUnavailableDetails
                           pending={pending}
-                          optionsDisabled
-                          onOptions={() => {}}
+                          onOptions={() => {
+                            setError("");
+                            setEditingLine(line);
+                          }}
                           onSelect={(checked) => choose([line], checked)}
                           onDelete={() => setDeleteIds([line.lineId])}
                           onQuantity={(quantity) => {
@@ -287,6 +294,32 @@ export function LiveCartRoute() {
               상품이 삭제되었습니다.
             </Toast>
           </div>
+        )}
+        {editingLine && (
+          <LiveCartOptionDialog
+            key={editingLine.lineId}
+            line={editingLine}
+            pending={pending}
+            error={error}
+            onClose={() => {
+              setEditingLine(null);
+              setError("");
+            }}
+            onApply={(quantity, textInputs) =>
+              void run(async () => {
+                await mutations.options.mutateAsync({
+                  cartItemId: Number(editingLine.lineId),
+                  quantity,
+                  selectedOptions: editingLine.selectedOptions,
+                  textInputs: textInputs.map(({ optionGroupId, text }) => ({
+                    optionGroupId,
+                    text,
+                  })),
+                });
+                setEditingLine(null);
+              })
+            }
+          />
         )}
         <CartLoginDialog
           open={loginOpen}

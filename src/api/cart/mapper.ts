@@ -39,7 +39,8 @@ export function mapCart(dto: CartDto): Cart {
         selectedOptions: item.selectedOptions.map(
           ({ optionGroupId, choiceId }) => ({ optionGroupId, choiceId }),
         ),
-        textInputs: item.textInputs.map(({ optionGroupId, text }) => ({
+        textInputs: item.textInputs.map(({ optionGroupId, text, name }) => ({
+          name,
           optionGroupId,
           text,
         })),

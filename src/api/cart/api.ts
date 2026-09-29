@@ -44,3 +44,11 @@ export async function mergeGuestCart() {
     throw error;
   }
 }
+export const updateCartOptions = ({
+  cartItemId,
+  ...body
+}: { cartItemId: number } & Pick<
+  CartItemInput,
+  "selectedOptions" | "textInputs"
+> & { quantity?: number }) =>
+  cartRequest(`/items/${cartItemId}/options`, "PATCH", body);
