@@ -76,6 +76,13 @@ function AuthRow({
   onLogout?: () => void;
   onNavigate: () => void;
 }) {
+  // 로그아웃은 메뉴를 먼저 닫고 실행한다 — 세션이 비워지면 보호 경로의 가드가 로그인 화면으로
+  // 이동시키는데, 메뉴가 열린 채면 전체화면 메뉴가 그 화면을 덮는다.
+  function handleLogout() {
+    onNavigate();
+    onLogout?.();
+  }
+
   if (status === "loading") {
     return <Skeleton className="mx-2 my-3 h-6 w-40" />;
   }
@@ -94,7 +101,7 @@ function AuthRow({
           type="button"
           variant="outline"
           size="xs"
-          onClick={onLogout}
+          onClick={handleLogout}
           className="shrink-0"
         >
           로그아웃

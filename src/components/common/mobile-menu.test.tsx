@@ -99,14 +99,16 @@ describe("MobileMenu — 전체 메뉴(HO-menu-1)", () => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
-    it("로그아웃 버튼을 누르면 onLogout을 부른다", async () => {
-      const { onLogout } = setup({
+    it("로그아웃 버튼을 누르면 메뉴를 닫고 onLogout을 부른다", async () => {
+      const { onLogout, onOpenChange } = setup({
         authStatus: "authenticated",
         userName: "김미담",
         onLogout: vi.fn(),
       });
       await userEvent.click(screen.getByRole("button", { name: "로그아웃" }));
       expect(onLogout).toHaveBeenCalledTimes(1);
+      // 세션이 비워져 로그인 화면으로 이동해도 메뉴가 그 위를 덮지 않도록 먼저 닫는다.
+      expect(onOpenChange).toHaveBeenCalledWith(false);
     });
 
     it("비로그인이면 로그아웃 버튼이 없다", () => {

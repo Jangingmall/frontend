@@ -29,6 +29,29 @@ test.describe("모바일(375) GNB", () => {
     await expect(menu).toBeHidden();
   });
 
+  test("보호 경로에서 로그아웃하면 메뉴가 닫히고 로그인 화면을 바로 쓸 수 있다", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    await page
+      .getByPlaceholder("이메일을 입력해주세요.")
+      .fill("user@midam.test");
+    await page.getByPlaceholder("비밀번호를 입력해주세요.").fill("midam1234");
+    await page.getByRole("button", { name: "로그인", exact: true }).click();
+    await expect(page).toHaveURL(/\/$/);
+
+    await page.goto("/mypage/orders");
+    await page.getByRole("button", { name: "메뉴 열기" }).click();
+    const menu = page.getByRole("dialog", { name: "전체 메뉴" });
+    await expect(menu.getByRole("link", { name: "김미담" })).toBeVisible();
+
+    await menu.getByRole("button", { name: "로그아웃" }).click();
+
+    await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByPlaceholder("이메일을 입력해주세요.")).toBeVisible();
+  });
+
   test("메뉴를 연 채 화면을 데스크톱 폭으로 넓히면 메뉴가 닫힌다", async ({
     page,
   }) => {

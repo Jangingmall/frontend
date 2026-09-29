@@ -1,18 +1,20 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
+  act,
   fireEvent,
   render as rtlRender,
+  renderHook,
   screen,
   waitFor,
   within,
 } from "@testing-library/react";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
-import { SiteGnb } from "./site-gnb";
+import { SiteGnb, useGnbSession } from "./site-gnb";
 
 function render(ui: React.ReactElement) {
   const client = new QueryClient({
@@ -135,6 +137,59 @@ describe("SiteGnb 모바일 메뉴 로그인 상태", () => {
       expect(useAuthStore.getState().status).toBe("anonymous"),
     );
     expect(useAuthStore.getState().user).toBeNull();
+  });
+
+  it("로그아웃하면 전체화면 메뉴가 닫힌다", async () => {
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "t",
+      user: { id: 1, name: "김미담", role: "USER" },
+    });
+    render(<SiteGnb />);
+
+    fireEvent.click(screen.getByRole("button", { name: "메뉴 열기" }));
+    fireEvent.click(await screen.findByRole("button", { name: "로그아웃" }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+  });
+
+  it("로그아웃 요청 중에 다시 호출해도 서버에는 한 번만 요청한다", async () => {
+    let requests = 0;
+    server.use(
+      http.post("*/api/member/logout", async () => {
+        requests += 1;
+        await delay(100);
+        return HttpResponse.json({ success: true, status: 200, data: null });
+      }),
+    );
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "t",
+      user: { id: 1, name: "김미담", role: "USER" },
+    });
+    const { result } = renderHook(() => useGnbSession());
+
+    // 메뉴는 첫 클릭에 닫히지만, 같은 틱의 연속 호출도 훅이 스스로 막아야 한다.
+    act(() => {
+      result.current.onLogout();
+      result.current.onLogout();
+    });
+
+    await waitFor(() =>
+      expect(useAuthStore.getState().status).toBe("anonymous"),
+    );
+    expect(requests).toBe(1);
+
+    // 끝난 뒤에는 다시 로그아웃할 수 있다.
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "t",
+      user: { id: 1, name: "김미담", role: "USER" },
+    });
+    act(() => result.current.onLogout());
+    await waitFor(() => expect(requests).toBe(2));
   });
 
   it("서버 로그아웃이 실패해도 클라이언트 세션은 정리한다", async () => {
