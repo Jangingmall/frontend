@@ -55,8 +55,19 @@ function toProductsHref(categoryId: string): Route {
   return `/products?category=${encodeURIComponent(categoryId)}` as Route;
 }
 
+/**
+ * 프로토타입 파일(`Interaction` 페이지) 명세 — 대분류 바 활성화: ease in · 위에서 아래로 · 800ms.
+ * 내비 바 뒤(`-z-10`, 내비는 불투명 배경)에서 아래로 내려오는 슬라이드로 표현한다.
+ */
+const PANEL_MOTION_CLASS =
+  "-z-10 animate-in duration-800 ease-in slide-in-from-top-full motion-reduce:animate-none";
+
+/** 소분류 바 활성화: dissolve · 800ms. 각 항목 hover 색 변경: ease in · 600ms. */
+const SUBCATEGORY_PANEL_MOTION_CLASS =
+  "animate-in duration-800 ease-in fade-in motion-reduce:animate-none";
+
 const SUBCATEGORY_ITEM_CLASS =
-  "w-33 rounded-xs px-6 py-3 text-body-m whitespace-nowrap text-font-dark transition-colors hover:bg-fill-neutral-weak";
+  "w-33 rounded-xs px-6 py-3 text-body-m whitespace-nowrap text-font-dark transition-colors duration-600 ease-in hover:bg-fill-neutral-weak";
 
 function CategoryMegaPanel({
   categories,
@@ -74,6 +85,7 @@ function CategoryMegaPanel({
         data-slot="category-mega-panel"
         className={cn(
           "absolute top-full left-0 w-full bg-bg-default shadow-nav",
+          PANEL_MOTION_CLASS,
           className,
         )}
       >
@@ -102,7 +114,11 @@ function CategoryMegaPanel({
   return (
     <div
       data-slot="category-mega-panel"
-      className={cn("absolute top-full left-0 w-full", className)}
+      className={cn(
+        "absolute top-full left-0 w-full",
+        PANEL_MOTION_CLASS,
+        className,
+      )}
     >
       <div
         aria-label="대분류"
@@ -117,7 +133,7 @@ function CategoryMegaPanel({
                 onMouseEnter={() => onActiveCategoryChange(category.id)}
                 onFocus={() => onActiveCategoryChange(category.id)}
                 className={cn(
-                  "flex shrink-0 items-center gap-1 px-3 py-3 text-body-m whitespace-nowrap text-font-white transition-colors lg:px-6 [&_path]:fill-current",
+                  "flex shrink-0 items-center gap-1 px-3 py-3 text-body-m whitespace-nowrap text-font-white transition-colors duration-600 ease-in lg:px-6 [&_path]:fill-current",
                   active
                     ? "bg-(--jade-blue-400)/[0.075]"
                     : "hover:bg-states-hover-25",
@@ -127,7 +143,12 @@ function CategoryMegaPanel({
                 {active && <ChevronRightIcon className="size-4" />}
               </Link>
               {active && (
-                <div className="absolute top-full left-0 w-fit bg-bg-default px-8 pt-4 pb-6 shadow-nav">
+                <div
+                  className={cn(
+                    "absolute top-full left-0 w-fit bg-bg-default px-8 pt-4 pb-6 shadow-nav",
+                    SUBCATEGORY_PANEL_MOTION_CLASS,
+                  )}
+                >
                   <div
                     className="grid grid-flow-col grid-rows-5 gap-x-3 gap-y-0"
                     aria-label={`${category.name} 소분류`}

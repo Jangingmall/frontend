@@ -62,7 +62,7 @@ function SearchPanel({ onClose, className }: SearchPanelProps) {
     <div
       data-slot="search-panel"
       className={cn(
-        "absolute top-full left-0 w-full bg-bg-default shadow-nav",
+        "absolute top-full left-0 w-full animate-in bg-bg-default shadow-nav duration-800 ease-in fade-in motion-reduce:animate-none",
         className,
       )}
     >

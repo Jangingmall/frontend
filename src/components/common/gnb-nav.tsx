@@ -61,7 +61,7 @@ function isGnbNavItemActive(
 }
 
 const ITEM_CLASS =
-  "flex items-center rounded-xs px-6 py-4 text-body-m text-font-white transition-colors";
+  "flex items-center rounded-xs px-6 py-4 text-body-m text-font-white transition-colors duration-600 ease-in";
 
 interface GnbNavProps {
   className?: string;

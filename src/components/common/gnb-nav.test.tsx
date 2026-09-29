@@ -207,6 +207,19 @@ describe("isGnbNavItemActive", () => {
       ),
     ).toBe(false);
   });
+
+  it("프로토타입 명세: 내비 항목 색 변경은 600ms ease-in이다", () => {
+    setUrl("/");
+    renderGnbNav();
+
+    for (const label of ["전체 카테고리", "신상품", "장인관"]) {
+      expect(screen.getByText(label)).toHaveClass(
+        "transition-colors",
+        "duration-600",
+        "ease-in",
+      );
+    }
+  });
 });
 
 it("API 모드에서는 베스트 직접 URL도 활성 메뉴나 진입 링크를 만들지 않는다", () => {

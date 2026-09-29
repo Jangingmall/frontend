@@ -150,4 +150,31 @@ describe("CategoryMegaPanel", () => {
       screen.getByRole("link", { name: "다기 · 찻잔" }),
     ).toBeInTheDocument();
   });
+
+  it("프로토타입 명세: 대분류 바는 800ms ease-in으로 위에서 내려오고, 소분류는 800ms dissolve, 항목 hover는 600ms ease-in이다", () => {
+    render(
+      <CategoryMegaPanel
+        categories={gnbCategoriesFixture}
+        activeCategoryId={kitchen.id}
+        onActiveCategoryChange={vi.fn()}
+      />,
+    );
+
+    const panel = document.querySelector('[data-slot="category-mega-panel"]');
+    expect(panel).toHaveClass(
+      "animate-in",
+      "slide-in-from-top-full",
+      "duration-800",
+      "ease-in",
+      "motion-reduce:animate-none",
+    );
+    const subPanel =
+      screen.getByLabelText("키친 · 다이닝 소분류").parentElement;
+    expect(subPanel).toHaveClass("animate-in", "fade-in", "duration-800");
+    expect(screen.getByRole("link", { name: "다기 · 찻잔" })).toHaveClass(
+      "transition-colors",
+      "duration-600",
+      "ease-in",
+    );
+  });
 });
