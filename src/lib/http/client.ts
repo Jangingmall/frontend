@@ -9,36 +9,19 @@ import { useAuthStore } from "@/stores/auth";
 
 import { ApiError } from "./api-error";
 import { prepareRequest } from "./readiness";
+import { clientRequestTarget } from "./request-target";
 import { parseBody, resolveResponse, unwrapSuccess } from "./response";
 
 /**
  * 클라이언트(브라우저) fetcher. (docs/data-layer.md §4.2 · docs/routing-and-auth.md §4)
  *
- * - 호출부가 `/api/member/me`처럼 전체 경로를 넘긴다. FE·BE가 same-origin(Vercel rewrite)이라
- *   현재 origin에 resolve하며 `NEXT_PUBLIC_API_BASE_URL`이 필요 없다.
+ * - 호출부가 `/api/member/me`처럼 전체 경로를 넘긴다. 기본은 same-origin(Vercel rewrite)이라
+ *   현재 origin에 resolve한다. Stage 회원 인증은 쿠키가 있는 백엔드 호스트로 보낸다.
  * - 인증 요청에 메모리의 access token을 `Authorization: Bearer`로 주입한다.
  * - 401을 받으면 single-flight refresh 후 원요청을 1회 재시도한다.
  *
  * 응답 봉투 해제·`ApiError` 규칙은 서버 fetcher와 `./response`를 공유한다.
  */
-
-/**
- * 요청 경로를 현재 origin 기준 절대 URL로 만든다 — 브라우저의 상대 `fetch`와 같은 대상이다.
- * (Node fetch·MSW-node가 상대 URL을 거부해 절대화가 필요하다.)
- *
- * **same-origin `/api`만 허용한다.** 절대·protocol-relative·`/api` 밖 경로는 거부해
- * `Authorization: Bearer` 토큰이 외부로 나가지 않게 막는다. (docs/data-layer.md §4.2)
- */
-function toUrl(path: string): string {
-  if (!/^\/api(?=[/?#]|$)/.test(path)) {
-    throw new Error(
-      `clientFetch는 same-origin '/api' 경로만 허용합니다: ${path}`,
-    );
-  }
-  const origin =
-    typeof window !== "undefined" ? window.location?.origin : undefined;
-  return origin ? new URL(path, origin).toString() : path;
-}
 
 interface ClientFetchOptions extends Omit<RequestInit, "body" | "headers"> {
   /** 객체면 `JSON.stringify` + `Content-Type: application/json` 자동. */
@@ -98,8 +81,10 @@ async function doFetch(
     if (accessToken) finalHeaders.set("Authorization", `Bearer ${accessToken}`);
   }
 
-  return fetch(toUrl(path), {
+  const target = clientRequestTarget(path);
+  return fetch(target.url, {
     ...init,
+    credentials: target.credentials ?? init.credentials,
     headers: finalHeaders,
     body: finalBody,
   });
@@ -124,16 +109,14 @@ let refreshInFlight: Promise<string> | null = null;
 export function refreshAccessToken(): Promise<string> {
   refreshInFlight ??= (async () => {
     if (process.env.NODE_ENV !== "test") await prepareRequest();
-    const response = await fetch(
-      toUrl(
-        privateRequestPath("/api/member/token/refresh", true, isDemoSession()),
-      ),
-      {
-        method: "POST",
-        credentials: "same-origin",
-        headers: { Accept: "application/json" },
-      },
+    const target = clientRequestTarget(
+      privateRequestPath("/api/member/token/refresh", true, isDemoSession()),
     );
+    const response = await fetch(target.url, {
+      method: "POST",
+      credentials: target.credentials ?? "same-origin",
+      headers: { Accept: "application/json" },
+    });
     const body = await parseBody(response);
     if (!response.ok) throw new ApiError(response.status, body);
     const { accessToken } = unwrapSuccess<{ accessToken?: unknown }>(body);

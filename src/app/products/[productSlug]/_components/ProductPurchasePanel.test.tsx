@@ -471,3 +471,24 @@ it("asks before ordering a quantity merged with an existing cart item", async ()
   fireEvent.click(screen.getByRole("button", { name: "주문 계속하기" }));
   expect(push).toHaveBeenCalledWith("/checkout/new?items=72");
 });
+
+it("찜하지 않은 실제 상품은 상세 진입만으로 찜되지 않는다", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  useAuthStore
+    .getState()
+    .setSession("live-test-token", { id: 1, name: "구매자", role: "USER" });
+  const read = vi.fn(() => new HttpResponse(null, { status: 404 }));
+  const add = vi.fn(() => mockOk(null));
+  server.use(
+    http.get("*/api/member/me/wishes/102", read),
+    http.post("*/api/products/102/wish", add),
+  );
+  const { client } = setup(102, { isMock: false });
+  await waitFor(() => expect(read).toHaveBeenCalled());
+  await waitFor(() => expect(client.isFetching()).toBe(0));
+  expect(screen.getByRole("button", { name: "찜하기" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  expect(add).not.toHaveBeenCalled();
+});

@@ -4,6 +4,7 @@ import { setDemoSession, usesMockAccount } from "@/lib/demo-session";
 import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import { clientFetch, refreshAccessToken } from "@/lib/http/client";
+import { clientRequestTarget } from "@/lib/http/request-target";
 import type { AuthUser, OAuthProvider } from "@/types/auth";
 import type {
   Address,
@@ -185,14 +186,12 @@ export async function startMockOAuthLogin(
   }
   if (!publicEnv.apiMocking) {
     setDemoSession(false);
-    const returnUrl = new URL(window.location.href).searchParams.get(
-      "returnUrl",
-    );
-    sessionStorage.setItem("oauth-return", returnUrl ?? "/");
+    sessionStorage.setItem("oauth-return", "/");
     sessionStorage.setItem("oauth-provider", provider);
     // Spring OAuth 시작은 Next 페이지 이동이 아닌 문서 전체 리다이렉트가 필요하다.
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-    window.location.assign(`/api/member/oauth2/${provider}`);
+    window.location.assign(
+      clientRequestTarget(`/api/member/oauth2/${provider}`).url,
+    );
     return { outcome: "redirecting" };
   }
 

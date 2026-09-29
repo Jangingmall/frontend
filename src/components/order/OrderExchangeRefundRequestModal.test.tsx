@@ -37,7 +37,7 @@ describe("OrderExchangeRefundRequestModal", () => {
     expect(handleSubmit).not.toHaveBeenCalled();
   });
 
-  it("환불을 고르면 환불 전용 사유 옵션이 뜬다", async () => {
+  it("환불도 교환과 같은 사유 옵션을 보여준다", async () => {
     const user = userEvent.setup();
     render(
       <OrderExchangeRefundRequestModal
@@ -53,7 +53,7 @@ describe("OrderExchangeRefundRequestModal", () => {
     await user.click(screen.getByRole("button", { name: "환불" }));
     await user.click(screen.getByRole("combobox", { name: "신청 사유" }));
     expect(
-      await screen.findByRole("option", { name: "판매자 요청" }),
+      await screen.findByRole("option", { name: "구성품 누락" }),
     ).toBeInTheDocument();
   });
 
@@ -119,3 +119,86 @@ describe("OrderExchangeRefundRequestModal", () => {
     });
   });
 });
+
+it.each(["교환", "환불"])(
+  "%s의 파손 이외 사유는 사진 없이 제출한다",
+  async (type) => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <OrderExchangeRefundRequestModal
+        open
+        onOpenChange={() => {}}
+        item={item}
+        orderItemId={1}
+        purchasedAt="2026-09-05T00:00:00.000Z"
+        orderNumber="JJ000000"
+        onSubmit={onSubmit}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: type }));
+    await user.click(screen.getByRole("combobox", { name: "신청 사유" }));
+    await user.click(
+      await screen.findByRole("option", { name: "상품 파손/불량" }),
+    );
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+    expect(
+      await screen.findByText("사진을 1장 이상 첨부해주세요."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("사진 첨부").textContent).toContain("*");
+    await user.click(screen.getByRole("combobox", { name: "신청 사유" }));
+    await user.click(
+      await screen.findByRole("option", { name: "구성품 누락" }),
+    );
+    expect(screen.getByText("사진 첨부").textContent).not.toContain("*");
+    expect(
+      screen.queryByText("사진을 1장 이상 첨부해주세요."),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ reasonLabel: "구성품 누락", photos: [] }),
+    );
+  },
+);
+
+it.each(["교환", "환불"])(
+  "%s 직접 입력은 내용이 필수이고 사진은 선택이다",
+  async (type) => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn();
+    render(
+      <OrderExchangeRefundRequestModal
+        open
+        onOpenChange={() => {}}
+        item={item}
+        orderItemId={1}
+        purchasedAt="2026-09-05T00:00:00.000Z"
+        orderNumber="JJ000000"
+        onSubmit={onSubmit}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: type }));
+    await user.click(screen.getByRole("combobox", { name: "신청 사유" }));
+    await user.click(await screen.findByRole("option", { name: "직접 입력" }));
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+    expect(
+      await screen.findByText("신청 사유를 작성해주세요."),
+    ).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText("사진을 1장 이상 첨부해주세요."),
+    ).not.toBeInTheDocument();
+    await user.type(
+      screen.getByRole("textbox", { name: "신청 사유 직접 입력" }),
+      "  규격이 맞지 않습니다.  ",
+    );
+    await user.click(screen.getByRole("button", { name: "등록하기" }));
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reasonLabel: "직접 입력",
+        description: "규격이 맞지 않습니다.",
+        photos: [],
+      }),
+    );
+  },
+);

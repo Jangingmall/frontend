@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputField } from "@/components/ui/input-field";
 import { resolveErrorMessage } from "@/constants/error-messages";
-import { safeReturnUrl } from "@/lib/auth/return-url";
 import { ApiError } from "@/lib/http/api-error";
 import { useLoginMutation } from "@/queries/member/mutations";
 import { useAuthStore } from "@/stores/auth";
@@ -92,19 +91,6 @@ function mapLoginError(error: unknown): string {
 }
 
 /**
- * 로그인 성공·"이미 인증된 사용자" 가드 둘 다 이걸로 목적지를 정한다.
- * `safeReturnUrl`은 `/login`(자기 자신)도 "내부 경로"라 그대로 통과시킨다 —
- * `?returnUrl=%2Flogin`처럼 `returnUrl`이 `/login`을 가리키면 로그인 후 다시 `/login`으로
- * 보내는 무의미한 리다이렉트가 된다(2026-09-15, PR 리뷰). 쿼리스트링이 붙어 있어도
- * (`/login?x=1`) 마찬가지라 경로만 떼어 비교한다.
- */
-function resolveLoginRedirectTarget(returnUrl: string | null): string {
-  const resolved = safeReturnUrl(returnUrl, "/");
-  const pathname = resolved.split(/[?#]/)[0];
-  return pathname === "/login" ? "/" : resolved;
-}
-
-/**
  * `useSyncExternalStore`로 localStorage를 읽는다 — SSR에선 `getServerSnapshot`(null)로
  * 서버·최초 hydration 렌더를 맞추고, hydration 이후에만 실제 값으로 다시 그린다. `useEffect`
  * 안에서 `useState` setter를 직접 부르는 것보다(react-hooks/set-state-in-effect가 지적하는
@@ -165,16 +151,12 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
     if (rememberedEmail) setValue("email", rememberedEmail);
   }, [rememberedEmail, setValue]);
 
-  // 이미 인증된 사용자가 /login에 직접 접근(북마크·뒤로가기·URL 직접 입력)한 경우 밖으로
-  // 내보낸다. `(protected)/layout.tsx`(§5.1)의 반대 방향 가드 — 이쪽은 `docs/routing-and-
-  // auth.md` §5.3 표에 빠져 있던 케이스라 사용자 확인 후 이번에 추가했다. `/mypage`가 아직
-  // 라우트가 없어(T-20+ 미착수) fallback을 로그인 성공 시(`onSubmit`, "/mypage" 기본값)와
-  // 다르게 "/"로 명시한다 — 그대로 두면 404로 보낸다.
+  // 로그인 완료 및 인증된 사용자의 재진입은 홈으로 통일한다.
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace(resolveLoginRedirectTarget(returnUrl) as Route);
+      router.replace("/");
     }
-  }, [status, returnUrl, router]);
+  }, [status, router]);
 
   async function onSubmit(values: LoginFormValues) {
     setFormError(null);
@@ -184,10 +166,7 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
       useAuthStore.getState().setSession(accessToken, user);
       if (rememberId) localStorage.setItem(REMEMBER_ID_KEY, values.email);
       else localStorage.removeItem(REMEMBER_ID_KEY);
-      // fallback을 "/"로 명시한다 — 문서 기본값 "/mypage"는 아직 라우트가 없다(T-20+
-      // 미착수). §5.6의 "이미 인증된 사용자" 가드에선 이미 이렇게 고쳤는데 정작 로그인
-      // 성공 경로 자체는 빠뜨렸었다(Codex 리뷰 F1, review.md).
-      router.replace(resolveLoginRedirectTarget(returnUrl) as Route);
+      router.replace("/");
     } catch (error) {
       setFormError(mapLoginError(error));
     }

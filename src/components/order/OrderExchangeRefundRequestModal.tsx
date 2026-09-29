@@ -57,7 +57,7 @@ const exchangeRefundFormSchema = z
         message: "신청 사유를 작성해주세요.",
       });
     }
-    if (value.photos.length === 0) {
+    if (value.reason.label === "상품 파손/불량" && value.photos.length === 0) {
       ctx.addIssue({
         code: "custom",
         path: ["photos"],
@@ -89,7 +89,7 @@ interface OrderExchangeRefundRequestModalProps {
   onSubmit: (input: OrderExchangeRefundRequest) => void;
 }
 
-/** 교환·환불 신청(MY-exchange) — 교환/환불 선택 + 사유(직접 입력 가능) + 사진 첨부(필수). */
+/** 교환·환불 신청(MY-exchange) — 교환/환불 선택 + 사유(직접 입력 가능) + 사진 첨부(상품 파손/불량만 필수). */
 export function OrderExchangeRefundRequestModal({
   open,
   onOpenChange,
@@ -107,12 +107,15 @@ export function OrderExchangeRefundRequestModal({
     handleSubmit,
     reset,
     setValue,
+    clearErrors,
     formState: { errors },
   } = useForm<ExchangeRefundFormValues>({
     resolver: zodResolver(exchangeRefundFormSchema),
     defaultValues: DEFAULT_VALUES,
   });
   const type = useWatch({ control, name: "type" });
+  const photoRequired =
+    useWatch({ control, name: "reason.label" }) === "상품 파손/불량";
   const reasonOptions =
     type === "EXCHANGE"
       ? ORDER_EXCHANGE_REASON_OPTIONS
@@ -204,6 +207,7 @@ export function OrderExchangeRefundRequestModal({
               onClick={() => {
                 setValue("type", "EXCHANGE");
                 setValue("reason", { label: "", freeText: undefined });
+                clearErrors("photos");
               }}
             >
               교환
@@ -217,6 +221,7 @@ export function OrderExchangeRefundRequestModal({
               onClick={() => {
                 setValue("type", "RETURN");
                 setValue("reason", { label: "", freeText: undefined });
+                clearErrors("photos");
               }}
             >
               환불
@@ -236,7 +241,10 @@ export function OrderExchangeRefundRequestModal({
             <OrderClaimReasonField
               options={reasonOptions}
               value={field.value as OrderClaimReasonValue}
-              onChange={field.onChange}
+              onChange={(value) => {
+                field.onChange(value);
+                clearErrors("photos");
+              }}
               ariaLabel="신청 사유"
               freeTextPlaceholder={`${type === "EXCHANGE" ? "교환" : "환불"} 사유를 작성해주세요.`}
               error={
@@ -253,8 +261,11 @@ export function OrderExchangeRefundRequestModal({
           render={({ field }) => (
             <OrderClaimPhotoField
               value={field.value}
-              onChange={field.onChange}
-              required
+              onChange={(value) => {
+                field.onChange(value);
+                clearErrors("photos");
+              }}
+              required={photoRequired}
               error={errors.photos?.message}
             />
           )}

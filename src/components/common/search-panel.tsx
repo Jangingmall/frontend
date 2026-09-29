@@ -54,7 +54,7 @@ function SearchPanel({ onClose, className }: SearchPanelProps) {
     // 빈/공백뿐인 검색어로는 SR-1(검색 결과 페이지)에 안 보낸다 — 빈 q 처리 정책이 아직 없어
     // 불확실한 요청 자체를 만들지 않는 쪽을 택함(design.md §5-1).
     if (!q) return;
-    router.push(`/search?q=${encodeURIComponent(q)}` as Route);
+    router.push(`/products?keyword=${encodeURIComponent(q)}` as Route);
     onClose();
   }
 
