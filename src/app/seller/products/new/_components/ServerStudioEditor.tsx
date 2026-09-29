@@ -20,6 +20,7 @@ import {
 } from "@/utils/seller-studio/document";
 
 import { ServerDocument } from "./ServerDocument";
+import { StudioHelp } from "./StudioHelp";
 
 export function ServerStudioEditor({ content }: { content: SellerContent }) {
   const [baseline, setBaseline] = useState(content.reactDocument);
@@ -130,6 +131,7 @@ export function ServerStudioEditor({ content }: { content: SellerContent }) {
   }
   return (
     <div className="sa-editor">
+      {!review && <StudioHelp api />}
       <header className="sa-toolbar">
         <h1>{review ? "최종 확인" : "상세페이지 편집"}</h1>
         <span>{status}</span>

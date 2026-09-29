@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { buildPreview, editSection, parseContract } from "./studio-contract";
+import {
+  buildPreview,
+  draftSchema,
+  editSection,
+  parseContract,
+} from "./studio-contract";
 import { exampleAssets, exampleDraft } from "./studio-fixture";
 
 describe("공식 상세페이지 계약을 사용하는 제작 화면", () => {
@@ -32,4 +37,40 @@ describe("공식 상세페이지 계약을 사용하는 제작 화면", () => {
     doc.root[0].props = { style: { position: "fixed" } } as never;
     expect(() => parseContract(doc, exampleAssets)).toThrow();
   });
+});
+
+it("시연 글 서식을 문서에 반영하고 저장 후 유지한다", () => {
+  const changed = editSection(
+    exampleDraft,
+    exampleDraft.page_plan[0].section_id,
+    {
+      textStyle: { align: "left", bold: true, color: "#414954", size: "body" },
+    },
+  );
+  const restored = draftSchema.parse(JSON.parse(JSON.stringify(changed)));
+  const document = buildPreview(restored);
+  const copy = document.root[0];
+  expect(JSON.stringify(copy)).toContain('"textAlign":"left"');
+  expect(JSON.stringify(copy)).toContain('"fontWeight":700');
+});
+
+it("정렬만 수정하면 어두운 배경의 글자색과 굵기를 유지한다", () => {
+  const changed = editSection(
+    exampleDraft,
+    exampleDraft.page_plan[0].section_id,
+    {
+      variant: "ink",
+      textStyle: { align: "left" },
+    },
+  );
+  const restored = draftSchema.parse(JSON.parse(JSON.stringify(changed)));
+  const document = parseContract(buildPreview(restored), exampleAssets);
+  const root = document.root[0];
+  const copy = root.children?.find((node) => node.id.endsWith("-copy"));
+  expect(copy?.type).toBe("element");
+  if (copy?.type !== "element") throw new Error("copy missing");
+  expect(copy.props?.style?.textAlign).toBe("left");
+  expect(JSON.stringify(copy)).not.toContain('"color"');
+  expect(JSON.stringify(copy)).not.toContain('"fontWeight"');
+  expect(JSON.stringify(copy)).not.toContain('"fontSize"');
 });

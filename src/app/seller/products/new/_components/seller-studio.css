@@ -1023,3 +1023,235 @@
     display: block;
   }
 }
+/* 1차 QA: 고정 헤더와 Figma 편집 도구 규격 */
+.ss-header {
+  position: sticky;
+  top: 0;
+  z-index: 45;
+}
+.ss-logo {
+  min-width: 100px;
+  max-width: 100px;
+  max-height: 32px;
+}
+.ss-tools > div:first-child button {
+  position: relative;
+  height: 50px;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 2px;
+  border-radius: 0;
+}
+.ss-tool-label {
+  font-size: 10px;
+  line-height: 14px;
+  white-space: nowrap;
+  color: #80858c;
+}
+.ss-tools {
+  padding-bottom: 48px;
+}
+.ss-tools > div:first-child button[aria-pressed="true"] {
+  background: linear-gradient(#d3e1e3 0 32px, transparent 32px);
+}
+.ss-redo-icon {
+  transform: scaleX(-1);
+}
+.ss-editor-actions {
+  top: 86px;
+}
+.ss-page-bar {
+  width: min(782px, 100%);
+  height: 26px;
+  margin-inline: auto;
+}
+.ss-page.is-selected .ss-page-paper {
+  outline-offset: 4px;
+}
+.ss-page-controls button {
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.ss-property-panel {
+  background: #fff;
+  color: #121b29;
+  border-radius: 2px;
+  padding: 16px;
+  box-shadow: 0 4px 12px #00000014;
+}
+.ss-property-panel .ss-button {
+  color: #121b29;
+  border-color: #8e9a9c;
+}
+.ss-property-image {
+  left: calc(50% + 8px);
+  right: auto;
+  width: min(276px, calc(50% - 24px));
+}
+.ss-image-picker img {
+  height: 80px;
+}
+.ss-image-picker button[aria-pressed="true"] {
+  outline-color: #414954;
+}
+.ss-expand {
+  background: transparent;
+}
+.ss-expand img {
+  width: 40px;
+  height: 40px;
+}
+.ss-shell [data-tooltip] {
+  position: relative;
+}
+.ss-shell [data-tooltip]::after {
+  content: attr(data-tooltip);
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 6px);
+  transform: translateX(-50%);
+  background: #414954;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 14px;
+  padding: 4px 8px;
+  border-radius: 2px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 60;
+}
+.ss-shell [data-tooltip]:hover::after,
+.ss-shell [data-tooltip]:focus-visible::after {
+  display: block;
+}
+.ss-tools [data-tooltip]::after {
+  left: 100%;
+  top: 0;
+  transform: none;
+}
+.ss-shell .ss-expand {
+  position: fixed;
+}
+.ss-expand[data-tooltip]::after {
+  top: auto;
+  bottom: 100%;
+}
+.ss-help {
+  position: fixed;
+  bottom: 12px;
+  left: 8px;
+  z-index: 50;
+}
+.ss-help-trigger {
+  border: 1px solid #121b29;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 13px;
+  background: white;
+}
+.ss-help-card {
+  position: absolute;
+  left: 42px;
+  bottom: 0;
+  width: min(340px, calc(100vw - 70px));
+  padding: 32px 24px 24px;
+  background: #121b29;
+  color: white;
+  border-radius: 2px;
+  box-shadow: 0 4px 12px #00000014;
+}
+.ss-help-card::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: -12px;
+  border-bottom: 12px solid #121b29;
+  border-left: 12px solid transparent;
+}
+.ss-help-card h2 {
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+.ss-help-card p {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.ss-help-close {
+  position: absolute;
+  right: 12px;
+  top: 6px;
+  font-size: 22px;
+  color: #8e9a9c;
+}
+.ss-help-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+.ss-help-actions button {
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid white;
+  border-radius: 2px;
+  font-size: 16px;
+}
+.ss-help-actions button:last-child {
+  flex: 1;
+  background: #fafbfc;
+  color: #121b29;
+}
+@media (max-width: 700px) {
+  .ss-property-image {
+    left: auto;
+    right: 8px;
+    width: min(276px, calc(100% - 16px));
+  }
+}
+.ss-text-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.ss-text-toolbar select {
+  max-width: 88px;
+  font-size: 10px;
+  border: 1px solid #c8d9dc;
+  padding: 4px;
+}
+.ss-text-toolbar button {
+  min-width: 20px;
+  height: 24px;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+}
+.ss-text-toolbar button[aria-pressed="true"] {
+  outline: 1px solid #8e9a9c;
+  outline-offset: 2px;
+}
+.ss-text-toolbar .ss-text-swatch {
+  min-width: 16px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #ecedee;
+}
+
+.ss-text-toolbar {
+  gap: 4px;
+}
+.ss-text-toolbar select {
+  max-width: 64px;
+}
+.ss-text-toolbar button {
+  min-width: 16px;
+  width: 16px;
+  padding: 0;
+}

@@ -16,6 +16,14 @@ export const blockTypes = [
   "closing",
 ] as const;
 export const sectionSchema = z.strictObject({
+  textStyle: z
+    .object({
+      align: z.enum(["left", "center", "right"]).optional(),
+      bold: z.boolean().optional(),
+      color: z.enum(["#121b29", "#414954", "#80858c", "#ffffff"]).optional(),
+      size: z.enum(["headline", "body"]).optional(),
+    })
+    .optional(),
   section_id: z.string().regex(/^[a-zA-Z][\w-]{0,60}$/),
   block_type: z.enum(blockTypes),
   eyebrow: z.string().max(120),
@@ -320,6 +328,29 @@ export function buildPreview(draft: StudioDraft): ContractDocument {
         text(`${id}-title`, "h2", section.title),
         text(`${id}-body`, "p", section.body),
       ];
+      if (section.textStyle) {
+        for (const node of copy) {
+          if (node.type === "element")
+            node.props = {
+              ...node.props,
+              style: {
+                textAlign: section.textStyle.align,
+                color: section.textStyle.color,
+                fontWeight:
+                  section.textStyle.bold === undefined
+                    ? undefined
+                    : section.textStyle.bold
+                      ? 700
+                      : 400,
+                ...(node.tag === "h2" && section.textStyle.size
+                  ? {
+                      fontSize: section.textStyle.size === "headline" ? 28 : 16,
+                    }
+                  : {}),
+              },
+            };
+        }
+      }
       const photo: ContractElement | null = section.photo_id
         ? {
             id: `${id}-figure`,
@@ -357,7 +388,15 @@ export function buildPreview(draft: StudioDraft): ContractDocument {
         },
         children: [
           ...(draft.layout_id === "image-first" && photo ? [photo] : []),
-          { id: `${id}-copy`, type: "element", tag: "div", children: copy },
+          {
+            id: `${id}-copy`,
+            type: "element",
+            tag: "div",
+            props: section.textStyle?.align
+              ? { style: { textAlign: section.textStyle.align } }
+              : undefined,
+            children: copy,
+          },
           ...(draft.layout_id !== "image-first" && photo ? [photo] : []),
           ...(items.length
             ? [
