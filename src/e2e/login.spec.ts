@@ -9,6 +9,20 @@ test("유효한 자격으로 로그인하면 홈으로 이동한다", async ({ p
   await page.getByRole("button", { name: "로그인", exact: true }).click();
 
   await expect(page).toHaveURL(/\/$/);
+  await expect(
+    page.getByRole("region", { name: "히어로", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole("banner")
+      .getByRole("link", { name: "마이페이지", exact: true }),
+  ).toBeVisible();
+  await page.reload();
+  await expect(
+    page
+      .getByRole("banner")
+      .getByRole("link", { name: "마이페이지", exact: true }),
+  ).toBeVisible();
 });
 
 test("잘못된 자격이면 인라인 에러를 보여주고 이동하지 않는다", async ({

@@ -16,9 +16,7 @@ async function openDetail(page: Page, path = detailPath) {
   ).toBeVisible();
 }
 
-test("찜 로그인 안내에서 로그인하고 원래 상품으로 복귀한다", async ({
-  page,
-}) => {
+test("찜 로그인 안내에서 로그인하면 홈으로 이동한다", async ({ page }) => {
   await page.goto(detailPath);
   await page.getByRole("button", { name: "찜하기", exact: true }).click();
   const modal = page.getByRole("dialog", {
@@ -30,7 +28,7 @@ test("찜 로그인 안내에서 로그인하고 원래 상품으로 복귀한�
   await page.getByPlaceholder("이메일을 입력해주세요.").fill("user@midam.test");
   await page.getByPlaceholder("비밀번호를 입력해주세요.").fill("midam1234");
   await page.getByRole("button", { name: "로그인", exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(encodeURI(detailPath)));
+  await expect(page).toHaveURL(/\/$/);
 });
 
 test("비회원 문의는 로그인으로 바로 이동하고 상품 복귀 경로를 전달한다", async ({
@@ -46,19 +44,23 @@ test("비회원 문의는 로그인으로 바로 이동하고 상품 복귀 경�
 });
 
 for (const hash of ["", "#tab%252"]) {
-  test(`비회원 문의 로그인 후 인코딩된 복귀 경로를 유지한다 (해시 ${hash ? "포함" : "없음"})`, async ({
+  test(`비회원 문의의 인코딩된 복귀 경로를 전달하되 로그인 후 홈으로 이동한다 (해시 ${hash ? "포함" : "없음"})`, async ({
     page,
   }) => {
     await page.goto(`${detailPath}?keyword=%26%2B%25%23${hash}`);
     const originalUrl = page.url();
     await page.getByRole("button", { name: "문의하기", exact: true }).click();
     await expect(page).toHaveURL(/\/login\?returnUrl=/);
+    const loginUrl = new URL(page.url());
+    expect(decodeURIComponent(loginUrl.searchParams.get("returnUrl")!)).toBe(
+      originalUrl.slice(new URL(originalUrl).origin.length),
+    );
     await page
       .getByPlaceholder("이메일을 입력해주세요.")
       .fill("user@midam.test");
     await page.getByPlaceholder("비밀번호를 입력해주세요.").fill("midam1234");
     await page.getByRole("button", { name: "로그인", exact: true }).click();
-    await expect(page).toHaveURL(originalUrl);
+    await expect(page).toHaveURL(/\/$/);
   });
 }
 
