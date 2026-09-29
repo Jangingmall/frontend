@@ -10,6 +10,7 @@ import type {
 } from "./studio-contract";
 import { buildPreview, editSection } from "./studio-contract";
 import { readImages } from "./studio-state";
+import { StudioHelp } from "./StudioHelp";
 interface Props {
   draft: StudioDraft;
   assets: StudioAsset[];
@@ -38,6 +39,7 @@ export function StudioEditor({
   saved,
   onUploadPending,
 }: Props) {
+  const [helpStep, setHelpStep] = useState<number | null>(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [panel, setPanel] = useState<"pages" | "layout" | "text" | "image">(
     "pages",
@@ -149,6 +151,7 @@ export function StudioEditor({
               type="button"
               key={id}
               title={label}
+              data-tooltip={label}
               aria-label={label}
               aria-pressed={panel === id}
               onClick={() => {
@@ -159,10 +162,20 @@ export function StudioEditor({
             >
               <Image
                 src={`/seller-studio/${icon}.svg`}
-                width={24}
-                height={24}
+                width={icon === "layers" ? 18 : 24}
+                height={icon === "layers" ? 16.5731 : 24}
                 alt=""
               />
+              <span className="ss-tool-label">
+                {
+                  {
+                    pages: "목록",
+                    layout: "영역 추가",
+                    text: "글 추가",
+                    image: "사진 추가",
+                  }[id]
+                }
+              </span>
             </button>
           ))}
         </div>
@@ -170,28 +183,31 @@ export function StudioEditor({
           <button
             type="button"
             title="실행 취소"
+            data-tooltip="뒤로가기"
             aria-label="실행 취소"
             disabled={!canUndo || isUploading}
             onClick={onUndo}
           >
             <Image
               src="/seller-studio/undo.svg"
-              width={20}
-              height={20}
+              width={14.8752}
+              height={14.8752}
               alt=""
             />
           </button>
           <button
             type="button"
             title="다시 실행"
+            data-tooltip="앞으로가기"
             aria-label="다시 실행"
             disabled={!canRedo || isUploading}
             onClick={onRedo}
           >
             <Image
+              className="ss-redo-icon"
               src="/seller-studio/redo.svg"
-              width={20}
-              height={20}
+              width={14.8752}
+              height={14.8752}
               alt=""
             />
           </button>
@@ -292,6 +308,11 @@ export function StudioEditor({
                       type="button"
                       className={`ss-swatch ${variant}`}
                       key={variant}
+                      data-tooltip={
+                        { paper: "흰색", soft: "연한 배경", ink: "먹색" }[
+                          variant
+                        ]
+                      }
                       aria-label={`${variant} 배경`}
                       aria-pressed={item.variant === variant}
                       onClick={() => patch({ variant })}
@@ -299,30 +320,49 @@ export function StudioEditor({
                   ))}
                   <button
                     type="button"
+                    data-tooltip="페이지 위로 이동"
                     aria-label="페이지 위로 이동"
                     disabled={index === 0}
                     onClick={() => move(item.section_id, -1)}
                   >
-                    ⌃
+                    <Image
+                      src="/seller-studio/up.svg"
+                      width={16}
+                      height={16}
+                      alt=""
+                    />
                   </button>
                   <button
                     type="button"
+                    data-tooltip="페이지 아래로 이동"
                     aria-label="페이지 아래로 이동"
                     disabled={index === draft.page_plan.length - 1}
                     onClick={() => move(item.section_id, 1)}
                   >
-                    ⌄
+                    <Image
+                      src="/seller-studio/down.svg"
+                      width={16}
+                      height={16}
+                      alt=""
+                    />
                   </button>
                   <button
                     type="button"
+                    data-tooltip="페이지 복제"
                     aria-label="페이지 복제"
                     disabled={draft.page_plan.length >= 14}
                     onClick={() => add(item)}
                   >
-                    ⧉
+                    <Image
+                      src="/seller-studio/duplicate.svg"
+                      width={16}
+                      height={16}
+                      alt=""
+                    />
                   </button>
                   <button
                     type="button"
+                    data-tooltip="페이지 삭제"
                     aria-label="페이지 삭제"
                     disabled={draft.page_plan.length === 1}
                     onClick={() => {
@@ -335,7 +375,12 @@ export function StudioEditor({
                       setSelected(null);
                     }}
                   >
-                    ×
+                    <Image
+                      src="/seller-studio/trash.svg"
+                      width={16}
+                      height={16}
+                      alt=""
+                    />
                   </button>
                 </div>
               )}
@@ -357,18 +402,126 @@ export function StudioEditor({
             </div>
             {selected === item.section_id &&
               (panel === "text" || panel === "image") && (
-                <div className="ss-property-panel">
+                <div className={`ss-property-panel ss-property-${panel}`}>
                   <button
                     type="button"
                     className="ss-panel-close"
                     aria-label="편집 패널 닫기"
                     onClick={() => setPanel("pages")}
                   >
-                    ×
+                    <span aria-hidden="true">×</span>
                   </button>
                   {panel === "text" ? (
                     <>
                       <h2>텍스트 편집</h2>
+                      <div
+                        className="ss-text-toolbar"
+                        role="toolbar"
+                        aria-label="글 서식"
+                      >
+                        <select
+                          aria-label="글 크기"
+                          value={item.textStyle?.size ?? "headline"}
+                          onChange={(event) =>
+                            patch({
+                              textStyle: {
+                                ...item.textStyle,
+                                size: event.target.value as "headline" | "body",
+                              },
+                            })
+                          }
+                        >
+                          <option value="headline">헤드라인</option>
+                          <option value="body">본문</option>
+                        </select>
+                        {(["left", "center", "right"] as const).map(
+                          (align, i) => (
+                            <button
+                              type="button"
+                              key={align}
+                              data-tooltip={
+                                ["왼쪽 정렬", "가운데 정렬", "오른쪽 정렬"][i]
+                              }
+                              aria-label={
+                                ["왼쪽 정렬", "가운데 정렬", "오른쪽 정렬"][i]
+                              }
+                              aria-pressed={
+                                (item.textStyle?.align ?? "center") === align
+                              }
+                              onClick={() =>
+                                patch({
+                                  textStyle: { ...item.textStyle, align },
+                                })
+                              }
+                            >
+                              <Image
+                                src={`/seller-studio/align-${align}.svg`}
+                                alt=""
+                                width={16}
+                                height={16}
+                              />
+                            </button>
+                          ),
+                        )}
+                        <button
+                          type="button"
+                          data-tooltip="굵게"
+                          aria-label="굵게"
+                          aria-pressed={item.textStyle?.bold ?? false}
+                          onClick={() =>
+                            patch({
+                              textStyle: {
+                                ...item.textStyle,
+                                bold: !item.textStyle?.bold,
+                              },
+                            })
+                          }
+                        >
+                          <Image
+                            src="/seller-studio/bold.svg"
+                            alt=""
+                            width={16}
+                            height={16}
+                          />
+                        </button>
+                        {(
+                          ["#121b29", "#414954", "#80858c", "#ffffff"] as const
+                        ).map((color, i) => (
+                          <button
+                            type="button"
+                            className="ss-text-swatch"
+                            style={{ background: color }}
+                            key={color}
+                            data-tooltip={
+                              [
+                                "먹색 글자",
+                                "진회색 글자",
+                                "회색 글자",
+                                "흰색 글자",
+                              ][i]
+                            }
+                            aria-label={
+                              [
+                                "먹색 글자",
+                                "진회색 글자",
+                                "회색 글자",
+                                "흰색 글자",
+                              ][i]
+                            }
+                            aria-pressed={
+                              (item.textStyle?.color ??
+                                (item.variant === "ink"
+                                  ? "#ffffff"
+                                  : "#121b29")) === color
+                            }
+                            onClick={() =>
+                              patch({
+                                textStyle: { ...item.textStyle, color },
+                              })
+                            }
+                          />
+                        ))}
+                      </div>
                       {(
                         [
                           ["eyebrow", "작은 제목", 120],
@@ -509,13 +662,15 @@ export function StudioEditor({
           </section>
         ))}
       </div>
+      <StudioHelp step={helpStep} onStepChange={setHelpStep} />
       <button
         className="ss-expand"
+        data-tooltip="미리보기"
         type="button"
         aria-label={isExpanded ? "도구 패널 펼치기" : "캔버스 넓게 보기"}
         onClick={() => setExpanded(!isExpanded)}
       >
-        <Image src="/seller-studio/expand.svg" width={32} height={32} alt="" />
+        <Image src="/seller-studio/expand.svg" width={40} height={40} alt="" />
       </button>
     </div>
   );

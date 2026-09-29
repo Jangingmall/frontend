@@ -131,10 +131,9 @@ test("시연 편집의 이미지 교체·순서·배치와 저장 실패 보호"
     .getByRole("button", { name: "금속 다기 디테일 예시 사용", exact: true })
     .click();
   await page.getByRole("button", { name: "편집 패널 닫기" }).click();
-  await expect(page.locator(".ss-canvas img").first()).toHaveAttribute(
-    "src",
-    "/studio/asset-3.png",
-  );
+  await expect(
+    page.locator(".ss-canvas .cs-photo img").first(),
+  ).toHaveAttribute("src", "/studio/asset-3.png");
   await page.getByRole("button", { name: "페이지 아래로 이동" }).click();
   await page.getByRole("button", { name: "페이지 구성", exact: true }).click();
   await page.getByLabel("전체 배치").selectOption("image-first");
@@ -219,4 +218,44 @@ test("사진 준비 중에는 이력 변경과 저장·완료를 기다린다", 
   await expect(
     page.getByRole("button", { name: "임시 저장", exact: true }),
   ).toBeEnabled();
+});
+
+test("1차 QA 헤더·도움말·서식 저장·미리보기 배경", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 994 });
+  await page.goto("/seller/products/new?example=1");
+  await expect(
+    page.getByRole("dialog", { name: "처음 사용하시나요?" }),
+  ).toBeVisible();
+  await expect(page.locator(".ss-header")).toContainText("판매 관리");
+  await page.screenshot({ path: "artifacts/seller-qa-help.png" });
+  await page.getByRole("button", { name: "건너뛰기" }).click();
+  await page.getByRole("button", { name: "텍스트 편집", exact: true }).click();
+  await page.getByRole("button", { name: "왼쪽 정렬", exact: true }).click();
+  await page.getByRole("button", { name: "굵게", exact: true }).click();
+  await expect(page.locator(".ss-canvas h2").first()).toHaveCSS(
+    "text-align",
+    "left",
+  );
+  await expect(page.locator(".ss-canvas h2").first()).toHaveCSS(
+    "font-weight",
+    "700",
+  );
+  await page.screenshot({ path: "artifacts/seller-qa-text.png" });
+  await page.getByRole("button", { name: "편집 패널 닫기" }).click();
+  await page.getByRole("button", { name: "임시 저장", exact: true }).click();
+  await page.reload();
+  await expect(page.locator(".ss-canvas h2").first()).toHaveCSS(
+    "text-align",
+    "left",
+  );
+  await expect(page.locator(".ss-redo-icon")).toHaveCSS(
+    "transform",
+    "matrix(-1, 0, 0, 1, 0, 0)",
+  );
+  await expect(page.locator(".ss-expand")).toHaveCSS(
+    "background-color",
+    "rgba(0, 0, 0, 0)",
+  );
+  await page.mouse.wheel(0, 900);
+  await expect(page.locator(".ss-header")).toBeInViewport();
 });
