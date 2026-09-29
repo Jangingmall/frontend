@@ -55,7 +55,16 @@ describe("상품 목록 공개 조회", () => {
   it("카테고리 및 소재 선택지를 조회한다", async () => {
     expect(await fetchProductCategories()).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ id: "kitchen", parentId: null }),
+        expect.objectContaining({
+          id: "category-1",
+          name: "키친·다이닝",
+          parentId: null,
+        }),
+        expect.objectContaining({
+          id: "subcategory-1",
+          name: "다기·찻잔",
+          parentId: "category-1",
+        }),
       ]),
     );
     expect(await fetchProductMaterials()).toEqual(

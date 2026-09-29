@@ -2,20 +2,22 @@ import { http } from "msw";
 
 import { mockOk } from "@/mocks/envelope";
 
-import {
-  productCatalogue,
-  productCategories,
-  productCrafts,
-  productMaterials,
-} from "./catalogue";
+import { productCatalogue, productCrafts, productMaterials } from "./catalogue";
+import { backendCategoryDtos, backendSubcategoryDtos } from "./category-seed";
 
 /**
  * 상품 도메인 MSW 핸들러. `src/mocks/handlers.ts`에 등록된다.
  * 목록·필터 선택지의 잠정 계약을 재현한다. 상세·찜은 별도 작업이다.
  */
 export const productHandlers = [
-  http.get("*/api/products/categories", () => mockOk(productCategories)),
-  http.get("*/api/products/subcategories", () => mockOk(productCrafts)),
+  // 쓰임 분류는 백엔드와 같은 응답 형태·시드를 돌려준다(실서버 모드와 같은 변환 경로).
+  http.get("*/api/products/categories", () => mockOk(backendCategoryDtos)),
+  http.get("*/api/products/subcategories", () =>
+    mockOk(backendSubcategoryDtos),
+  ),
+  // 공예 종목은 백엔드에 없는 시연 데이터라 별도 경로다. 클라이언트는 언제나
+  // `/api/mock/catalogue/products/crafts`(catalogue 프록시)로 접근한다.
+  http.get("*/api/products/crafts", () => mockOk(productCrafts)),
   http.get("*/api/products/materials", () => mockOk(productMaterials)),
   http.get("*/api/products", ({ request }) => {
     const url = new URL(request.url);

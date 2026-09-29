@@ -4,8 +4,7 @@ import { isrTags } from "@/lib/isr/tags";
 
 import { fetchBackendProductList } from "./backend-list";
 import { mapBackendProductCategories } from "./backend-mapper";
-import { productCategoriesDto } from "./filter-validation";
-import { mapProductCategories, mapProductListPage } from "./mapper";
+import { mapProductListPage } from "./mapper";
 import {
   type ProductListQuery,
   resolveProductListPaging,
@@ -17,14 +16,17 @@ const read = (path: string) =>
     tags: [isrTags.productList()],
     revalidate: 3600,
   });
+// 분류는 트리거 이벤트 없이 time-based로만 갱신된다(docs/isr.md §2 `product-taxonomy`).
+const readTaxonomy = (path: string) =>
+  fetchPublicApi<unknown>(path, {
+    tags: [isrTags.productTaxonomy()],
+    revalidate: 86400,
+  });
 export async function fetchProductCategoriesServer() {
-  const dto = await read("/api/products/categories");
-  return publicEnv.apiMocking
-    ? mapProductCategories(productCategoriesDto.parse(dto))
-    : mapBackendProductCategories(
-        dto,
-        await read("/api/products/subcategories"),
-      );
+  return mapBackendProductCategories(
+    await readTaxonomy("/api/products/categories"),
+    await readTaxonomy("/api/products/subcategories"),
+  );
 }
 export async function fetchProductList(query: ProductListQuery = {}) {
   if (!publicEnv.apiMocking)

@@ -1,31 +1,13 @@
 import { publicEnv } from "@/lib/env";
 import type { Page } from "@/types/api";
-import type {
-  ProductCategory,
-  ProductCraft,
-  ProductMaterial,
-} from "@/types/product-filter";
+import type { ProductCraft, ProductMaterial } from "@/types/product-filter";
 
 import type {
-  ProductCategoriesDto,
   ProductCraftsDto,
   ProductMaterialsDto,
 } from "./filter-validation";
 import type { ProductSummary } from "./model";
 import type { ProductListResponseDto, ProductSummaryDto } from "./validation";
-
-export function mapProductCategories(
-  dto: ProductCategoriesDto,
-): ProductCategory[] {
-  return dto.map((category) => ({
-    id: category.id,
-    name: category.name,
-    description: category.description,
-    parentId: category.parentId,
-    minPrice: category.minPrice,
-    maxPrice: category.maxPrice,
-  }));
-}
 
 export function mapProductMaterials(
   dto: ProductMaterialsDto,
