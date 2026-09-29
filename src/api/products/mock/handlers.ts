@@ -1,9 +1,20 @@
-import { http } from "msw";
+import { type DefaultBodyType, http, type PathParams } from "msw";
 
-import { mockOk } from "@/mocks/envelope";
+import { mapBackendProductCategories } from "@/api/products/backend-mapper";
+import { toDemoProductQuery } from "@/api/products/demo-query";
+import { ApiError } from "@/lib/http/api-error";
+import { mockError, mockOk } from "@/mocks/envelope";
+import type { ApiErrorResponse, ApiResponse } from "@/types/api";
 
 import { productCatalogue, productCrafts, productMaterials } from "./catalogue";
 import { backendCategoryDtos, backendSubcategoryDtos } from "./category-seed";
+
+type Envelope = ApiResponse<unknown> | ApiErrorResponse;
+
+const seedCategories = mapBackendProductCategories(
+  backendCategoryDtos,
+  backendSubcategoryDtos,
+);
 
 /**
  * 상품 도메인 MSW 핸들러. `src/mocks/handlers.ts`에 등록된다.
@@ -15,57 +26,70 @@ export const productHandlers = [
   http.get("*/api/products/subcategories", () =>
     mockOk(backendSubcategoryDtos),
   ),
-  // 공예 종목은 백엔드에 없는 시연 데이터라 별도 경로다. 클라이언트는 언제나
-  // `/api/mock/catalogue/products/crafts`(catalogue 프록시)로 접근한다.
+  // 공예 종목은 백엔드에 없는 시연 데이터라 분류 경로(`/subcategories`)와 별개 경로다.
   http.get("*/api/products/crafts", () => mockOk(productCrafts)),
   http.get("*/api/products/materials", () => mockOk(productMaterials)),
-  http.get("*/api/products", ({ request }) => {
-    const url = new URL(request.url);
-    const page = Number(url.searchParams.get("page") ?? "1");
-    const params = url.searchParams;
-    const size = Math.min(100, Math.max(1, Number(params.get("size")) || 20));
-    const category = params.get("category");
-    const crafts = params.getAll("subcategory");
-    const materials = params.getAll("material");
-    const giftTheme = params.get("giftTheme");
-    const items = productCatalogue.filter(
-      (product) =>
-        (!category ||
-          category === "kitchen" ||
-          product.category === category) &&
-        (!crafts.length || crafts.includes(product.subcategory)) &&
-        (!materials.length || materials.includes(product.material)) &&
-        (!giftTheme || product.giftTheme === giftTheme) &&
-        (!params.has("minPrice") ||
-          product.price >= Number(params.get("minPrice"))) &&
-        (!params.has("maxPrice") ||
-          product.price <= Number(params.get("maxPrice"))) &&
-        (params.get("hasGiftWrap") !== "true" || product.hasGiftWrap) &&
-        (params.get("excludeSoldOut") !== "true" ||
-          product.status !== "SOLD_OUT") &&
-        (!params.get("keyword") ||
-          product.name.includes(params.get("keyword")!)),
-    );
-    items.sort((a, b) => {
-      switch (params.get("sort")) {
-        case "PRICE_ASC":
-          return a.price - b.price || a.id - b.id;
-        case "PRICE_DESC":
-          return b.price - a.price || a.id - b.id;
-        case "NEWEST":
-          return b.id - a.id;
-        case "WISHLIST_COUNT":
-          return b.wishlistCount - a.wishlistCount || a.id - b.id;
-        case "SALES_COUNT":
-          return b.salesCount - a.salesCount || a.id - b.id;
-        default:
-          return b.popularity - a.popularity;
+  http.get<PathParams, DefaultBodyType, Envelope>(
+    "*/api/products",
+    ({ request }) => {
+      const url = new URL(request.url);
+      const page = Number(url.searchParams.get("page") ?? "1");
+      const params = url.searchParams;
+      const size = Math.min(100, Math.max(1, Number(params.get("size")) || 20));
+      // 클라이언트는 실서버와 같은 분류 ID(`category-1` · `subcategory-1`)를 보낸다 — 시연 카탈로그는
+      // 자기 분류 ID를 쓰므로 여기서(목업 계층에서) 이름으로 바꿔 매칭한다.
+      let category = params.get("category");
+      if (category && /^(sub)?category-/.test(category)) {
+        try {
+          category =
+            toDemoProductQuery({ category }, seedCategories).category ?? null;
+        } catch (error) {
+          if (!(error instanceof ApiError)) throw error;
+          return mockError(422, "DEMO_CATEGORY_NOT_AVAILABLE");
+        }
       }
-    });
-    const offset = (Math.max(1, page || 1) - 1) * size;
-    return mockOk({
-      items: items.slice(offset, offset + size),
-      totalCount: items.length,
-    });
-  }),
+      const crafts = params.getAll("subcategory");
+      const materials = params.getAll("material");
+      const giftTheme = params.get("giftTheme");
+      const items = productCatalogue.filter(
+        (product) =>
+          (!category ||
+            category === "kitchen" ||
+            product.category === category) &&
+          (!crafts.length || crafts.includes(product.subcategory)) &&
+          (!materials.length || materials.includes(product.material)) &&
+          (!giftTheme || product.giftTheme === giftTheme) &&
+          (!params.has("minPrice") ||
+            product.price >= Number(params.get("minPrice"))) &&
+          (!params.has("maxPrice") ||
+            product.price <= Number(params.get("maxPrice"))) &&
+          (params.get("hasGiftWrap") !== "true" || product.hasGiftWrap) &&
+          (params.get("excludeSoldOut") !== "true" ||
+            product.status !== "SOLD_OUT") &&
+          (!params.get("keyword") ||
+            product.name.includes(params.get("keyword")!)),
+      );
+      items.sort((a, b) => {
+        switch (params.get("sort")) {
+          case "PRICE_ASC":
+            return a.price - b.price || a.id - b.id;
+          case "PRICE_DESC":
+            return b.price - a.price || a.id - b.id;
+          case "NEWEST":
+            return b.id - a.id;
+          case "WISHLIST_COUNT":
+            return b.wishlistCount - a.wishlistCount || a.id - b.id;
+          case "SALES_COUNT":
+            return b.salesCount - a.salesCount || a.id - b.id;
+          default:
+            return b.popularity - a.popularity;
+        }
+      });
+      const offset = (Math.max(1, page || 1) - 1) * size;
+      return mockOk({
+        items: items.slice(offset, offset + size),
+        totalCount: items.length,
+      });
+    },
+  ),
 ];

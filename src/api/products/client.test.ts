@@ -71,6 +71,19 @@ describe("상품 목록 공개 조회", () => {
       expect.arrayContaining([expect.objectContaining({ id: "wood" })]),
     );
   });
+  it("MSW 모드도 실서버와 같은 분류 ID로 조회하고, 시연 카탈로그에 없는 분류는 오류로 거절한다", async () => {
+    const kitchen = await fetchProductListClient({ category: "category-1" });
+    expect(kitchen.totalCount).toBe(140);
+    const teaware = await fetchProductListClient({
+      category: "subcategory-1",
+    });
+    expect(teaware.totalCount).toBeGreaterThan(0);
+    expect(teaware.totalCount).toBeLessThan(kitchen.totalCount);
+
+    await expect(
+      fetchProductListClient({ category: "category-2" }),
+    ).rejects.toMatchObject({ status: 422 });
+  });
   it("필터와 가격 정렬을 적용하고 총 개수를 유지하며 페이지를 나눈다", async () => {
     const query = {
       category: "kitchen",
