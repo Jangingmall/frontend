@@ -84,14 +84,35 @@ describe("MobileMenu — 전체 메뉴(HO-menu-1)", () => {
       ).toHaveAttribute("href", "/login");
     });
 
-    it("로그인 상태면 마이페이지 → /mypage", () => {
-      setup({ authStatus: "authenticated" });
-      expect(screen.getByRole("link", { name: "마이페이지" })).toHaveAttribute(
-        "href",
-        "/mypage",
-      );
+    it("로그인 상태면 사용자 이름(→ /mypage)과 로그아웃 버튼을 보여준다", async () => {
+      const { onOpenChange } = setup({
+        authStatus: "authenticated",
+        userName: "김미담",
+        onLogout: vi.fn(),
+      });
+      const name = screen.getByRole("link", { name: "김미담" });
+      expect(name).toHaveAttribute("href", "/mypage");
       expect(
         screen.queryByRole("link", { name: "로그인 / 회원가입" }),
+      ).not.toBeInTheDocument();
+      await userEvent.click(name);
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+
+    it("로그아웃 버튼을 누르면 onLogout을 부른다", async () => {
+      const { onLogout } = setup({
+        authStatus: "authenticated",
+        userName: "김미담",
+        onLogout: vi.fn(),
+      });
+      await userEvent.click(screen.getByRole("button", { name: "로그아웃" }));
+      expect(onLogout).toHaveBeenCalledTimes(1);
+    });
+
+    it("비로그인이면 로그아웃 버튼이 없다", () => {
+      setup({ authStatus: "anonymous" });
+      expect(
+        screen.queryByRole("button", { name: "로그아웃" }),
       ).not.toBeInTheDocument();
     });
 
@@ -122,34 +143,21 @@ describe("MobileMenu — 대분류 → 소분류(HO-menu-2)", () => {
     expect(onViewChange).toHaveBeenCalledWith("root");
   });
 
-  it("대분류 7개를 아코디언으로 보여주고, 펼치면 소분류 링크가 나온다", async () => {
+  it("대분류 7개를 PL-2로 가는 링크로 보여준다(펼치지 않는다)", () => {
     setup({ view: "category" });
     const nav = screen.getByRole("navigation", { name: "분류" });
-    expect(
-      within(nav).getAllByRole("button", { expanded: false }),
-    ).toHaveLength(7);
+    const links = within(nav).getAllByRole("link");
+    expect(links).toHaveLength(7);
+    expect(links[0]).toHaveAttribute("href", "/products?category=category-1");
+    expect(links[0]).toHaveTextContent("키친 · 다이닝");
+    expect(links[6]).toHaveAttribute("href", "/products?category=category-7");
     expect(screen.queryByRole("link", { name: "다기 · 찻잔" })).toBeNull();
-
-    await userEvent.click(
-      screen.getByRole("button", { name: /키친 · 다이닝/ }),
-    );
-
-    expect(screen.getByRole("link", { name: "전체상품" })).toHaveAttribute(
-      "href",
-      "/products?category=category-1",
-    );
-    expect(screen.getByRole("link", { name: "다기 · 찻잔" })).toHaveAttribute(
-      "href",
-      "/products?category=subcategory-1",
-    );
+    expect(within(nav).queryByRole("button", { expanded: false })).toBeNull();
   });
 
-  it("소분류 링크를 누르면 메뉴를 닫는다", async () => {
+  it("대분류를 누르면 메뉴를 닫는다", async () => {
     const { onOpenChange } = setup({ view: "category" });
-    await userEvent.click(
-      screen.getByRole("button", { name: /키친 · 다이닝/ }),
-    );
-    await userEvent.click(screen.getByRole("link", { name: "다기 · 찻잔" }));
+    await userEvent.click(screen.getByRole("link", { name: /키친 · 다이닝/ }));
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 

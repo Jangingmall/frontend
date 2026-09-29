@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 
+import { logout } from "@/api/member/api";
 import { Gnb } from "@/components/common/gnb";
 import { useDemoSession, useMockAccount } from "@/lib/demo-session";
 import { toGnbCategories } from "@/lib/gnb-categories";
@@ -51,8 +52,27 @@ function useGnbCategories() {
   };
 }
 
+/**
+ * 모바일 메뉴의 로그인 상태 줄 — 사용자 이름과 로그아웃. 서버 세션 무효화가 실패해도(네트워크 등)
+ * 클라이언트 세션은 반드시 정리한다: 사용자가 로그아웃을 눌렀는데 로그인 상태로 남으면 안 된다.
+ */
+function useGnbSession() {
+  const userName = useAuthStore((state) => state.user?.name);
+  return {
+    userName,
+    onLogout: () => {
+      void logout()
+        .catch(() => undefined)
+        .finally(() => useAuthStore.getState().clear());
+    },
+  };
+}
+
+type SiteNav = ReturnType<typeof useGnbCategories> &
+  ReturnType<typeof useGnbSession>;
+
 export function SiteGnb() {
-  const nav = useGnbCategories();
+  const nav: SiteNav = { ...useGnbCategories(), ...useGnbSession() };
   const status = useAuthStore((state) => state.status);
   const cartCount = usePurchasePreviewStore((state) => state.lines.length);
   const demo = useDemoSession();
@@ -69,7 +89,7 @@ export function SiteGnb() {
     </>
   );
 }
-function LiveSiteGnb({ nav }: { nav: ReturnType<typeof useGnbCategories> }) {
+function LiveSiteGnb({ nav }: { nav: SiteNav }) {
   const status = useAuthStore((state) => state.status);
   const userId = useAuthStore((state) => state.user?.id);
   const cart = useCartQuery(status !== "loading", String(userId ?? "guest"));

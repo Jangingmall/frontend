@@ -4,6 +4,7 @@ import {
   render as rtlRender,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -110,5 +111,50 @@ describe("SiteGnb", () => {
         ).toBeInTheDocument(),
       );
     });
+  });
+});
+
+describe("SiteGnb 모바일 메뉴 로그인 상태", () => {
+  it("로그인 상태면 사용자 이름과 로그아웃이 보이고, 로그아웃하면 세션이 비워진다", async () => {
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "t",
+      user: { id: 1, name: "김미담", role: "USER" },
+    });
+    render(<SiteGnb />);
+
+    fireEvent.click(screen.getByRole("button", { name: "메뉴 열기" }));
+    const dialog = await screen.findByRole("dialog", { name: "전체 메뉴" });
+    expect(
+      within(dialog).getByRole("link", { name: "김미담" }),
+    ).toHaveAttribute("href", "/mypage");
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "로그아웃" }));
+
+    await waitFor(() =>
+      expect(useAuthStore.getState().status).toBe("anonymous"),
+    );
+    expect(useAuthStore.getState().user).toBeNull();
+  });
+
+  it("서버 로그아웃이 실패해도 클라이언트 세션은 정리한다", async () => {
+    server.use(
+      http.post("*/api/member/logout", () =>
+        HttpResponse.json({ message: "error" }, { status: 500 }),
+      ),
+    );
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "t",
+      user: { id: 1, name: "김미담", role: "USER" },
+    });
+    render(<SiteGnb />);
+
+    fireEvent.click(screen.getByRole("button", { name: "메뉴 열기" }));
+    fireEvent.click(await screen.findByRole("button", { name: "로그아웃" }));
+
+    await waitFor(() =>
+      expect(useAuthStore.getState().status).toBe("anonymous"),
+    );
   });
 });

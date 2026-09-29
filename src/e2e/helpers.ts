@@ -14,10 +14,17 @@ export async function expectAuthLink(page: Page, name: string | RegExp) {
   }
   await page.getByRole("button", { name: "메뉴 열기" }).click();
   const menu = page.getByRole("dialog", { name: "전체 메뉴" });
-  // 메뉴의 비로그인 줄은 "로그인 / 회원가입"이다.
-  const menuName =
-    name instanceof RegExp ? /^(로그인 \/ 회원가입|마이페이지)$/ : name;
-  await expect(menu.getByRole("link", { name: menuName })).toBeVisible();
+  // 모바일 메뉴의 최상단 줄: 비로그인 = "로그인 / 회원가입"(→ /login), 로그인 = 사용자 이름(→ /mypage).
+  const wantsMypage =
+    name instanceof RegExp ? name.test("마이페이지") : name === "마이페이지";
+  const wantsLogin =
+    name instanceof RegExp ? name.test("로그인") : name === "로그인";
+  const authLink = menu.locator(
+    wantsMypage && !wantsLogin
+      ? 'a[href="/mypage"]'
+      : 'a[href="/login"], a[href="/mypage"]',
+  );
+  await expect(authLink.first()).toBeVisible();
   await page.getByRole("button", { name: "메뉴 닫기" }).click();
   await expect(menu).toBeHidden();
 }

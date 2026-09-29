@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("모바일(375) GNB", () => {
   test.use({ viewport: { width: 375, height: 812 } });
 
-  test("햄버거 → 전체 카테고리 → 대분류 → 소분류로 이동해 해당 분류 목록에 도착한다", async ({
+  test("햄버거 → 전체 카테고리 → 대분류를 누르면 해당 대분류 목록(PL-2)으로 이동한다", async ({
     page,
   }) => {
     await page.goto("/");
@@ -21,10 +21,11 @@ test.describe("모바일(375) GNB", () => {
     ).toBeVisible();
 
     await menu.getByRole("button", { name: "전체 카테고리" }).click();
-    await menu.getByRole("button", { name: /키친 · 다이닝/ }).click();
-    await menu.getByRole("link", { name: "다기 · 찻잔" }).click();
+    await menu.getByRole("button", { name: "뒤로가기" }).click();
+    await menu.getByRole("button", { name: "전체 카테고리" }).click();
+    await menu.getByRole("link", { name: /키친 · 다이닝/ }).click();
 
-    await expect(page).toHaveURL(/\/products\?category=subcategory-1$/);
+    await expect(page).toHaveURL(/\/products\?category=category-1$/);
     await expect(menu).toBeHidden();
   });
 

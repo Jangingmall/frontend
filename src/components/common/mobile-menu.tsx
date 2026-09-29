@@ -3,13 +3,14 @@
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import type { Route } from "next";
 import Link from "next/link";
-import { type ReactNode, useState } from "react";
+import type { ReactNode } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CancelIcon,
-  ChevronDownIcon,
+  ChevronRightIcon,
   MenuIcon,
 } from "@/components/ui/icons";
 import { Logo } from "@/components/ui/logo";
@@ -34,7 +35,12 @@ type MobileMenuCategoriesStatus = "ready" | "loading" | "error";
  * `Gnb`가 닫는다(이 컴포넌트는 CSS로만 숨겨선 스크롤 잠금이 남기 때문에 상태를 정리해야 한다).
  *
  * 이동 링크를 누르면 라우트가 바뀌므로 메뉴를 닫는다(`onOpenChange(false)`). 「전체 카테고리」는
- * 링크가 아니라 대분류 화면으로 들어가는 버튼이다. 로그아웃 링크는 데스크톱 GNB에도 없어 넣지 않는다.
+ * 링크가 아니라 대분류 화면으로 들어가는 버튼이다.
+ *
+ * 인터랙션은 GUI 파일 반응형 페이지의 주석(HO-menu-1/2)을 따른다: 종료 버튼 = 메뉴 닫기,
+ * 로그인 상태 False = "로그인 / 회원가입"(→ 로그인), True = 사용자 이름(→ 마이페이지) + 로그아웃
+ * 버튼, 전체 카테고리 = HO-menu-2로, 뒤로가기 = HO-menu-1로, **대분류 = PL-2로 이동**(소분류는
+ * 목록 화면의 몫이라 여기서 펼치지 않는다).
  */
 interface MobileMenuProps {
   open: boolean;
@@ -42,6 +48,10 @@ interface MobileMenuProps {
   view: MobileMenuView;
   onViewChange: (view: MobileMenuView) => void;
   authStatus?: MobileMenuAuthStatus;
+  /** 로그인 상태에서 최상단에 보여줄 사용자 이름(누르면 마이페이지). */
+  userName?: string;
+  /** 로그아웃 버튼 핸들러. 세션 정리는 호출부(`app/site-gnb.tsx`)가 한다. */
+  onLogout?: () => void;
   categories?: GnbCategory[];
   categoriesStatus?: MobileMenuCategoriesStatus;
   onCategoriesRetry?: () => void;
@@ -57,22 +67,48 @@ function productsHref(categoryId: string): Route {
 
 function AuthRow({
   status,
+  userName,
+  onLogout,
   onNavigate,
 }: {
   status: MobileMenuAuthStatus;
+  userName?: string;
+  onLogout?: () => void;
   onNavigate: () => void;
 }) {
   if (status === "loading") {
     return <Skeleton className="mx-2 my-3 h-6 w-40" />;
   }
-  const authenticated = status === "authenticated";
+  if (status === "authenticated") {
+    return (
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href={"/mypage" as Route}
+          onClick={onNavigate}
+          className="flex min-w-0 items-center gap-2 px-2 py-3 text-title-m text-font-dark outline-none focus-visible:outline-2 focus-visible:outline-border-jade-fill [&_path]:fill-current"
+        >
+          <span className="truncate">{userName ?? "마이페이지"}</span>
+          <ArrowRightIcon className="size-6 shrink-0" />
+        </Link>
+        <Button
+          type="button"
+          variant="outline"
+          size="xs"
+          onClick={onLogout}
+          className="shrink-0"
+        >
+          로그아웃
+        </Button>
+      </div>
+    );
+  }
   return (
     <Link
-      href={(authenticated ? "/mypage" : "/login") as Route}
+      href={"/login" as Route}
       onClick={onNavigate}
       className="flex items-center gap-2 px-2 py-3 text-title-m text-font-dark outline-none focus-visible:outline-2 focus-visible:outline-border-jade-fill [&_path]:fill-current"
     >
-      {authenticated ? "마이페이지" : "로그인 / 회원가입"}
+      로그인 / 회원가입
       <ArrowRightIcon className="size-6" />
     </Link>
   );
@@ -84,12 +120,13 @@ function MobileMenu({
   view,
   onViewChange,
   authStatus = "anonymous",
+  userName,
+  onLogout,
   categories = [],
   categoriesStatus = "ready",
   onCategoriesRetry,
   logo = <Logo className="h-8 w-auto text-font-dark" />,
 }: MobileMenuProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const close = () => onOpenChange(false);
 
   return (
@@ -117,7 +154,12 @@ function MobileMenu({
           </div>
 
           <div className="flex flex-col gap-6 page-gutter pt-4 pb-12">
-            <AuthRow status={authStatus} onNavigate={close} />
+            <AuthRow
+              status={authStatus}
+              userName={userName}
+              onLogout={onLogout}
+              onNavigate={close}
+            />
 
             {view === "root" ? (
               <nav aria-label="전체 메뉴" className="flex flex-col">
@@ -183,54 +225,20 @@ function MobileMenu({
                     </div>
                   )
                 ) : (
-                  categories.map((category) => {
-                    const expanded = expandedId === category.id;
-                    return (
-                      <div key={category.id}>
-                        <button
-                          type="button"
-                          aria-expanded={expanded}
-                          onClick={() =>
-                            setExpandedId(expanded ? null : category.id)
-                          }
-                          className={ROW_CLASS}
-                        >
-                          {category.name}
-                          <ChevronDownIcon
-                            aria-hidden="true"
-                            className={cn(
-                              "size-6 transition-transform [&_path]:fill-current",
-                              expanded && "rotate-180",
-                            )}
-                          />
-                        </button>
-                        {expanded && (
-                          <ul className="flex flex-col bg-fill-neutral-weak">
-                            <li>
-                              <Link
-                                href={productsHref(category.id)}
-                                onClick={close}
-                                className={cn(ROW_CLASS, "pl-6 text-body-m")}
-                              >
-                                전체상품
-                              </Link>
-                            </li>
-                            {category.subcategories.map((sub) => (
-                              <li key={sub.id}>
-                                <Link
-                                  href={productsHref(sub.id)}
-                                  onClick={close}
-                                  className={cn(ROW_CLASS, "pl-6 text-body-m")}
-                                >
-                                  {sub.name}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    );
-                  })
+                  categories.map((category) => (
+                    <Link
+                      key={category.id}
+                      href={productsHref(category.id)}
+                      onClick={close}
+                      className={ROW_CLASS}
+                    >
+                      {category.name}
+                      <ChevronRightIcon
+                        aria-hidden="true"
+                        className="size-6 [&_path]:fill-current"
+                      />
+                    </Link>
+                  ))
                 )}
               </nav>
             )}

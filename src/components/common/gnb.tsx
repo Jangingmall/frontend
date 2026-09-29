@@ -77,6 +77,9 @@ interface GnbProps {
   categories?: GnbCategory[];
   categoriesStatus?: CategoryMegaPanelStatus;
   onCategoriesRetry?: () => void;
+  /** 모바일 메뉴 최상단(로그인 상태)에 보여줄 사용자 이름과 로그아웃 핸들러. */
+  userName?: string;
+  onLogout?: () => void;
   className?: string;
 }
 
@@ -87,6 +90,8 @@ function Gnb({
   categories = [],
   categoriesStatus = "ready",
   onCategoriesRetry,
+  userName,
+  onLogout,
   className,
 }: GnbProps) {
   const [openPanel, setOpenPanel] = useState<GnbOpenPanel>(null);
@@ -262,6 +267,8 @@ function Gnb({
         view={mobileMenuView ?? "root"}
         onViewChange={setMobileMenuView}
         authStatus={authStatus}
+        userName={userName}
+        onLogout={onLogout}
         categories={categories}
         categoriesStatus={categoriesStatus}
         onCategoriesRetry={onCategoriesRetry}
