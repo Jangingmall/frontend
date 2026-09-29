@@ -161,9 +161,10 @@ try {
     ).toHaveCount(0);
   await expect(page.locator('a[href*="preview=1"]')).toHaveCount(0);
   const sort = page.getByRole("combobox", { name: "상품 정렬" });
-  await expect(sort).toHaveText("최신순");
+  await expect(sort).toHaveText("인기순");
   await sort.click();
   await expect(page.getByRole("option")).toHaveText([
+    "인기순",
     "최신순",
     "낮은 가격순",
     "높은 가격순",
@@ -173,6 +174,14 @@ try {
     path.startsWith("GET /api/products?"),
   );
   assert(productRequests.length > 0, "API products request missing");
+  assert(
+    productRequests.some(
+      (path) =>
+        new URL(path.slice(4), "http://fixture").searchParams.get("sort") ===
+        "POPULAR",
+    ),
+    "POPULAR request missing",
+  );
   for (const request of productRequests) {
     const params = new URL(request.slice(4), "http://fixture").searchParams;
     assert(
@@ -180,7 +189,7 @@ try {
       "unsupported filters reached backend",
     );
     assert(
-      !["POPULAR", "SALES", "WISHLIST"].includes(params.get("sort")),
+      !["SALES", "WISHLIST"].includes(params.get("sort")),
       "unsupported sort reached backend",
     );
   }

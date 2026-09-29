@@ -26,7 +26,8 @@ export async function fetchBackendProductList(
     crafts: [],
     hasGiftWrap: false,
     sort:
-      query.sort && ["newest", "price-asc", "price-desc"].includes(query.sort)
+      query.sort &&
+      ["popular", "newest", "price-asc", "price-desc"].includes(query.sort)
         ? query.sort
         : "newest",
   });

@@ -28,14 +28,14 @@ export function isMockProductQuery(mode: DataMode, query: ProductQuery) {
       query.crafts?.length ||
       query.hasGiftWrap ||
       (query.sort &&
-        !["newest", "price-asc", "price-desc"].includes(query.sort)),
+        !["popular", "newest", "price-asc", "price-desc"].includes(query.sort)),
     )
   );
 }
 
 /** 문서상 존재하지 않거나 현재 구현으로 안전하게 제공할 수 없는 화면 기능. */
 export const demoFeatures = {
-  productFilters: "소재·공예 종목·선물 포장 검색 및 인기·판매·찜 정렬",
+  productFilters: "소재·공예 종목·선물 포장 검색 및 판매·찜 정렬",
   productInquiries: "비밀 답변 노출 문제가 해결될 때까지 문의 시연",
   photoReviews: "사진 후기 필터 및 공개 이미지 URL 미제공",
   restock: "재입고 알림 신청",

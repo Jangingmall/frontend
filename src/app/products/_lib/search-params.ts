@@ -18,7 +18,7 @@ export function parseProductSearchParams(
     params.get("sort") ?? (publicEnv.apiMocking ? "popular" : "newest");
   const sort =
     !publicEnv.apiMocking &&
-    !["newest", "price-asc", "price-desc"].includes(requestedSort)
+    !["popular", "newest", "price-asc", "price-desc"].includes(requestedSort)
       ? "newest"
       : requestedSort;
   let minPrice = parsePrice(params.get("minPrice"));
@@ -85,7 +85,9 @@ export function updateProductSearchParams(
     params.delete("hasGiftWrap");
     if (
       params.has("sort") &&
-      !["newest", "price-asc", "price-desc"].includes(params.get("sort")!)
+      !["popular", "newest", "price-asc", "price-desc"].includes(
+        params.get("sort")!,
+      )
     )
       params.set("sort", "newest");
   }

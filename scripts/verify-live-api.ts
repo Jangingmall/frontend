@@ -63,7 +63,7 @@ async function check<T>(
 
 await check("/api/products/categories", backendCategoriesDto);
 await check("/api/products/subcategories", backendSubcategoriesDto);
-for (const sort of ["NEWEST", "PRICE_ASC", "PRICE_DESC"]) {
+for (const sort of ["POPULAR", "NEWEST", "PRICE_ASC", "PRICE_DESC"]) {
   await check(
     `/api/products?page=0&size=5&sort=${sort}`,
     backendProductListDto,
