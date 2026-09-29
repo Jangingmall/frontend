@@ -125,6 +125,56 @@ describe("SiteFloatingActions", () => {
     expect(screen.queryByText("이전 사용자 메시지")).not.toBeInTheDocument();
   });
 
+  it("무효 판정 후 새로 만든 세션은 다시 검증(GET history)하지 않는다", async () => {
+    login();
+    // 캐시된 세션이 무효로 밝혀진 뒤 새로 만든 세션까지 검증 대상으로 취급하면, 그 새
+    // 세션의 GET history가 대기 중이거나 실패할 때 방금 정상적으로 주고받은 대화가
+    // 화면에서 사라진다(리뷰 지적) — 이 회귀를 GET 호출 횟수로 직접 확인한다.
+    window.sessionStorage.setItem(
+      "chatbot-session:1",
+      JSON.stringify({
+        sessionId: "stale-session",
+        messages: [
+          {
+            id: 1,
+            sessionId: "stale-session",
+            sender: "user",
+            content: "이전 사용자 메시지",
+            sentAt: new Date().toISOString(),
+          },
+        ],
+      }),
+    );
+    let historyCallCount = 0;
+    server.use(
+      http.get("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
+        historyCallCount += 1;
+        const session = CHAT_SESSIONS.get(String(params.sessionId));
+        if (!session) return mockError(404, "NOT_FOUND");
+        return HttpResponse.json(
+          { success: true, status: 200, data: session.messages },
+          { status: 200 },
+        );
+      }),
+    );
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    await waitFor(() =>
+      expect(window.sessionStorage.getItem("chatbot-session:1")).toBeNull(),
+    );
+
+    const input = screen.getByPlaceholderText("궁금한 내용을 입력해주세요.");
+    fireEvent.change(input, { target: { value: "새 대화" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+
+    await waitFor(() =>
+      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+    );
+    expect(screen.getByText("새 대화")).toBeInTheDocument();
+    // 원래 캐시된(무효로 밝혀진) 세션 1건에 대해서만 검증했어야 한다.
+    expect(historyCallCount).toBe(1);
+  });
+
   it("계정을 전환하면(네비게이션 없이) 이전 계정의 대화가 새 계정에 보이지 않는다", async () => {
     // `mock-identity-switcher.tsx`가 하는 것과 같은 경로 — 페이지 이동 없이
     // `useAuthStore`만 직접 바꾼다. 컴포넌트가 언마운트되지 않아도 대화가 새지 않아야 한다.

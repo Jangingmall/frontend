@@ -112,6 +112,12 @@ export const chatbotHandlers = [
       const session = CHAT_SESSIONS.get(sessionId);
       if (!session)
         return mockError(404, "NOT_FOUND", "세션을 찾을 수 없어요.");
+      if (session.ended)
+        return mockError(
+          422,
+          "BUSINESS_RULE_VIOLATION",
+          "이미 종료된 세션이에요.",
+        );
       return mockOk(session.messages);
     },
   ),

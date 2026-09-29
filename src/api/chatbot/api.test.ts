@@ -54,4 +54,10 @@ describe("챗봇", () => {
     await endChatSession(session.sessionId);
     await expect(sendChatMessage(session.sessionId, "안녕")).rejects.toThrow();
   });
+
+  it("세션을 종료하면 이후 히스토리 조회도 실패한다", async () => {
+    const session = await createChatSession();
+    await endChatSession(session.sessionId);
+    await expect(fetchChatHistory(session.sessionId)).rejects.toThrow();
+  });
 });

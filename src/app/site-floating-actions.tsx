@@ -81,8 +81,9 @@ export function SiteFloatingActions(props: SiteFloatingActionsProps) {
   const status = useAuthStore((state) => state.status);
   const userId = useAuthStore((state) => state.user?.id ?? null);
   // 계정이 바뀌면(로그아웃 후 다른 계정 로그인, `mock-identity-switcher.tsx`처럼
-  // 네비게이션 없이 계정만 바뀌는 경로 포함) 내부 `sessionId`·`messages`·`hadCachedSession`
-  // state가 저절로 리셋되지 않는다 — `key`로 강제 리마운트시켜야 한다(리뷰 지적).
+  // 네비게이션 없이 계정만 바뀌는 경로 포함) 내부 `sessionId`·`messages`·
+  // `initialCachedSessionId` state가 저절로 리셋되지 않는다 — `key`로 강제
+  // 리마운트시켜야 한다(리뷰 지적).
   return <SiteFloatingActionsInner key={userId ?? status} {...props} />;
 }
 
@@ -118,11 +119,16 @@ function SiteFloatingActionsInner({
   const [messages, setMessages] = useState<ChatMessage[]>(
     () => readStoredSession(userId)?.messages ?? [],
   );
-  // 마운트 시점에 캐시된 세션이 있었는지를 한 번만 고정 캡처한다 — 이후 `handleSend`가
-  // 새로 만든 세션은 이미 신뢰된 상태이므로(그 자체로 storage에 다시 쓰여도) 검증 대상이
-  // 아니다. 이 값이 `sessionId` 등을 따라 다시 계산되면 방금 만든 새 세션까지 "검증 전"
-  // 취급돼 버린다.
-  const [hadCachedSession] = useState(() => readStoredSession(userId) !== null);
+  // 마운트 시점에 캐시된 세션이 있었다면 그 sessionId를 한 번만 고정 캡처한다 — 검증
+  // 대상은 오직 이 "원래 캐시됐던 세션"뿐이다. 이후 `handleSend`가 무효 판정을 받고
+  // 새로 만든 세션은 이미 신뢰된 상태(그 자체로 방금 서버가 만들어준 것)라 검증이 필요
+  // 없다. 단순 boolean(`hadCachedSession`)이었을 때는 이 구분이 없어서, 새 세션으로
+  // `sessionId`가 바뀌어도 그 새 세션까지 `historyCheck`가 다시 돌며 "검증 전"으로
+  // 취급해 방금 막 주고받은 정상 대화가 잠깐(또는 검증 실패 시 계속) 사라지는 문제가
+  // 있었다(리뷰 지적).
+  const [initialCachedSessionId] = useState(
+    () => readStoredSession(userId)?.sessionId ?? null,
+  );
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>(() =>
     pickRandomSample(CHAT_SUGGESTION_POOL, CHAT_SUGGESTION_DISPLAY_COUNT),
@@ -145,15 +151,24 @@ function SiteFloatingActionsInner({
   const historyCheck = useChatHistoryQuery(
     sessionId,
     userId,
-    status === "authenticated" && !!sessionId,
+    status === "authenticated" &&
+      !!sessionId &&
+      sessionId === initialCachedSessionId,
   );
   // 캐시로 복원한 세션이 있었으면 검증(`historyCheck`)이 성공으로 끝나기 전까지는
   // 화면에 아예 안 보여준다 — "아직 실패로 안 밝혀졌다"와 "유효하다고 확인됐다"는 다르다.
   // 검증 중인 그 짧은 창에도 캐시된 대화를 그대로 보여주면 같은 탭에서 다른 계정으로
-  // 로그인했을 때 이전 사용자 대화가 노출될 수 있다(리뷰 지적). 캐시가 아예 없었던 경우
-  // (새 세션)는 검증 대상이 아니므로 바로 보여준다.
-  const isValidated = !hadCachedSession || historyCheck.isSuccess;
-  const isStaleSession = hadCachedSession && historyCheck.isError;
+  // 로그인했을 때 이전 사용자 대화가 노출될 수 있다(리뷰 지적). 캐시가 아예 없었던
+  // 경우(새 세션)나, `sessionId`가 이미 그 원래 캐시된 값과 달라진 경우(무효 판정 후
+  // 새로 만든 세션)는 검증 대상이 아니므로 바로 보여준다.
+  const isValidated =
+    !initialCachedSessionId ||
+    sessionId !== initialCachedSessionId ||
+    historyCheck.isSuccess;
+  const isStaleSession =
+    sessionId === initialCachedSessionId &&
+    !!initialCachedSessionId &&
+    historyCheck.isError;
   const visibleMessages = isValidated ? messages : [];
 
   // 대화가 바뀔 때마다 캐시를 다시 저장한다. `setState`가 아니라 브라우저 저장소 쓰기라
