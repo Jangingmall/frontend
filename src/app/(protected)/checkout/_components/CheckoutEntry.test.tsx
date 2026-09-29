@@ -31,12 +31,13 @@ describe("목업 결제 진입 경계", () => {
       "false",
     );
   });
-  it("API 모드에서도 명시적인 시연 주문 ID만 목업 화면을 연다", () => {
+  it("API 모드에서 시연 주문 ID는 결제를 차단한다", () => {
     environment.apiMocking = false;
     render(<CheckoutEntry orderId="ui-preview-order" />);
-    expect(screen.getByRole("form", { name: "주문 결제" })).toBeVisible();
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "실제 결제되지 않습니다",
+    expect(screen.queryByRole("form")).not.toBeInTheDocument();
+    expect(screen.getByTestId("live-checkout")).toHaveAttribute(
+      "data-allow-order",
+      "false",
     );
   });
 });

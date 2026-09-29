@@ -13,12 +13,12 @@ describe("두 데이터 모드의 요청 경계", () => {
     expect(resolveDataMode(undefined, "enabled")).toBe("msw");
     expect(() => resolveDataMode("api", "enabled")).toThrow();
   });
-  it("API 모드에서는 실요청을 가로채지 않고 시연 네임스페이스만 처리한다", () => {
+  it("API 모드에서는 시연 네임스페이스를 포함해 목업을 허용하지 않는다", () => {
     expect(shouldMockRequest("api", "/api/products")).toBe(false);
     expect(shouldMockRequest("api", "/api/member/token/refresh")).toBe(false);
     expect(shouldMockRequest("api", "/api/payments/confirm")).toBe(false);
     expect(shouldMockRequest("api", "/api/mock/products/1/inquiries")).toBe(
-      true,
+      false,
     );
     expect(shouldMockRequest("msw", "/api/payments/confirm")).toBe(true);
     expect(shouldMockRequest("msw", "/other")).toBe(false);

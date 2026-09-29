@@ -47,18 +47,16 @@ it("실제 API 모드에서 비활성 소재 조회를 기다리지 않고 가�
         "총 0개의 검색 결과",
       ),
     );
-    expect(screen.queryByRole("button", { name: "소재" })).toBeInTheDocument();
     expect(
-      screen.getByRole("checkbox", { name: "선물 포장 가능" }),
-    ).toBeVisible();
+      screen.queryByRole("button", { name: "소재" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", { name: "선물 포장 가능" }),
+    ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("navigation", { name: "실제 상품 분류" }),
     ).not.toBeInTheDocument();
-    expect(
-      fetchSpy.mock.calls.every((call) =>
-        String(call[0]).includes("/api/mock/catalogue/products/subcategories"),
-      ),
-    ).toBe(true);
+    expect(fetchSpy).not.toHaveBeenCalled();
   } finally {
     unmount();
     client.clear();

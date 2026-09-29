@@ -23,9 +23,9 @@ vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: false } }));
 describe("실제 API 모드의 미지원 종목 필터", () => {
   const query = { category: "kitchen-1", crafts: ["1", "2"] };
 
-  it("시연 요청과 캐시 키에 종목을 포함한다", () => {
-    expect(toProductListSearchParams(query).has("subcategory")).toBe(true);
-    expect(productKeys.list(query)).not.toEqual(
+  it("실제 요청과 캐시 키에서 종목을 제외한다", () => {
+    expect(toProductListSearchParams(query).has("subcategory")).toBe(false);
+    expect(productKeys.list(query)).toEqual(
       productKeys.list({ category: query.category }),
     );
   });
@@ -34,20 +34,20 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
     const params = new URLSearchParams(
       "category=kitchen-1&subcategory=1&subcategory=2",
     );
-    expect(parseProductSearchParams(params).crafts).toEqual(["1", "2"]);
+    expect(parseProductSearchParams(params).crafts).toEqual([]);
     expect(
       getProductSeo({ category: "kitchen-1", subcategory: ["1", "2"] })
         .hasFilters,
-    ).toBe(true);
+    ).toBe(false);
     expect(
       updateProductSearchParams(params, { page: 2 }).has("subcategory"),
-    ).toBe(true);
+    ).toBe(false);
     expect(
       updateProductSearchParams(params, { crafts: ["3"] }).has("subcategory"),
-    ).toBe(true);
+    ).toBe(false);
   });
 
-  it("미지원 종목은 숨기되 분류·소재·선물 포장 UI는 표시한다", () => {
+  it("분류와 가격을 유지하고 미지원 필터는 숨긴다", () => {
     render(
       <ProductFilters
         query={query}
@@ -62,12 +62,14 @@ describe("실제 API 모드의 미지원 종목 필터", () => {
     expect(screen.getByRole("button", { name: "다기 · 찻잔" })).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "사기장" }),
-    ).toBeInTheDocument();
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "가격대" })).toBeVisible();
     expect(
-      screen.getByRole("checkbox", { name: "선물 포장 가능" }),
-    ).toBeVisible();
-    expect(screen.getByRole("button", { name: "소재" })).toBeVisible();
+      screen.queryByRole("checkbox", { name: "선물 포장 가능" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "소재" }),
+    ).not.toBeInTheDocument();
   });
 
   it("종목 선택지 조회도 시작하지 않는다", () => {

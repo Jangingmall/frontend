@@ -38,6 +38,7 @@ it("uses authenticated POST/DELETE wish and accepts the null success payload", a
 
 it("찜 여부를 GET /wishes/{id}(204/404, 봉투 없음)로 한 번에 확인한다", async () => {
   const requestedIds: string[] = [];
+  const fetchSpy = vi.spyOn(globalThis, "fetch");
   server.use(
     http.get("*/api/member/me/wishes/:productId", ({ params }) => {
       requestedIds.push(String(params.productId));
@@ -46,6 +47,7 @@ it("찜 여부를 GET /wishes/{id}(204/404, 봉투 없음)로 한 번에 확인�
   );
   expect(await fetchProductActionState(101)).toMatchObject({ wished: true });
   expect(requestedIds).toEqual(["101"]);
+  expect(fetchSpy).toHaveBeenCalledTimes(1);
 });
 
 it("404면 찜 안 한 상태로 판단한다", async () => {
@@ -112,7 +114,15 @@ it("reports the server cart failure and keeps restock unavailable", async () => 
   await expect(
     addProductToCart(101, [{ choices: {}, quantity: 1 }]),
   ).rejects.toMatchObject({ status: 500 });
-  await expect(requestProductRestock(101)).resolves.toMatchObject({
-    duplicate: false,
-  });
+  await expect(requestProductRestock(101)).rejects.toThrow("지원하지 않습니다");
+});
+
+it("미리보기 플래그로 찜과 장바구니 시연에 우회 진입할 수 없다", async () => {
+  const spy = vi.spyOn(globalThis, "fetch");
+  await expect(fetchProductActionState(101, true)).rejects.toThrow();
+  await expect(setProductWishlist(101, true, true)).rejects.toThrow();
+  await expect(
+    addProductToCart(101, [{ choices: {}, quantity: 1 }], true),
+  ).rejects.toThrow();
+  expect(spy).not.toHaveBeenCalled();
 });

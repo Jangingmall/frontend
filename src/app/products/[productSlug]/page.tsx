@@ -3,6 +3,7 @@ import type { Route } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { fetchProductDetail } from "@/api/products/detail-api";
+import { publicEnv } from "@/lib/env";
 import {
   getProductPath,
   isCanonicalProductSlug,
@@ -21,6 +22,8 @@ export async function generateMetadata({
   searchParams,
 }: ProductPageProps): Promise<Metadata> {
   const id = parseProductId((await params).productSlug);
+  if ((await searchParams)?.preview === "1" && !publicEnv.apiMocking)
+    return { robots: { index: false, follow: false } };
   const product = id
     ? await fetchProductDetail(id, (await searchParams)?.preview === "1")
     : null;
@@ -49,6 +52,7 @@ export default async function ProductPage({
   const id = parseProductId(productSlug);
   if (!id) notFound();
   const preview = (await searchParams)?.preview === "1";
+  if (preview && !publicEnv.apiMocking) notFound();
   const product = await fetchProductDetail(id, preview);
   if (!product) notFound();
   const canonical = getProductPath(product);

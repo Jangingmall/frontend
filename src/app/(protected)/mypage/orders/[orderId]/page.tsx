@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 
 import type { ChangeOrderAddressRequest } from "@/api/orders/api";
-import { requestPreviewCancel } from "@/api/purchase-preview/api";
 import { ErrorState } from "@/components/common/error-state";
 import { OrderCancelRequestModal } from "@/components/order/OrderCancelRequestModal";
 import { OrderExchangeRefundRequestModal } from "@/components/order/OrderExchangeRefundRequestModal";
@@ -220,10 +219,7 @@ export default function OrderDetailPage() {
         !usesMockAccount() &&
         (cancelTarget?.status !== "PAYMENT_PENDING" || input.photos.length > 0)
       ) {
-        await requestPreviewCancel(orderId, input.reason, input.photos);
-        setCancelError(
-          "시연 접수가 완료되었습니다. 실제 주문 취소·환불은 처리되지 않았습니다.",
-        );
+        setCancelError("결제된 주문의 취소 요청과 사진 첨부는 준비 중입니다.");
         return;
       }
       await cancelMutation.mutateAsync(input);
@@ -333,11 +329,16 @@ export default function OrderDetailPage() {
 
         {cancelTarget && (
           <OrderCancelRequestModal
-            supportsAttachments
+            supportsAttachments={usesMockAccount()}
+            unavailableReason={
+              !usesMockAccount() && cancelTarget.status !== "PAYMENT_PENDING"
+                ? "결제된 주문의 취소 요청은 준비 중입니다."
+                : undefined
+            }
             notice={
               usesMockAccount()
                 ? undefined
-                : "미결제 주문은 전체 취소됩니다. 결제된 주문 또는 사진을 첨부한 요청은 MSW 시연으로만 접수됩니다."
+                : "미결제 주문은 전체 취소됩니다. 취소 사유와 사진은 전송되지 않습니다."
             }
             open
             onOpenChange={(open) => {

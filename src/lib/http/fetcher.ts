@@ -1,3 +1,4 @@
+import { publicEnv } from "@/lib/env";
 import { serverEnv } from "@/lib/env.server";
 
 import { resolveResponse } from "./response";
@@ -27,6 +28,8 @@ export async function apiFetch<T>(
   path: string,
   { baseUrl = serverEnv.apiBaseUrl, headers, ...init }: ApiFetchOptions = {},
 ): Promise<T> {
+  if (!publicEnv.apiMocking && /^\/api\/mock(?:[/?#]|$)/.test(path))
+    throw new Error("현재 시연 기능을 사용할 수 없습니다.");
   if (!baseUrl)
     throw new Error("API_BASE_URL is required for server API requests.");
 

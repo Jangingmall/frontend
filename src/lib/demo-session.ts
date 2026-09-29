@@ -4,12 +4,14 @@ import { publicEnv } from "./env";
 const key = "midam:api-demo-session";
 export function isDemoSession() {
   return (
-    typeof window !== "undefined" && window.sessionStorage.getItem(key) === "1"
+    publicEnv.apiMocking &&
+    typeof window !== "undefined" &&
+    window.sessionStorage.getItem(key) === "1"
   );
 }
 export function setDemoSession(enabled: boolean) {
   if (typeof window === "undefined") return;
-  if (enabled) sessionStorage.setItem(key, "1");
+  if (enabled && publicEnv.apiMocking) sessionStorage.setItem(key, "1");
   else sessionStorage.removeItem(key);
   window.dispatchEvent(new Event("midam-demo-session"));
 }

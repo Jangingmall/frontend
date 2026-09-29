@@ -1,10 +1,11 @@
 import { http } from "msw";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 
 import { mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 
 import { fetchMyReviews, fetchReviewableItems, fetchReviews } from "./api";
+vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: false } }));
 const image = {
   imageId: "image-1",
   variants: [
@@ -82,29 +83,32 @@ it("작성 가능한 후기의 실제 옵션 스냅샷과 null 썸네일을 수�
     { thumbnailUrl: "https://cdn.test/old.jpg", options: [] },
   ]);
 });
-it("상품 후기 0.5점 평점을 보존하고 이미지 ID를 잘못된 URL로 표시하지 않는다", async () => {
-  server.use(
-    http.get("*/api/products/2/reviews", () =>
-      mockOk({
-        ...page,
-        content: [
-          {
-            reviewId: 1,
-            productId: 2,
-            writerId: 3,
-            rating: 4.5,
-            content: "좋아요",
-            images: ["image-1"],
-            createdAt: "2026-09-25T10:00:00",
-          },
-        ],
-      }),
-    ),
-  );
-  const result = await fetchReviews(
-    2,
-    { page: 1, sort: "latest", photoOnly: false },
-    false,
-  );
-  expect(result.items[0]).toMatchObject({ rating: 4.5, images: [] });
-});
+it.each([true, false])(
+  "API 모드에서 isMock=%s나 사진 필터로 시연 후기에 우회할 수 없다",
+  async (isMock) => {
+    server.use(
+      http.get("*/api/products/2/reviews", () =>
+        mockOk({
+          ...page,
+          content: [
+            {
+              reviewId: 1,
+              productId: 2,
+              writerId: 3,
+              rating: 4.5,
+              content: "좋아요",
+              images: ["image-1"],
+              createdAt: "2026-09-25T10:00:00",
+            },
+          ],
+        }),
+      ),
+    );
+    const result = await fetchReviews(
+      2,
+      { page: 1, sort: "latest", photoOnly: true },
+      isMock,
+    );
+    expect(result.items[0]).toMatchObject({ rating: 4.5, images: [] });
+  },
+);

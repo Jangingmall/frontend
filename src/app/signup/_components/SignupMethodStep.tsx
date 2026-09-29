@@ -1,5 +1,6 @@
 import type { OAuthLoginResult } from "@/api/member/api";
 import { Button } from "@/components/ui/button";
+import { publicEnv } from "@/lib/env";
 import { useStartOAuthLoginMutation } from "@/queries/member/mutations";
 import type { OAuthProvider } from "@/types/auth";
 
@@ -50,6 +51,7 @@ export function SignupMethodStep({
 
       <div className="flex w-90 flex-col gap-4">
         <NaverSignupButton
+          disabled={!publicEnv.apiMocking}
           onClick={() => handleOAuthClick("naver")}
           loading={startOAuthLoginMutation.isPending}
         />

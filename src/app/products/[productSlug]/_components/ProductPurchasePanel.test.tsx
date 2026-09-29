@@ -492,3 +492,12 @@ it("찜하지 않은 실제 상품은 상세 진입만으로 찜되지 않는다
   );
   expect(add).not.toHaveBeenCalled();
 });
+
+it("API 모드에서는 품절 상품의 재입고 시연 버튼을 숨긴다", () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  setup(103, { stock: 0, isMock: false });
+  expect(screen.getByRole("button", { name: "품절" })).toBeDisabled();
+  expect(
+    screen.queryByRole("button", { name: "재입고 알림" }),
+  ).not.toBeInTheDocument();
+});

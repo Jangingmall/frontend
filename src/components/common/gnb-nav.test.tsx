@@ -2,6 +2,8 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { createRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 
+import { publicEnv } from "@/lib/env";
+
 import { GnbNav, isGnbNavItemActive } from "./gnb-nav";
 
 const { usePathname, useSearchParams } = vi.hoisted(() => ({
@@ -175,4 +177,28 @@ describe("isGnbNavItemActive", () => {
       ),
     ).toBe(false);
   });
+});
+
+it("API 모드에서는 베스트 직접 URL도 활성 메뉴나 진입 링크를 만들지 않는다", () => {
+  const previous = publicEnv.apiMocking;
+  Object.assign(publicEnv, { apiMocking: false });
+  try {
+    setUrl("/products", "preset=best");
+    renderGnbNav();
+    expect(
+      screen.queryByRole("link", { name: "베스트" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("베스트")).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByText("베스트")).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "신상품" })).toHaveAttribute(
+      "href",
+      "/products?preset=new",
+    );
+    expect(screen.getByRole("link", { name: "전체 카테고리" })).toHaveAttribute(
+      "href",
+      "/products",
+    );
+  } finally {
+    Object.assign(publicEnv, { apiMocking: previous });
+  }
 });

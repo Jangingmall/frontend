@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SEED_ACCESS_TOKEN } from "@/api/member/mock/fixtures";
 import { setMockIdentity } from "@/api/member/mock/mock-identity";
 import { orderFixtures } from "@/api/orders/mock/fixtures";
+import { publicEnv } from "@/lib/env";
 import { mockError } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
@@ -285,3 +286,18 @@ describe("OrderDetailPage", () => {
 });
 
 vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
+
+it("API mode does not offer cancellation for paid orders", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  useAuthStore.setState({ accessToken: "real-api-token" });
+  try {
+    mockOrderId = String(preparingOrderId);
+    renderPage();
+    await screen.findByText("상품 준비 중");
+    expect(
+      screen.queryByRole("button", { name: "주문 취소하기" }),
+    ).not.toBeInTheDocument();
+  } finally {
+    Object.assign(publicEnv, { apiMocking: true });
+  }
+});

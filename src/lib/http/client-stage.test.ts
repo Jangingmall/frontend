@@ -53,7 +53,7 @@ it("Stage 세션 복원도 백엔드 쿠키를 전송한다", async () => {
   expect(target).toBe("https://api.stg.midam.store/api/member/token/refresh");
   expect(credentials).toBe("include");
 });
-it("상품 API와 목업 경로는 Stage에서도 same-origin을 유지한다", async () => {
+it("Stage 상품 API는 same-origin을 유지하고 목업 경로는 차단한다", async () => {
   stageWindow();
   useAuthStore.getState().clear();
   server.use(
@@ -63,9 +63,9 @@ it("상품 API와 목업 경로는 Stage에서도 same-origin을 유지한다", 
   expect(await clientFetch("/api/products", { auth: false })).toBe(
     "https://stg.midam.store/api/products",
   );
-  expect(await clientFetch("/api/mock/member/me", { auth: false })).toBe(
-    "https://stg.midam.store/api/mock/member/me",
-  );
+  await expect(
+    clientFetch("/api/mock/member/me", { auth: false }),
+  ).rejects.toThrow("시연 기능");
 });
 
 it("Stage 카카오 버튼은 백엔드 시작 주소로 이동하고 성공 후 홈으로 돌아온다", async () => {

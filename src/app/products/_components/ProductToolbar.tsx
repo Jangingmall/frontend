@@ -2,6 +2,7 @@
 
 import { Breadcrumb, BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Select, SelectItem } from "@/components/ui/select";
+import { publicEnv } from "@/lib/env";
 import type { ProductCategory } from "@/types/product-filter";
 import type { ProductListSort } from "@/types/sort";
 
@@ -28,7 +29,11 @@ export function ProductToolbar({
   onSortChange,
 }: ProductToolbarProps) {
   const rootCategory = parent ?? category;
-  const options = SORT_OPTIONS.map((option) => ({
+  const options = SORT_OPTIONS.filter(
+    (option) =>
+      publicEnv.apiMocking ||
+      ["newest", "price-asc", "price-desc"].includes(option.value),
+  ).map((option) => ({
     ...option,
     // BE의 POPULAR는 아직 ID 내림차순이므로 실제 인기순 지원으로 취급하지 않는다.
     disabled: false,

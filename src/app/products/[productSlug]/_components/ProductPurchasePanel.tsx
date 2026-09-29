@@ -299,6 +299,7 @@ export function ProductPurchasePanel({
   }
 
   function handleRestock() {
+    if (!publicEnv.apiMocking) return;
     if (!isAuthenticated) {
       onRequireLogin(false);
       return;
@@ -608,16 +609,18 @@ export function ProductPurchasePanel({
           </p>
         )}
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="xl"
-            className="w-2/5 min-w-0 border-border-neutral-solid px-3 xl:w-50"
-            disabled={unsupportedOptions || (unknownStock && !soldOut)}
-            loading={busy}
-            onClick={soldOut ? handleRestock : () => handlePurchase()}
-          >
-            {soldOut ? "재입고 알림" : "장바구니"}
-          </Button>
+          {(!soldOut || publicEnv.apiMocking) && (
+            <Button
+              variant="outline"
+              size="xl"
+              className="w-2/5 min-w-0 border-border-neutral-solid px-3 xl:w-50"
+              disabled={unsupportedOptions || (unknownStock && !soldOut)}
+              loading={busy}
+              onClick={soldOut ? handleRestock : () => handlePurchase()}
+            >
+              {soldOut ? "재입고 알림" : "장바구니"}
+            </Button>
+          )}
           <Button
             size="xl"
             className="min-w-0 flex-1 px-3"

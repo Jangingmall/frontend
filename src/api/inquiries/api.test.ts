@@ -23,7 +23,7 @@ describe("상품 문의 응답 보안", () => {
         { type: "배송", title: "", body: "문의", isSecret: true },
         false,
       ),
-    ).rejects.toThrow("공개 문의만");
+    ).rejects.toThrow("일시 중단");
     expect(fetch).not.toHaveBeenCalled();
   });
   it("공개 응답 자체에서 다른 사람의 비밀 제목·본문·답변을 제거한다", async () => {

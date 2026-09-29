@@ -102,7 +102,7 @@ export function OrderCancelRequestModal({
     if (submitting || unavailableReason) return;
     onSubmit({
       reason: values.reason.freeText?.trim() || values.reason.label,
-      photos: values.photos,
+      photos: supportsAttachments ? values.photos : [],
     });
   }
 

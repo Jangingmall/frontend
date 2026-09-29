@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { login } from "@/api/member/api";
 import { SEED_LOGIN } from "@/api/member/mock/fixtures";
 import { __resetLoginRateLimit } from "@/api/member/mock/handlers";
+import { publicEnv } from "@/lib/env";
 import { mockError } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
@@ -324,4 +325,18 @@ describe("LoginForm", () => {
       "/signup",
     );
   });
+});
+
+it("API mode disables Naver login without navigating", async () => {
+  const previous = publicEnv.apiMocking;
+  Object.assign(publicEnv, { apiMocking: false });
+  try {
+    renderLoginForm();
+    const button = screen.getByRole("button", { name: "네이버로 로그인" });
+    expect(button).toBeDisabled();
+    await userEvent.click(button);
+    expect(push).not.toHaveBeenCalled();
+  } finally {
+    Object.assign(publicEnv, { apiMocking: previous });
+  }
 });

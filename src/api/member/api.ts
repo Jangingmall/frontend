@@ -171,18 +171,7 @@ export async function startMockOAuthLogin(
   provider: OAuthProvider,
 ): Promise<OAuthLoginResult> {
   if (!publicEnv.apiMocking && provider === "naver") {
-    const result = loginResponseDto.parse(
-      await clientFetch("/api/mock/member/oauth2/naver", {
-        method: "POST",
-        auth: false,
-      }),
-    );
-    setDemoSession(true);
-    return {
-      outcome: "authenticated",
-      accessToken: result.accessToken,
-      user: mapMemberProfile(result.member),
-    };
+    throw new Error("네이버 로그인은 준비 중입니다.");
   }
   if (!publicEnv.apiMocking) {
     setDemoSession(false);
