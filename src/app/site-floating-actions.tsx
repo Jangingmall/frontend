@@ -249,12 +249,14 @@ function SiteFloatingActionsInner({
     const trimmed = content.trim();
     if (!trimmed || isSending) return;
 
-    // 캐시로 복원한 세션이 서버에서 이미 무효(만료·종료·타인 소유)로 확인됐으면, 그 위에
-    // 이어 쓰지 않고 여기서 완전히 새 대화로 되돌린다. `sessionId` state 자체도 지워야
-    // 한다 — 로컬 변수만 비우면 storage-write effect가 여전히 그 stale id로 새 메시지를
-    // 다시 기록해버린다(리뷰 지적).
-    const baseMessages = isStaleSession ? [] : messages;
-    const baseSessionId = isStaleSession ? null : sessionId;
+    // 캐시로 복원한 세션이 서버에서 이미 무효(만료·종료·타인 소유)로 확인됐거나
+    // (`isStaleSession`), 직전 전송 실패로 `performSend`가 이미 `sessionId`를 비워둔
+    // 상태면(오류 배너에서 "다시 시도" 대신 새 질문을 보내는 경로, 리뷰 지적) 그 위에
+    // 이어 쓰지 않고 완전히 새 대화로 시작한다 — 안 그러면 죽은 세션 시절의 실패 버블이
+    // 새로 만들 세션 밑에 그대로 남는다.
+    const startFresh = isStaleSession || sessionId === null;
+    const baseMessages = startFresh ? [] : messages;
+    const baseSessionId = startFresh ? null : sessionId;
     if (isStaleSession) setSessionId(null);
 
     const userMessage: ChatMessage = {

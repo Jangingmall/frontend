@@ -338,6 +338,70 @@ describe("SiteFloatingActions", () => {
     expect(createCount).toBe(2);
   });
 
+  it("무효 세션 오류 후 다시 시도 대신 새 질문을 보내도 실패한 질문이 섞이지 않는다", async () => {
+    login();
+    let createCount = 0;
+    let messageAttempt = 0;
+    server.use(
+      http.post("*/api/chatbot/sessions", () => {
+        createCount += 1;
+        const sessionId = `session-${createCount}`;
+        CHAT_SESSIONS.set(sessionId, { ended: false, messages: [] });
+        return HttpResponse.json(
+          {
+            success: true,
+            status: 201,
+            data: { sessionId, expiresInSeconds: 3600 },
+          },
+          { status: 201 },
+        );
+      }),
+      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
+        messageAttempt += 1;
+        // 첫 실제 전송에서 세션이 이미 만료된 것처럼 404를 낸다.
+        if (messageAttempt === 1) return mockError(404, "SESSION_NOT_FOUND");
+        return HttpResponse.json(
+          {
+            success: true,
+            status: 201,
+            data: {
+              sessionId: String(params.sessionId),
+              messageId: messageAttempt,
+              reply: `답변 ${messageAttempt}`,
+              intent: null,
+              suggestions: [],
+              products: [],
+            },
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    const input = screen.getByPlaceholderText("궁금한 내용을 입력해주세요.");
+
+    fireEvent.change(input, { target: { value: "실패할 질문" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        ),
+      ).toBeInTheDocument(),
+    );
+
+    // "다시 시도" 대신 완전히 다른 새 질문을 입력해 전송한다.
+    fireEvent.change(input, { target: { value: "새로운 질문" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+
+    await waitFor(() => expect(screen.getByText("답변 2")).toBeInTheDocument());
+    expect(screen.getByText("새로운 질문")).toBeInTheDocument();
+    // 죽은 세션 시절 실패했던 질문은 새 대화에 섞이면 안 된다.
+    expect(screen.queryByText("실패할 질문")).not.toBeInTheDocument();
+    expect(createCount).toBe(2);
+  });
+
   it("접기는 대화를 유지하고, 헤더 종료는 확인 모달을 거쳐야 실제로 초기화된다", async () => {
     login();
     setup();
