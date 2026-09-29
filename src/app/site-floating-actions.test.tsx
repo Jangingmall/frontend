@@ -473,6 +473,42 @@ describe("SiteFloatingActions", () => {
     expect(createCount).toBe(1);
   });
 
+  it("전송 실패 뒤 재시도/새 질문 없이 재마운트(새로고침)해도 실패 버블이 복원되지 않는다", async () => {
+    login();
+    server.use(
+      http.post("*/api/chatbot/sessions/:sessionId/messages", () =>
+        mockError(500, "INTERNAL_ERROR"),
+      ),
+    );
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const { unmount } = render(
+      <QueryClientProvider client={client}>
+        <SiteFloatingActions />
+      </QueryClientProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    const input = screen.getByPlaceholderText("궁금한 내용을 입력해주세요.");
+    fireEvent.change(input, { target: { value: "실패할 질문" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        ),
+      ).toBeInTheDocument(),
+    );
+
+    // 재시도·새 질문 없이 곧바로 새로고침(재마운트)한다 — sessionStorage는 그대로 남는다.
+    unmount();
+    setup();
+
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    expect(screen.queryByText("실패할 질문")).not.toBeInTheDocument();
+    expect(screen.getByText(/안녕하세요, 미담AI입니다/)).toBeInTheDocument();
+  });
+
   it("접기는 대화를 유지하고, 헤더 종료는 확인 모달을 거쳐야 실제로 초기화된다", async () => {
     login();
     setup();

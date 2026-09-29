@@ -158,10 +158,17 @@ function SiteFloatingActionsInner({
 
   // 대화가 바뀔 때마다 캐시를 다시 저장한다. `setState`가 아니라 브라우저 저장소 쓰기라
   // set-state-in-effect 대상이 아니다.
+  //
+  // 응답을 아직 못 받았거나(`isSending`) 실패해서 매달린 채인(`lastFailedContent`)
+  // 마지막 메시지는 서버가 실제로 받아들였는지 확정되지 않았다 — 이 상태에서 저장해두면
+  // 그 타이밍에 새로고침/재마운트할 때 확인 없이 정상 대화처럼 복원돼버린다(리뷰 지적,
+  // GET history는 세션 자체의 유효성만 볼 뿐 개별 메시지 전달 여부는 안 본다). 확정된
+  // 마지막 완결 상태만 저장한다 — 요청이 settle되면 이 effect가 다시 돌면서 그 시점의
+  // 최종 `messages`를 저장하므로 정상 흐름에서 유실되는 데이터는 없다.
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId || isSending || lastFailedContent !== null) return;
     writeStoredSession(userId, { sessionId, messages });
-  }, [userId, sessionId, messages]);
+  }, [userId, sessionId, messages, isSending, lastFailedContent]);
 
   // 무효로 확인된 세션은 캐시에서도 즉시 지운다 — 새로고침해도 재사용되지 않게.
   useEffect(() => {
