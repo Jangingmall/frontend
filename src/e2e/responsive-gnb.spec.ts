@@ -1,0 +1,62 @@
+import { expect, test } from "@playwright/test";
+
+test.describe("모바일(375) GNB", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  test("햄버거 → 전체 카테고리 → 대분류 → 소분류로 이동해 해당 분류 목록에 도착한다", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    // 데스크톱 내비는 숨겨지고 햄버거가 보인다.
+    await expect(
+      page.getByRole("navigation", { name: "글로벌 내비게이션" }),
+    ).toBeHidden();
+    await page.getByRole("button", { name: "메뉴 열기" }).click();
+
+    const menu = page.getByRole("dialog", { name: "전체 메뉴" });
+    await expect(menu).toBeVisible();
+    await expect(
+      menu.getByRole("link", { name: "로그인 / 회원가입" }),
+    ).toBeVisible();
+
+    await menu.getByRole("button", { name: "전체 카테고리" }).click();
+    await menu.getByRole("button", { name: /키친 · 다이닝/ }).click();
+    await menu.getByRole("link", { name: "다기 · 찻잔" }).click();
+
+    await expect(page).toHaveURL(/\/products\?category=subcategory-1$/);
+    await expect(menu).toBeHidden();
+  });
+
+  test("메뉴를 연 채 화면을 데스크톱 폭으로 넓히면 메뉴가 닫힌다", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: "메뉴 열기" }).click();
+    await expect(page.getByRole("dialog", { name: "전체 메뉴" })).toBeVisible();
+
+    await page.setViewportSize({ width: 1024, height: 768 });
+
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(
+      page.getByRole("navigation", { name: "글로벌 내비게이션" }),
+    ).toBeVisible();
+  });
+});
+
+test.describe("데스크톱(1440) GNB", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("전체 카테고리에 올리면 메가패널이 열리고 소분류 링크가 분류 ID를 가진다", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(page.getByRole("button", { name: "메뉴 열기" })).toBeHidden();
+
+    await page.getByRole("link", { name: "전체 카테고리" }).hover();
+
+    await expect(
+      page.getByRole("link", { name: "다기 · 찻잔" }),
+    ).toHaveAttribute("href", "/products?category=subcategory-1");
+  });
+});
