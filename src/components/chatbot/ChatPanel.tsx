@@ -81,7 +81,7 @@ export const ChatPanel = forwardRef<HTMLDivElement, ChatPanelProps>(
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {
       event.preventDefault();
-      if (!inputValue.trim()) return;
+      if (!inputValue.trim() || isSending) return;
       onSend();
     }
 
@@ -128,7 +128,8 @@ export const ChatPanel = forwardRef<HTMLDivElement, ChatPanelProps>(
                     key={suggestion}
                     type="button"
                     onClick={() => onSuggestionClick(suggestion)}
-                    className="rounded border border-border-neutral-subtle bg-bg-default px-3 py-2 text-center text-caption text-font-dark hover:bg-bg-subtle"
+                    disabled={isSending}
+                    className="rounded border border-border-neutral-subtle bg-bg-default px-3 py-2 text-center text-caption text-font-dark hover:bg-bg-subtle disabled:opacity-40"
                   >
                     {suggestion}
                   </button>
@@ -150,6 +151,7 @@ export const ChatPanel = forwardRef<HTMLDivElement, ChatPanelProps>(
                 message={message}
                 isGroupStart={messages[index - 1]?.sender !== message.sender}
                 onSuggestionClick={onSuggestionClick}
+                disableSuggestions={isSending}
               />
             ))
           )}
@@ -187,7 +189,7 @@ export const ChatPanel = forwardRef<HTMLDivElement, ChatPanelProps>(
             <button
               type="submit"
               aria-label="전송"
-              disabled={!inputValue.trim()}
+              disabled={!inputValue.trim() || isSending}
               className="flex h-9 w-14 shrink-0 items-center justify-center rounded-lg bg-fill-neutral-impact text-font-white disabled:opacity-40 [&_path]:fill-current"
             >
               <SendIcon className="size-5" />

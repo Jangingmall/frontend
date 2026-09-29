@@ -11,6 +11,7 @@ import {
   CHAT_SUGGESTION_DISPLAY_COUNT,
   CHAT_SUGGESTION_POOL,
 } from "@/constants/chatbot";
+import { ApiError } from "@/lib/http/api-error";
 import {
   useCreateChatSessionMutation,
   useEndChatSessionMutation,
@@ -22,6 +23,11 @@ import type { ChatMessage } from "@/types/chatbot";
 import { pickRandomSample } from "@/utils/random";
 
 const SESSION_STORAGE_KEY = "chatbot-session";
+// 세션 관련 에러 3종 — SESSION_NOT_FOUND(404) · SESSION_ALREADY_ENDED(422) ·
+// SESSION_FORBIDDEN(403), docs/api-contract.md §7. 검증(historyCheck) 통과 후에도
+// 세션이 나중에 만료·종료·소유권 변경될 수 있어, 전송 자체의 실패에서도 이 상태 코드를
+// 보고 죽은 세션을 버려야 한다(그렇지 않으면 재시도가 같은 세션을 영원히 재사용한다).
+const SESSION_INVALID_STATUSES = new Set([403, 404, 422]);
 
 interface StoredSession {
   sessionId: string;
@@ -84,6 +90,11 @@ export function SiteFloatingActions({
   const [messages, setMessages] = useState<ChatMessage[]>(
     () => readStoredSession()?.messages ?? [],
   );
+  // 마운트 시점에 캐시된 세션이 있었는지를 한 번만 고정 캡처한다 — 이후 `handleSend`가
+  // 새로 만든 세션은 이미 신뢰된 상태이므로(그 자체로 storage에 다시 쓰여도) 검증 대상이
+  // 아니다. 이 값이 `sessionId` 등을 따라 다시 계산되면 방금 만든 새 세션까지 "검증 전"
+  // 취급돼 버린다.
+  const [hadCachedSession] = useState(() => readStoredSession() !== null);
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>(() =>
     pickRandomSample(CHAT_SUGGESTION_POOL, CHAT_SUGGESTION_DISPLAY_COUNT),
@@ -95,6 +106,10 @@ export function SiteFloatingActions({
   const createSession = useCreateChatSessionMutation();
   const sendMessage = useSendChatMessageMutation();
   const endSession = useEndChatSessionMutation();
+  // 세션 생성이든 메시지 전송이든 하나가 진행 중이면 새 전송을 막는다 — 그렇지 않으면
+  // 첫 전송의 세션 생성이 끝나기 전에 두 번째 전송이 각자 `sessionId === null`을 보고
+  // 별도 세션을 만들어버린다(리뷰 지적).
+  const isSending = createSession.isPending || sendMessage.isPending;
   // 유효성 검증 전용(§4-5, docs/api-contract.md §7) — 응답 메시지 목록은 화면 복원에 안 쓰고
   // `isError` 여부만 본다. 실패 시 로컬 state를 되돌리는 effect는 두지 않는다(위와 같은
   // 이유) — 대신 `handleSend`가 다음 전송 시점에 `historyCheck.isError`를 직접 보고 새
@@ -103,12 +118,14 @@ export function SiteFloatingActions({
     sessionId,
     status === "authenticated" && !!sessionId,
   );
-  // 캐시로 복원한 세션이 서버 검증에서 무효(만료·종료·타인 소유)로 확인되면, `messages`
-  // state는 그대로 두고 화면에 내려줄 값만 즉시 비운다 — 리뷰 지적대로 검증 실패 후에도
-  // `handleSend` 호출 전까지 복원된 대화가 계속 보이면 같은 탭에서 다른 계정으로 로그인
-  // 시 이전 사용자 대화가 노출될 수 있다.
-  const isStaleSession = historyCheck.isError;
-  const visibleMessages = isStaleSession ? [] : messages;
+  // 캐시로 복원한 세션이 있었으면 검증(`historyCheck`)이 성공으로 끝나기 전까지는
+  // 화면에 아예 안 보여준다 — "아직 실패로 안 밝혀졌다"와 "유효하다고 확인됐다"는 다르다.
+  // 검증 중인 그 짧은 창에도 캐시된 대화를 그대로 보여주면 같은 탭에서 다른 계정으로
+  // 로그인했을 때 이전 사용자 대화가 노출될 수 있다(리뷰 지적). 캐시가 아예 없었던 경우
+  // (새 세션)는 검증 대상이 아니므로 바로 보여준다.
+  const isValidated = !hadCachedSession || historyCheck.isSuccess;
+  const isStaleSession = hadCachedSession && historyCheck.isError;
+  const visibleMessages = isValidated ? messages : [];
 
   // 대화가 바뀔 때마다 캐시를 다시 저장한다. `setState`가 아니라 브라우저 저장소 쓰기라
   // set-state-in-effect 대상이 아니다.
@@ -181,19 +198,31 @@ export function SiteFloatingActions({
       setMessages((prev) => [...prev, botMessage]);
       if (botMessage.suggestions) setSuggestions(botMessage.suggestions);
       setLastFailedContent(null);
-    } catch {
+    } catch (error) {
+      // 검증을 통과했던 세션도 이후 다른 탭에서 종료되거나 자연 만료될 수 있다 — 이
+      // 상태 코드를 보고 즉시 버려야 "다시 시도"가 같은 죽은 세션을 반복 호출하지 않고
+      // 다음 시도에서 새 세션을 만든다.
+      if (
+        error instanceof ApiError &&
+        SESSION_INVALID_STATUSES.has(error.status)
+      ) {
+        setSessionId(null);
+      }
       setLastFailedContent(content);
     }
   }
 
   function handleSend(content: string) {
     const trimmed = content.trim();
-    if (!trimmed) return;
+    if (!trimmed || isSending) return;
 
     // 캐시로 복원한 세션이 서버에서 이미 무효(만료·종료·타인 소유)로 확인됐으면, 그 위에
-    // 이어 쓰지 않고 여기서 완전히 새 대화로 되돌린다(캐시 정리는 위 effect가 맡는다).
+    // 이어 쓰지 않고 여기서 완전히 새 대화로 되돌린다. `sessionId` state 자체도 지워야
+    // 한다 — 로컬 변수만 비우면 storage-write effect가 여전히 그 stale id로 새 메시지를
+    // 다시 기록해버린다(리뷰 지적).
     const baseMessages = isStaleSession ? [] : messages;
     const baseSessionId = isStaleSession ? null : sessionId;
+    if (isStaleSession) setSessionId(null);
 
     const userMessage: ChatMessage = {
       id: Date.now(),
@@ -209,7 +238,8 @@ export function SiteFloatingActions({
   }
 
   function handleRetry() {
-    if (!lastFailedContent) return;
+    if (!lastFailedContent || isSending) return;
+    if (isStaleSession) setSessionId(null);
     void performSend(lastFailedContent, isStaleSession ? null : sessionId);
   }
 
@@ -224,7 +254,7 @@ export function SiteFloatingActions({
         <ChatPanel
           ref={chatPanelRef}
           messages={visibleMessages}
-          isSending={createSession.isPending || sendMessage.isPending}
+          isSending={isSending}
           sendError={sendMessage.isError || createSession.isError}
           onRetry={handleRetry}
           inputValue={inputValue}

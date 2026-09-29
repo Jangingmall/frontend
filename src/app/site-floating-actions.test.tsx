@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { http, HttpResponse } from "msw";
+import { delay, http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { CHAT_SESSIONS } from "@/api/chatbot/mock/fixtures";
 import { mockError } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
@@ -86,6 +87,38 @@ describe("SiteFloatingActions", () => {
     ).toBeInTheDocument();
   });
 
+  it("캐시된 세션은 검증 전/실패 시 이전 대화를 화면에 보여주지 않는다", async () => {
+    // 같은 탭에서 다른 계정으로 로그인해도 브라우저 sessionStorage는 그대로 남는다 —
+    // 이 캐시가 실제로는 존재하지 않는(또는 남의) 세션이라고 가정한다.
+    window.sessionStorage.setItem(
+      "chatbot-session",
+      JSON.stringify({
+        sessionId: "stale-session",
+        messages: [
+          {
+            id: 1,
+            sessionId: "stale-session",
+            sender: "user",
+            content: "이전 사용자 메시지",
+            sentAt: new Date().toISOString(),
+          },
+        ],
+      }),
+    );
+    login();
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+
+    // 검증(GET history)이 끝나기 전인 이 시점에도 이전 대화가 보이면 안 된다.
+    expect(screen.queryByText("이전 사용자 메시지")).not.toBeInTheDocument();
+
+    // 검증 실패 후에는 캐시 자체도 지워진다.
+    await waitFor(() =>
+      expect(window.sessionStorage.getItem("chatbot-session")).toBeNull(),
+    );
+    expect(screen.queryByText("이전 사용자 메시지")).not.toBeInTheDocument();
+  });
+
   it("첫 메시지를 보내면 세션이 지연 생성되고 봇 응답이 온다", async () => {
     login();
     setup();
@@ -99,6 +132,104 @@ describe("SiteFloatingActions", () => {
     await waitFor(() =>
       expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
     );
+  });
+
+  it("첫 전송이 끝나기 전에 다시 제출해도 세션은 한 번만 생성된다", async () => {
+    login();
+    let createCount = 0;
+    server.use(
+      http.post("*/api/chatbot/sessions", async () => {
+        createCount += 1;
+        const sessionId = `session-${createCount}`;
+        await delay(30);
+        CHAT_SESSIONS.set(sessionId, { ended: false, messages: [] });
+        return HttpResponse.json(
+          {
+            success: true,
+            status: 201,
+            data: { sessionId, expiresInSeconds: 3600 },
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+
+    const input = screen.getByPlaceholderText("궁금한 내용을 입력해주세요.");
+    const form = input.closest("form") as HTMLFormElement;
+    fireEvent.change(input, { target: { value: "첫번째 질문" } });
+    fireEvent.submit(form);
+    // 첫 요청(세션 생성)이 아직 끝나지 않은 시점에 곧바로 다시 제출을 시도한다.
+    fireEvent.change(input, { target: { value: "두번째 질문" } });
+    fireEvent.submit(form);
+
+    await waitFor(() =>
+      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+    );
+    expect(createCount).toBe(1);
+  });
+
+  it("전송 중 세션이 무효화되면(404) 재시도가 새 세션을 만든다", async () => {
+    login();
+    let createCount = 0;
+    let messageAttempt = 0;
+    server.use(
+      http.post("*/api/chatbot/sessions", () => {
+        createCount += 1;
+        const sessionId = `session-${createCount}`;
+        CHAT_SESSIONS.set(sessionId, { ended: false, messages: [] });
+        return HttpResponse.json(
+          {
+            success: true,
+            status: 201,
+            data: { sessionId, expiresInSeconds: 3600 },
+          },
+          { status: 201 },
+        );
+      }),
+      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
+        messageAttempt += 1;
+        // 첫 시도는 세션이 이미 만료된 것처럼 404를 낸다 — historyCheck는 아직 이
+        // 세션을 검증하지도 않은 새 세션이라 `isStaleSession`으로는 못 잡는 경우다.
+        if (messageAttempt === 1) return mockError(404, "SESSION_NOT_FOUND");
+        return HttpResponse.json(
+          {
+            success: true,
+            status: 201,
+            data: {
+              sessionId: String(params.sessionId),
+              messageId: 1,
+              reply: "무엇을 도와드릴까요?",
+              intent: null,
+              suggestions: [],
+              products: [],
+            },
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    const input = screen.getByPlaceholderText("궁금한 내용을 입력해주세요.");
+    fireEvent.change(input, { target: { value: "안녕" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        ),
+      ).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+    await waitFor(() =>
+      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+    );
+    // 죽은 세션을 재사용하지 않고 재시도에서 새 세션을 만들었어야 한다.
+    expect(createCount).toBe(2);
   });
 
   it("접기는 대화를 유지하고, 헤더 종료는 확인 모달을 거쳐야 실제로 초기화된다", async () => {

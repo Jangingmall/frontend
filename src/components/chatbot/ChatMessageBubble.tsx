@@ -14,6 +14,8 @@ interface ChatMessageBubbleProps {
   isGroupStart: boolean;
   /** 이 메시지에 딸린 제안 칩(결과 없음 상태, §0-2) 클릭 — 초기 인사 칩과 같은 핸들러. */
   onSuggestionClick: (text: string) => void;
+  /** 전송 대기 중엔 칩도 막는다 — 안 그러면 응답 대기 중 세션이 중복 생성될 수 있다. */
+  disableSuggestions?: boolean;
 }
 
 /**
@@ -29,6 +31,7 @@ export function ChatMessageBubble({
   message,
   isGroupStart,
   onSuggestionClick,
+  disableSuggestions = false,
 }: ChatMessageBubbleProps) {
   const isUser = message.sender === "user";
 
@@ -54,7 +57,8 @@ export function ChatMessageBubble({
                 key={suggestion}
                 type="button"
                 onClick={() => onSuggestionClick(suggestion)}
-                className="rounded-xs border border-border-neutral-subtle bg-bg-subtle px-3 py-2 text-center text-caption text-font-dark hover:bg-bg-default"
+                disabled={disableSuggestions}
+                className="rounded-xs border border-border-neutral-subtle bg-bg-subtle px-3 py-2 text-center text-caption text-font-dark hover:bg-bg-default disabled:opacity-40"
               >
                 {suggestion}
               </button>
