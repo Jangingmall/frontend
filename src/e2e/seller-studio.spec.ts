@@ -14,7 +14,7 @@ test("Figma 입력에서 생성, 편집, 저장 복원, 최종 확인", async ({
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1440, height: 994 });
-  await page.goto("/seller/products/new");
+  await page.goto("/seller/products/new?demo=1");
   await expect(
     page.getByRole("heading", { name: "AI 상세페이지 제작" }),
   ).toBeVisible();
@@ -101,7 +101,7 @@ test("Figma 입력에서 생성, 편집, 저장 복원, 최종 확인", async ({
 });
 test("사진 제한과 손상된 저장 데이터, 좁은 화면", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/seller/products/new");
+  await page.goto("/seller/products/new?demo=1");
   await page
     .getByLabel("사진 첨부", { exact: true })
     .setInputFiles(Array(9).fill(path.resolve("public/studio/asset-1.png")));
