@@ -1,8 +1,12 @@
 "use client";
 
+import { useMemo } from "react";
+
 import { Gnb } from "@/components/common/gnb";
 import { useDemoSession, useMockAccount } from "@/lib/demo-session";
+import { toGnbCategories } from "@/lib/gnb-categories";
 import { useCartQuery } from "@/queries/cart/queries";
+import { useProductCategories } from "@/queries/products/queries";
 import { useAuthStore } from "@/stores/auth";
 import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 
@@ -22,12 +26,38 @@ import { usePurchasePreviewStore } from "@/stores/purchase-preview";
  * `889:61144`)엔 `NavBar` 인스턴스가 포함돼 있어 IA 쪽이 스테일한 것으로 확인(2026-09-15).
  * 한 번 라우트 분기로 숨겼다가 Figma 확인 후 다시 제거함.
  */
+/**
+ * GNB 분류(메가패널·모바일 메뉴) — 백엔드 분류를 `Gnb`가 그리는 트리로 바꿔 넘긴다. 루트
+ * layout이 서버에서 미리 채워(`HydrationBoundary`) 첫 렌더에 바로 나오고, 서버 조회가 실패했으면
+ * (캐시에 실패는 실리지 않는다) 마운트 시 클라이언트가 다시 조회한다.
+ */
+function useGnbCategories() {
+  const query = useProductCategories(true);
+  const categories = useMemo(
+    () => toGnbCategories(query.data ?? []),
+    [query.data],
+  );
+  return {
+    categories,
+    // 이미 받은 데이터가 있으면 이후 조회가 실패해도 계속 보여준다.
+    categoriesStatus: query.data
+      ? ("ready" as const)
+      : query.isError
+        ? ("error" as const)
+        : ("loading" as const),
+    onCategoriesRetry: () => {
+      void query.refetch();
+    },
+  };
+}
+
 export function SiteGnb() {
+  const nav = useGnbCategories();
   const status = useAuthStore((state) => state.status);
   const cartCount = usePurchasePreviewStore((state) => state.lines.length);
   const demo = useDemoSession();
   const mockAccount = useMockAccount();
-  if (!mockAccount) return <LiveSiteGnb />;
+  if (!mockAccount) return <LiveSiteGnb nav={nav} />;
   return (
     <>
       {demo && (
@@ -35,13 +65,13 @@ export function SiteGnb() {
           네이버 로그인 시연 · 계정 및 거래는 실제 서버에 저장되지 않습니다.
         </p>
       )}
-      <Gnb authStatus={status} cartCount={cartCount} />
+      <Gnb authStatus={status} cartCount={cartCount} {...nav} />
     </>
   );
 }
-function LiveSiteGnb() {
+function LiveSiteGnb({ nav }: { nav: ReturnType<typeof useGnbCategories> }) {
   const status = useAuthStore((state) => state.status);
   const userId = useAuthStore((state) => state.user?.id);
   const cart = useCartQuery(status !== "loading", String(userId ?? "guest"));
-  return <Gnb authStatus={status} cartCount={cart.data?.totalCount} />;
+  return <Gnb authStatus={status} cartCount={cart.data?.totalCount} {...nav} />;
 }

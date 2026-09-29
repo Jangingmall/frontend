@@ -1,6 +1,8 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { gnbCategoriesFixture } from "@/api/products/mock/gnb-categories";
+
 import { Gnb } from "./gnb";
 
 const push = vi.fn();
@@ -13,7 +15,7 @@ vi.mock("next/navigation", () => ({
 
 describe("Gnb", () => {
   it("Header와 GnbNav를 함께 렌더한다", () => {
-    render(<Gnb />);
+    render(<Gnb categories={gnbCategoriesFixture} />);
 
     expect(screen.getByRole("link", { name: "로그인" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "장바구니" })).toBeInTheDocument();
@@ -22,7 +24,9 @@ describe("Gnb", () => {
   });
 
   it("authStatus를 Header에 그대로 전달한다", () => {
-    render(<Gnb authStatus="authenticated" />);
+    render(
+      <Gnb authStatus="authenticated" categories={gnbCategoriesFixture} />,
+    );
 
     expect(
       screen.getByRole("link", { name: "마이페이지" }),
@@ -44,7 +48,7 @@ describe("Gnb", () => {
     });
 
     function renderGnb() {
-      const { container } = render(<Gnb />);
+      const { container } = render(<Gnb categories={gnbCategoriesFixture} />);
       const root = container.querySelector('[data-slot="gnb"]')!;
       const trigger = screen.getByText("전체 카테고리").closest("a")!;
       return { root, trigger };
@@ -163,7 +167,7 @@ describe("Gnb", () => {
    */
   describe("검색 패널", () => {
     function renderGnb() {
-      const { container } = render(<Gnb />);
+      const { container } = render(<Gnb categories={gnbCategoriesFixture} />);
       const root = container.querySelector('[data-slot="gnb"]')!;
       const searchTrigger = screen.getByRole("button", { name: "검색" });
       return { root, searchTrigger };

@@ -3,11 +3,14 @@
 import type { ComponentProps, ReactNode } from "react";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
-import { GNB_CATEGORIES } from "@/constants/gnb-category";
 import { useHoverIntent } from "@/hooks/use-hover-intent";
+import type { GnbCategory } from "@/lib/gnb-categories";
 import { cn } from "@/lib/utils";
 
-import { CategoryMegaPanel } from "./category-mega-panel";
+import {
+  CategoryMegaPanel,
+  type CategoryMegaPanelStatus,
+} from "./category-mega-panel";
 import { GnbNav } from "./gnb-nav";
 import { Header } from "./header";
 import { SearchPanel } from "./search-panel";
@@ -69,14 +72,28 @@ interface GnbProps {
   authStatus?: "loading" | "anonymous" | "authenticated";
   /** T-13(`stores/cart`) 전까지는 항상 비어 있다 → Header 기본값 0, 뱃지 숨김. */
   cartCount?: number;
+  /** 메가패널이 그리는 분류 트리. 호출부(`app/site-gnb.tsx`)가 백엔드 분류에서 만들어 넘긴다. */
+  categories?: GnbCategory[];
+  categoriesStatus?: CategoryMegaPanelStatus;
+  onCategoriesRetry?: () => void;
   className?: string;
 }
 
-function Gnb({ logo, authStatus, cartCount, className }: GnbProps) {
+function Gnb({
+  logo,
+  authStatus,
+  cartCount,
+  categories = [],
+  categoriesStatus = "ready",
+  onCategoriesRetry,
+  className,
+}: GnbProps) {
   const [openPanel, setOpenPanel] = useState<GnbOpenPanel>(null);
-  const [activeCategoryName, setActiveCategoryName] = useState(
-    GNB_CATEGORIES[0].name,
+  // null = 첫 대분류. 분류가 나중에 도착해도 "처음 탭부터" 규칙이 그대로 성립한다.
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null,
   );
+  const activeCategoryId = selectedCategoryId ?? categories[0]?.id ?? "";
   const rootRef = useRef<HTMLDivElement>(null);
   const categoryTriggerRef = useRef<HTMLAnchorElement>(null);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
@@ -87,20 +104,20 @@ function Gnb({ logo, authStatus, cartCount, className }: GnbProps) {
     useHoverIntent({
       isOpen: isCategoryPanelOpen,
       // 닫힐 때(nextOpen === false) 활성 탭도 같이 첫 대분류로 되돌린다 —
-      // `activeCategoryName`이 `CategoryMegaPanel`(언마운트됨)이 아니라 `Gnb`에 있어서, 안
+      // `selectedCategoryId`가 `CategoryMegaPanel`(언마운트됨)이 아니라 `Gnb`에 있어서, 안
       // 돌려놓으면 마지막으로 보던 탭이 다음 열림에도 그대로 남는다. "다시 열면 항상 처음
       // 탭부터"가 더 예측 가능해서 이걸 기본으로 삼는다. 열림·닫힘을 알리는 이 콜백 안에서
       // 바로 처리해 `useEffect` + setState의 캐스케이딩 렌더(`react-hooks/set-state-in-effect`)
       // 를 피한다.
       onOpenChange: (nextOpen) => {
         setOpenPanel(nextOpen ? "category" : null);
-        if (!nextOpen) setActiveCategoryName(GNB_CATEGORIES[0].name);
+        if (!nextOpen) setSelectedCategoryId(null);
       },
     });
 
   // 검색 토글 클릭 — 호버 디바운스 없이 즉시 전환(IA CM-3는 클릭 토글). `close()`를
   // `isCategoryPanelOpen` 여부와 무관하게 항상 먼저 호출한다 — 카테고리가 실제로 열려
-  // 있었다면 정식으로 닫아 `activeCategoryName`도 리셋하고(위 `onOpenChange`), 카테고리가
+  // 있었다면 정식으로 닫아 선택된 탭도 리셋하고(위 `onOpenChange`), 카테고리가
   // 아직 안 열렸어도(호버 직후 `scheduleOpen`이 건 80ms 타이머가 남아 있는 상태) 그 예약을
   // 지운다 — 안 지우면 타이머가 만료될 때 `onOpenChange(true)`가 현재 상태를 안 보고 그냥
   // `openPanel`을 `"category"`로 덮어써, 방금 연 검색 패널이 사라지고 카테고리가 열려버린다
@@ -195,10 +212,12 @@ function Gnb({ logo, authStatus, cartCount, className }: GnbProps) {
       </Suspense>
       {isCategoryPanelOpen && (
         <CategoryMegaPanel
-          categories={GNB_CATEGORIES}
-          activeCategoryName={activeCategoryName}
-          onActiveCategoryChange={(name) => {
-            setActiveCategoryName(name);
+          categories={categories}
+          status={categoriesStatus}
+          onRetry={onCategoriesRetry}
+          activeCategoryId={activeCategoryId}
+          onActiveCategoryChange={(id) => {
+            setSelectedCategoryId(id);
             open();
             cancelScheduledClose();
           }}

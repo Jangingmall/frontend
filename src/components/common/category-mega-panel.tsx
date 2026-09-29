@@ -2,8 +2,11 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import { ChevronRightIcon } from "@/components/ui/icons";
-import { type GnbCategory, toGnbCategoryCode } from "@/constants/gnb-category";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { GnbCategory } from "@/lib/gnb-categories";
 import { cn } from "@/lib/utils";
+
+import { ErrorState } from "./error-state";
 
 /**
  * IA CM-2 전체 카테고리 메가패널의 본문 — 대분류 탭 + 활성 탭의 소분류 그리드.
@@ -35,15 +38,21 @@ import { cn } from "@/lib/utils";
  * 얹은 옅은 틴트다 — 정확한 7.5%에 대응하는 semantic token이 없어(`docs/ui-system.md` §3.2)
  * 원시 토큰(`--jade-blue-400`)에 직접 불투명도를 실측값 그대로 지정한다.
  */
+type CategoryMegaPanelStatus = "ready" | "loading" | "error";
+
 interface CategoryMegaPanelProps {
   categories: GnbCategory[];
-  activeCategoryName: string;
-  onActiveCategoryChange: (name: string) => void;
+  /** 분류가 아직 없을 때(`categories`가 빈 배열) 보여줄 상태. 데이터가 있으면 무시된다. */
+  status?: CategoryMegaPanelStatus;
+  onRetry?: () => void;
+  activeCategoryId: string;
+  onActiveCategoryChange: (id: string) => void;
   className?: string;
 }
 
-function toProductsHref(name: string): Route {
-  return `/products?category=${toGnbCategoryCode(name)}` as Route;
+/** 분류 ID(`category-{n}` · `subcategory-{n}`)로 상품 목록 링크를 만든다. */
+function toProductsHref(categoryId: string): Route {
+  return `/products?category=${encodeURIComponent(categoryId)}` as Route;
 }
 
 const SUBCATEGORY_ITEM_CLASS =
@@ -51,10 +60,45 @@ const SUBCATEGORY_ITEM_CLASS =
 
 function CategoryMegaPanel({
   categories,
-  activeCategoryName,
+  status = "ready",
+  onRetry,
+  activeCategoryId,
   onActiveCategoryChange,
   className,
 }: CategoryMegaPanelProps) {
+  // 분류를 받은 적이 없을 때만 대체 상태를 보여준다 — 이미 받은 데이터가 있으면 다시 조회가
+  // 실패해도 그대로 유지한다(부모가 `categories`를 비우지 않는다).
+  if (categories.length === 0) {
+    return (
+      <div
+        data-slot="category-mega-panel"
+        className={cn(
+          "absolute top-full left-0 w-full bg-bg-default shadow-nav",
+          className,
+        )}
+      >
+        {status === "error" ? (
+          <ErrorState
+            title="분류를 불러오지 못했습니다"
+            description="잠시 후 다시 시도해 주세요."
+            onRetry={onRetry}
+            className="py-8"
+          />
+        ) : (
+          <div
+            role="status"
+            aria-label="분류를 불러오는 중"
+            className="flex gap-3 px-8 py-8"
+          >
+            {Array.from({ length: 7 }, (_, index) => (
+              <Skeleton key={index} className="h-10 w-33" />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div
       data-slot="category-mega-panel"
@@ -62,13 +106,13 @@ function CategoryMegaPanel({
     >
       <div aria-label="대분류" className="flex bg-(--nav-menu-fill) px-8">
         {categories.map((category) => {
-          const active = category.name === activeCategoryName;
+          const active = category.id === activeCategoryId;
           return (
-            <div key={category.name} className="relative">
+            <div key={category.id} className="relative">
               <Link
-                href={toProductsHref(category.name)}
-                onMouseEnter={() => onActiveCategoryChange(category.name)}
-                onFocus={() => onActiveCategoryChange(category.name)}
+                href={toProductsHref(category.id)}
+                onMouseEnter={() => onActiveCategoryChange(category.id)}
+                onFocus={() => onActiveCategoryChange(category.id)}
                 className={cn(
                   "flex shrink-0 items-center gap-1 px-6 py-3 text-body-m whitespace-nowrap text-font-white transition-colors [&_path]:fill-current",
                   active
@@ -86,15 +130,15 @@ function CategoryMegaPanel({
                     aria-label={`${category.name} 소분류`}
                   >
                     <Link
-                      href={toProductsHref(category.name)}
+                      href={toProductsHref(category.id)}
                       className={SUBCATEGORY_ITEM_CLASS}
                     >
                       전체상품
                     </Link>
                     {category.subcategories.map((sub) => (
                       <Link
-                        key={sub.name}
-                        href={toProductsHref(sub.name)}
+                        key={sub.id}
+                        href={toProductsHref(sub.id)}
                         className={SUBCATEGORY_ITEM_CLASS}
                       >
                         {sub.name}
@@ -112,4 +156,4 @@ function CategoryMegaPanel({
 }
 
 export { CategoryMegaPanel, toProductsHref };
-export type { CategoryMegaPanelProps };
+export type { CategoryMegaPanelProps, CategoryMegaPanelStatus };
