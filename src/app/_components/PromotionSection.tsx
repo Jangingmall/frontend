@@ -19,16 +19,20 @@ export function PromotionSection({
   return (
     <section
       aria-label="기획전"
-      className="mx-auto w-full max-w-desktop px-4 py-13 sm:px-8 lg:px-12"
+      className="mx-auto w-full max-w-desktop page-gutter py-6 md:py-10.5 lg:py-13"
     >
       <SectionHeader
         title="기획전"
         description="장인의 물건이 전부 비싼 건 아닙니다. 손이 덜 가는 물건은 그만큼의 값으로 냅니다"
         viewAll={{ disabled: true }}
       />
-      <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4">
+      <div className="mt-6 flex gap-1 overflow-x-auto pb-3 md:gap-3 lg:gap-4 2xl:gap-6 2xl:pb-0">
         {items.map((product) => (
-          <div key={product.id} inert>
+          <div
+            key={product.id}
+            inert
+            className="w-36 shrink-0 md:w-65 xl:w-79.5"
+          >
             <ProductCard product={product} />
           </div>
         ))}

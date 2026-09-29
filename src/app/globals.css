@@ -28,6 +28,12 @@
   }
 }
 
+/* 히어로: 첫 화면(뷰포트)에서 sticky GNB를 뺀 높이를 채운다. 하한 500은 매우 낮은 창에서도
+   제목·버튼이 들어갈 자리를 보장한다. */
+@utility min-h-hero {
+  min-height: max(31.25rem, calc(100svh - var(--spacing-gnb)));
+}
+
 /* Figma "Drop Shadow" 이펙트는 CSS box-shadow에 대응한다(투명 실루엣을 따라가는
    filter: drop-shadow()가 아님) — 그래서 Tailwind의 --shadow-* 네임스페이스(box-shadow)를
    쓴다. 용도명으로 등록: floating은 여러 화면에서 재사용, nav는 Nav 컴포넌트 전용. */
