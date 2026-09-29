@@ -255,7 +255,16 @@ function SiteFloatingActionsInner({
     // 이어 쓰지 않고 완전히 새 대화로 시작한다 — 안 그러면 죽은 세션 시절의 실패 버블이
     // 새로 만들 세션 밑에 그대로 남는다.
     const startFresh = isStaleSession || sessionId === null;
-    const baseMessages = startFresh ? [] : messages;
+    // 세션 자체는 멀쩡한데(5xx·네트워크 오류) 직전 전송만 실패해 매달린 버블이 남아있는
+    // 경우도 있다 — 이땐 세션은 그대로 재사용하되(`startFresh`가 아니다) "다시 시도"
+    // 대신 새 질문을 보내는 순간 그 매달린 실패 버블만 제거한다(리뷰 지적, `isSending`
+    // 가드 덕에 그 실패 버블은 항상 `messages`의 마지막 원소다).
+    const hasDanglingFailure = lastFailedContent !== null;
+    const baseMessages = startFresh
+      ? []
+      : hasDanglingFailure
+        ? messages.slice(0, -1)
+        : messages;
     const baseSessionId = startFresh ? null : sessionId;
     if (isStaleSession) setSessionId(null);
 

@@ -402,6 +402,77 @@ describe("SiteFloatingActions", () => {
     expect(createCount).toBe(2);
   });
 
+  it("유효한 세션에서 일반 오류(500) 후 새 질문을 보내면 실패 버블만 제거되고 세션은 그대로 재사용된다", async () => {
+    login();
+    let createCount = 0;
+    let messageAttempt = 0;
+    server.use(
+      http.post("*/api/chatbot/sessions", () => {
+        createCount += 1;
+        const sessionId = `session-${createCount}`;
+        CHAT_SESSIONS.set(sessionId, { ended: false, messages: [] });
+        return HttpResponse.json(
+          {
+            success: true,
+            status: 201,
+            data: { sessionId, expiresInSeconds: 3600 },
+          },
+          { status: 201 },
+        );
+      }),
+      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
+        messageAttempt += 1;
+        // 두 번째 전송만 일반 서버 오류로 실패시킨다 — 세션 자체는 무효가 아니다.
+        if (messageAttempt === 2) return mockError(500, "INTERNAL_ERROR");
+        return HttpResponse.json(
+          {
+            success: true,
+            status: 201,
+            data: {
+              sessionId: String(params.sessionId),
+              messageId: messageAttempt,
+              reply: `답변 ${messageAttempt}`,
+              intent: null,
+              suggestions: [],
+              products: [],
+            },
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    const input = screen.getByPlaceholderText("궁금한 내용을 입력해주세요.");
+
+    fireEvent.change(input, { target: { value: "첫번째 질문" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+    await waitFor(() => expect(screen.getByText("답변 1")).toBeInTheDocument());
+
+    fireEvent.change(input, { target: { value: "실패할 질문" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        ),
+      ).toBeInTheDocument(),
+    );
+
+    // "다시 시도" 대신 완전히 다른 새 질문을 입력해 전송한다.
+    fireEvent.change(input, { target: { value: "세번째 질문" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+
+    await waitFor(() => expect(screen.getByText("답변 3")).toBeInTheDocument());
+    // 세션이 무효했던 게 아니므로 이전의 정상 대화(첫번째 질문/답변 1)는 그대로 남는다.
+    expect(screen.getByText("첫번째 질문")).toBeInTheDocument();
+    expect(screen.getByText("답변 1")).toBeInTheDocument();
+    // 매달려 있던 실패 버블만 제거된다.
+    expect(screen.queryByText("실패할 질문")).not.toBeInTheDocument();
+    // 세션은 살아있었으므로 재생성하지 않고 그대로 재사용했어야 한다.
+    expect(createCount).toBe(1);
+  });
+
   it("접기는 대화를 유지하고, 헤더 종료는 확인 모달을 거쳐야 실제로 초기화된다", async () => {
     login();
     setup();
