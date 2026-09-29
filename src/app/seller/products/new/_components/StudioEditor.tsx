@@ -39,6 +39,7 @@ export function StudioEditor({
   saved,
   onUploadPending,
 }: Props) {
+  const [helpStep, setHelpStep] = useState<number | null>(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [panel, setPanel] = useState<"pages" | "layout" | "text" | "image">(
     "pages",
@@ -408,12 +409,7 @@ export function StudioEditor({
                     aria-label="편집 패널 닫기"
                     onClick={() => setPanel("pages")}
                   >
-                    <Image
-                      src="/seller-studio/trash.svg"
-                      width={16}
-                      height={16}
-                      alt=""
-                    />
+                    <span aria-hidden="true">×</span>
                   </button>
                   {panel === "text" ? (
                     <>
@@ -666,7 +662,7 @@ export function StudioEditor({
           </section>
         ))}
       </div>
-      <StudioHelp />
+      <StudioHelp step={helpStep} onStepChange={setHelpStep} />
       <button
         className="ss-expand"
         data-tooltip="미리보기"

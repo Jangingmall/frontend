@@ -29,6 +29,7 @@ export function ServerStudioEditor({ content }: { content: SellerContent }) {
   const [past, setPast] = useState<StudioDocument[]>([]);
   const [future, setFuture] = useState<StudioDocument[]>([]);
   const [review, setReview] = useState(false);
+  const [helpStep, setHelpStep] = useState<number | null>(0);
   const [width, setWidth] = useState(774);
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
@@ -131,7 +132,7 @@ export function ServerStudioEditor({ content }: { content: SellerContent }) {
   }
   return (
     <div className="sa-editor">
-      {!review && <StudioHelp api />}
+      {!review && <StudioHelp api step={helpStep} onStepChange={setHelpStep} />}
       <header className="sa-toolbar">
         <h1>{review ? "최종 확인" : "상세페이지 편집"}</h1>
         <span>{status}</span>

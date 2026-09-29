@@ -1,10 +1,16 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { useState } from "react";
 import { expect, it } from "vitest";
 
 import { StudioHelp } from "./StudioHelp";
 
+function HelpExample() {
+  const [step, setStep] = useState<number | null>(0);
+  return <StudioHelp step={step} onStepChange={setStep} />;
+}
+
 it("도움말을 닫고 다시 열어 튜토리얼을 끝낼 수 있다", () => {
-  render(<StudioHelp />);
+  render(<HelpExample />);
   expect(
     screen.getByRole("heading", { name: "처음 사용하시나요?" }),
   ).toBeVisible();

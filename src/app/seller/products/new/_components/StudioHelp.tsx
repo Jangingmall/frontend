@@ -1,12 +1,21 @@
 "use client";
-import { useId, useRef, useState } from "react";
+import { useId, useRef } from "react";
 
-export function StudioHelp({ api = false }: { api?: boolean }) {
-  const [step, setStep] = useState<number | null>(0);
+interface StudioHelpProps {
+  api?: boolean;
+  step: number | null;
+  onStepChange: (step: number | null) => void;
+}
+
+export function StudioHelp({
+  api = false,
+  step,
+  onStepChange,
+}: StudioHelpProps) {
   const titleId = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const close = () => {
-    setStep(null);
+    onStepChange(null);
     trigger.current?.focus();
   };
   return (
@@ -18,7 +27,7 @@ export function StudioHelp({ api = false }: { api?: boolean }) {
         aria-label="편집 도움말"
         aria-expanded={step !== null}
         data-tooltip="도움말"
-        onClick={() => setStep(step === null ? 0 : null)}
+        onClick={() => onStepChange(step === null ? 0 : null)}
       >
         ?
       </button>
@@ -62,7 +71,7 @@ export function StudioHelp({ api = false }: { api?: boolean }) {
             </button>
             <button
               type="button"
-              onClick={() => (step === 2 ? close() : setStep(step + 1))}
+              onClick={() => (step === 2 ? close() : onStepChange(step + 1))}
             >
               {["튜토리얼 시작하기", "다음", "완료"][step]}
             </button>
