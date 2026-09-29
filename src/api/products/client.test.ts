@@ -57,12 +57,12 @@ describe("상품 목록 공개 조회", () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: "category-1",
-          name: "키친·다이닝",
+          name: "키친 · 다이닝",
           parentId: null,
         }),
         expect.objectContaining({
           id: "subcategory-1",
-          name: "다기·찻잔",
+          name: "다기 · 찻잔",
           parentId: "category-1",
         }),
       ]),

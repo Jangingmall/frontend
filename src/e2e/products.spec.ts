@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto("/products?category=kitchen");
+  await page.goto("/products?category=category-1");
   await expect(
     page.getByRole("heading", { name: "키친 · 다이닝", exact: true, level: 1 }),
   ).toBeVisible();
@@ -53,7 +53,7 @@ test("정렬과 품절 제외를 새로고침 후에도 유지한다", async ({ 
 });
 
 test("결과가 없는 조건은 초기화할 수 있다", async ({ page }) => {
-  await page.goto("/products?category=kitchen&minPrice=999999999");
+  await page.goto("/products?category=category-1&minPrice=999999999");
   await expect(page.getByText("조건에 맞는 상품이 없어요")).toBeVisible();
   await page.getByRole("button", { name: "필터 초기화", exact: true }).click();
   await expect(
@@ -104,14 +104,14 @@ test("PL-3에서 경로를 따라 대분류로 복귀하고 TOP으로 이동한�
     page.getByRole("button", { name: "키친 · 다이닝", exact: true }),
   ).toHaveAttribute("aria-expanded", "true");
   await page.getByRole("button", { name: "다기 · 찻잔", exact: true }).click();
-  await expect(page).toHaveURL(/category=kitchen-1/);
+  await expect(page).toHaveURL(/category=subcategory-1/);
   await expect(breadcrumb.locator('[aria-current="page"]')).toHaveText(
     "다기 · 찻잔",
   );
   await expect(page.getByRole("button", { name: "맨 위로" })).toBeVisible();
   await expect(page.getByText("미담 챗봇", { exact: true })).toBeVisible();
   await breadcrumb.getByRole("link", { name: "키친 · 다이닝" }).click();
-  await expect(page).toHaveURL(/category=kitchen$/);
+  await expect(page).toHaveURL(/category=category-1$/);
   await expect(
     page.getByText("총 140개의 검색 결과", { exact: true }),
   ).toBeVisible();
@@ -121,12 +121,17 @@ test("PL-3에서 경로를 따라 대분류로 복귀하고 TOP으로 이동한�
   await expect
     .poll(() => page.evaluate(() => window.scrollY))
     .toBeGreaterThan(0);
-  await page.getByRole("button", { name: "맨 위로" }).click();
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  // SSR로 그려진 버튼을 hydration 전에 누르면 핸들러가 없어 스크롤이 안 된다 — 동작할 때까지 재시도.
+  await expect(async () => {
+    await page.getByRole("button", { name: "맨 위로" }).click();
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), { timeout: 1500 })
+      .toBe(0);
+  }).toPass({ timeout: 10_000 });
 });
 
 test("PL-3 종목 복수 선택·해제와 새로고침·히스토리 복원", async ({ page }) => {
-  await page.goto("/products?category=kitchen-1&sort=price-desc&page=2");
+  await page.goto("/products?category=subcategory-1&sort=price-desc&page=2");
   await page.getByRole("button", { name: "다기 · 찻잔", exact: true }).click();
   const first = page.getByRole("button", { name: "사기장", exact: true });
   const second = page.getByRole("button", { name: "유기장", exact: true });
@@ -171,7 +176,7 @@ test("좁은 PL-3 화면에서 종목과 기존 필터를 함께 초기화한다
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto(
-    "/products?category=kitchen-1&subcategory=1&subcategory=2&material=ceramic&maxPrice=200000&hasGiftWrap=true&excludeSoldOut=true&sort=price-asc",
+    "/products?category=subcategory-1&subcategory=1&subcategory=2&material=ceramic&maxPrice=200000&hasGiftWrap=true&excludeSoldOut=true&sort=price-asc",
   );
   await expect(
     page.getByText("총 1개의 검색 결과", { exact: true }),
@@ -187,7 +192,7 @@ test("좁은 PL-3 화면에서 종목과 기존 필터를 함께 초기화한다
     page.getByRole("button", { name: "도자기", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "초기화", exact: true }).click();
-  await expect(page).toHaveURL(/\?category=kitchen-1&sort=price-asc$/);
+  await expect(page).toHaveURL(/\?category=subcategory-1&sort=price-asc$/);
   await expect(
     page.getByText("총 16개의 검색 결과", { exact: true }),
   ).toBeVisible();

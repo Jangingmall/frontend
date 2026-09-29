@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { expectAuthLink } from "./helpers";
+
 async function loginAsCustomer(page: import("@playwright/test").Page) {
   await page.goto("/login");
   await page.getByPlaceholder("이메일을 입력해주세요.").fill("user@midam.test");
@@ -9,11 +11,7 @@ async function loginAsCustomer(page: import("@playwright/test").Page) {
   await expect(
     page.getByRole("region", { name: "히어로", exact: true }),
   ).toBeVisible();
-  await expect(
-    page
-      .getByRole("banner")
-      .getByRole("link", { name: "마이페이지", exact: true }),
-  ).toBeVisible();
+  await expectAuthLink(page, "마이페이지");
 }
 
 test("로그인 고객이 일반 주문 완료 목업을 확인한다", async ({ page }) => {
