@@ -18,7 +18,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** TOP은 클릭 가능, AI CHAT은 아직 기능이 없어 비활성 상태다. */
+/** `onAiChatToggle`이 없어 미담 챗봇 버튼이 비인터랙티브 상태로 보인다. */
 export const Default: Story = {};
+
+/** `onAiChatToggle`을 주면 미담 챗봇 버튼이 실제로 클릭 가능해진다. */
+export const Interactive: Story = {
+  args: { onAiChatToggle: () => {} },
+};
+
+/** 챗봇 패널이 열려 있을 때 — 접기 버튼 하나만 보인다. */
+export const ChatOpen: Story = {
+  args: { isChatOpen: true, onAiChatToggle: () => {} },
+};
 
 export const ProductDetail: Story = { args: { showAiChat: false } };

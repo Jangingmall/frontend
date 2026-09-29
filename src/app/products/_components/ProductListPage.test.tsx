@@ -13,6 +13,7 @@ vi.mock("@/lib/env", () => ({
 vi.mock("next/navigation", () => ({
   useSearchParams: () =>
     new URLSearchParams(window.location.search || "category=category-1"),
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 it("실제 API 모드에서 비활성 소재 조회를 기다리지 않고 가격 필터를 표시한다", async () => {
