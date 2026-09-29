@@ -26,7 +26,7 @@ export function PromotionSection({
         description="장인의 물건이 전부 비싼 건 아닙니다. 손이 덜 가는 물건은 그만큼의 값으로 냅니다"
         viewAll={{ disabled: true }}
       />
-      <div className="mt-6 flex gap-1 overflow-x-auto pb-3 md:gap-3 lg:gap-4 2xl:gap-6 2xl:pb-0">
+      <div className="relative mt-6 flex gap-1 overflow-x-auto pb-3 md:gap-3 lg:gap-4 2xl:gap-6 2xl:pb-0">
         {items.map((product) => (
           <div
             key={product.id}

@@ -52,7 +52,7 @@ export function ArtisanCarousel({
     return (
       <section
         aria-label="장인관"
-        className="mx-auto max-w-desktop page-gutter py-12"
+        className="mx-auto w-full max-w-desktop page-gutter py-12"
       >
         <SectionHeader
           title="장인관"

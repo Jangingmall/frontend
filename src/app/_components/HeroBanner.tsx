@@ -54,13 +54,13 @@ export function HeroBanner() {
         <div className="flex flex-wrap gap-3">
           <Link
             href="/products"
-            className="inline-flex h-13.5 items-center justify-center rounded-xs bg-(--button-jade) px-6 text-button-l text-font-dark transition-colors hover:opacity-90"
+            className="inline-flex h-11 items-center justify-center rounded-xs bg-(--button-jade) px-4 text-button-xl text-font-dark transition-colors hover:opacity-90 md:h-13.5 md:px-6 md:text-button-l"
           >
             공예품 둘러보기
           </Link>
           <span
             aria-disabled="true"
-            className="inline-flex h-13.5 items-center justify-center rounded-xs bg-(--button-black) px-6 text-button-l text-font-white"
+            className="inline-flex h-11 items-center justify-center rounded-xs bg-(--button-black) px-4 text-button-xl text-font-white md:h-13.5 md:px-6 md:text-button-l"
           >
             장인관 둘러보기
           </span>

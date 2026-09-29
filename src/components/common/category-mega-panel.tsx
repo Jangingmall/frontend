@@ -104,7 +104,10 @@ function CategoryMegaPanel({
       data-slot="category-mega-panel"
       className={cn("absolute top-full left-0 w-full", className)}
     >
-      <div aria-label="대분류" className="flex bg-(--nav-menu-fill) px-8">
+      <div
+        aria-label="대분류"
+        className="flex bg-(--nav-menu-fill) px-6 lg:px-8"
+      >
         {categories.map((category) => {
           const active = category.id === activeCategoryId;
           return (
@@ -114,7 +117,7 @@ function CategoryMegaPanel({
                 onMouseEnter={() => onActiveCategoryChange(category.id)}
                 onFocus={() => onActiveCategoryChange(category.id)}
                 className={cn(
-                  "flex shrink-0 items-center gap-1 px-6 py-3 text-body-m whitespace-nowrap text-font-white transition-colors [&_path]:fill-current",
+                  "flex shrink-0 items-center gap-1 px-3 py-3 text-body-m whitespace-nowrap text-font-white transition-colors lg:px-6 [&_path]:fill-current",
                   active
                     ? "bg-(--jade-blue-400)/[0.075]"
                     : "hover:bg-states-hover-25",

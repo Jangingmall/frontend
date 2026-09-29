@@ -60,3 +60,21 @@ test.describe("데스크톱(1440) GNB", () => {
     ).toHaveAttribute("href", "/products?category=subcategory-1");
   });
 });
+
+test.describe("홈 가로 스크롤", () => {
+  for (const width of [375, 768, 1024, 1280, 1440]) {
+    test(`${width}px에서 페이지가 가로로 넘치지 않는다`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/");
+      await expect(
+        page.getByRole("region", { name: "히어로", exact: true }),
+      ).toBeVisible();
+      const overflow = await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth -
+          document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  }
+});

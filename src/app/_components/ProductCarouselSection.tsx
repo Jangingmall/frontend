@@ -52,7 +52,9 @@ export function ProductCarouselSection({
         className={cn(
           // 카드는 브레이크포인트별 고정 폭이라 2xl에서만 한 줄에 다 들어오고(스크롤바 없음),
           // 그보다 좁으면 가로 스크롤 행이 된다(시안 xl 이하).
-          "mt-6 flex overflow-x-auto pb-3 2xl:pb-0",
+          // `relative`: 카드 안의 `sr-only`(absolute) 요소가 스크롤 영역 밖에 배치돼 페이지 가로 스크롤을
+          // 만들지 않도록 이 행을 위치 기준(containing block)으로 만든다.
+          "relative mt-6 flex overflow-x-auto pb-3 2xl:pb-0",
           columns === 5
             ? "gap-3 lg:gap-4"
             : "gap-1 md:gap-3 lg:gap-4 2xl:gap-6",

@@ -101,7 +101,7 @@ export function GiftSection({ initialTheme, initialData }: GiftSectionProps) {
               </Button>
             ))}
           </div>
-          <div className="flex min-w-0 flex-1 gap-3 overflow-x-auto pb-3 lg:gap-4">
+          <div className="relative flex min-w-0 flex-1 gap-3 overflow-x-auto pb-3 lg:gap-4">
             {/* data가 있으면(초기 테마의 initialData 포함) pending·error보다 우선
                 보여준다 — 테마를 바꿨다가 재조회가 실패해도 직전 결과가 갑자기 사라지지
                 않게 한다. */}
