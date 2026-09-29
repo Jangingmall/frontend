@@ -66,6 +66,11 @@ const PANEL_MOTION_CLASS =
 const SUBCATEGORY_PANEL_MOTION_CLASS =
   "animate-in duration-800 ease-in fade-in motion-reduce:animate-none";
 
+/**
+ * 소분류 창은 채워지는 열 수와 상관없이 **항상 3열 폭**이다(디자인 요구사항): 트랙을 항목 폭
+ * (`w-33`, 132px) 3개로 고정해 소분류가 적어 1~2열만 차도 창 크기가 같다. 채우는 순서는 세로 먼저
+ * (5행 → 다음 열)라 시안 그대로다.
+ */
 const SUBCATEGORY_ITEM_CLASS =
   "w-33 rounded-xs px-6 py-3 text-body-m whitespace-nowrap text-font-dark transition-colors duration-600 ease-in hover:bg-fill-neutral-weak";
 
@@ -150,7 +155,7 @@ function CategoryMegaPanel({
                   )}
                 >
                   <div
-                    className="grid grid-flow-col grid-rows-5 gap-x-3 gap-y-0"
+                    className="grid grid-flow-col grid-cols-[repeat(3,calc(var(--spacing)*33))] grid-rows-5 gap-x-3 gap-y-0"
                     aria-label={`${category.name} 소분류`}
                   >
                     <Link

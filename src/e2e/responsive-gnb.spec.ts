@@ -60,6 +60,27 @@ test.describe("데스크톱(1440) GNB", () => {
       page.getByRole("link", { name: "다기 · 찻잔" }),
     ).toHaveAttribute("href", "/products?category=subcategory-1");
   });
+
+  test("소분류 창은 소분류 개수와 상관없이 항상 같은 3열 폭이다", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: "전체 카테고리" }).hover();
+
+    const panelWidth = async (tab: RegExp) => {
+      await page.getByRole("link", { name: tab }).first().hover();
+      const grid = page.getByLabel(/소분류$/);
+      await expect(grid).toBeVisible();
+      return grid.evaluate((el) => el.getBoundingClientRect().width);
+    };
+    const kitchen = await panelWidth(/^키친 · 다이닝$/); // 소분류 9개 → 2열
+    const fashion = await panelWidth(/^패션 · 액세서리$/); // 소분류 12개 → 3열
+    const desk = await panelWidth(/^데스크 · 문구$/); // 소분류 5개 → 2열
+
+    expect(kitchen).toBeGreaterThan(0);
+    expect(fashion).toBeCloseTo(kitchen, 0);
+    expect(desk).toBeCloseTo(kitchen, 0);
+  });
 });
 
 test.describe("홈 가로 스크롤", () => {

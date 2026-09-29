@@ -177,4 +177,31 @@ describe("CategoryMegaPanel", () => {
       "ease-in",
     );
   });
+
+  it("소분류 창은 채워지는 열 수와 무관하게 3열 폭 트랙을 고정한다", () => {
+    const { rerender } = render(
+      <CategoryMegaPanel
+        categories={gnbCategoriesFixture}
+        activeCategoryId={kitchen.id}
+        onActiveCategoryChange={vi.fn()}
+      />,
+    );
+    const track = (label: string) => screen.getByLabelText(label).className;
+
+    expect(track("키친 · 다이닝 소분류")).toContain(
+      "grid-cols-[repeat(3,calc(var(--spacing)*33))]",
+    );
+
+    // 소분류가 적은 대분류(데스크 · 문구, 5개)도 같은 트랙 정의를 쓴다.
+    rerender(
+      <CategoryMegaPanel
+        categories={gnbCategoriesFixture}
+        activeCategoryId={gnbCategoriesFixture[3].id}
+        onActiveCategoryChange={vi.fn()}
+      />,
+    );
+    expect(track("데스크 · 문구 소분류")).toContain(
+      "grid-cols-[repeat(3,calc(var(--spacing)*33))]",
+    );
+  });
 });
