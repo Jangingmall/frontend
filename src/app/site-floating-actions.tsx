@@ -22,7 +22,6 @@ import { useAuthStore } from "@/stores/auth";
 import type { ChatMessage } from "@/types/chatbot";
 import { pickRandomSample } from "@/utils/random";
 
-const SESSION_STORAGE_KEY = "chatbot-session";
 // 세션 관련 에러 3종 — SESSION_NOT_FOUND(404) · SESSION_ALREADY_ENDED(422) ·
 // SESSION_FORBIDDEN(403), docs/api-contract.md §7. 검증(historyCheck) 통과 후에도
 // 세션이 나중에 만료·종료·소유권 변경될 수 있어, 전송 자체의 실패에서도 이 상태 코드를
@@ -34,10 +33,18 @@ interface StoredSession {
   messages: ChatMessage[];
 }
 
-function readStoredSession(): StoredSession | null {
-  if (typeof window === "undefined") return null;
+// `sessionStorage` 키에 `userId`를 포함한다 — 계정별로 격리하지 않으면 로그아웃 후 다른
+// 계정으로 로그인해도 이전 계정의 대화가 그대로 남아있다(리뷰 지적). `userId`가 없으면
+// (게스트·부팅 중) 애초에 챗봇 세션을 만들 수 없으니 저장소 자체를 건드리지 않는다.
+function sessionStorageKey(userId: number | null): string | null {
+  return userId == null ? null : `chatbot-session:${userId}`;
+}
+
+function readStoredSession(userId: number | null): StoredSession | null {
+  const key = sessionStorageKey(userId);
+  if (typeof window === "undefined" || !key) return null;
   try {
-    const raw = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const raw = window.sessionStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredSession;
     if (!parsed.sessionId || !Array.isArray(parsed.messages)) return null;
@@ -47,13 +54,17 @@ function readStoredSession(): StoredSession | null {
   }
 }
 
-function writeStoredSession(session: StoredSession | null) {
-  if (typeof window === "undefined") return;
+function writeStoredSession(
+  userId: number | null,
+  session: StoredSession | null,
+) {
+  const key = sessionStorageKey(userId);
+  if (typeof window === "undefined" || !key) return;
   if (!session) {
-    window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    window.sessionStorage.removeItem(key);
     return;
   }
-  window.sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  window.sessionStorage.setItem(key, JSON.stringify(session));
 }
 
 /**
@@ -66,11 +77,21 @@ interface SiteFloatingActionsProps {
   showAiChat?: boolean;
 }
 
-export function SiteFloatingActions({
+export function SiteFloatingActions(props: SiteFloatingActionsProps) {
+  const status = useAuthStore((state) => state.status);
+  const userId = useAuthStore((state) => state.user?.id ?? null);
+  // 계정이 바뀌면(로그아웃 후 다른 계정 로그인, `mock-identity-switcher.tsx`처럼
+  // 네비게이션 없이 계정만 바뀌는 경로 포함) 내부 `sessionId`·`messages`·`hadCachedSession`
+  // state가 저절로 리셋되지 않는다 — `key`로 강제 리마운트시켜야 한다(리뷰 지적).
+  return <SiteFloatingActionsInner key={userId ?? status} {...props} />;
+}
+
+function SiteFloatingActionsInner({
   showAiChat = true,
 }: SiteFloatingActionsProps) {
   const status = useAuthStore((state) => state.status);
   const role = useAuthStore((state) => state.user?.role);
+  const userId = useAuthStore((state) => state.user?.id ?? null);
   const router = useRouter();
   const chatPanelRef = useRef<HTMLDivElement>(null);
   // 챗봇 API 4종 전부 `hasRole('USER')`다(docs/api-contract.md §7) — ARTISAN/ADMIN은
@@ -84,17 +105,24 @@ export function SiteFloatingActions({
   // 따라 채우면 setState-in-effect(cascading render, react-hooks/set-state-in-effect)에
   // 걸린다. `mock-identity-switcher.tsx`가 남긴 것과 같은 이유로, 브라우저 저장소 값은
   // effect가 아니라 이렇게 동기적으로 읽는 쪽이 React가 권장하는 경로다.
+  //
+  // 계정이 바뀌면(로그아웃 후 다른 계정 로그인 등) 이 state들은 저절로 안 바뀐다 —
+  // `userId`가 바뀌었다고 재계산되는 게 아니라 "마운트 시점 한 번"만 읽는다. 그래서
+  // 호출부(`page.tsx`/`ProductListPage.tsx`)가 `key={userId ?? status}`로 계정이 바뀔 때
+  // 이 컴포넌트를 통째로 리마운트시켜야 한다(리뷰 지적 — `mock-identity-switcher.tsx`처럼
+  // 네비게이션 없이 계정만 바뀌는 경로가 실제로 있다). 리마운트되면 아래 lazy
+  // initializer들이 새 `userId`로 다시 실행된다.
   const [sessionId, setSessionId] = useState<string | null>(
-    () => readStoredSession()?.sessionId ?? null,
+    () => readStoredSession(userId)?.sessionId ?? null,
   );
   const [messages, setMessages] = useState<ChatMessage[]>(
-    () => readStoredSession()?.messages ?? [],
+    () => readStoredSession(userId)?.messages ?? [],
   );
   // 마운트 시점에 캐시된 세션이 있었는지를 한 번만 고정 캡처한다 — 이후 `handleSend`가
   // 새로 만든 세션은 이미 신뢰된 상태이므로(그 자체로 storage에 다시 쓰여도) 검증 대상이
   // 아니다. 이 값이 `sessionId` 등을 따라 다시 계산되면 방금 만든 새 세션까지 "검증 전"
   // 취급돼 버린다.
-  const [hadCachedSession] = useState(() => readStoredSession() !== null);
+  const [hadCachedSession] = useState(() => readStoredSession(userId) !== null);
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>(() =>
     pickRandomSample(CHAT_SUGGESTION_POOL, CHAT_SUGGESTION_DISPLAY_COUNT),
@@ -116,6 +144,7 @@ export function SiteFloatingActions({
   // 세션을 만든다(data-layer.md §6.2 "isError 분기는 컴포넌트가 직접 한다"와 같은 결).
   const historyCheck = useChatHistoryQuery(
     sessionId,
+    userId,
     status === "authenticated" && !!sessionId,
   );
   // 캐시로 복원한 세션이 있었으면 검증(`historyCheck`)이 성공으로 끝나기 전까지는
@@ -131,13 +160,13 @@ export function SiteFloatingActions({
   // set-state-in-effect 대상이 아니다.
   useEffect(() => {
     if (!sessionId) return;
-    writeStoredSession({ sessionId, messages });
-  }, [sessionId, messages]);
+    writeStoredSession(userId, { sessionId, messages });
+  }, [userId, sessionId, messages]);
 
   // 무효로 확인된 세션은 캐시에서도 즉시 지운다 — 새로고침해도 재사용되지 않게.
   useEffect(() => {
-    if (isStaleSession && sessionId) writeStoredSession(null);
-  }, [isStaleSession, sessionId]);
+    if (isStaleSession && sessionId) writeStoredSession(userId, null);
+  }, [isStaleSession, sessionId, userId]);
 
   function handleAiChatToggle() {
     if (isOpen) {
@@ -175,7 +204,7 @@ export function SiteFloatingActions({
     }
     setSessionId(null);
     setMessages([]);
-    writeStoredSession(null);
+    writeStoredSession(userId, null);
     setIsEndConfirmOpen(false);
     setIsOpen(false);
   }
@@ -207,6 +236,10 @@ export function SiteFloatingActions({
         SESSION_INVALID_STATUSES.has(error.status)
       ) {
         setSessionId(null);
+        // 죽은 세션 시절 대화까지 새 세션 밑에 섞여 저장되면 안 된다(리뷰 지적) —
+        // `isSending` 가드 덕분에 이 시점의 마지막 메시지는 항상 지금 재시도 중인
+        // 사용자 버블 하나뿐이라, 그것만 남기고 그 이전 죽은 세션의 대화는 버린다.
+        setMessages((prev) => prev.slice(-1));
       }
       setLastFailedContent(content);
     }

@@ -13,10 +13,11 @@ import { chatbotKeys } from "./keys";
  */
 export function useChatHistoryQuery(
   sessionId: string | null,
+  userId: number | null,
   enabled: boolean,
 ) {
   return useQuery({
-    queryKey: chatbotKeys.history(sessionId ?? ""),
+    queryKey: chatbotKeys.history(sessionId ?? "", userId),
     queryFn: () => fetchChatHistory(sessionId as string),
     enabled: enabled && !!sessionId,
     retry: false,

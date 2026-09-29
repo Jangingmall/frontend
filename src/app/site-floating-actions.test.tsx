@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { delay, http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -88,10 +94,11 @@ describe("SiteFloatingActions", () => {
   });
 
   it("캐시된 세션은 검증 전/실패 시 이전 대화를 화면에 보여주지 않는다", async () => {
-    // 같은 탭에서 다른 계정으로 로그인해도 브라우저 sessionStorage는 그대로 남는다 —
-    // 이 캐시가 실제로는 존재하지 않는(또는 남의) 세션이라고 가정한다.
+    login();
+    // 같은 계정의 브라우저 sessionStorage에 실제로는 존재하지 않는(또는 이미 무효화된)
+    // 세션이 남아있다고 가정한다.
     window.sessionStorage.setItem(
-      "chatbot-session",
+      "chatbot-session:1",
       JSON.stringify({
         sessionId: "stale-session",
         messages: [
@@ -105,7 +112,6 @@ describe("SiteFloatingActions", () => {
         ],
       }),
     );
-    login();
     setup();
     fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
 
@@ -114,9 +120,40 @@ describe("SiteFloatingActions", () => {
 
     // 검증 실패 후에는 캐시 자체도 지워진다.
     await waitFor(() =>
-      expect(window.sessionStorage.getItem("chatbot-session")).toBeNull(),
+      expect(window.sessionStorage.getItem("chatbot-session:1")).toBeNull(),
     );
     expect(screen.queryByText("이전 사용자 메시지")).not.toBeInTheDocument();
+  });
+
+  it("계정을 전환하면(네비게이션 없이) 이전 계정의 대화가 새 계정에 보이지 않는다", async () => {
+    // `mock-identity-switcher.tsx`가 하는 것과 같은 경로 — 페이지 이동 없이
+    // `useAuthStore`만 직접 바꾼다. 컴포넌트가 언마운트되지 않아도 대화가 새지 않아야 한다.
+    login();
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    const input = screen.getByPlaceholderText("궁금한 내용을 입력해주세요.");
+    fireEvent.change(input, { target: { value: "A의 비밀 이야기" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+    await waitFor(() =>
+      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+    );
+
+    // 네비게이션 없이 다른 계정(B)으로 전환한다.
+    act(() => {
+      useAuthStore.setState({
+        status: "authenticated",
+        accessToken: "token-b",
+        user: { id: 2, name: "박미담", role: "USER" },
+      });
+    });
+
+    // 리마운트로 패널은 닫힌 초기 상태로 돌아간다 — 다시 열어도 A의 대화가 없어야 한다.
+    expect(
+      screen.queryByPlaceholderText("궁금한 내용을 입력해주세요."),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    expect(screen.queryByText("A의 비밀 이야기")).not.toBeInTheDocument();
+    expect(screen.getByText(/안녕하세요, 미담AI입니다/)).toBeInTheDocument();
   });
 
   it("첫 메시지를 보내면 세션이 지연 생성되고 봇 응답이 온다", async () => {
@@ -229,6 +266,75 @@ describe("SiteFloatingActions", () => {
       expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
     );
     // 죽은 세션을 재사용하지 않고 재시도에서 새 세션을 만들었어야 한다.
+    expect(createCount).toBe(2);
+  });
+
+  it("무효 세션 재시도 후 이전(죽은 세션) 대화가 새 세션에 섞이지 않는다", async () => {
+    login();
+    let createCount = 0;
+    let messageAttempt = 0;
+    server.use(
+      http.post("*/api/chatbot/sessions", () => {
+        createCount += 1;
+        const sessionId = `session-${createCount}`;
+        CHAT_SESSIONS.set(sessionId, { ended: false, messages: [] });
+        return HttpResponse.json(
+          {
+            success: true,
+            status: 201,
+            data: { sessionId, expiresInSeconds: 3600 },
+          },
+          { status: 201 },
+        );
+      }),
+      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
+        messageAttempt += 1;
+        // 두 번째 실제 전송에서 세션이 만료된 것처럼 404를 낸다 — 그 전에 이미
+        // 정상적으로 한 번 주고받은 대화가 있는 상태다.
+        if (messageAttempt === 2) return mockError(404, "SESSION_NOT_FOUND");
+        return HttpResponse.json(
+          {
+            success: true,
+            status: 201,
+            data: {
+              sessionId: String(params.sessionId),
+              messageId: messageAttempt,
+              reply: `답변 ${messageAttempt}`,
+              intent: null,
+              suggestions: [],
+              products: [],
+            },
+          },
+          { status: 201 },
+        );
+      }),
+    );
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    const input = screen.getByPlaceholderText("궁금한 내용을 입력해주세요.");
+
+    fireEvent.change(input, { target: { value: "첫번째 질문" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+    await waitFor(() => expect(screen.getByText("답변 1")).toBeInTheDocument());
+
+    fireEvent.change(input, { target: { value: "두번째 질문" } });
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        ),
+      ).toBeInTheDocument(),
+    );
+    // 죽은 세션의 이전 대화는 이 시점에 이미 화면에서 사라져 있어야 한다.
+    expect(screen.queryByText("첫번째 질문")).not.toBeInTheDocument();
+    expect(screen.queryByText("답변 1")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+    await waitFor(() => expect(screen.getByText("답변 3")).toBeInTheDocument());
+    expect(screen.getByText("두번째 질문")).toBeInTheDocument();
+    expect(screen.queryByText("첫번째 질문")).not.toBeInTheDocument();
+    expect(screen.queryByText("답변 1")).not.toBeInTheDocument();
     expect(createCount).toBe(2);
   });
 
