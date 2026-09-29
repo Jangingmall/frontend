@@ -124,7 +124,9 @@ it("keeps unselected lines on selected deletion and restores through the server"
   setup();
   const user = userEvent.setup();
   await screen.findByText("상품91");
-  expect(screen.getAllByRole("button", { name: "옵션 변경" })[0]).toBeEnabled();
+  expect(
+    screen.getAllByRole("button", { name: "옵션 변경" })[0],
+  ).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "선택 삭제" }));
   await user.click(screen.getByRole("button", { name: "삭제하기" }));
   await waitFor(() =>
@@ -207,17 +209,14 @@ it("restores the exact variant and custom text instead of adding the base produc
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 });
 
-it("preserves option editing as an isolated preview", async () => {
+it("disables option editing without opening a preview", async () => {
   setup(true);
   await screen.findByText("상품91");
-  await userEvent.click(
-    screen.getAllByRole("button", { name: "옵션 변경" })[0],
-  );
-  expect(screen.getByRole("dialog")).toBeVisible();
-  expect(screen.getByRole("button", { name: "변경하기" })).toBeEnabled();
-  expect(
-    screen.getByText(/옵션 변경은 장바구니 전체를 MSW 시연으로 복사/),
-  ).toBeVisible();
+  const button = screen.getAllByRole("button", { name: "옵션 변경" })[0];
+  expect(button).toBeDisabled();
+  await userEvent.click(button);
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  expect(push).not.toHaveBeenCalled();
 });
 
 it("keeps the cart heading, summary and retry action after an API error", async () => {

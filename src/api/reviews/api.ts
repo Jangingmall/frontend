@@ -1,3 +1,4 @@
+import { publicEnv } from "@/lib/env";
 import { clientFetch } from "@/lib/http/client";
 import type {
   MyReviewPage,
@@ -20,7 +21,7 @@ export async function fetchReviews(
   filters: ReviewFilters,
   isMock: boolean,
 ) {
-  if (!isMock && !filters.photoOnly) {
+  if (!publicEnv.apiMocking || !isMock) {
     if (!Number.isSafeInteger(filters.page) || filters.page < 1)
       throw new Error("후기 페이지를 확인해 주세요.");
     const sorts = {

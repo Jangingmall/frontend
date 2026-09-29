@@ -14,6 +14,7 @@ const state = vi.hoisted(() => ({
   create: vi.fn(),
   prepare: vi.fn(),
   request: vi.fn(),
+  postcode: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams("items=1"),
@@ -24,6 +25,9 @@ vi.mock("@tosspayments/tosspayments-sdk", () => ({
   loadTossPayments: async () => ({
     payment: () => ({ requestPayment: state.request }),
   }),
+}));
+vi.mock("react-daum-postcode", () => ({
+  useKakaoPostcodePopup: () => state.postcode,
 }));
 vi.mock("@/queries/cart", () => ({
   useCartQuery: () => ({
@@ -78,10 +82,26 @@ vi.mock("@/queries/payments", () => ({
 }));
 vi.mock("./CheckoutProducts", () => ({ CheckoutProducts: () => null }));
 vi.mock("@/components/order/PaymentsMethod", () => ({
-  PaymentsMethod: ({ onChange }: { onChange: (value: string) => void }) => (
+  PaymentsMethod: ({
+    onChange,
+    disabledMethods = [],
+  }: {
+    onChange: (value: string) => void;
+    disabledMethods?: string[];
+  }) => (
     <>
-      <button type="button" onClick={() => onChange("BANK_TRANSFER")}>
+      <button
+        type="button"
+        disabled={disabledMethods.includes("BANK_TRANSFER")}
+        onClick={() => onChange("BANK_TRANSFER")}
+      >
         무통장 시연 선택
+      </button>
+      <button type="button" onClick={() => onChange("REALTIME_TRANSFER")}>
+        계좌이체 선택
+      </button>
+      <button type="button" onClick={() => onChange("TOSS_PAY")}>
+        토스페이 선택
       </button>
       <button type="button" onClick={() => onChange("CARD")}>
         카드 선택
@@ -90,6 +110,7 @@ vi.mock("@/components/order/PaymentsMethod", () => ({
   ),
 }));
 beforeEach(() => {
+  state.postcode.mockResolvedValue(undefined);
   state.selected = true;
   sessionStorage.clear();
   vi.clearAllMocks();
@@ -181,12 +202,7 @@ it.each(["empty", "unavailable"] as const)(
   (mode) => {
     state[mode] = true;
     render(<RealCheckoutPage />);
-    for (const title of [
-      "주문 고객",
-      "배송 정보",
-      "할인/부가결제",
-      "이용 및 정보 제공 약관",
-    ]) {
+    for (const title of ["주문 고객", "배송 정보", "이용 및 정보 제공 약관"]) {
       expect(screen.getByRole("heading", { name: title })).toBeVisible();
     }
     expect(screen.getByRole("button", { name: "결제하기" })).toBeDisabled();
@@ -249,11 +265,116 @@ it("retries the same reserved order after its final stock becomes sold out", asy
   expect(state.create.mock.calls[1][0].key).toBe(firstKey);
 });
 
-it("무통장입금 시연 전환은 실제 주문과 결제를 생성하지 않는다", async () => {
+it("API checkout disables bank deposits and hides mock benefits", () => {
   render(<RealCheckoutPage />);
-  fireEvent.click(screen.getByRole("button", { name: "무통장 시연 선택" }));
-  expect(await screen.findByText(/주문·결제 시연/)).toBeVisible();
+  expect(
+    screen.getByRole("button", { name: "무통장 시연 선택" }),
+  ).toBeDisabled();
+  expect(
+    screen.queryByRole("textbox", { name: "할인코드" }),
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("textbox", { name: "적립금" }),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByText(/주문·결제 시연/)).not.toBeInTheDocument();
+});
+it("opens the real address search and fills the chosen address", async () => {
+  state.postcode.mockImplementation(async ({ onComplete }) =>
+    onComplete({
+      zonecode: "04524",
+      roadAddress: "서울특별시 중구 세종대로 110",
+      address: "서울 중구 태평로1가 31",
+    }),
+  );
+  render(<RealCheckoutPage />);
+  fireEvent.click(screen.getByRole("button", { name: "주소검색" }));
+  await waitFor(() => expect(state.postcode).toHaveBeenCalledTimes(1));
+  expect(screen.getByRole("textbox", { name: "우편번호" })).toHaveValue(
+    "04524",
+  );
+  expect(screen.getByRole("textbox", { name: "기본주소" })).toHaveValue(
+    "서울특별시 중구 세종대로 110",
+  );
   expect(state.create).not.toHaveBeenCalled();
-  expect(state.prepare).not.toHaveBeenCalled();
+});
+it("reports address search errors without inserting a dummy address", async () => {
+  state.postcode.mockRejectedValueOnce(new Error("script failed"));
+  render(<RealCheckoutPage />);
+  fireEvent.click(screen.getByRole("button", { name: "주소검색" }));
+  await waitFor(() =>
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "주소 검색을 열지 못했습니다",
+    ),
+  );
+  expect(screen.getByRole("textbox", { name: "기본주소" })).toHaveValue("주소");
+});
+it("requests the Toss card window with the verified server order and amount", async () => {
+  state.prepare.mockResolvedValueOnce({
+    orderId: 42,
+    amount: 1000,
+    tossClientKey: "test_ck_fixture",
+  });
+  render(<RealCheckoutPage />);
+  fill();
+  await waitFor(() =>
+    expect(state.request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: "CARD",
+        amount: { currency: "KRW", value: 1000 },
+        orderId: "ORD-12345",
+        successUrl: `${window.location.origin}/payments/success`,
+        failUrl: `${window.location.origin}/payments/fail`,
+      }),
+    ),
+  );
+});
+it("never opens the gateway for a mismatched prepared amount", async () => {
+  state.prepare.mockResolvedValueOnce({
+    orderId: 42,
+    amount: 999,
+    tossClientKey: "test_ck_fixture",
+  });
+  render(<RealCheckoutPage />);
+  fill();
+  await waitFor(() =>
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "결제 금액을 확인할 수 없습니다",
+    ),
+  );
   expect(state.request).not.toHaveBeenCalled();
 });
+
+it.each([
+  ["계좌이체 선택", "TRANSFER", "TRANSFER"],
+  ["토스페이 선택", "EASY_PAY", "CARD"],
+])(
+  "opens %s using its real payment method",
+  async (label, paymentMethod, gatewayMethod) => {
+    state.prepare.mockResolvedValueOnce({
+      orderId: 42,
+      amount: 1000,
+      tossClientKey: "test_ck_fixture",
+    });
+    render(<RealCheckoutPage />);
+    fireEvent.click(screen.getByRole("button", { name: label }));
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "약관에 동의합니다." }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
+    await waitFor(() => expect(state.request).toHaveBeenCalledTimes(1));
+    expect(state.prepare).toHaveBeenCalledWith({
+      orderId: 42,
+      amount: 1000,
+      paymentMethod,
+    });
+    expect(state.request).toHaveBeenCalledWith(
+      expect.objectContaining({ method: gatewayMethod }),
+    );
+    if (paymentMethod === "EASY_PAY")
+      expect(state.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          card: { flowMode: "DIRECT", easyPay: "TOSSPAY" },
+        }),
+      );
+  },
+);

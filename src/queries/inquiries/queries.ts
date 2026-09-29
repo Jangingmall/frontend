@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchInquiries } from "@/api/inquiries/api";
+import { publicEnv } from "@/lib/env";
 import { startMockWorker } from "@/mocks/start-browser";
 
 import { inquiryKeys } from "./keys";
@@ -17,7 +18,7 @@ export function useProductInquiries(
       await startMockWorker();
       return fetchInquiries(id, excludeSecret, isMock, viewerId !== null);
     },
-    enabled: true,
+    enabled: publicEnv.apiMocking && isMock,
     gcTime: 0,
   });
 }

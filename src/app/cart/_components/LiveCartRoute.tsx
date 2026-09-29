@@ -2,7 +2,6 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
-import { savePreviewCart } from "@/api/purchase-preview/api";
 import { ArtisanOrderGroup } from "@/components/order/ArtisanOrderGroup";
 import { OrderSummary } from "@/components/order/OrderSummary";
 import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator";
@@ -13,13 +12,11 @@ import { resolveErrorMessage } from "@/constants/error-messages";
 import { ApiError } from "@/lib/http/api-error";
 import { useCartMutations, useCartQuery } from "@/queries/cart";
 import { useAuthStore } from "@/stores/auth";
-import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import { type CartLine, getCartShippingAmount } from "@/types/cart";
 import type { CartPreviewLine } from "@/types/purchase-preview";
 
 import { CartDeleteDialog } from "./CartDeleteDialog";
 import { CartLoginDialog } from "./CartLoginDialog";
-import { CartOptionDialog } from "./CartOptionDialog";
 import { CartProductCard } from "./CartProductCard";
 export function LiveCartRoute() {
   const router = useRouter();
@@ -35,7 +32,6 @@ export function LiveCartRoute() {
   const [undo, setUndo] = useState<CartLine[]>([]);
   const [error, setError] = useState("");
   const [loginOpen, setLoginOpen] = useState(false);
-  const [optionLine, setOptionLine] = useState<CartLine | null>(null);
   const [pending, setPending] = useState(false);
   const busy = useRef(false);
   const lines = (cart.data?.lines ?? []).map((line) => ({
@@ -223,7 +219,8 @@ export function LiveCartRoute() {
                           line={line}
                           showUnavailableDetails
                           pending={pending}
-                          onOptions={() => setOptionLine(line)}
+                          optionsDisabled
+                          onOptions={() => {}}
                           onSelect={(checked) => choose([line], checked)}
                           onDelete={() => setDeleteIds([line.lineId])}
                           onQuantity={(quantity) => {
@@ -296,40 +293,6 @@ export function LiveCartRoute() {
           onOpenChange={setLoginOpen}
           onLogin={() => router.push("/login?returnUrl=%2Fcart")}
         />
-        {optionLine && (
-          <CartOptionDialog
-            key={optionLine.lineId}
-            open
-            onOpenChange={(open) => {
-              if (!open) setOptionLine(null);
-            }}
-            definitions={[
-              {
-                label: "시연 포장",
-                values: ["기본 포장 (시연)", "선물 포장 (시연)"],
-              },
-            ]}
-            initialValues={[]}
-            onApply={(options) => {
-              void run(async () => {
-                const saved = await savePreviewCart(
-                  lines.map((line) => ({
-                    ...line,
-                    options:
-                      line.lineId === optionLine.lineId
-                        ? options
-                        : line.options,
-                    note: "시연 장바구니 · 실제 주문에 적용되지 않습니다.",
-                  })),
-                );
-                usePurchasePreviewStore.getState().setLines(saved);
-                router.push("/cart?preview=1");
-              });
-            }}
-            notice="옵션 변경은 장바구니 전체를 MSW 시연으로 복사합니다. 실제 상품 옵션·가격과 무관하며 실제 결제되지 않습니다."
-            currentOptions={optionLine.options}
-          />
-        )}
         <CartDeleteDialog
           open={deleteIds.length > 0}
           onOpenChange={(open) => {

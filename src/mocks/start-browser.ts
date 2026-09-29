@@ -2,13 +2,30 @@ import { publicEnv } from "@/lib/env";
 
 let startPromise: Promise<void> | null = null;
 
-/** Shared single-flight startup. API mode mocks only explicitly namespaced demo requests.
- * Full MSW authentication remains disabled on Vercel production deployments.
- */
+/** 명시적인 MSW 개발 모드에서만 워커를 시작한다. */
 export function startMockWorker(): Promise<void> {
   if (process.env.NODE_ENV === "test") return Promise.resolve();
-  if (publicEnv.apiMocking && publicEnv.isVercelProduction) {
-    return Promise.resolve();
+  if (!publicEnv.apiMocking || publicEnv.isVercelProduction) {
+    startPromise ??= (async () => {
+      if (!("serviceWorker" in navigator)) return;
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(
+        registrations.map((registration) => {
+          const worker =
+            registration.active ??
+            registration.waiting ??
+            registration.installing;
+          if (
+            worker &&
+            new URL(worker.scriptURL).pathname === "/mockServiceWorker.js"
+          )
+            return registration.unregister();
+        }),
+      );
+    })().catch(() => {
+      startPromise = null;
+    });
+    return startPromise;
   }
   startPromise ??= (async () => {
     const { worker } = await import("./browser");

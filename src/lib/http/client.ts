@@ -47,6 +47,8 @@ async function doFetch(
   path: string,
   { body, auth = true, headers, ...init }: ClientFetchOptions,
 ): Promise<Response> {
+  if (!publicEnv.apiMocking && /^\/api\/mock(?:[/?#]|$)/.test(path))
+    throw new Error("현재 시연 기능을 사용할 수 없습니다.");
   if (process.env.NODE_ENV !== "test") await prepareRequest();
   path = privateRequestPath(path, auth, isDemoSession());
   if (

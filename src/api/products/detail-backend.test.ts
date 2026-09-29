@@ -61,3 +61,9 @@ it("keeps product information when optional artisan detail is unavailable", asyn
     artisan: null,
   });
 });
+
+it("API 모드의 상세 미리보기는 네트워크 요청 전에 차단한다", async () => {
+  const spy = vi.spyOn(globalThis, "fetch");
+  expect(await fetchProductDetail(201, true)).toBeNull();
+  expect(spy).not.toHaveBeenCalled();
+});

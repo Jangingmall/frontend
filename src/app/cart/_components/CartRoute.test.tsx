@@ -3,20 +3,29 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 
 import { cartFixtures } from "@/app/cart/_lib/cart-fixtures";
+import { publicEnv } from "@/lib/env";
 import { useAuthStore } from "@/stores/auth";
 import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 
 import { CartRoute } from "./CartRoute";
 
-const { push } = vi.hoisted(() => ({ push: vi.fn() }));
+const { push, search } = vi.hoisted(() => ({
+  push: vi.fn(),
+  search: { value: "" },
+}));
+vi.mock("./LiveCartRoute", () => ({
+  LiveCartRoute: () => <div>실제 장바구니</div>,
+}));
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => new URLSearchParams(search.value),
 }));
 vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: true } }));
 
 afterEach(() => {
   vi.clearAllMocks();
+  Object.assign(publicEnv, { apiMocking: true });
+  search.value = "";
   useAuthStore.getState().clear();
   usePurchasePreviewStore.getState().resetPreview();
 });
@@ -36,4 +45,13 @@ it("passes only selected cart items to checkout", async () => {
 it("starts empty instead of inventing sample items", () => {
   render(<CartRoute />);
   expect(screen.getByText("장바구니가 비어있습니다.")).toBeInTheDocument();
+});
+
+it("API mode ignores the preview query parameter", () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  search.value = "preview=1";
+  usePurchasePreviewStore.getState().setLines(cartFixtures.base);
+  render(<CartRoute />);
+  expect(screen.getByText("실제 장바구니")).toBeInTheDocument();
+  expect(screen.queryByText(/시연 장바구니/)).not.toBeInTheDocument();
 });

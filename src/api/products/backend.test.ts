@@ -177,3 +177,23 @@ it("썸네일을 허용해도 잘못된 상품 가격은 거부한다", async ()
   }));
   await expect(fetchProductListClient({})).rejects.toThrow();
 });
+
+it("미지원 필터를 직접 넘겨도 서버와 클라이언트는 실제 목록만 조회한다", async () => {
+  const requests = mockPages();
+  for (const fetchList of [fetchProductList, fetchProductListClient]) {
+    await fetchList({
+      sort: "sales",
+      materials: ["WOOD"],
+      crafts: ["SAGI"],
+      hasGiftWrap: true,
+    });
+  }
+  expect(requests).toHaveLength(2);
+  for (const params of requests) {
+    expect(params.get("page")).toBe("0");
+    expect(params.get("sort")).toBe("NEWEST");
+    expect(params.has("material")).toBe(false);
+    expect(params.has("subcategory")).toBe(false);
+    expect(params.has("hasGiftWrap")).toBe(false);
+  }
+});

@@ -2,13 +2,14 @@
 
 import { useSyncExternalStore } from "react";
 
+import { publicEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 
 const SECTIONS = [
   { id: "product-information", label: "상품정보" },
   { id: "product-notices", label: "유의사항" },
   { id: "product-shipping", label: "배송안내" },
-  { id: "product-reviews", label: "리뷰·문의" },
+  { id: "product-reviews", label: publicEnv.apiMocking ? "리뷰·문의" : "리뷰" },
 ];
 
 function subscribeToHash(onChange: () => void) {

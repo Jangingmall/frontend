@@ -83,7 +83,7 @@ describe("상품 후기 화면", () => {
     expect(screen.getByText("만족합니다")).toBeInTheDocument();
     expect(
       screen.queryByRole("checkbox", { name: "사진 후기만 보기" }),
-    ).toBeInTheDocument();
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("평점 없음")).not.toBeInTheDocument();
     expect(screen.queryByText(/^옵션:/)).not.toBeInTheDocument();
     expect(

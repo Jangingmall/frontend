@@ -16,7 +16,11 @@ export function parseProductSearchParams(
   const page = Number(params.get("page"));
   const requestedSort =
     params.get("sort") ?? (publicEnv.apiMocking ? "popular" : "newest");
-  const sort = requestedSort;
+  const sort =
+    !publicEnv.apiMocking &&
+    !["newest", "price-asc", "price-desc"].includes(requestedSort)
+      ? "newest"
+      : requestedSort;
   let minPrice = parsePrice(params.get("minPrice"));
   let maxPrice = parsePrice(params.get("maxPrice"));
   if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
@@ -27,7 +31,9 @@ export function parseProductSearchParams(
     size: 20,
     sort: Object.hasOwn(PRODUCT_LIST_SORT, sort)
       ? (sort as ProductListSort)
-      : "popular",
+      : publicEnv.apiMocking
+        ? "popular"
+        : "newest",
     giftTheme: GIFT_THEMES.find((theme) => theme.id === params.get("giftTheme"))
       ?.id,
     category: params.get("category") || undefined,
@@ -35,10 +41,12 @@ export function parseProductSearchParams(
     crafts: canUseProductCrafts()
       ? [...new Set(params.getAll("subcategory").filter(Boolean))].sort()
       : [],
-    materials: [...new Set(params.getAll("material").filter(Boolean))].sort(),
+    materials: publicEnv.apiMocking
+      ? [...new Set(params.getAll("material").filter(Boolean))].sort()
+      : [],
     minPrice,
     maxPrice,
-    hasGiftWrap: params.get("hasGiftWrap") === "true",
+    hasGiftWrap: publicEnv.apiMocking && params.get("hasGiftWrap") === "true",
     excludeSoldOut: params.get("excludeSoldOut") === "true",
   };
 }
@@ -70,6 +78,16 @@ export function updateProductSearchParams(
     ) {
       params.set(param, String(value));
     }
+  }
+  if (!publicEnv.apiMocking) {
+    params.delete("material");
+    params.delete("subcategory");
+    params.delete("hasGiftWrap");
+    if (
+      params.has("sort") &&
+      !["newest", "price-asc", "price-desc"].includes(params.get("sort")!)
+    )
+      params.set("sort", "newest");
   }
   return params;
 }

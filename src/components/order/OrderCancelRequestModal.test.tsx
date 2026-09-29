@@ -92,3 +92,20 @@ describe("OrderCancelRequestModal", () => {
     expect(screen.getByText("주문번호 : JJ000000")).toBeInTheDocument();
   });
 });
+
+it("disables unsupported cancellation submission and attachments", () => {
+  render(
+    <OrderCancelRequestModal
+      open
+      onOpenChange={() => {}}
+      item={item}
+      purchasedAt="2026-09-05T00:00:00.000Z"
+      orderNumber="JJ000000"
+      supportsAttachments={false}
+      unavailableReason="결제된 주문의 취소 요청은 준비 중입니다."
+      onSubmit={vi.fn()}
+    />,
+  );
+  expect(screen.getByRole("button", { name: "등록하기" })).toBeDisabled();
+  expect(document.querySelector('input[type="file"]')).toBeDisabled();
+});

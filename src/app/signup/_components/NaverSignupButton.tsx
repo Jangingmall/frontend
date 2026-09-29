@@ -12,17 +12,20 @@
 interface NaverSignupButtonProps {
   onClick: () => void;
   loading?: boolean;
+  disabled?: boolean;
 }
 
 export function NaverSignupButton({
   onClick,
   loading = false,
+  disabled = false,
 }: NaverSignupButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={loading}
+      disabled={loading || disabled}
+      title={disabled ? "네이버 로그인은 준비 중입니다." : undefined}
       aria-busy={loading || undefined}
       className="flex h-11 w-full shrink-0 items-center gap-3 rounded-sm bg-[#03A94D] pl-5 text-sm font-bold text-font-white disabled:cursor-not-allowed disabled:opacity-60"
     >

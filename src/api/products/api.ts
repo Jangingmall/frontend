@@ -1,11 +1,9 @@
-import { isMockProductQuery } from "@/lib/data-mode";
 import { publicEnv } from "@/lib/env";
 import { fetchPublicApi } from "@/lib/http/fetcher";
 import { isrTags } from "@/lib/isr/tags";
 
 import { fetchBackendProductList } from "./backend-list";
 import { mapBackendProductCategories } from "./backend-mapper";
-import { toDemoProductQuery } from "./demo-query";
 import { productCategoriesDto } from "./filter-validation";
 import { mapProductCategories, mapProductListPage } from "./mapper";
 import {
@@ -29,19 +27,11 @@ export async function fetchProductCategoriesServer() {
       );
 }
 export async function fetchProductList(query: ProductListQuery = {}) {
-  if (!isMockProductQuery(publicEnv.apiMocking ? "msw" : "api", query))
+  if (!publicEnv.apiMocking)
     return fetchBackendProductList(query, read, fetchProductCategoriesServer);
-  const demoQuery = publicEnv.apiMocking
-    ? query
-    : toDemoProductQuery(
-        query,
-        query.category ? await fetchProductCategoriesServer() : [],
-      );
   return mapProductListPage(
     productListResponseDto.parse(
-      await read(
-        `${publicEnv.apiMocking ? "/api" : "/api/mock/catalogue"}/products?${toProductListSearchParams(demoQuery)}`,
-      ),
+      await read(`/api/products?${toProductListSearchParams(query)}`),
     ),
     resolveProductListPaging(query),
   );

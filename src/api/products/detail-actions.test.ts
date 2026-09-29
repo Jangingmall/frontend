@@ -74,18 +74,16 @@ describe("product detail mock actions", () => {
     );
     expect(response.status).toBe(401);
   });
-  it("미구현 재입고는 실제 모드에서 시연 경로만 호출한다", async () => {
+  it("미구현 재입고는 실제 모드에서 요청 전에 차단한다", async () => {
     Object.assign(publicEnv, { apiMocking: false });
     useAuthStore
       .getState()
       .setSession("live-test-token", { id: 1, name: "고객", role: "USER" });
     const fetchSpy = vi.spyOn(globalThis, "fetch");
-    await expect(requestProductRestock(9999)).resolves.toMatchObject({
-      duplicate: false,
-    });
-    expect(String(fetchSpy.mock.calls[0][0])).toContain(
-      "/api/mock/products/9999/restock",
+    await expect(requestProductRestock(9999)).rejects.toThrow(
+      "지원하지 않습니다",
     );
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
   it("실제 모드에서도 찜 여부를 같은 실제 경로 하나로 확인한다(데모 GET 안 탐)", async () => {
     Object.assign(publicEnv, { apiMocking: false });

@@ -1,23 +1,21 @@
-/**
- * 네이버 소셜 로그인 원형 버튼. Figma(`[삼성가고싶어요] GUI` 파일, 로그인 프레임
- * `889:61144` → node `889:61151`)에서 실제 아이콘 SVG를 그대로 가져왔다 — 브랜드 로고를
- * 임의로 그리지 않는다는 원칙(docs/architecture.md)을 지키면서도 플레이스홀더보다 정확하다.
- *
- * BE에 네이버 OAuth2 엔드포인트 자체가 없지만(`docs/api-contract.md` §9), 클릭하면 목업
- * OAuth 흐름으로 연결된다 — 실제 판정 로직은 `/signup`(`SignupFlow`)에 있고, 이 버튼은
- * `provider` 쿼리와 함께 그리로 navigate만 한다.
- */
+/** 네이버 로그인 버튼. 실제 연동 전에는 비활성화한다. */
 interface NaverLoginButtonProps {
   onClick: () => void;
+  disabled?: boolean;
 }
 
-export function NaverLoginButton({ onClick }: NaverLoginButtonProps) {
+export function NaverLoginButton({
+  onClick,
+  disabled = false,
+}: NaverLoginButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
+      title={disabled ? "네이버 로그인은 준비 중입니다." : undefined}
       aria-label="네이버로 로그인"
-      className="size-12 shrink-0 overflow-hidden rounded-full"
+      className="size-12 shrink-0 overflow-hidden rounded-full disabled:cursor-not-allowed disabled:opacity-60"
     >
       <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
         <rect width="48" height="48" rx="24" fill="#03A94D" />

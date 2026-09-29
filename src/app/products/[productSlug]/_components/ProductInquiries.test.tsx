@@ -15,6 +15,7 @@ import {
   inquiryHandlers,
   resetInquiryMock,
 } from "@/api/inquiries/mock/handlers";
+import { publicEnv } from "@/lib/env";
 import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
@@ -187,4 +188,24 @@ describe("상품 문의 화면", () => {
     );
     expect(within(dialog).queryByText("비밀글입니다.")).not.toBeInTheDocument();
   });
+});
+
+it("API 모드에서는 상품이 mock이어도 문의 화면을 열지 않는다", () => {
+  const previous = publicEnv.apiMocking;
+  Object.assign(publicEnv, { apiMocking: false });
+  try {
+    const spy = vi.spyOn(globalThis, "fetch");
+    const { container } = render(
+      <ProductInquiries
+        productId={101}
+        isMock={true}
+        onNotify={vi.fn()}
+        onRequireLogin={vi.fn()}
+      />,
+    );
+    expect(container).toBeEmptyDOMElement();
+    expect(spy).not.toHaveBeenCalled();
+  } finally {
+    Object.assign(publicEnv, { apiMocking: previous });
+  }
 });

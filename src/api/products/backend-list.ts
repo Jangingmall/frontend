@@ -20,7 +20,16 @@ export async function fetchBackendProductList(
   const category = query.category
     ? resolveProductCategoryCode(query.category, await fetchCategories())
     : undefined;
-  const params = toProductListSearchParams(query);
+  const params = toProductListSearchParams({
+    ...query,
+    materials: [],
+    crafts: [],
+    hasGiftWrap: false,
+    sort:
+      query.sort && ["newest", "price-asc", "price-desc"].includes(query.sort)
+        ? query.sort
+        : "newest",
+  });
   if (category)
     params.set(
       query.category?.startsWith("subcategory-")

@@ -15,12 +15,9 @@ export function resolveDataMode(mode?: string, legacy?: string): DataMode {
   return mode === "msw" || legacy === "enabled" ? "msw" : "api";
 }
 
-/** API 장애 여부가 아닌, 명시한 시연 경로만으로 판정한다. */
+/** 명시적인 MSW 모드에서만 시연 응답을 허용한다. */
 export function shouldMockRequest(mode: DataMode, path: string) {
-  return (
-    /^\/api(?:\/|$)/.test(path) &&
-    (mode === "msw" || path.startsWith("/api/mock/"))
-  );
+  return /^\/api(?:\/|$)/.test(path) && mode === "msw";
 }
 
 export function isMockProductQuery(mode: DataMode, query: ProductQuery) {

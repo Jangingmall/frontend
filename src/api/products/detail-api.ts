@@ -16,6 +16,7 @@ import {
 /** metadata와 page의 동일 조회를 한 렌더에서 공유한다. 사용자 데이터는 포함하지 않는다. */
 export const fetchProductDetail = cache(
   async (productId: number, preview = false) => {
+    if (preview && !publicEnv.apiMocking) return null;
     let raw: unknown;
     try {
       raw = await fetchPublicApi<unknown>(

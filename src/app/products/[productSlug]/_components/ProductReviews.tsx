@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components/ui/pagination";
 import { Select, SelectItem } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { publicEnv } from "@/lib/env";
 import { useProductReviews } from "@/queries/reviews/queries";
 import type { ProductNotify } from "@/types/product-detail";
 import type { ReviewFilters, ReviewSort } from "@/types/review";
@@ -53,7 +54,10 @@ function ReviewUrlState(props: ProductReviewsProps) {
       filters={{
         page: Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1,
         sort,
-        photoOnly: search.get("photoOnly") === "true",
+        photoOnly:
+          publicEnv.apiMocking &&
+          props.isMock &&
+          search.get("photoOnly") === "true",
       }}
     />
   );
@@ -88,11 +92,6 @@ function ReviewContent({
       <h2 className="text-title-l leading-[1.3] font-bold text-font-dark">
         후기{reviewCount !== undefined ? ` (${reviewCount})` : ""}
       </h2>
-      {!isMock && filters.photoOnly && (
-        <p className="text-body-s">
-          사진 후기 필터는 시연 데이터로 보여드립니다.
-        </p>
-      )}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         {
           <div className="flex items-center gap-2">
@@ -109,7 +108,7 @@ function ReviewContent({
           </div>
         }
         <div className="flex items-center gap-4">
-          {
+          {publicEnv.apiMocking && isMock && (
             <Checkbox
               checked={filters.photoOnly}
               onCheckedChange={(photoOnly) =>
@@ -118,7 +117,7 @@ function ReviewContent({
             >
               사진 후기만 보기
             </Checkbox>
-          }
+          )}
           <Select
             ariaLabel="후기 정렬"
             items={SORT_ITEMS}

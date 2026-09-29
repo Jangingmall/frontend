@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InputField } from "@/components/ui/input-field";
 import { resolveErrorMessage } from "@/constants/error-messages";
+import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import { useLoginMutation } from "@/queries/member/mutations";
 import { useAuthStore } from "@/stores/auth";
@@ -204,7 +205,10 @@ export function LoginForm({ returnUrl }: LoginFormProps) {
               소셜 로그인
             </p>
             <div className="flex gap-16">
-              <NaverLoginButton onClick={() => handleOAuthClick("naver")} />
+              <NaverLoginButton
+                disabled={!publicEnv.apiMocking}
+                onClick={() => handleOAuthClick("naver")}
+              />
               <KakaoLoginButton onClick={() => handleOAuthClick("kakao")} />
             </div>
           </div>

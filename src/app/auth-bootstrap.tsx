@@ -24,7 +24,7 @@ export function AuthBootstrap({ children }: { children: ReactNode }) {
 
     void (async () => {
       try {
-        // 양쪽 모드 모두 첫 요청 전에 등록: API 모드는 명시적 /api/mock 경로만 처리한다.
+        // 실제 모드는 이전 MSW 등록을 정리하고, MSW 모드만 워커를 시작한다.
         await startMockWorker();
 
         const { accessToken } = await refreshToken();

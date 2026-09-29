@@ -9,6 +9,7 @@ import {
   completeOAuthProfile,
   requestEmailVerification,
   signup,
+  startMockOAuthLogin,
   verifyEmailCode,
 } from "./api";
 
@@ -130,4 +131,20 @@ it("실제 인증 발송과 검증은 잘못된 성공 응답을 거부한다", 
   await expect(
     verifyEmailCode({ email: "buyer@example.com", code: "123456" }),
   ).rejects.toThrow();
+});
+
+it("rejects unsupported Naver login before creating a demo session or request", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  let requests = 0;
+  server.use(
+    http.post("*/api/mock/member/oauth2/naver", () => {
+      requests += 1;
+      return mockOk(null);
+    }),
+  );
+  await expect(startMockOAuthLogin("naver")).rejects.toThrow(
+    "네이버 로그인은 준비 중입니다.",
+  );
+  expect(requests).toBe(0);
+  expect(sessionStorage.getItem("midam:api-demo-session")).not.toBe("1");
 });

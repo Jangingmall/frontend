@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { OAuthLoginResult } from "@/api/member/api";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import { safeReturnUrl } from "@/lib/auth/return-url";
+import { publicEnv } from "@/lib/env";
 import { useStartOAuthLoginMutation } from "@/queries/member/mutations";
 import { useAuthStore } from "@/stores/auth";
 import type { OAuthProvider } from "@/types/auth";
@@ -96,7 +97,7 @@ export function SignupFlow({ returnUrl, provider }: SignupFlowProps) {
     }
     // status가 "anonymous"로 확정된 시점에만, `/login`에서 provider와 함께 넘어온 경우
     // `SignupMethodStep`의 버튼 클릭과 동일한 로직을 한 번 자동 실행한다.
-    if (provider) {
+    if (provider && (provider !== "naver" || publicEnv.apiMocking)) {
       startOAuthLoginMutation.mutate(provider, {
         onSuccess: handleOAuthComplete,
         onError: () => setOauthErrorMessage(resolveErrorMessage()),
@@ -119,7 +120,10 @@ export function SignupFlow({ returnUrl, provider }: SignupFlowProps) {
   // 01단계가 잠깐 보였다 사라지는 깜빡임이 생긴다. mutation이 실패하면(목업에선 사실상
   // 없지만 방어적으로) 무한 로딩에 갇히지 않도록 01단계로 빠져나간다.
   const isResolvingOAuthEntry =
-    provider != null && step === "method" && !startOAuthLoginMutation.isError;
+    provider != null &&
+    (provider !== "naver" || publicEnv.apiMocking) &&
+    step === "method" &&
+    !startOAuthLoginMutation.isError;
 
   if (status !== "anonymous" || isResolvingOAuthEntry) {
     return (

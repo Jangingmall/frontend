@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { RefObject } from "react";
 
+import { publicEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 
 /**
@@ -109,7 +110,11 @@ function GnbNav({
         전체 카테고리
       </Link>
       {GNB_NAV_ITEMS.map((item) => {
-        if (item.disabled || !item.href) {
+        if (
+          item.disabled ||
+          !item.href ||
+          (!publicEnv.apiMocking && item.label === "베스트")
+        ) {
           return (
             <span key={item.label} aria-disabled="true" className={ITEM_CLASS}>
               {item.label}

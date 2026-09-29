@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronRightIcon } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/skeleton";
+import { publicEnv } from "@/lib/env";
 import { useProductInquiries } from "@/queries/inquiries/queries";
 import { useAuthStore } from "@/stores/auth";
 import type { ProductDetail, ProductNotify } from "@/types/product-detail";
@@ -24,7 +25,12 @@ interface ProductInquiriesProps {
   onNotify: ProductNotify;
   onRequireLogin: () => void;
 }
-export function ProductInquiries({
+export function ProductInquiries(props: ProductInquiriesProps) {
+  if (!publicEnv.apiMocking) return null;
+  return <MockProductInquiries {...props} />;
+}
+
+function MockProductInquiries({
   productId,
   isMock: isMockProduct,
   product,

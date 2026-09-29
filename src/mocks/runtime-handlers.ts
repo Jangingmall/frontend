@@ -16,6 +16,7 @@ import { handlers } from "./handlers";
 
 /** 시연 전용 주소는 원본 핸들러로 전달하되 실제 서버로 빠져나가지 않는다. */
 export function createRuntimeHandlers(mode: DataMode) {
+  if (mode === "api") return [];
   return [
     imageHandlers[1],
     http.all("*/api/*", async ({ request }) => {

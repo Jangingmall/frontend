@@ -2,8 +2,8 @@ import { getResponse } from "msw";
 import { expect, it } from "vitest";
 
 import { createRuntimeHandlers } from "./runtime-handlers";
-it("실제 상품의 재입고 시연 상태는 사용자별로 격리한다", async () => {
-  const handlers = createRuntimeHandlers("api");
+it("MSW 모드의 재입고 시연 상태는 사용자별로 격리한다", async () => {
+  const handlers = createRuntimeHandlers("msw");
   const request = (method: string, viewer: string) =>
     new Request("http://localhost/api/mock/products/9999/restock", {
       method,
@@ -23,7 +23,7 @@ it("실제 상품의 재입고 시연 상태는 사용자별로 격리한다", a
 });
 
 it("real and demo members with the same ID cannot share private inquiries", async () => {
-  const handlers = createRuntimeHandlers("api");
+  const handlers = createRuntimeHandlers("msw");
   const url = "http://localhost/api/mock/products/102/inquiries";
   const headers = {
     "X-Demo-Viewer": "user-1",

@@ -278,3 +278,16 @@ describe("SignupFlow", () => {
     expect(screen.queryByText("이름")).not.toBeInTheDocument();
   });
 });
+
+it("API mode keeps Naver direct entry on the signup method screen", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  renderSignupFlow(null, "naver");
+  const button = screen.getByRole("button", {
+    name: "네이버로 빠르게 가입하기",
+  });
+  expect(button).toBeDisabled();
+  await userEvent.click(button);
+  expect(useAuthStore.getState().status).toBe("anonymous");
+  expect(replace).not.toHaveBeenCalled();
+  expect(screen.queryByText("불러오는 중…")).not.toBeInTheDocument();
+});

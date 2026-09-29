@@ -52,16 +52,27 @@ describe("상품 후기", () => {
     );
     expect(result).toMatchObject({ items: [], totalCount: 0, rating: null });
   });
-  it("실제 환경의 사진 필터는 명시된 MSW 경로로 조회한다", async () => {
+  it("실제 환경의 사진 필터는 무시하고 실제 후기만 조회한다", async () => {
     const fetch = vi.spyOn(globalThis, "fetch");
+    server.use(
+      http.get("*/api/products/101/reviews", () =>
+        mockOk({
+          content: [],
+          number: 0,
+          size: 5,
+          totalElements: 0,
+          totalPages: 0,
+        }),
+      ),
+    );
     const result = await fetchReviews(
       101,
       { page: 1, sort: "latest", photoOnly: true },
       false,
     );
-    expect(result.items.length).toBeGreaterThan(0);
+    expect(result.items).toEqual([]);
     expect(String(fetch.mock.calls[0][0])).toContain(
-      "/api/mock/products/101/reviews",
+      "/api/products/101/reviews",
     );
   });
   it.each([

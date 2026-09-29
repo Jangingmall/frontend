@@ -64,3 +64,35 @@ describe("startMockWorker", () => {
 beforeEach(() => {
   vi.stubEnv("NODE_ENV", "development");
 });
+
+it("API 모드에서는 MSW를 시작하지 않고 이전 MSW 등록만 정리한다", async () => {
+  vi.resetModules();
+  start.mockReset();
+  vi.doMock("@/lib/env", () => ({ publicEnv: { apiMocking: false } }));
+  const unregisterMock = vi.fn().mockResolvedValue(true);
+  const unregisterOther = vi.fn().mockResolvedValue(true);
+  vi.stubGlobal("navigator", {
+    serviceWorker: {
+      getRegistrations: vi.fn().mockResolvedValue([
+        {
+          active: { scriptURL: "http://localhost/mockServiceWorker.js" },
+          unregister: unregisterMock,
+        },
+        {
+          active: { scriptURL: "http://localhost/app-worker.js" },
+          unregister: unregisterOther,
+        },
+      ]),
+    },
+  });
+  try {
+    const { startMockWorker } = await import("./start-browser");
+    await startMockWorker();
+    expect(start).not.toHaveBeenCalled();
+    expect(unregisterMock).toHaveBeenCalledOnce();
+    expect(unregisterOther).not.toHaveBeenCalled();
+  } finally {
+    vi.unstubAllGlobals();
+    vi.doUnmock("@/lib/env");
+  }
+});
