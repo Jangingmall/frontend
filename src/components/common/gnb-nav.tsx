@@ -32,6 +32,8 @@ interface GnbNavItem {
 }
 
 const GNB_NAV_ITEMS: GnbNavItem[] = [
+  { label: "전체 상품", href: "/products" as Route },
+  { label: "선물관", disabled: true },
   { label: "장인관", disabled: true },
   { label: "신상품", href: "/products?preset=new" as Route },
   { label: "베스트", href: "/products?preset=best" as Route },
@@ -82,29 +84,26 @@ function GnbNav({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const categoryActive = isGnbNavItemActive(
-    CATEGORY_TRIGGER_HREF,
-    pathname,
-    searchParams,
-  );
-
   return (
     <nav
       aria-label="글로벌 내비게이션"
-      className={cn("flex bg-fill-neutral-impact px-8", className)}
+      className={cn(
+        // 모바일에서는 헤더의 햄버거 메뉴로 대체돼 숨긴다. md는 항목을 폭에 맞춰 고르게
+        // 펼치고(시안 768), lg 이상은 왼쪽 정렬로 자연 폭을 쓴다.
+        "hidden bg-fill-neutral-impact px-6 md:flex md:justify-between lg:justify-start lg:px-8",
+        className,
+      )}
     >
       <Link
         ref={categoryTriggerRef}
         href={CATEGORY_TRIGGER_HREF}
         onMouseEnter={onCategoryTriggerMouseEnter}
         onFocus={onCategoryTriggerFocus}
-        aria-current={categoryActive ? "page" : undefined}
         className={cn(
           ITEM_CLASS,
           isCategoryPanelOpen
             ? "bg-(--nav-jade) text-font-dark"
             : "hover:bg-states-hover-25",
-          categoryActive && "font-bold",
         )}
       >
         전체 카테고리
@@ -116,7 +115,11 @@ function GnbNav({
           (!publicEnv.apiMocking && item.label === "베스트")
         ) {
           return (
-            <span key={item.label} aria-disabled="true" className={ITEM_CLASS}>
+            <span
+              key={item.label}
+              aria-disabled="true"
+              className={cn(ITEM_CLASS, "hover:bg-states-hover-25")}
+            >
               {item.label}
             </span>
           );

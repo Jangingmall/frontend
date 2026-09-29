@@ -19,10 +19,10 @@ import { cn } from "@/lib/utils";
  * 포커스"가 되고, 재열림 시 검색어가 항상 비어 있는 것(design.md §5-6)도 이 구조의 자연스러운
  * 결과다 — 검색어를 유지하려면 이 state를 `Gnb`로 끌어올려야 한다.
  *
- * 입력창(800px)·검색 실행 버튼을 한 그룹으로 묶어 헤더의 `grid-cols-[1fr_auto_1fr]`(로고 중앙
- * 정렬)과 같은 기법으로 가운데 정렬한다. Figma 실측은 입력창 단독이 페이지 중심에 오지만,
- * 버튼까지 포함하면 16px 오차가 생긴다 — 기존 정렬 기법을 재사용하는 코드 단순성이 그 오차보다
- * 이득이 크다고 판단했다(design.md §5-2).
+ * 입력창(최대 800px)·검색 실행 버튼을 한 그룹으로 묶어 가운데 정렬한다. 폭은 유동이라 데스크톱은
+ * 최대폭(832)에서 멈추고 모바일(헤더 아래 전폭 검색바)에서는 좌우 마진(`page-gutter`)만 남기고
+ * 화면을 채운다. Figma 실측은 입력창 단독이 페이지 중심에 오지만, 버튼까지 포함하면 16px 오차가
+ * 생긴다 — 그룹 가운데 정렬의 코드 단순성이 그 오차보다 이득이라고 판단했다(design.md §5-2).
  *
  * `<form role="search">`로 감싸 Enter 제출과 검색 버튼(`type="submit"`) 클릭을 브라우저 네이티브
  * 제출 이벤트 하나로 통일한다 — 수동 `onKeyDown` 분기가 필요 없다.
@@ -70,15 +70,14 @@ function SearchPanel({ onClose, className }: SearchPanelProps) {
         role="search"
         aria-label="통합 검색"
         onSubmit={handleSubmit}
-        className="grid h-17.5 grid-cols-[1fr_auto_1fr] items-center px-12"
+        className="flex h-14.5 items-center justify-center page-gutter md:h-17.5"
       >
-        <span aria-hidden="true" />
-        <div className="flex items-center">
+        <div className="flex w-full max-w-208 items-center">
           {/* Figma 실측(리뷰 반영, 2026-09-13): `textfield` 프레임의
            * `individualStrokeWeights`가 `{top:0, right:0, bottom:1, left:0}` — 아래쪽에만
            * 1px 밑줄이 있고 색은 정확히 `#8E9A9C`(`--jade-blue-700` = `--border-jade-fill`).
            * design.md 최초안엔 테두리 자체를 안 다뤘던 걸 놓친 부분이라 여기서 보정한다. */}
-          <div className="flex h-9.5 w-200 items-center gap-2 border-b border-border-jade-fill">
+          <div className="flex h-9.5 min-w-0 flex-1 items-center gap-2 border-b border-border-jade-fill">
             <input
               ref={inputRef}
               type="text"
@@ -106,7 +105,6 @@ function SearchPanel({ onClose, className }: SearchPanelProps) {
             <SearchIcon className="size-6" />
           </button>
         </div>
-        <span aria-hidden="true" />
       </form>
     </div>
   );
