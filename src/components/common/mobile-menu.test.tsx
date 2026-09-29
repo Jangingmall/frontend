@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { gnbCategoriesFixture } from "@/api/products/mock/gnb-categories";
+import { publicEnv } from "@/lib/env";
 
 import { MobileMenu, type MobileMenuProps } from "./mobile-menu";
 
@@ -47,6 +48,47 @@ describe("MobileMenu — 전체 메뉴(HO-menu-1)", () => {
       const item = screen.getByText(label);
       expect(item.tagName).toBe("SPAN");
       expect(item).toHaveAttribute("aria-disabled", "true");
+    }
+  });
+
+  it("실서버 모드에서는 데스크톱 내비처럼 베스트를 링크로 만들지 않는다", () => {
+    const previous = publicEnv.apiMocking;
+    try {
+      Object.assign(publicEnv, { apiMocking: true });
+      const { unmount } = render(
+        <MobileMenu
+          open
+          onOpenChange={vi.fn()}
+          view="root"
+          onViewChange={vi.fn()}
+        />,
+      );
+      expect(screen.getByRole("link", { name: "베스트" })).toHaveAttribute(
+        "href",
+        "/products?preset=best",
+      );
+      unmount();
+
+      Object.assign(publicEnv, { apiMocking: false });
+      render(
+        <MobileMenu
+          open
+          onOpenChange={vi.fn()}
+          view="root"
+          onViewChange={vi.fn()}
+        />,
+      );
+      expect(
+        screen.queryByRole("link", { name: "베스트" }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByText("베스트")).toHaveAttribute(
+        "aria-disabled",
+        "true",
+      );
+      // 다른 활성 항목은 그대로 링크다.
+      expect(screen.getByRole("link", { name: "신상품" })).toBeInTheDocument();
+    } finally {
+      Object.assign(publicEnv, { apiMocking: previous });
     }
   });
 

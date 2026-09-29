@@ -43,6 +43,18 @@ const GNB_NAV_ITEMS: GnbNavItem[] = [
 const CATEGORY_TRIGGER_HREF = "/products" as Route;
 
 /**
+ * 항목의 이동 경로. 목적지가 없거나(disabled) 지금 모드에서 쓸 수 없으면 `null`이라 호출부가
+ * 비활성 항목으로 그린다. 데스크톱 내비와 모바일 메뉴가 같이 쓴다 — 한쪽만 막으면 두 화면의
+ * 메뉴가 어긋난다. 「베스트」는 판매량 정렬이 실서버에 없어 `?preset=best`가 최신순 목록이 되므로
+ * 실서버 모드에서는 링크를 만들지 않는다(MSW 모드에서만 진입 가능).
+ */
+function getGnbNavItemHref(item: GnbNavItem): Route | null {
+  if (item.disabled || !item.href) return null;
+  if (!publicEnv.apiMocking && item.label === "베스트") return null;
+  return item.href;
+}
+
+/**
  * 현재 URL이 이 내비 항목의 목적지인지 판정한다. pathname만으로는 안 된다 — 전체 카테고리·
  * 신상품·베스트가 전부 `/products`를 공유하고 `preset` 쿼리로만 구분되기 때문(§3). `category`
  * 는 지금 어떤 항목도 안 쓰지만, PL-2/3(`/products?category=`)에서 이 셋이 잘못 활성화되지
@@ -109,11 +121,8 @@ function GnbNav({
         전체 카테고리
       </Link>
       {GNB_NAV_ITEMS.map((item) => {
-        if (
-          item.disabled ||
-          !item.href ||
-          (!publicEnv.apiMocking && item.label === "베스트")
-        ) {
+        const href = getGnbNavItemHref(item);
+        if (!href) {
           return (
             <span
               key={item.label}
@@ -125,12 +134,12 @@ function GnbNav({
           );
         }
 
-        const active = isGnbNavItemActive(item.href, pathname, searchParams);
+        const active = isGnbNavItemActive(href, pathname, searchParams);
 
         return (
           <Link
             key={item.label}
-            href={item.href}
+            href={href}
             aria-current={active ? "page" : undefined}
             className={cn(
               ITEM_CLASS,
@@ -146,5 +155,5 @@ function GnbNav({
   );
 }
 
-export { GNB_NAV_ITEMS, GnbNav, isGnbNavItemActive };
+export { getGnbNavItemHref, GNB_NAV_ITEMS, GnbNav, isGnbNavItemActive };
 export type { GnbNavItem, GnbNavProps };

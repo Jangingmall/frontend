@@ -19,7 +19,7 @@ import type { GnbCategory } from "@/lib/gnb-categories";
 import { cn } from "@/lib/utils";
 
 import { ErrorState } from "./error-state";
-import { GNB_NAV_ITEMS } from "./gnb-nav";
+import { getGnbNavItemHref, GNB_NAV_ITEMS } from "./gnb-nav";
 
 type MobileMenuView = "root" | "category";
 type MobileMenuAuthStatus = "loading" | "anonymous" | "authenticated";
@@ -178,8 +178,18 @@ function MobileMenu({
                 >
                   전체 카테고리
                 </button>
-                {GNB_NAV_ITEMS.map((item) =>
-                  item.disabled || !item.href ? (
+                {GNB_NAV_ITEMS.map((item) => {
+                  const href = getGnbNavItemHref(item);
+                  return href ? (
+                    <Link
+                      key={item.label}
+                      href={href}
+                      onClick={close}
+                      className={ROW_CLASS}
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
                     <span
                       key={item.label}
                       aria-disabled="true"
@@ -187,17 +197,8 @@ function MobileMenu({
                     >
                       {item.label}
                     </span>
-                  ) : (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      onClick={close}
-                      className={ROW_CLASS}
-                    >
-                      {item.label}
-                    </Link>
-                  ),
-                )}
+                  );
+                })}
               </nav>
             ) : (
               <nav aria-label="분류" className="flex flex-col">
