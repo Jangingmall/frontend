@@ -107,9 +107,9 @@ function SiteFloatingActionsInner({
   // effect가 아니라 이렇게 동기적으로 읽는 쪽이 React가 권장하는 경로다.
   //
   // 계정이 바뀌면(로그아웃 후 다른 계정 로그인 등) 이 state들은 저절로 안 바뀐다 —
-  // `userId`가 바뀌었다고 재계산되는 게 아니라 "마운트 시점 한 번"만 읽는다. 그래서
-  // 호출부(`page.tsx`/`ProductListPage.tsx`)가 `key={userId ?? status}`로 계정이 바뀔 때
-  // 이 컴포넌트를 통째로 리마운트시켜야 한다(리뷰 지적 — `mock-identity-switcher.tsx`처럼
+  // `userId`가 바뀌었다고 재계산되는 게 아니라 "마운트 시점 한 번"만 읽는다. 그래서 위
+  // 얇은 outer(`SiteFloatingActions`)가 `key={userId ?? status}`로 계정이 바뀔 때 이
+  // 컴포넌트를 통째로 리마운트시킨다(리뷰 지적 — `mock-identity-switcher.tsx`처럼
   // 네비게이션 없이 계정만 바뀌는 경로가 실제로 있다). 리마운트되면 아래 lazy
   // initializer들이 새 `userId`로 다시 실행된다.
   const [sessionId, setSessionId] = useState<string | null>(
