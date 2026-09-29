@@ -41,6 +41,19 @@ function login() {
 }
 
 describe("SiteFloatingActions", () => {
+  it("USER가 아닌 인증 계정(ARTISAN)에는 챗봇 진입점이 숨겨진다", () => {
+    useAuthStore.setState({
+      status: "authenticated",
+      accessToken: "token",
+      user: { id: 2, name: "김도예", role: "ARTISAN" },
+    });
+    setup();
+
+    expect(
+      screen.queryByRole("button", { name: "미담 챗봇" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("비로그인 상태에서 챗봇 버튼을 누르면 로그인 유도 다이얼로그가 뜬다", () => {
     setup();
     fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
@@ -130,9 +143,12 @@ describe("SiteFloatingActions", () => {
 
   it("전송이 실패하면 오류 배너가 뜨고 다시 시도로 재전송한다", async () => {
     login();
+    // 세션 생성은 기본 목업(`CHAT_SESSIONS`에 실제로 등록됨)을 그대로 쓴다 — 고정
+    // sessionId로 오버라이드하면 유효성 검증(GET history)이 그 id를 못 찾아 404를 내고,
+    // 그러면 F1 수정(무효 세션 즉시 화면 숨김)이 재시도 응답까지 함께 가려버린다.
     let attempt = 0;
     server.use(
-      http.post("*/api/chatbot/sessions/:sessionId/messages", () => {
+      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
         attempt += 1;
         if (attempt === 1) return mockError(500, "INTERNAL_ERROR");
         return HttpResponse.json(
@@ -140,7 +156,7 @@ describe("SiteFloatingActions", () => {
             success: true,
             status: 201,
             data: {
-              sessionId: "session-1",
+              sessionId: String(params.sessionId),
               messageId: 1,
               reply: "다시 답변할게요",
               intent: null,
@@ -151,16 +167,6 @@ describe("SiteFloatingActions", () => {
           { status: 201 },
         );
       }),
-      http.post("*/api/chatbot/sessions", () =>
-        HttpResponse.json(
-          {
-            success: true,
-            status: 201,
-            data: { sessionId: "session-1", expiresInSeconds: 3600 },
-          },
-          { status: 201 },
-        ),
-      ),
     );
 
     setup();
@@ -181,5 +187,7 @@ describe("SiteFloatingActions", () => {
     await waitFor(() =>
       expect(screen.getByText("다시 답변할게요")).toBeInTheDocument(),
     );
+    // 재시도는 봇 응답만 다시 요청한다 — 이미 떠 있던 사용자 버블을 중복 추가하지 않는다.
+    expect(screen.getAllByText("안녕")).toHaveLength(1);
   });
 });

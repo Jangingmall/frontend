@@ -64,8 +64,12 @@ export function SiteFloatingActions({
   showAiChat = true,
 }: SiteFloatingActionsProps) {
   const status = useAuthStore((state) => state.status);
+  const role = useAuthStore((state) => state.user?.role);
   const router = useRouter();
   const chatPanelRef = useRef<HTMLDivElement>(null);
+  // 챗봇 API 4종 전부 `hasRole('USER')`다(docs/api-contract.md §7) — ARTISAN/ADMIN은
+  // 인증은 됐지만 권한이 없으므로, 게스트(로그인 유도)와 달리 진입점 자체를 숨긴다.
+  const isWrongRole = status === "authenticated" && role !== "USER";
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -99,6 +103,12 @@ export function SiteFloatingActions({
     sessionId,
     status === "authenticated" && !!sessionId,
   );
+  // 캐시로 복원한 세션이 서버 검증에서 무효(만료·종료·타인 소유)로 확인되면, `messages`
+  // state는 그대로 두고 화면에 내려줄 값만 즉시 비운다 — 리뷰 지적대로 검증 실패 후에도
+  // `handleSend` 호출 전까지 복원된 대화가 계속 보이면 같은 탭에서 다른 계정으로 로그인
+  // 시 이전 사용자 대화가 노출될 수 있다.
+  const isStaleSession = historyCheck.isError;
+  const visibleMessages = isStaleSession ? [] : messages;
 
   // 대화가 바뀔 때마다 캐시를 다시 저장한다. `setState`가 아니라 브라우저 저장소 쓰기라
   // set-state-in-effect 대상이 아니다.
@@ -107,12 +117,17 @@ export function SiteFloatingActions({
     writeStoredSession({ sessionId, messages });
   }, [sessionId, messages]);
 
+  // 무효로 확인된 세션은 캐시에서도 즉시 지운다 — 새로고침해도 재사용되지 않게.
+  useEffect(() => {
+    if (isStaleSession && sessionId) writeStoredSession(null);
+  }, [isStaleSession, sessionId]);
+
   function handleAiChatToggle() {
     if (isOpen) {
       setIsOpen(false); // 접기 — 세션·메시지 유지, 종료 아님
       return;
     }
-    if (status === "loading") return;
+    if (status === "loading" || isWrongRole) return; // 진입점이 이미 숨겨져 있는 방어용
     if (status !== "authenticated") {
       setIsLoginOpen(true);
       return;
@@ -148,16 +163,37 @@ export function SiteFloatingActions({
     setIsOpen(false);
   }
 
-  async function handleSend(content: string) {
+  // 세션 생성 + 전송만 담당 — 사용자 버블은 건드리지 않는다. `handleSend`(새 메시지)와
+  // `handleRetry`(이미 화면에 있는 실패한 사용자 버블 재시도)가 공유한다(§4-4 — 재시도는
+  // 사용자 버블을 다시 추가하지 않고 봇 응답만 다시 요청한다).
+  async function performSend(content: string, baseSessionId: string | null) {
+    try {
+      let currentSessionId = baseSessionId;
+      if (!currentSessionId) {
+        const session = await createSession.mutateAsync();
+        currentSessionId = session.sessionId;
+        setSessionId(currentSessionId);
+      }
+      const botMessage = await sendMessage.mutateAsync({
+        sessionId: currentSessionId,
+        content,
+      });
+      setMessages((prev) => [...prev, botMessage]);
+      if (botMessage.suggestions) setSuggestions(botMessage.suggestions);
+      setLastFailedContent(null);
+    } catch {
+      setLastFailedContent(content);
+    }
+  }
+
+  function handleSend(content: string) {
     const trimmed = content.trim();
     if (!trimmed) return;
 
     // 캐시로 복원한 세션이 서버에서 이미 무효(만료·종료·타인 소유)로 확인됐으면, 그 위에
-    // 이어 쓰지 않고 여기서 완전히 새 대화로 되돌린다.
-    const isStaleSession = historyCheck.isError;
+    // 이어 쓰지 않고 여기서 완전히 새 대화로 되돌린다(캐시 정리는 위 effect가 맡는다).
     const baseMessages = isStaleSession ? [] : messages;
     const baseSessionId = isStaleSession ? null : sessionId;
-    if (isStaleSession) writeStoredSession(null);
 
     const userMessage: ChatMessage = {
       id: Date.now(),
@@ -169,39 +205,28 @@ export function SiteFloatingActions({
     setMessages([...baseMessages, userMessage]);
     setInputValue("");
 
-    try {
-      let currentSessionId = baseSessionId;
-      if (!currentSessionId) {
-        const session = await createSession.mutateAsync();
-        currentSessionId = session.sessionId;
-        setSessionId(currentSessionId);
-      }
-      const botMessage = await sendMessage.mutateAsync({
-        sessionId: currentSessionId,
-        content: trimmed,
-      });
-      setMessages((prev) => [...prev, botMessage]);
-      if (botMessage.suggestions) setSuggestions(botMessage.suggestions);
-      setLastFailedContent(null);
-    } catch {
-      setLastFailedContent(trimmed);
-    }
+    void performSend(trimmed, baseSessionId);
+  }
+
+  function handleRetry() {
+    if (!lastFailedContent) return;
+    void performSend(lastFailedContent, isStaleSession ? null : sessionId);
   }
 
   return (
     <>
       <FloatingActions
-        showAiChat={showAiChat}
+        showAiChat={showAiChat && !isWrongRole}
         isChatOpen={isOpen}
         onAiChatToggle={handleAiChatToggle}
       />
       {isOpen && (
         <ChatPanel
           ref={chatPanelRef}
-          messages={messages}
+          messages={visibleMessages}
           isSending={createSession.isPending || sendMessage.isPending}
-          sendError={sendMessage.isError}
-          onRetry={() => lastFailedContent && handleSend(lastFailedContent)}
+          sendError={sendMessage.isError || createSession.isError}
+          onRetry={handleRetry}
           inputValue={inputValue}
           onInputChange={setInputValue}
           onSend={() => handleSend(inputValue)}
