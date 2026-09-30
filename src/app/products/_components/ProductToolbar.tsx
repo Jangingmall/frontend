@@ -40,28 +40,31 @@ export function ProductToolbar({
   }));
   return (
     <div>
-      <Breadcrumb className="flex-wrap">
-        <BreadcrumbItem href={category ? "/products" : "/"}>
-          {category ? "전체 카테고리" : "홈"}
-        </BreadcrumbItem>
-        {rootCategory && (
-          <BreadcrumbItem
-            href={`/products?category=${encodeURIComponent(rootCategory.id)}`}
-          >
-            {rootCategory.name}
+      {/* 모바일 시안에는 경로 표시가 없다. nav째로 숨겨 빈 landmark가 남지 않게 한다. */}
+      <div className="hidden md:block">
+        <Breadcrumb className="flex-wrap">
+          <BreadcrumbItem href={category ? "/products" : "/"}>
+            {category ? "전체 카테고리" : "홈"}
           </BreadcrumbItem>
-        )}
-        <BreadcrumbItem current>
-          {parent ? category?.name : "전체 상품"}
-        </BreadcrumbItem>
-      </Breadcrumb>
-      <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-title-xl text-font-dark">
+          {rootCategory && (
+            <BreadcrumbItem
+              href={`/products?category=${encodeURIComponent(rootCategory.id)}`}
+            >
+              {rootCategory.name}
+            </BreadcrumbItem>
+          )}
+          <BreadcrumbItem current>
+            {parent ? category?.name : "전체 상품"}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </div>
+      <div className="flex items-end justify-between gap-2 md:mt-6 md:gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-title-l text-font-dark md:text-title-xl">
             {category?.name ?? "전체 상품"}
           </h1>
           {category?.description && (
-            <p className="mt-2 text-body-l font-medium text-font-dark-weak">
+            <p className="mt-2 truncate text-body-m font-medium text-font-dark-weak lg:text-body-l">
               {category.description}
             </p>
           )}
@@ -73,7 +76,7 @@ export function ProductToolbar({
           onValueChange={(value) => {
             if (value) onSortChange(value as ProductListSort);
           }}
-          className="w-32 shrink-0 whitespace-nowrap"
+          className="h-7 w-auto min-w-18 shrink-0 whitespace-nowrap md:h-9 md:min-w-25 lg:w-32"
           contentClassName="whitespace-nowrap"
           alignItemWithTrigger={false}
         >

@@ -39,7 +39,7 @@ export function ProductResults({
   onReset,
 }: ProductResultsProps) {
   return (
-    <section aria-label="상품 목록" className="mt-12">
+    <section aria-label="상품 목록" className="mt-8 md:mt-12">
       <div className="mb-3 flex min-h-6 items-center justify-between gap-3">
         <p role="status" className="text-body-s text-font-dark">
           {isUnavailable
