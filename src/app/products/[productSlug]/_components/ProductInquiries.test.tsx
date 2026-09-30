@@ -160,7 +160,9 @@ describe("상품 문의 화면", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
     await screen.findByText("문의 (9)");
-    expect(onNotify).toHaveBeenCalledWith("문의가 등록되었습니다.");
+    expect(onNotify).toHaveBeenCalledWith(
+      "문의 시연이 완료되었습니다. 판매자에게 전송되지 않습니다.",
+    );
   });
   it("본인 비밀글을 본 뒤 로그아웃하면 본문을 제거하고 전체보기에서 필터를 적용한다", async () => {
     login();
@@ -190,7 +192,7 @@ describe("상품 문의 화면", () => {
   });
 });
 
-it("API 모드에서는 목록을 조회하지 않고 공개 문의만 실제 등록한다", async () => {
+it("API 모드에서는 문의 목록을 시연하되 공개 문의 등록은 실제 API를 유지한다", async () => {
   const previous = publicEnv.apiMocking;
   Object.assign(publicEnv, { apiMocking: false });
   try {
@@ -227,18 +229,13 @@ it("API 모드에서는 목록을 조회하지 않고 공개 문의만 실제 �
       >
         <ProductInquiries
           productId={101}
-          isMock={true}
+          isMock={false}
           onNotify={notify}
           onRequireLogin={vi.fn()}
         />
       </QueryClientProvider>,
     );
-    expect(
-      screen.getByText(
-        "문의 목록 조회는 일시 중단되었습니다. 공개 문의 등록은 가능합니다.",
-      ),
-    ).toBeVisible();
-    expect(spy).not.toHaveBeenCalled();
+    expect(await screen.findByText(/문의 목록은 시연 데이터/)).toBeVisible();
     await userEvent.click(screen.getByRole("button", { name: "문의하기" }));
     expect(
       screen.queryByRole("combobox", { name: "문의 유형" }),
@@ -252,12 +249,19 @@ it("API 모드에서는 목록을 조회하지 않고 공개 문의만 실제 �
     );
     await userEvent.click(screen.getByRole("button", { name: "등록하기" }));
     await waitFor(() =>
-      expect(notify).toHaveBeenCalledWith("문의가 등록되었습니다."),
+      expect(notify).toHaveBeenCalledWith(
+        "공개 문의가 등록되었습니다. 아래 목록은 시연 데이터입니다.",
+      ),
     );
     expect(posted).toEqual({ content: "제작 기간 문의", secret: false });
     expect(
-      spy.mock.calls.every(([url]) => !String(url).includes("/inquiries")),
+      spy.mock.calls.some(([url]) =>
+        String(url).includes("/api/mock/products/101/inquiries"),
+      ),
     ).toBe(true);
+    expect(
+      spy.mock.calls.filter(([url]) => String(url).includes("/questions")),
+    ).toHaveLength(1);
   } finally {
     Object.assign(publicEnv, { apiMocking: previous });
     useAuthStore.getState().clear();

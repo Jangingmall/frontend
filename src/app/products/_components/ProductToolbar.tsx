@@ -3,7 +3,6 @@
 import { Breadcrumb, BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Select, SelectItem } from "@/components/ui/select";
-import { publicEnv } from "@/lib/env";
 import type { ProductCategory } from "@/types/product-filter";
 import type { ProductListSort } from "@/types/sort";
 
@@ -33,11 +32,7 @@ export function ProductToolbar({
   onFilterOpen,
 }: ProductToolbarProps) {
   const rootCategory = parent ?? category;
-  const options = SORT_OPTIONS.filter(
-    (option) =>
-      publicEnv.apiMocking ||
-      ["popular", "newest", "price-asc", "price-desc"].includes(option.value),
-  ).map((option) => ({
+  const options = SORT_OPTIONS.map((option) => ({
     ...option,
     disabled: false,
   }));

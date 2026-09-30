@@ -17,14 +17,15 @@ describe("OrderCompleteRoute", () => {
     usePurchasePreviewStore.getState().resetPreview();
   });
 
-  it("아직 없는 주문 내역 대신 공용 준비 중 Toast를 표시한다", () => {
+  it("시연 주문은 실제 주문 내역에 저장되지 않았음을 안내한다", () => {
     render(<OrderCompleteRoute outcome="success" />);
 
     fireEvent.click(screen.getByRole("button", { name: "주문 내역 보기" }));
 
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "주문 내역은 준비 중입니다.",
-    );
+    expect(
+      screen.getByText("시연 주문은 실제 주문 내역에 저장되지 않습니다."),
+    ).toBeVisible();
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("계속 둘러보기는 홈으로 이동한다", () => {

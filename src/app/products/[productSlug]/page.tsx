@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { Route } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
-import { fetchProductDetail } from "@/api/products/detail-api";
+import { fetchProductPageDetail as fetchProductDetail } from "@/api/products/demo-detail-server";
 import { publicEnv } from "@/lib/env";
 import {
   getProductPath,
@@ -52,7 +52,6 @@ export default async function ProductPage({
   const id = parseProductId(productSlug);
   if (!id) notFound();
   const preview = (await searchParams)?.preview === "1";
-  if (preview && !publicEnv.apiMocking) notFound();
   const product = await fetchProductDetail(id, preview);
   if (!product) notFound();
   const canonical = getProductPath(product);

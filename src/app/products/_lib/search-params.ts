@@ -1,4 +1,3 @@
-import { canUseProductCrafts } from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { publicEnv } from "@/lib/env";
 import { GIFT_THEMES } from "@/types/gift-theme";
@@ -15,12 +14,15 @@ export function parseProductSearchParams(
 ): ProductListQuery {
   const page = Number(params.get("page"));
   const requestedSort =
-    params.get("sort") ?? (publicEnv.apiMocking ? "popular" : "newest");
-  const sort =
-    !publicEnv.apiMocking &&
-    !["popular", "newest", "price-asc", "price-desc"].includes(requestedSort)
-      ? "newest"
-      : requestedSort;
+    params.get("sort") ??
+    (params.get("preset") === "best"
+      ? "sales"
+      : params.get("preset") === "new"
+        ? "newest"
+        : publicEnv.apiMocking
+          ? "popular"
+          : "newest");
+  const sort = requestedSort;
   let minPrice = parsePrice(params.get("minPrice"));
   let maxPrice = parsePrice(params.get("maxPrice"));
   if (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice) {
@@ -38,15 +40,11 @@ export function parseProductSearchParams(
       ?.id,
     category: params.get("category") || undefined,
     keyword: params.get("keyword") || undefined,
-    crafts: canUseProductCrafts()
-      ? [...new Set(params.getAll("subcategory").filter(Boolean))].sort()
-      : [],
-    materials: publicEnv.apiMocking
-      ? [...new Set(params.getAll("material").filter(Boolean))].sort()
-      : [],
+    crafts: [...new Set(params.getAll("subcategory").filter(Boolean))].sort(),
+    materials: [...new Set(params.getAll("material").filter(Boolean))].sort(),
     minPrice,
     maxPrice,
-    hasGiftWrap: publicEnv.apiMocking && params.get("hasGiftWrap") === "true",
+    hasGiftWrap: params.get("hasGiftWrap") === "true",
     excludeSoldOut: params.get("excludeSoldOut") === "true",
   };
 }
@@ -56,14 +54,12 @@ export function updateProductSearchParams(
   patch: Partial<ProductListQuery>,
 ): URLSearchParams {
   const params = new URLSearchParams(current);
-  if (!canUseProductCrafts()) params.delete("subcategory");
   if (!("page" in patch)) params.delete("page");
   if ("category" in patch && patch.category !== current.get("category")) {
     params.delete("subcategory");
   }
   for (const [key, value] of Object.entries(patch)) {
-    if (key === "size" || (key === "crafts" && !canUseProductCrafts()))
-      continue;
+    if (key === "size") continue;
     const param =
       key === "materials" ? "material" : key === "crafts" ? "subcategory" : key;
     params.delete(param);
@@ -78,18 +74,6 @@ export function updateProductSearchParams(
     ) {
       params.set(param, String(value));
     }
-  }
-  if (!publicEnv.apiMocking) {
-    params.delete("material");
-    params.delete("subcategory");
-    params.delete("hasGiftWrap");
-    if (
-      params.has("sort") &&
-      !["popular", "newest", "price-asc", "price-desc"].includes(
-        params.get("sort")!,
-      )
-    )
-      params.set("sort", "newest");
   }
   return params;
 }

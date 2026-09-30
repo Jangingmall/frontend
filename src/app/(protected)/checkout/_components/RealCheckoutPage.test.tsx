@@ -1,7 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 
+import { submitPreviewOrder } from "@/api/purchase-preview/api";
+import { previewLinesSchema } from "@/api/purchase-preview/validation";
 import { ApiError } from "@/lib/http/api-error";
+import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 
 import { RealCheckoutPage } from "./RealCheckoutPage";
 const state = vi.hoisted(() => ({
@@ -42,6 +45,9 @@ vi.mock("@/queries/cart", () => ({
                   lineId: "1",
                   productId: 1,
                   artisanId: 1,
+                  artisanName: "장인",
+                  thumbnail: { imageId: "test", variants: [] },
+                  maxQuantity: Infinity,
                   productName: "상품",
                   unitPrice: 1000,
                   quantity: 1,
@@ -378,3 +384,20 @@ it.each([
       );
   },
 );
+
+it("copies actual checkout into a valid demo order without starting actual payment", async () => {
+  render(<RealCheckoutPage />);
+  fireEvent.click(
+    screen.getByRole("button", { name: "할인·무통장입금 시연하기" }),
+  );
+  const lines = usePurchasePreviewStore.getState().checkoutLines;
+  expect(
+    previewLinesSchema.parse(JSON.parse(JSON.stringify(lines))),
+  ).toHaveLength(1);
+  expect(await submitPreviewOrder(lines, "bank-pending")).toMatchObject({
+    outcome: "bank-pending",
+  });
+  expect(state.create).not.toHaveBeenCalled();
+  expect(state.prepare).not.toHaveBeenCalled();
+  expect(state.request).not.toHaveBeenCalled();
+});

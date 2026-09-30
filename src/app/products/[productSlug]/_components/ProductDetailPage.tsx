@@ -116,15 +116,13 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
               onNotify={handleNotify}
               onRequireLogin={handleRequireLogin}
             />
-            {publicEnv.apiMocking && (
-              <ProductInquiries
-                product={product}
-                productId={product.id}
-                isMock={product.isMock}
-                onNotify={handleNotify}
-                onRequireLogin={handleLogin}
-              />
-            )}
+            <ProductInquiries
+              product={product}
+              productId={product.id}
+              isMock={product.isMock}
+              onNotify={handleNotify}
+              onRequireLogin={handleLogin}
+            />
           </div>
           <RelatedProducts products={product.relatedProducts} />
         </div>

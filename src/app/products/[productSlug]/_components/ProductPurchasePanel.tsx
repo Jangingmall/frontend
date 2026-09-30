@@ -299,7 +299,6 @@ export function ProductPurchasePanel({
   }
 
   function handleRestock() {
-    if (!publicEnv.apiMocking) return;
     if (!isAuthenticated) {
       onRequireLogin(false);
       return;
@@ -323,7 +322,10 @@ export function ProductPurchasePanel({
       const canonical =
         document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
           ?.href ?? `${window.location.origin}${window.location.pathname}`;
-      await navigator.clipboard.writeText(canonical);
+      const shareUrl = new URL(canonical);
+      if (product.isMock && !publicEnv.apiMocking)
+        shareUrl.searchParams.set("preview", "1");
+      await navigator.clipboard.writeText(shareUrl.href);
       onNotify("작품 링크를 복사했습니다.");
     } catch {
       onNotify("링크를 복사하지 못했습니다. 주소창의 링크를 복사해 주세요.");
@@ -613,7 +615,7 @@ export function ProductPurchasePanel({
           </p>
         )}
         <div className="flex gap-2">
-          {(!soldOut || publicEnv.apiMocking) && (
+          {
             <Button
               variant="outline"
               size="xl"
@@ -624,7 +626,7 @@ export function ProductPurchasePanel({
             >
               {soldOut ? "재입고 알림" : "장바구니"}
             </Button>
-          )}
+          }
           <Button
             size="xl"
             className="h-12 min-w-0 flex-1 px-3 md:h-14"

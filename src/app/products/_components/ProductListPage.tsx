@@ -1,8 +1,8 @@
 "use client";
-
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { usesDemoCatalogue } from "@/api/products/demo-catalogue";
 import type { ProductListQuery } from "@/api/products/query";
 import {
   DESIGN_MATERIALS,
@@ -189,6 +189,12 @@ export function ProductListPage({
               onSortChange={(sort) => handleChange({ sort })}
               onFilterOpen={category ? () => setIsFilterOpen(true) : undefined}
             />
+            {usesDemoCatalogue(apiQuery) && (
+              <p role="status" className="mb-4 text-body-s">
+                선택한 필터·정렬은 시연 상품으로 표시됩니다. 실제 상품 목록은
+                최신순·인기순·가격순에서 확인할 수 있습니다.
+              </p>
+            )}
             <ProductResults
               isCategoryList={Boolean(query.category)}
               isUnavailable={

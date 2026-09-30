@@ -56,7 +56,7 @@ describe("상품 후기 화면", () => {
       </QueryClientProvider>,
     );
   }
-  it("실제 후기를 표시하고 미제공 사진·전체 평균·옵션을 숨긴다", async () => {
+  it("실제 후기를 유지하며 사진 후기 시연 필터를 제공한다", async () => {
     window.history.replaceState(null, "", "/products/test-101");
     server.use(
       http.get("*/api/products/101/reviews", ({ request }) => {
@@ -82,8 +82,8 @@ describe("상품 후기 화면", () => {
     await screen.findByText("후기 (8)");
     expect(screen.getByText("만족합니다")).toBeInTheDocument();
     expect(
-      screen.queryByRole("checkbox", { name: "사진 후기만 보기" }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("checkbox", { name: "사진 후기만 보기" }),
+    ).toBeVisible();
     expect(screen.queryByText("평점 없음")).not.toBeInTheDocument();
     expect(screen.queryByText(/^옵션:/)).not.toBeInTheDocument();
     expect(

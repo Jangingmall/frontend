@@ -70,7 +70,11 @@ export function InquiryFormDialog({
       await mutation.mutateAsync(values);
       form.reset();
       onOpenChange(false);
-      onNotify("문의가 등록되었습니다.");
+      onNotify(
+        isMock
+          ? "문의 시연이 완료되었습니다. 판매자에게 전송되지 않습니다."
+          : "공개 문의가 등록되었습니다. 아래 목록은 시연 데이터입니다.",
+      );
     } catch {
       form.setError("root", {
         message:

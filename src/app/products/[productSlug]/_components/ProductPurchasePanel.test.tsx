@@ -493,11 +493,28 @@ it("찜하지 않은 실제 상품은 상세 진입만으로 찜되지 않는다
   expect(add).not.toHaveBeenCalled();
 });
 
-it("API 모드에서는 품절 상품의 재입고 시연 버튼을 숨긴다", () => {
+it("API 모드에서도 품절 상품의 재입고 시연 버튼을 제공한다", () => {
   Object.assign(publicEnv, { apiMocking: false });
   setup(103, { stock: 0, isMock: false });
   expect(screen.getByRole("button", { name: "품절" })).toBeDisabled();
-  expect(
-    screen.queryByRole("button", { name: "재입고 알림" }),
-  ).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: "재입고 알림" })).toBeVisible();
+});
+
+it("preserves preview routing when sharing a demo product in API mode", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  const previous = window.location.href;
+  window.history.replaceState(null, "", "/products/example-101?preview=1");
+  const user = userEvent.setup();
+  const copy = vi
+    .spyOn(navigator.clipboard, "writeText")
+    .mockResolvedValue(undefined);
+  try {
+    setup(101, { isMock: true });
+    await user.click(screen.getByRole("button", { name: "작품 링크 공유" }));
+    expect(copy).toHaveBeenCalledWith(
+      `${window.location.origin}/products/example-101?preview=1`,
+    );
+  } finally {
+    window.history.replaceState(null, "", previous);
+  }
 });

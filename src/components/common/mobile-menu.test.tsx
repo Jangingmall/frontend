@@ -51,7 +51,7 @@ describe("MobileMenu — 전체 메뉴(HO-menu-1)", () => {
     }
   });
 
-  it("실서버 모드에서는 데스크톱 내비처럼 베스트를 링크로 만들지 않는다", () => {
+  it("실서버 모드에서도 데스크톱 내비처럼 베스트 시연 링크를 제공한다", () => {
     const previous = publicEnv.apiMocking;
     try {
       Object.assign(publicEnv, { apiMocking: true });
@@ -78,12 +78,9 @@ describe("MobileMenu — 전체 메뉴(HO-menu-1)", () => {
           onViewChange={vi.fn()}
         />,
       );
-      expect(
-        screen.queryByRole("link", { name: "베스트" }),
-      ).not.toBeInTheDocument();
-      expect(screen.getByText("베스트")).toHaveAttribute(
-        "aria-disabled",
-        "true",
+      expect(screen.getByRole("link", { name: "베스트" })).toHaveAttribute(
+        "href",
+        "/products?preset=best",
       );
       // 다른 활성 항목은 그대로 링크다.
       expect(screen.getByRole("link", { name: "신상품" })).toBeInTheDocument();

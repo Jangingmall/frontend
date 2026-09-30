@@ -5,6 +5,7 @@ import {
   fetchReviewableItems,
   fetchReviews,
 } from "@/api/reviews/api";
+import { fetchDemoReviews } from "@/api/reviews/demo-api";
 import { startMockWorker } from "@/mocks/start-browser";
 import type { ReviewFilters } from "@/types/review";
 
@@ -19,9 +20,16 @@ export function useProductReviews(
     queryKey: reviewKeys.list(id, filters, isMock),
     queryFn: async () => {
       await startMockWorker();
-      return fetchReviews(id, filters, isMock);
+      return isMock || filters.photoOnly
+        ? fetchDemoReviews(id, filters)
+        : fetchReviews(id, filters, false);
     },
-    placeholderData: keepPreviousData,
+    meta: { dataSource: isMock || filters.photoOnly ? "demo" : "api" },
+    placeholderData: (data, previous) =>
+      previous?.meta?.dataSource ===
+      (isMock || filters.photoOnly ? "demo" : "api")
+        ? data
+        : undefined,
   });
 }
 

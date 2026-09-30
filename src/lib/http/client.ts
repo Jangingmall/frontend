@@ -1,7 +1,7 @@
+import { isDemoFeatureRequest } from "@/lib/data-mode";
 // 인증 배선 목적의 예외 — 클라이언트 fetcher는 모든 인증 요청의 단일 통로라
 // 메모리 access token을 여기서 읽고 401 refresh 결과를 반영해야 한다.
 // (docs/routing-and-auth.md §4.1, docs/architecture.md §8.2 각주). 실제 순환 없음.
-
 import { isDemoSession, privateRequestPath } from "@/lib/demo-session";
 import { publicEnv } from "@/lib/env";
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports -- 공통 인증 요청의 토큰 주입 지점
@@ -47,7 +47,11 @@ async function doFetch(
   path: string,
   { body, auth = true, headers, ...init }: ClientFetchOptions,
 ): Promise<Response> {
-  if (!publicEnv.apiMocking && /^\/api\/mock(?:[/?#]|$)/.test(path))
+  if (
+    !publicEnv.apiMocking &&
+    /^\/api\/mock(?:[/?#]|$)/.test(path) &&
+    !isDemoFeatureRequest(path, init.method)
+  )
     throw new Error("현재 시연 기능을 사용할 수 없습니다.");
   if (process.env.NODE_ENV !== "test") await prepareRequest();
   path = privateRequestPath(path, auth, isDemoSession());
@@ -78,7 +82,7 @@ async function doFetch(
         `${isDemoSession() ? "demo" : "user"}-${user.id}`,
       );
   }
-  if (auth) {
+  if (auth && (publicEnv.apiMocking || !path.startsWith("/api/mock/"))) {
     const { accessToken } = useAuthStore.getState();
     if (accessToken) finalHeaders.set("Authorization", `Bearer ${accessToken}`);
   }

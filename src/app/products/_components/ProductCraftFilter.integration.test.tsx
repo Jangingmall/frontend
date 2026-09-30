@@ -19,33 +19,35 @@ vi.mock("@/lib/env", () => ({
   publicEnv: { apiMocking: false, productListApi: true },
 }));
 
-it("소재와 종목을 URL과 요청에서 제외한다", () => {
+it("미지원 필터는 UI URL에 남기고 실제 API의 요청 형식은 유지한다", () => {
   const params = new URLSearchParams(
     "category=다기-찻잔&subcategory=SAGI&material=WOOD&page=2",
   );
   const query = parseProductSearchParams(params);
-  expect(query.crafts).toEqual([]);
-  expect(query.materials).toEqual([]);
-  const staleQuery = { ...query, crafts: ["SAGI"], materials: ["WOOD"] };
-  const request = toProductListSearchParams(staleQuery);
+  expect(query.crafts).toEqual(["SAGI"]);
+  expect(query.materials).toEqual(["WOOD"]);
+  const request = toProductListSearchParams(query);
   expect(request.has("subcategory")).toBe(false);
   expect(request.has("material")).toBe(false);
-  expect(productKeys.list(staleQuery)).toEqual(productKeys.list(query));
-  for (const patch of [
-    { page: 3 },
-    { crafts: ["YUGI"], materials: ["CLAY"] },
-  ]) {
-    const updated = updateProductSearchParams(params, patch);
-    expect(updated.has("subcategory")).toBe(false);
-    expect(updated.has("material")).toBe(false);
-  }
+  expect(productKeys.list(query)).not.toEqual(
+    productKeys.list({ ...query, crafts: [], materials: [] }),
+  );
+  expect(
+    updateProductSearchParams(params, { page: 3 }).getAll("subcategory"),
+  ).toEqual(["SAGI"]);
+  const changed = updateProductSearchParams(params, {
+    crafts: ["YUGI"],
+    materials: ["CLAY"],
+  });
+  expect(changed.getAll("subcategory")).toEqual(["YUGI"]);
+  expect(changed.getAll("material")).toEqual(["CLAY"]);
   expect(
     getProductSeo({
       category: "다기-찻잔",
       subcategory: "SAGI",
       material: "WOOD",
     }).hasFilters,
-  ).toBe(false);
+  ).toBe(true);
 });
 
 it("실제 API 모드에서는 분류와 가격 필터를 표시한다", () => {
@@ -68,9 +70,7 @@ it("실제 API 모드에서는 분류와 가격 필터를 표시한다", () => {
     />,
   );
   expect(screen.getByRole("button", { name: "다기 · 찻잔" })).toBeVisible();
-  expect(
-    screen.queryByRole("button", { name: "소재" }),
-  ).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "소재" })).toBeVisible();
   expect(screen.getByRole("button", { name: "가격대" })).toBeVisible();
 });
 

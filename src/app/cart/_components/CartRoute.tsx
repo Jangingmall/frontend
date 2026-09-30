@@ -35,7 +35,7 @@ export function CartRoute() {
     },
     [setLines, userId],
   );
-  if (!mockAccount) return <LiveCartRoute />;
+  if (!mockAccount && search.get("preview") !== "1") return <LiveCartRoute />;
   return (
     <>
       {search.get("preview") === "1" && (

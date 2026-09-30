@@ -222,17 +222,20 @@ describe("isGnbNavItemActive", () => {
   });
 });
 
-it("API 모드에서는 베스트 직접 URL도 활성 메뉴나 진입 링크를 만들지 않는다", () => {
+it("API 모드에서도 베스트 시연 목록으로 진입한다", () => {
   const previous = publicEnv.apiMocking;
   Object.assign(publicEnv, { apiMocking: false });
   try {
     setUrl("/products", "preset=best");
     renderGnbNav();
-    expect(
-      screen.queryByRole("link", { name: "베스트" }),
-    ).not.toBeInTheDocument();
-    expect(screen.getByText("베스트")).toHaveAttribute("aria-disabled", "true");
-    expect(screen.getByText("베스트")).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "베스트" })).toHaveAttribute(
+      "href",
+      "/products?preset=best",
+    );
+    expect(screen.getByRole("link", { name: "베스트" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     expect(screen.getByRole("link", { name: "신상품" })).toHaveAttribute(
       "href",
       "/products?preset=new",

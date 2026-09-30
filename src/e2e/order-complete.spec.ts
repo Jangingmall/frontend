@@ -33,9 +33,11 @@ test("로그인 고객이 일반 주문 완료 목업을 확인한다", async ({
   });
 
   await page.getByRole("button", { name: "주문 내역 보기" }).click();
-  await expect(page.getByRole("status")).toHaveText(
-    "주문 내역은 준비 중입니다.",
-  );
+  await expect(
+    page.getByRole("status").filter({
+      hasText: "시연 주문은 실제 주문 내역에 저장되지 않습니다.",
+    }),
+  ).toHaveText("시연 주문은 실제 주문 내역에 저장되지 않습니다.");
   await page.getByRole("button", { name: "계속 둘러보기" }).click();
   await expect(page).toHaveURL(/\/$/);
 });

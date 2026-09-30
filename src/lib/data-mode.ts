@@ -15,9 +15,57 @@ export function resolveDataMode(mode?: string, legacy?: string): DataMode {
   return mode === "msw" || legacy === "enabled" ? "msw" : "api";
 }
 
-/** 명시적인 MSW 모드에서만 시연 응답을 허용한다. */
+/** API 모드에서 복원하는 화면 전용 시연 요청. 인증/세션/실제 거래 경로는 포함하지 않는다. */
+export function isDemoFeatureRequest(path: string, method = "GET") {
+  const pathname = path.split(/[?#]/, 1)[0];
+  const read = method.toUpperCase() === "GET";
+  if (
+    read &&
+    /^\/api\/mock\/catalogue\/products(?:\/(?:\d+|crafts|materials))?$/.test(
+      pathname,
+    )
+  )
+    return true;
+  if (
+    /^\/api\/mock\/products\/\d+\/(?:reviews|inquiries|restock|actions|cart-selections)$/.test(
+      pathname,
+    )
+  ) {
+    const action = pathname.slice(pathname.lastIndexOf("/") + 1);
+    return (
+      {
+        reviews: ["GET"],
+        inquiries: ["GET", "POST"],
+        restock: ["GET", "POST"],
+        actions: ["GET", "PATCH"],
+        "cart-selections": ["POST"],
+      } as Record<string, string[]>
+    )[action].includes(method.toUpperCase());
+  }
+  if (
+    /^\/api\/mock\/purchase\/(?:cart|benefits|benefits\/apply|orders)$/.test(
+      pathname,
+    )
+  ) {
+    const action = pathname.replace("/api/mock/purchase/", "");
+    return (
+      {
+        cart: ["GET", "PUT"],
+        benefits: ["GET"],
+        "benefits/apply": ["POST"],
+        orders: ["POST"],
+      } as Record<string, string[]>
+    )[action].includes(method.toUpperCase());
+  }
+  return false;
+}
+
+/** 실제 API는 통과시키고 시연 네임스페이스는 런타임에서 허용 목록을 확인한다. */
 export function shouldMockRequest(mode: DataMode, path: string) {
-  return /^\/api(?:\/|$)/.test(path) && mode === "msw";
+  return (
+    /^\/api(?:\/|$)/.test(path) &&
+    (mode === "msw" || path.startsWith("/api/mock/"))
+  );
 }
 
 export function isMockProductQuery(mode: DataMode, query: ProductQuery) {

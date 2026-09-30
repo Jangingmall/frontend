@@ -1,3 +1,4 @@
+import { isDemoFeatureRequest } from "@/lib/data-mode";
 import { publicEnv } from "@/lib/env";
 import { serverEnv } from "@/lib/env.server";
 
@@ -28,7 +29,11 @@ export async function apiFetch<T>(
   path: string,
   { baseUrl = serverEnv.apiBaseUrl, headers, ...init }: ApiFetchOptions = {},
 ): Promise<T> {
-  if (!publicEnv.apiMocking && /^\/api\/mock(?:[/?#]|$)/.test(path))
+  if (
+    !publicEnv.apiMocking &&
+    /^\/api\/mock(?:[/?#]|$)/.test(path) &&
+    !isDemoFeatureRequest(path, init.method)
+  )
     throw new Error("현재 시연 기능을 사용할 수 없습니다.");
   if (!baseUrl)
     throw new Error("API_BASE_URL is required for server API requests.");
@@ -37,6 +42,8 @@ export async function apiFetch<T>(
     new Request(getUrl(path, baseUrl), { method: init.method, headers }),
   );
   if (mocked) return resolveResponse<T>(mocked);
+  if (!publicEnv.apiMocking && path.startsWith("/api/mock/"))
+    throw new Error("시연 응답이 준비되지 않았습니다.");
   const response = await fetch(getUrl(path, baseUrl), {
     ...init,
     headers: new Headers({ Accept: "application/json", ...headers }),

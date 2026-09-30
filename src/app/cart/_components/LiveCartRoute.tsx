@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 
+import { savePreviewCart } from "@/api/purchase-preview/api";
 import { ArtisanOrderGroup } from "@/components/order/ArtisanOrderGroup";
 import { OrderSummary } from "@/components/order/OrderSummary";
 import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator";
@@ -10,8 +11,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Toast } from "@/components/ui/toast";
 import { resolveErrorMessage } from "@/constants/error-messages";
 import { ApiError } from "@/lib/http/api-error";
+import { copyCartForDemo } from "@/lib/purchase-demo";
 import { useCartMutations, useCartQuery } from "@/queries/cart";
 import { useAuthStore } from "@/stores/auth";
+import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import { type CartLine, getCartShippingAmount } from "@/types/cart";
 import type { CartPreviewLine } from "@/types/purchase-preview";
 
@@ -305,6 +308,13 @@ export function LiveCartRoute() {
               setEditingLine(null);
               setError("");
             }}
+            onPreview={() =>
+              void run(async () => {
+                const saved = await savePreviewCart(copyCartForDemo(lines));
+                usePurchasePreviewStore.getState().setLines(saved);
+                router.push("/cart?preview=1");
+              })
+            }
             onApply={(quantity, textInputs) =>
               void run(async () => {
                 await mutations.options.mutateAsync({

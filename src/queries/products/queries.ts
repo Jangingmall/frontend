@@ -1,17 +1,16 @@
 "use client";
+import { useQuery } from "@tanstack/react-query";
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-
+import {
+  fetchDemoProductCrafts,
+  fetchProductCatalogueClient,
+} from "@/api/products/catalogue-client";
 import {
   fetchProductCategories,
   fetchProductCrafts,
-  fetchProductListClient,
   fetchProductMaterials,
 } from "@/api/products/client";
-import {
-  canUseProductCrafts,
-  canUseProductMaterials,
-} from "@/api/products/integration";
+import { usesDemoCatalogue } from "@/api/products/demo-catalogue";
 import type { ProductListQuery } from "@/api/products/query";
 import { publicEnv } from "@/lib/env";
 import type { Page } from "@/types/api";
@@ -27,8 +26,12 @@ export function useProductList(
 ) {
   return useQuery({
     queryKey: productKeys.list(query),
-    queryFn: ({ signal }) => fetchProductListClient(query, signal),
-    placeholderData: keepPreviousData,
+    queryFn: ({ signal }) => fetchProductCatalogueClient(query, signal),
+    meta: { dataSource: usesDemoCatalogue(query) ? "demo" : "api" },
+    placeholderData: (data, previous) =>
+      previous?.meta?.dataSource === (usesDemoCatalogue(query) ? "demo" : "api")
+        ? data
+        : undefined,
     initialData,
     enabled,
     staleTime: 60000,
@@ -52,10 +55,7 @@ export function useProductMaterials(enabled: boolean, category?: string) {
   return useQuery({
     queryKey: productKeys.materials(category),
     queryFn: ({ signal }) => fetchProductMaterials(category, signal),
-    enabled:
-      enabled &&
-      canUseProductMaterials() &&
-      (publicEnv.apiMocking || Boolean(category)),
+    enabled: enabled && (publicEnv.apiMocking || Boolean(category)),
     staleTime: 3600000,
   });
 }
@@ -63,11 +63,11 @@ export function useProductMaterials(enabled: boolean, category?: string) {
 export function useProductCrafts(enabled: boolean, category?: string) {
   return useQuery({
     queryKey: productKeys.crafts(category),
-    queryFn: ({ signal }) => fetchProductCrafts(category, signal),
-    enabled:
-      enabled &&
-      canUseProductCrafts() &&
-      (publicEnv.apiMocking || Boolean(category)),
+    queryFn: ({ signal }) =>
+      publicEnv.apiMocking
+        ? fetchProductCrafts(category, signal)
+        : fetchDemoProductCrafts(signal),
+    enabled: enabled && (publicEnv.apiMocking || Boolean(category)),
     staleTime: 3600000,
   });
 }
