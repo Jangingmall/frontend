@@ -8,7 +8,7 @@ const MinusIcon = (props: SVGProps<SVGSVGElement>) => (
     viewBox="0 0 16 16"
     {...props}
   >
-    <path fill="#121B29" d="M3 8.5v-1h10v1z" />
+    <path fill="var(--icon-black)" d="M3 8.5v-1h10v1z" />
   </svg>
 );
 export { MinusIcon };

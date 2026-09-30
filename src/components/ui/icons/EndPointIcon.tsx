@@ -9,7 +9,7 @@ const EndPointIcon = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path
-      fill="#121B29"
+      fill="var(--icon-black)"
       d="m9.2 8-5 5-.7-.7L7.8 8 3.5 3.7l.7-.7zM11 3h1v10h-1z"
     />
   </svg>

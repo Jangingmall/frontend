@@ -8,7 +8,7 @@ const ChevronRightIcon = (props: SVGProps<SVGSVGElement>) => (
     viewBox="0 0 16 16"
     {...props}
   >
-    <path fill="#121B29" d="m11.2 8-5 5-.7-.7L9.8 8 5.5 3.7l.7-.7z" />
+    <path fill="var(--icon-black)" d="m11.2 8-5 5-.7-.7L9.8 8 5.5 3.7l.7-.7z" />
   </svg>
 );
 export { ChevronRightIcon };

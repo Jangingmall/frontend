@@ -9,7 +9,7 @@ const SearchIcon = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path
-      fill="#121B29"
+      fill="var(--icon-black)"
       d="M10.209 7.297a3.4 3.4 0 1 0-6.8 0 3.4 3.4 0 0 0 6.8 0m1 0a4.38 4.38 0 0 1-.986 2.774l3.222 3.222-.353.354-.355.353-3.23-3.23a4.4 4.4 0 1 1 1.702-3.473"
     />
   </svg>

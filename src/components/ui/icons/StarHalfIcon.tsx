@@ -9,7 +9,7 @@ const StarHalfIcon = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path
-      fill="#121B29"
+      fill="var(--icon-black)"
       d="M8 3.423V.301l1.966 4.886L15 5.636 11.178 9.12l1.148 5.18L8 11.553v-8.13"
       opacity={0.3}
     />

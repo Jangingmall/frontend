@@ -8,8 +8,11 @@ const ArrowDownIcon = (props: SVGProps<SVGSVGElement>) => (
     viewBox="0 0 16 16"
     {...props}
   >
-    <path fill="#121B29" d="M8 13 3 7.845l.7-.721L8 11.557l4.3-4.433.7.721z" />
-    <path fill="#121B29" d="M8.5 12.278h-1V3h1z" />
+    <path
+      fill="var(--icon-black)"
+      d="M8 13 3 7.845l.7-.721L8 11.557l4.3-4.433.7.721z"
+    />
+    <path fill="var(--icon-black)" d="M8.5 12.278h-1V3h1z" />
   </svg>
 );
 export { ArrowDownIcon };

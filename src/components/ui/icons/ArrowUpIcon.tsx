@@ -8,8 +8,11 @@ const ArrowUpIcon = (props: SVGProps<SVGSVGElement>) => (
     viewBox="0 0 16 16"
     {...props}
   >
-    <path fill="#121B29" d="m8 3 5 5.155-.7.721L8 4.443 3.7 8.876 3 8.155z" />
-    <path fill="#121B29" d="M7.5 3.722h1V13h-1z" />
+    <path
+      fill="var(--icon-black)"
+      d="m8 3 5 5.155-.7.721L8 4.443 3.7 8.876 3 8.155z"
+    />
+    <path fill="var(--icon-black)" d="M7.5 3.722h1V13h-1z" />
   </svg>
 );
 export { ArrowUpIcon };
