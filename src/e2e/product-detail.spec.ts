@@ -1,19 +1,15 @@
 import { expect, type Page, test } from "@playwright/test";
 
+import { expectAuthLink } from "./helpers";
+
 const detailPath = "/products/백자-달항아리-101";
 
 async function openDetail(page: Page, path = detailPath) {
   await page.goto(path);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(
-    page
-      .getByRole("banner")
-      .getByRole("link", { name: /^(로그인|마이페이지)$/ }),
-  ).toBeVisible();
+  await expectAuthLink(page, /^(로그인|마이페이지)$/);
   await page.getByRole("button", { name: "고객", exact: true }).click();
-  await expect(
-    page.getByRole("link", { name: "마이페이지", exact: true }),
-  ).toBeVisible();
+  await expectAuthLink(page, "마이페이지");
 }
 
 test("찜 로그인 안내에서 로그인하면 홈으로 이동한다", async ({ page }) => {
@@ -82,7 +78,7 @@ async function chooseOptions(page: Page, color = "백색") {
 test("목록에서 상세로 이동하고 뒤로가면 목록 조건이 남는다", async ({
   page,
 }) => {
-  await page.goto("/products?category=kitchen&material=ceramic");
+  await page.goto("/products?category=category-1&material=ceramic");
   await page.getByRole("link", { name: "백자 달항아리", exact: true }).click();
   await expect(
     page.getByRole("heading", { level: 1, name: "백자 달항아리" }),

@@ -39,7 +39,7 @@ export function ProductCarouselSection({
   return (
     <section
       aria-label={title}
-      className="mx-auto w-full max-w-desktop px-4 py-13 sm:px-8 lg:px-12"
+      className="mx-auto w-full max-w-desktop page-gutter py-6 md:py-10.5 lg:py-13"
     >
       <SectionHeader
         title={title}
@@ -50,16 +50,28 @@ export function ProductCarouselSection({
       />
       <div
         className={cn(
-          "mt-6 grid grid-cols-2 gap-y-6 sm:grid-cols-4",
-          columns === 5 ? "gap-x-4 lg:grid-cols-5" : "gap-x-6",
+          // 카드는 브레이크포인트별 고정 폭이라 2xl에서만 한 줄에 다 들어오고(스크롤바 없음),
+          // 그보다 좁으면 가로 스크롤 행이 된다(시안 xl 이하).
+          // `relative`: 카드 안의 `sr-only`(absolute) 요소가 스크롤 영역 밖에 배치돼 페이지 가로 스크롤을
+          // 만들지 않도록 이 행을 위치 기준(containing block)으로 만든다.
+          "relative mt-6 flex overflow-x-auto pb-3 2xl:pb-0",
+          columns === 5
+            ? "gap-3 lg:gap-4"
+            : "gap-1 md:gap-3 lg:gap-4 2xl:gap-6",
         )}
       >
         {data.items.map((product, index) => (
-          <ProductCard
+          <div
             key={product.id}
-            product={product}
-            isAboveFold={index < columns}
-          />
+            className={cn(
+              "shrink-0",
+              columns === 5
+                ? "w-36 md:w-60.5 xl:w-64"
+                : "w-36 md:w-65 xl:w-79.5",
+            )}
+          >
+            <ProductCard product={product} isAboveFold={index < columns} />
+          </div>
         ))}
       </div>
     </section>

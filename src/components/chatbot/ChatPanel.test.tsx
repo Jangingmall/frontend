@@ -32,6 +32,12 @@ function renderPanel(
 }
 
 describe("ChatPanel", () => {
+  it("모바일에서는 전폭이고 md 이상에서만 480px 폭이다", () => {
+    renderPanel();
+    const panel = document.querySelector('[data-slot="chat-panel"]');
+    expect(panel).toHaveClass("w-full", "md:w-120");
+  });
+
   it("빈 상태에서는 인사 버블 + 추천 칩을 보여준다", () => {
     renderPanel();
     expect(screen.getByText(/안녕하세요, 미담AI입니다/)).toBeInTheDocument();

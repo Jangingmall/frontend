@@ -42,30 +42,56 @@ function renderGnbNav(
 }
 
 describe("GnbNav", () => {
-  it("전체 카테고리·장인관·신상품·베스트·기획전을 렌더한다", () => {
+  it("시안의 7개 항목을 순서대로 렌더한다", () => {
     setUrl("/");
     renderGnbNav();
 
-    for (const label of [
+    const items = screen
+      .getByRole("navigation", { name: "글로벌 내비게이션" })
+      .querySelectorAll("a, span");
+    expect([...items].map((item) => item.textContent)).toEqual([
       "전체 카테고리",
+      "전체 상품",
+      "선물관",
       "장인관",
       "신상품",
       "베스트",
       "기획전",
-    ]) {
-      expect(screen.getByText(label)).toBeInTheDocument();
-    }
+    ]);
   });
 
-  it("장인관·기획전은 링크가 아니라 aria-disabled span이다", () => {
+  it("선물관·장인관·기획전은 링크가 아니라 aria-disabled span이다", () => {
     setUrl("/");
     renderGnbNav();
 
-    for (const label of ["장인관", "기획전"]) {
+    for (const label of ["선물관", "장인관", "기획전"]) {
       const item = screen.getByText(label);
       expect(item.tagName).toBe("SPAN");
       expect(item).toHaveAttribute("aria-disabled", "true");
     }
+  });
+
+  it("비활성 항목도 활성 항목과 같은 hover 배경을 갖는다", () => {
+    setUrl("/");
+    renderGnbNav();
+
+    const hover = screen.getByText("신상품").closest("a")?.className;
+    for (const label of ["선물관", "장인관", "기획전"]) {
+      expect(screen.getByText(label).className).toContain(
+        "hover:bg-states-hover-25",
+      );
+    }
+    expect(hover).toContain("hover:bg-states-hover-25");
+  });
+
+  it("전체 상품은 /products로 가는 링크다", () => {
+    setUrl("/");
+    renderGnbNav();
+
+    expect(screen.getByText("전체 상품").closest("a")).toHaveAttribute(
+      "href",
+      "/products",
+    );
   });
 
   it("전체 카테고리는 여전히 /products로 가는 링크다", () => {
@@ -78,13 +104,16 @@ describe("GnbNav", () => {
     );
   });
 
-  it("/products에서는 전체 카테고리만 active다", () => {
+  it("/products에서는 전체 상품만 active고 전체 카테고리는 활성 표시가 없다", () => {
     setUrl("/products");
     renderGnbNav();
 
-    expect(screen.getByText("전체 카테고리")).toHaveAttribute(
+    expect(screen.getByText("전체 상품")).toHaveAttribute(
       "aria-current",
       "page",
+    );
+    expect(screen.getByText("전체 카테고리")).not.toHaveAttribute(
+      "aria-current",
     );
     expect(screen.getByText("신상품")).not.toHaveAttribute("aria-current");
     expect(screen.getByText("베스트")).not.toHaveAttribute("aria-current");
@@ -100,10 +129,11 @@ describe("GnbNav", () => {
     );
   });
 
-  it("/products?category=x에서는 전체 카테고리/신상품/베스트 전부 active가 아니다", () => {
-    setUrl("/products", "category=키친다이닝");
+  it("/products?category=x에서는 전체 상품/신상품/베스트 전부 active가 아니다", () => {
+    setUrl("/products", "category=category-1");
     renderGnbNav();
 
+    expect(screen.getByText("전체 상품")).not.toHaveAttribute("aria-current");
     expect(screen.getByText("전체 카테고리")).not.toHaveAttribute(
       "aria-current",
     );
@@ -176,6 +206,19 @@ describe("isGnbNavItemActive", () => {
         new URLSearchParams("category=키친다이닝"),
       ),
     ).toBe(false);
+  });
+
+  it("프로토타입 명세: 내비 항목 색 변경은 600ms ease-in이다", () => {
+    setUrl("/");
+    renderGnbNav();
+
+    for (const label of ["전체 카테고리", "신상품", "장인관"]) {
+      expect(screen.getByText(label)).toHaveClass(
+        "transition-colors",
+        "duration-600",
+        "ease-in",
+      );
+    }
   });
 });
 

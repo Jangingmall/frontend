@@ -27,20 +27,21 @@ import { ImagePlaceholder } from "./ImagePlaceholder";
  * (Base UI가 `role="button"`을 강제해 네이티브 링크 시맨틱이 깨짐) — 여기서도 같은 이유로
  * 버튼 시각 스타일만 손으로 옮긴다.
  *
- * 높이는 Figma 실측(`Background image` 923px, `843:36940`)에 맞춰 `lg:min-h-[923px]` —
- * `py-24` 패딩만으로는 히어로치고 훨씬 낮아 보인다는 피드백으로 추가.
+ * 높이는 첫 화면(뷰포트)에서 GNB를 뺀 값(`min-h-hero`, 시안 5종 프레임이 모두 기기 뷰포트
+ * 높이 = 히어로 높이)이고, 제목·설명·버튼은 하단에 붙는다. 하단 여백은 시안 실측:
+ * 2xl 80 / xl 72 / lg·md 48 / mobile 32.
  */
 export function HeroBanner() {
   return (
     <section
       aria-label="히어로"
-      className="relative flex min-h-125 flex-col items-center justify-center gap-6 px-4 py-24 text-font-white sm:px-8 lg:min-h-[923px] lg:px-12"
+      className="relative flex min-h-hero flex-col items-center justify-end gap-6 page-gutter pt-24 pb-8 text-font-white md:pb-12 xl:pb-18 2xl:pb-20"
     >
       <ImagePlaceholder className="absolute inset-0 -z-20" />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/45" />
       <div className="mx-auto flex w-full max-w-desktop flex-col items-start gap-6">
         <div className="flex flex-col gap-2">
-          <h1 className="text-display-l">
+          <h1 className="text-title-l md:text-display-m 2xl:text-display-l">
             손이 지나간 시간을 그대로 옮겨 담습니다
           </h1>
           <p className="text-body-l font-medium">
@@ -53,13 +54,13 @@ export function HeroBanner() {
         <div className="flex flex-wrap gap-3">
           <Link
             href="/products"
-            className="inline-flex h-13.5 items-center justify-center rounded-xs bg-(--button-jade) px-6 text-button-l text-font-dark transition-colors hover:opacity-90"
+            className="inline-flex h-11 items-center justify-center rounded-xs bg-(--button-jade) px-4 text-button-xl text-font-dark transition-colors hover:opacity-90 md:h-13.5 md:px-6 md:text-button-l"
           >
             공예품 둘러보기
           </Link>
           <span
             aria-disabled="true"
-            className="inline-flex h-13.5 items-center justify-center rounded-xs bg-(--button-black) px-6 text-button-l text-font-white"
+            className="inline-flex h-11 items-center justify-center rounded-xs bg-(--button-black) px-4 text-button-xl text-font-white md:h-13.5 md:px-6 md:text-button-l"
           >
             장인관 둘러보기
           </span>

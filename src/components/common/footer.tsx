@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from "react";
 
+import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 
 /**
@@ -58,11 +59,7 @@ const DEFAULT_COLUMNS: FooterColumn[] = [
   },
 ];
 
-const LOGO_PLACEHOLDER = (
-  <span className="inline-flex h-8 w-fit items-center bg-(--jade-blue-400) px-3 text-title-l text-font-dark-subtle">
-    로고
-  </span>
-);
+const DEFAULT_LOGO = <Logo className="h-8 w-auto text-font-white" />;
 
 const DEFAULT_DESCRIPTION = (
   <div className="flex flex-col gap-7 text-body-s text-font-dark-weak">
@@ -83,7 +80,7 @@ interface FooterProps extends ComponentProps<"footer"> {
 }
 
 function Footer({
-  logo = LOGO_PLACEHOLDER,
+  logo = DEFAULT_LOGO,
   description = DEFAULT_DESCRIPTION,
   columns = DEFAULT_COLUMNS,
   className,
@@ -93,19 +90,20 @@ function Footer({
     <footer
       data-slot="footer"
       className={cn(
-        "flex flex-col gap-12 bg-fill-neutral-impact px-12 pt-12 pb-16",
+        "flex flex-col gap-6 bg-fill-neutral-impact page-gutter pt-12 pb-16 lg:gap-12",
         className,
       )}
       {...props}
     >
-      <div className="flex flex-wrap justify-between gap-12">
+      <div className="flex flex-col gap-6 md:flex-row md:justify-between lg:gap-12">
         <div className="flex max-w-md flex-col items-start gap-3">
           {logo}
           {description}
         </div>
-        <div className="flex flex-wrap gap-12">
+        {/* mobile·md는 2×2 격자(md는 폭 288), lg 이상은 한 줄 */}
+        <div className="grid grid-cols-2 gap-x-6 gap-y-6 md:w-72 lg:flex lg:w-auto lg:gap-12">
           {columns.map((column) => (
-            <div key={column.title} className="flex flex-col gap-4">
+            <div key={column.title} className="flex flex-col gap-2 md:gap-4">
               <span className="text-body-s-b whitespace-nowrap text-font-white">
                 {column.title}
               </span>
@@ -134,7 +132,7 @@ function Footer({
       </div>
 
       <div className="flex flex-col gap-6 border-t border-border-white/10 pt-6">
-        <div className="flex flex-wrap items-start justify-between gap-8 text-body-s text-font-dark-weak">
+        <div className="flex flex-col gap-6 text-body-s text-font-dark-weak lg:flex-row lg:items-start lg:justify-between lg:gap-8">
           <p className="max-w-3xl">
             미담 상품 중 (주)미담이 판매자로 등록된 상품을 제외한 모든 상품은
             개별 입점 판매자가 판매하는 상품입니다. (주)미담은

@@ -80,4 +80,32 @@ describe("Header", () => {
       "/cart",
     );
   });
+
+  it("햄버거를 누르면 onMenuOpen을 부르고 열림 상태가 aria-expanded에 반영된다", () => {
+    const onMenuOpen = vi.fn();
+    const { rerender } = render(<Header onMenuOpen={onMenuOpen} />);
+
+    const button = screen.getByRole("button", { name: "메뉴 열기" });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(button);
+    expect(onMenuOpen).toHaveBeenCalledTimes(1);
+
+    rerender(<Header onMenuOpen={onMenuOpen} isMobileMenuOpen />);
+    expect(screen.getByRole("button", { name: "메뉴 열기" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+  });
+
+  it("기본 로고는 홈으로 가는 링크 안의 미담 로고이고, logo prop으로 바꿀 수 있다", () => {
+    const { container, rerender } = render(<Header />);
+
+    const home = screen.getByRole("link", { name: "홈으로 이동" });
+    expect(home).toHaveAttribute("href", "/");
+    expect(home.querySelector("svg")).toBeInTheDocument();
+
+    rerender(<Header logo={<span>커스텀 로고</span>} />);
+    expect(container.querySelector("a[href='/'] svg")).not.toBeInTheDocument();
+    expect(screen.getByText("커스텀 로고")).toBeInTheDocument();
+  });
 });

@@ -26,8 +26,8 @@ import { cn } from "@/lib/utils";
  * `text-*`만으론 색이 안 바뀐다 — `header.tsx`가 이미 쓰는 `[&_path]:fill-current` 패턴으로
  * 우회한다.
  *
- * 위치는 Figma 절대좌표로 맞췄다: 프레임(`987:25006`, 1440×923) 우측 끝에서 정확히 0px
- * (화면 오른쪽 끝에 딱 붙음), 하단에서 64px. 모서리는 라운드 없이 각짐 — `rectangleCornerRadii`
+ * 위치는 뷰포트 기준 고정이다(반응형 시안 주석 "view port 기준, 화면 하단 기준 Npx"): 우측 끝에
+ * 정확히 0px(화면 오른쪽 끝에 딱 붙음), 하단은 모바일 32px · `md` 이상 48px(시안 프레임 실측 46~48). 모서리는 라운드 없이 각짐 — `rectangleCornerRadii`
  * 가 왼쪽 위/아래 모서리에 바인딩돼 있길래 "왼쪽만 둥글다"로 오판해 `rounded-l-2xl`을
  * 넣었었는데, 실제 디자인은 라운드가 아예 없다(변수가 바인딩돼 있다고 값이 0이 아닌 건
  * 아니다 — Figma 변수 API가 막혀 있어 값 자체를 못 읽고 있었던 것). 라운드 클래스 제거.
@@ -49,11 +49,14 @@ export function FloatingActions({
   return (
     <div
       className={cn(
-        "fixed bottom-16 z-40 flex w-13 flex-col overflow-hidden bg-fill-neutral-impact text-font-white [&_path]:fill-current",
+        "fixed bottom-8 z-40 flex w-13 flex-col overflow-hidden bg-fill-neutral-impact text-font-white [&_path]:fill-current",
         // 패널이 열리면 챗봇 패널(`ChatPanel`, `right-0 w-120 z-55`)의 왼쪽 바깥에 붙는다
         // — Figma `Floating`의 `close` variant 실측 위치(패널과 겹치지 않고 바로 옆)와
         // 일치. `right-0`로 그대로 두면 패널(z-55)이 더 위라 이 버튼이 눌리지 않는다.
-        showAiChat && isChatOpen ? "right-120" : "right-0",
+        "md:bottom-12",
+        // 모바일에서는 패널이 전폭이라 옆에 붙을 자리가 없다 — 접기 버튼을 숨기고 패널 헤더의
+        // 닫기(종료 확인)를 쓴다.
+        showAiChat && isChatOpen ? "right-120 max-md:hidden" : "right-0",
       )}
     >
       {showAiChat && isChatOpen ? (

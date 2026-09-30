@@ -50,7 +50,10 @@ export function ArtisanCarousel({
 
   if (!item)
     return (
-      <section aria-label="장인관" className="mx-auto max-w-desktop p-12">
+      <section
+        aria-label="장인관"
+        className="mx-auto w-full max-w-desktop page-gutter py-12"
+      >
         <SectionHeader
           title="장인관"
           description="한 사람의 작업을 처음부터 끝까지 들여다봅니다"
@@ -64,16 +67,20 @@ export function ArtisanCarousel({
   return (
     <section
       aria-label="장인관"
-      className="mx-auto w-full max-w-desktop px-4 py-13 sm:px-8 lg:px-12"
+      className="mx-auto w-full max-w-desktop py-6 md:py-10.5 lg:py-13"
     >
-      <SectionHeader
-        title="장인관"
-        description="한 사람의 작업을 처음부터 끝까지 들여다봅니다"
-        viewAll={{ disabled: true }}
-      />
-      <div className="relative mt-6 flex flex-col items-center gap-9.5 bg-bg-subtle lg:flex-row">
-        <ImagePlaceholder className="aspect-[774/520] w-full shrink-0 lg:w-[774px]" />
-        <div className="flex flex-col gap-7 px-6 pb-16 lg:w-105.5 lg:shrink-0 lg:px-0 lg:pr-9.5 lg:pb-0">
+      <div className="page-gutter">
+        <SectionHeader
+          title="장인관"
+          description="한 사람의 작업을 처음부터 끝까지 들여다봅니다"
+          viewAll={{ disabled: true }}
+        />
+      </div>
+      {/* md 이하는 이미지가 화면 가장자리까지 닿는다(시안) — 좌우 마진은 헤더·정보 영역에만 준다.
+          lg 이상은 마진 안에서 이미지가 남는 폭을 채우고 정보 영역은 고정 폭이다. */}
+      <div className="relative mt-6 flex flex-col bg-bg-subtle md:flex-row md:gap-6 lg:mx-8 xl:mx-12 2xl:gap-9.5">
+        <ImagePlaceholder className="h-100 w-full shrink-0 md:w-auto md:min-w-0 md:flex-1 lg:h-130" />
+        <div className="flex flex-col gap-6 px-6 py-6 md:w-76 md:shrink-0 md:justify-center md:px-0 md:py-0 md:pr-6 lg:pr-9.5 xl:w-100.5 2xl:w-105.5 2xl:gap-7">
           <div className="flex gap-2">
             <Badge variant="jade">
               {item.certificationTitle ?? "국가무형유산"}
@@ -81,7 +88,9 @@ export function ArtisanCarousel({
             <Badge variant="jade">{item.badge}</Badge>
           </div>
           <div>
-            <h3 className="text-display-m text-font-dark">{item.headline}</h3>
+            <h3 className="text-title-xl text-font-dark lg:text-display-m">
+              {item.headline}
+            </h3>
             <p className="mt-1 text-body-l font-medium text-font-dark-subtle">
               {item.description}
             </p>

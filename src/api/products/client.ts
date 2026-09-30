@@ -6,14 +6,9 @@ import { clientFetch } from "@/lib/http/client";
 
 import { fetchBackendProductList } from "./backend-list";
 import { mapBackendProductCategories } from "./backend-mapper";
-import {
-  productCategoriesDto,
-  productCraftsDto,
-  productMaterialsDto,
-} from "./filter-validation";
+import { productCraftsDto, productMaterialsDto } from "./filter-validation";
 import { canUseProductCrafts, canUseProductMaterials } from "./integration";
 import {
-  mapProductCategories,
   mapProductCrafts,
   mapProductListPage,
   mapProductMaterials,
@@ -44,13 +39,10 @@ export async function fetchProductListClient(
 export async function fetchProductCategories(signal?: AbortSignal) {
   const read = (path: string) =>
     clientFetch<unknown>(path, { auth: false, signal });
-  const dto = await read("/api/products/categories");
-  return publicEnv.apiMocking
-    ? mapProductCategories(productCategoriesDto.parse(dto))
-    : mapBackendProductCategories(
-        dto,
-        await read("/api/products/subcategories"),
-      );
+  return mapBackendProductCategories(
+    await read("/api/products/categories"),
+    await read("/api/products/subcategories"),
+  );
 }
 export async function fetchProductMaterials(
   _category?: string,
@@ -86,7 +78,7 @@ export async function fetchProductCrafts(
     throw new ApiError(503, { errorCode: "PRODUCT_CRAFTS_NOT_READY" });
   return mapProductCrafts(
     productCraftsDto.parse(
-      await clientFetch<unknown>("/api/products/subcategories", {
+      await clientFetch<unknown>("/api/products/crafts", {
         auth: false,
         signal,
       }),

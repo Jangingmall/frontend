@@ -107,4 +107,16 @@ describe("SearchPanel", () => {
       `/products?keyword=${encodeURIComponent("다기 & 찻잔")}`,
     );
   });
+
+  it("프로토타입 명세: 검색 바는 800ms dissolve로 나타난다", () => {
+    render(<SearchPanel onClose={() => {}} />);
+
+    expect(document.querySelector('[data-slot="search-panel"]')).toHaveClass(
+      "animate-in",
+      "fade-in",
+      "duration-800",
+      "ease-in",
+      "motion-reduce:animate-none",
+    );
+  });
 });

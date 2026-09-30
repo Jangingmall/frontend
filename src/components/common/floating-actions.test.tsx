@@ -50,4 +50,20 @@ describe("FloatingActions", () => {
     fireEvent.click(screen.getByRole("button", { name: "맨 위로" }));
     expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
   });
+
+  it("하단 위치는 모바일 32px · md 이상 48px(뷰포트 고정)이다", () => {
+    const { container } = render(<FloatingActions />);
+    const root = container.firstElementChild;
+    expect(root).toHaveClass("fixed", "bottom-8", "md:bottom-12", "right-0");
+  });
+
+  it("패널이 열리면 패널 옆(right-120)에 붙고, 패널이 전폭인 모바일에서는 숨긴다", () => {
+    const { container } = render(
+      <FloatingActions isChatOpen onAiChatToggle={vi.fn()} />,
+    );
+    expect(container.firstElementChild).toHaveClass(
+      "right-120",
+      "max-md:hidden",
+    );
+  });
 });

@@ -1,76 +1,42 @@
 import { describe, expect, it } from "vitest";
 
 import { mapBackendProductCategories } from "@/api/products/backend-mapper";
-import { productCategories } from "@/api/products/mock/catalogue";
+import {
+  backendCategoryDtos,
+  backendSubcategoryDtos,
+} from "@/api/products/mock/category-seed";
 
-import { PRODUCT_NAV_CATEGORIES, resolveCategoryView } from "./category-view";
+import { resolveCategoryView } from "./category-view";
 
-describe("헤더와 상품목록 분류", () => {
-  it("백엔드가 이전 분류여도 헤더 분류와 9개 소분류를 표시한다", () => {
-    const view = resolveCategoryView(
-      "키친-다이닝",
-      mapBackendProductCategories([{ categoryId: 1, name: "도자기" }]),
-    );
-    expect(view.category?.name).toBe("키친 · 다이닝");
-    expect(
-      view.categories.filter((c) => c.parentId === view.category?.id),
-    ).toHaveLength(9);
-    expect(view.isMapped).toBe(false);
-    expect(view.apiCategory).toBeUndefined();
-  });
+const categories = mapBackendProductCategories(
+  backendCategoryDtos,
+  backendSubcategoryDtos,
+);
 
-  it("MSW 분류는 이름과 부모를 확인해서 기존 ID로 연결한다", () => {
-    expect(
-      resolveCategoryView("키친-다이닝", productCategories).apiCategory,
-    ).toBe("kitchen");
-    expect(
-      resolveCategoryView("다기-찻잔", productCategories).apiCategory,
-    ).toBe("kitchen-1");
-    expect(resolveCategoryView("홈-인테리어", productCategories).isMapped).toBe(
-      false,
-    );
-  });
-
-  it("새 백엔드 분류는 서버 ID를 사용하고 다른 부모의 동명 소분류는 연결하지 않는다", () => {
-    const categories = mapBackendProductCategories(
-      [
-        { categoryId: 17, name: "키친·다이닝" },
-        { categoryId: 18, name: "도자기" },
-      ],
-      [
-        { subcategoryId: 31, categoryId: 17, name: "다기·찻잔" },
-        { subcategoryId: 32, categoryId: 18, name: "다기·찻잔" },
-      ],
-    );
-    expect(resolveCategoryView("키친-다이닝", categories).apiCategory).toBe(
-      "category-17",
-    );
-    expect(resolveCategoryView("다기-찻잔", categories).apiCategory).toBe(
-      "subcategory-31",
-    );
-  });
-
-  it("전체 상품과 기존 ID는 유지하며 모든 헤더 대분류를 제공한다", () => {
-    expect(resolveCategoryView(undefined, []).isMapped).toBe(true);
-    const categories = mapBackendProductCategories([
-      { categoryId: 1, name: "도자기" },
-    ]);
+describe("상품 목록 분류 해석", () => {
+  it("대분류와 소분류 ID를 백엔드 분류 목록에서 찾는다", () => {
     expect(resolveCategoryView("category-1", categories)).toMatchObject({
-      category: categories[0],
+      category: { id: "category-1", parentId: null },
       apiCategory: "category-1",
       isMapped: true,
     });
-    expect(
-      PRODUCT_NAV_CATEGORIES.filter((c) => c.parentId === null),
-    ).toHaveLength(7);
+    expect(resolveCategoryView("subcategory-1", categories)).toMatchObject({
+      category: { id: "subcategory-1", parentId: "category-1" },
+      apiCategory: "subcategory-1",
+      isMapped: true,
+    });
   });
 
-  it.each(["오타", "category-999", "subcategory-999", ""])(
-    "알 수 없는 분류 %s는 매핑하거나 API에 전달하지 않는다",
+  it("분류를 지정하지 않은 전체 상품은 항상 매핑된 상태다", () => {
+    expect(resolveCategoryView(undefined, [])).toMatchObject({
+      category: undefined,
+      isMapped: true,
+    });
+  });
+
+  it.each(["오타", "category-999", "subcategory-999", "키친-다이닝", ""])(
+    "알 수 없는 분류 %s는 API에 전달하지 않고 미매핑으로 처리한다",
     (id) => {
-      const categories = mapBackendProductCategories([
-        { categoryId: 1, name: "도자기" },
-      ]);
       expect(resolveCategoryView(id, categories)).toMatchObject({
         category: undefined,
         apiCategory: undefined,
@@ -79,7 +45,7 @@ describe("헤더와 상품목록 분류", () => {
     },
   );
 
-  it("API 목록에 없는 기존 ID도 미매핑으로 처리한다", () => {
+  it("분류 목록이 아직 없으면 ID가 있어도 미매핑이다", () => {
     expect(resolveCategoryView("category-1", [])).toMatchObject({
       apiCategory: undefined,
       isMapped: false,

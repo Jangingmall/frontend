@@ -1,3 +1,4 @@
+import { formatCategoryName } from "@/lib/gnb-categories";
 import { ApiError } from "@/lib/http/api-error";
 import type { Page } from "@/types/api";
 import type { ProductSummary } from "@/types/product";
@@ -49,14 +50,14 @@ export function mapBackendProductCategories(
     ...parents.map((p) => ({
       ...defaults,
       id: `category-${p.categoryId}`,
-      name: p.name,
+      name: formatCategoryName(p.name),
       parentId: null,
       apiCode: String(p.categoryId),
     })),
     ...children.map((c) => ({
       ...defaults,
       id: `subcategory-${c.subcategoryId}`,
-      name: c.name,
+      name: formatCategoryName(c.name),
       parentId: `category-${c.categoryId}`,
       apiCode: String(c.subcategoryId),
     })),

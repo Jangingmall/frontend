@@ -21,4 +21,17 @@ describe("HeroBanner", () => {
       "true",
     );
   });
+
+  it("첫 화면을 채우는 높이이고 콘텐츠는 하단에 붙으며 하단 여백은 브레이크포인트별 시안 값이다", () => {
+    render(<HeroBanner />);
+    const hero = screen.getByRole("region", { name: "히어로" });
+    expect(hero).toHaveClass(
+      "min-h-hero",
+      "justify-end",
+      "pb-8",
+      "md:pb-12",
+      "xl:pb-18",
+      "2xl:pb-20",
+    );
+  });
 });

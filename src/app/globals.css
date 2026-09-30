@@ -4,12 +4,34 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Grid(현재 desktop만 정의됨): columns 12·gutter 24px·margin 48px는 각각 Tailwind 기본
-   grid-cols-12, spacing 기준 gap-6·px-12로 이미 커버되어 새 토큰이 필요 없음. max-width만
-   Tailwind 기본 --container-* 스케일(최대 7xl=80rem)에 없어서 새로 등록. tablet/mobile
-   그리드가 추가되면 같은 브레이크포인트 이름 규칙으로 확장한다. */
+/* 반응형: mobile-first. Figma 5종(mobile 375~767 / md 768 / lg 1024 / xl 1280 / 2xl 1440) 중
+   md·lg·xl은 Tailwind 기본값과 같아 그대로 쓰고, 2xl만 기본 1536이라 1440으로 재정의한다.
+   기본 `sm`(640)은 Figma엔 없지만 기존 화면이 쓰고 있어 유지한다 — 새 코드는 `sm:` 없이 `md:`부터.
+   그리드(디자인 시스템 Grids): 거터 24 전 구간, 컬럼 lg 이상 12 / md 이하 4, 좌우 마진
+   2xl·xl 48 / lg 32 / md·mobile 24 — 컬럼은 `grid-cols-4 lg:grid-cols-12`로 표현되어 토큰이
+   필요 없고, 마진은 아래 `page-gutter` 유틸로, 최대폭은 `--container-desktop`으로 표현한다. */
 @theme {
+  --breakpoint-2xl: 90rem;
   --container-desktop: 90rem;
+
+  /* GNB(sticky) 높이: mobile 64 / md 이상 122. 히어로가 첫 화면에서 GNB를 뺀 높이를 채운다. */
+  --spacing-gnb: 4rem;
+}
+
+@utility page-gutter {
+  @apply px-6 lg:px-8 xl:px-12;
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --spacing-gnb: 7.625rem;
+  }
+}
+
+/* 히어로: 첫 화면(뷰포트)에서 sticky GNB를 뺀 높이를 채운다. 하한 500은 매우 낮은 창에서도
+   제목·버튼이 들어갈 자리를 보장한다. */
+@utility min-h-hero {
+  min-height: max(31.25rem, calc(100svh - var(--spacing-gnb)));
 }
 
 /* Figma "Drop Shadow" 이펙트는 CSS box-shadow에 대응한다(투명 실루엣을 따라가는

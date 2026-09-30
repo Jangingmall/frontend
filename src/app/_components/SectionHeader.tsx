@@ -33,9 +33,13 @@ export function SectionHeader({
     "shrink-0 text-body-s text-font-dark-subtle underline underline-offset-2";
   return (
     <div className="flex flex-col">
-      <h2 className="text-display-m text-font-dark">{title}</h2>
+      <h2 className="text-title-l text-font-dark md:text-title-xl lg:text-display-m">
+        {title}
+      </h2>
       <div className="flex items-center justify-between gap-4">
-        <p className="text-body-m text-font-dark-secondary">{description}</p>
+        <p className="text-body-s text-font-dark-secondary md:text-body-m">
+          {description}
+        </p>
         {viewAll.disabled ? (
           <span aria-disabled="true" className={viewAllClassName}>
             전체보기

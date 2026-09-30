@@ -56,4 +56,20 @@ describe("ProductCarouselSection", () => {
     );
     expect(container).toBeEmptyDOMElement();
   });
+
+  it("카드는 고정 폭 항목이고 행은 가로 스크롤 컨테이너다(2xl에서만 한 줄에 다 들어온다)", () => {
+    const data = mapProductListPage(productListPage1, { page: 1, size: 5 });
+    render(
+      <ProductCarouselSection
+        title="베스트"
+        description="최근 4주 판매·조회 기준"
+        viewAllPreset="best"
+        columns={5}
+        data={data}
+      />,
+    );
+    const row = screen.getByText("백자 달항아리").closest(".overflow-x-auto");
+    expect(row).toBeInTheDocument();
+    expect(row?.firstElementChild).toHaveClass("w-36", "shrink-0", "xl:w-64");
+  });
 });

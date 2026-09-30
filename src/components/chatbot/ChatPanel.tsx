@@ -90,7 +90,7 @@ export const ChatPanel = forwardRef<HTMLDivElement, ChatPanelProps>(
         ref={ref}
         data-slot="chat-panel"
         className={cn(
-          "fixed inset-y-0 right-0 z-55 flex w-120 animate-in flex-col bg-bg-subtle shadow-nav duration-200 slide-in-from-right",
+          "fixed inset-y-0 right-0 z-55 flex w-full animate-in flex-col bg-bg-subtle shadow-nav duration-200 slide-in-from-right md:w-120",
           className,
         )}
       >

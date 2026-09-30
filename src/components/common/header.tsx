@@ -2,7 +2,8 @@ import type { Route } from "next";
 import Link from "next/link";
 import type { ComponentProps, ReactNode, Ref } from "react";
 
-import { ProfileIcon, SearchIcon } from "@/components/ui/icons";
+import { MenuIcon, ProfileIcon, SearchIcon } from "@/components/ui/icons";
+import { Logo } from "@/components/ui/logo";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -13,16 +14,13 @@ import { Cart } from "./cart";
  * 배경) + IA CM-1 인증 영역. 사이트 상단 바 — `[로고][사람 아이콘][검색 아이콘][Cart]`.
  * Figma 의 좌측 utility 프레임은 `opacity: 0` 인 죽은 placeholder 라 렌더하지 않고, 로고를
  * 중앙에 두기 위한 3분할 레이아웃만 남긴다.
- * 로고는 아직 미확정 — placeholder 박스. 다만 "로고 클릭 → 홈" 은 디자인 확정과 무관한
- * 표준 내비게이션 동작이라 미리 `/`로 링크해 둔다(`logo` prop 을 커스텀으로 넘겨도 동일하게
- * 적용 — 실제 로고 이미지로 교체될 때도 이 동작은 그대로 유지된다).
- * 반응형은 미정 — desktop(1440) 기준.
+ * 로고는 확정 로고(`Logo`)가 기본값이고, "로고 클릭 → 홈"은 `logo` prop 을 커스텀으로 넘겨도 동일하게
+ * 적용된다.
+ * 반응형(mobile-first): `md` 이상은 위 구조(높이 70, 2단 내비가 아래에 붙어 122). `md` 미만은
+ * 높이 64의 `[햄버거][로고][검색][Cart]` — 사람 아이콘(로그인·마이페이지)은 전체화면 메뉴 안으로
+ * 옮겨진다. 좌우 마진은 `page-gutter`(24/32/48).
  */
-const LOGO_PLACEHOLDER = (
-  <span className="inline-flex h-8 items-center bg-(--jade-blue-400) px-2 text-title-l text-font-dark-subtle">
-    로고
-  </span>
-);
+const DEFAULT_LOGO = <Logo className="h-8 w-auto text-font-white" />;
 
 type AuthAreaStatus = "loading" | "anonymous" | "authenticated";
 
@@ -35,6 +33,7 @@ interface HeaderIconButtonProps {
   onClick?: () => void;
   ref?: Ref<HTMLButtonElement>;
   "aria-expanded"?: boolean;
+  className?: string;
 }
 
 function HeaderIconButton({
@@ -44,9 +43,12 @@ function HeaderIconButton({
   onClick,
   ref,
   "aria-expanded": ariaExpanded,
+  className: extraClassName,
 }: HeaderIconButtonProps) {
-  const className =
-    "inline-flex size-8 shrink-0 items-center justify-center text-font-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill [&_path]:fill-current";
+  const className = cn(
+    "inline-flex size-8 shrink-0 items-center justify-center text-font-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill [&_path]:fill-current",
+    extraClassName,
+  );
 
   if (href) {
     return (
@@ -98,6 +100,10 @@ function AuthArea({ status }: AuthAreaProps) {
 
 interface HeaderProps extends ComponentProps<"header"> {
   logo?: ReactNode;
+  /** 모바일(`md` 미만) 햄버거 클릭 핸들러 — 전체화면 메뉴를 연다. 안 주면 아무 동작 없는 정적 버튼. */
+  onMenuOpen?: () => void;
+  /** 모바일 메뉴 열림 여부 — 햄버거의 `aria-expanded`에만 쓴다. */
+  isMobileMenuOpen?: boolean;
   /** 기본값 "anonymous" — 단독 렌더·Storybook에서 항상 뭔가는 보이도록. */
   authStatus?: AuthAreaStatus;
   cartCount?: number;
@@ -110,7 +116,9 @@ interface HeaderProps extends ComponentProps<"header"> {
 }
 
 function Header({
-  logo = LOGO_PLACEHOLDER,
+  logo = DEFAULT_LOGO,
+  onMenuOpen,
+  isMobileMenuOpen = false,
   authStatus = "anonymous",
   cartCount = 0,
   isSearchPanelOpen = false,
@@ -123,17 +131,29 @@ function Header({
     <header
       data-slot="header"
       className={cn(
-        "grid h-17.5 grid-cols-[1fr_auto_1fr] items-center bg-fill-neutral-impact px-12",
+        "grid h-16 grid-cols-[1fr_auto_1fr] items-center bg-fill-neutral-impact page-gutter md:h-17.5",
         className,
       )}
       {...props}
     >
-      <span aria-hidden="true" />
+      <div className="justify-self-start">
+        <HeaderIconButton
+          label="메뉴 열기"
+          onClick={onMenuOpen}
+          aria-expanded={isMobileMenuOpen}
+          className="md:hidden"
+        >
+          <MenuIcon className="size-6" />
+        </HeaderIconButton>
+      </div>
       <Link href="/" aria-label="홈으로 이동" className="justify-self-center">
         {logo}
       </Link>
       <div className="flex items-center gap-3 justify-self-end">
-        <AuthArea status={authStatus} />
+        {/* 모바일에서는 로그인·마이페이지 진입이 전체화면 메뉴 안에 있다. */}
+        <div className="hidden md:block">
+          <AuthArea status={authStatus} />
+        </div>
         <HeaderIconButton
           ref={searchTriggerRef}
           label="검색"
