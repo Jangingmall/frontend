@@ -40,7 +40,7 @@ export function ProductSectionNav() {
           href={`#${id}`}
           aria-current={activeSection === id ? "location" : undefined}
           className={cn(
-            "flex min-w-0 flex-1 items-center justify-center px-2 py-3 text-body-m outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-border-white md:flex-none md:px-6",
+            "flex min-w-0 flex-1 items-center justify-center px-2 py-3 text-body-m outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-border-white md:flex-initial md:px-6",
             activeSection === id && "bg-fill-neutral-impact font-bold",
           )}
         >

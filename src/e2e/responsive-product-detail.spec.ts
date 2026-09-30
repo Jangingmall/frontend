@@ -83,6 +83,16 @@ for (const width of [767, 375]) {
   });
 }
 
+test("섹션 탭은 768px에서 본문 열 안에 들어간다", async ({ page }) => {
+  await openDetail(page, 768);
+  const nav = page.getByRole("navigation", { name: "상품 상세 메뉴" });
+  const navBox = (await nav.boundingBox())!;
+  const lastBox = (await nav.getByRole("link").last().boundingBox())!;
+  expect(lastBox.x + lastBox.width).toBeLessThanOrEqual(
+    navBox.x + navBox.width + 0.5,
+  );
+});
+
 test("섹션 탭은 375px에서 화면 폭 전체를 쓴다", async ({ page }) => {
   await openDetail(page, 375);
   const box = (await page
