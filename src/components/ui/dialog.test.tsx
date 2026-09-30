@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { Dialog } from "./dialog";
 import { Select, SelectItem } from "./select";
@@ -80,5 +80,27 @@ describe("Dialog", () => {
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
     );
+  });
+});
+
+describe("Dialog sheet", () => {
+  it("헤더에 제목과 닫기 버튼을, 하단에 footer를 둔다", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+    render(
+      <Dialog
+        open
+        onOpenChange={onOpenChange}
+        variant="sheet"
+        title="필터"
+        footer={<button>확인</button>}
+      >
+        <p>본문</p>
+      </Dialog>,
+    );
+    const dialog = screen.getByRole("dialog", { name: "필터" });
+    expect(within(dialog).getByRole("button", { name: "확인" })).toBeVisible();
+    await user.click(within(dialog).getByRole("button", { name: "닫기" }));
+    expect(onOpenChange).toHaveBeenCalledWith(false, expect.anything());
   });
 });

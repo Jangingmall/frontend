@@ -13,7 +13,7 @@ export function ProductFilters(props: ProductFiltersProps) {
   return (
     <aside
       aria-label="상품 필터"
-      className="w-full lg:w-41 lg:shrink-0 xl:w-44.25 2xl:w-51"
+      className="hidden w-full lg:block lg:w-41 lg:shrink-0 xl:w-44.25 2xl:w-51"
     >
       <ProductFilterPanel {...props} />
     </aside>

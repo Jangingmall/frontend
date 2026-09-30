@@ -84,7 +84,10 @@ export function ProductFilterPanel({
             : ["category", "price", "material"])
         }
         className={cn(
-          "[&_[data-slot=accordion-item]]:border-b [&_[data-slot=accordion-item]]:border-border-neutral-weak [&_[data-slot=accordion]]:space-y-1 [&_[data-slot=accordion]]:pt-1 [&>div:first-child]:py-2 [&>div:first-child]:pl-2 [&>div:first-child>button]:underline",
+          "[&_[data-slot=accordion-item]]:border-b [&_[data-slot=accordion-item]]:border-border-neutral-weak [&_[data-slot=accordion]]:space-y-1 [&_[data-slot=accordion]]:pt-1",
+          // 상단 "필터 / 초기화" 헤더가 있을 때만 그 헤더 스타일을 준다.
+          onReset &&
+            "[&>div:first-child]:py-2 [&>div:first-child]:pl-2 [&>div:first-child>button]:underline",
           accordionClassName,
         )}
       >

@@ -1,6 +1,7 @@
 "use client";
 
 import { Breadcrumb, BreadcrumbItem } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { Select, SelectItem } from "@/components/ui/select";
 import { publicEnv } from "@/lib/env";
 import type { ProductCategory } from "@/types/product-filter";
@@ -11,6 +12,8 @@ interface ProductToolbarProps {
   parent?: ProductCategory;
   sort: ProductListSort;
   onSortChange: (sort: ProductListSort) => void;
+  /** 있으면 `lg` 미만에서 [필터] 버튼을 보이고, 누르면 호출한다(필터 시트 열기). */
+  onFilterOpen?: () => void;
 }
 
 const SORT_OPTIONS: { value: ProductListSort; label: string }[] = [
@@ -27,6 +30,7 @@ export function ProductToolbar({
   parent,
   sort,
   onSortChange,
+  onFilterOpen,
 }: ProductToolbarProps) {
   const rootCategory = parent ?? category;
   const options = SORT_OPTIONS.filter(
@@ -69,28 +73,41 @@ export function ProductToolbar({
             </p>
           )}
         </div>
-        <Select
-          ariaLabel="상품 정렬"
-          value={sort}
-          items={options}
-          onValueChange={(value) => {
-            if (value) onSortChange(value as ProductListSort);
-          }}
-          className="h-7 w-auto min-w-18 shrink-0 whitespace-nowrap md:h-9 md:min-w-25 lg:w-32"
-          contentClassName="whitespace-nowrap"
-          alignItemWithTrigger={false}
-        >
-          {options.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-              disabled={option.disabled}
-              title={option.disabled ? "준비 중인 정렬입니다" : undefined}
+        <div className="flex shrink-0 items-center gap-2">
+          <Select
+            ariaLabel="상품 정렬"
+            value={sort}
+            items={options}
+            onValueChange={(value) => {
+              if (value) onSortChange(value as ProductListSort);
+            }}
+            className="h-7 w-auto min-w-18 shrink-0 whitespace-nowrap md:h-9 md:min-w-25 lg:w-32"
+            contentClassName="whitespace-nowrap"
+            alignItemWithTrigger={false}
+          >
+            {options.map((option) => (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+                disabled={option.disabled}
+                title={option.disabled ? "준비 중인 정렬입니다" : undefined}
+              >
+                {option.label}
+              </SelectItem>
+            ))}
+          </Select>
+          {onFilterOpen && (
+            <Button
+              type="button"
+              size="xs"
+              aria-haspopup="dialog"
+              className="shrink-0 md:h-9 md:px-6 lg:hidden"
+              onClick={onFilterOpen}
             >
-              {option.label}
-            </SelectItem>
-          ))}
-        </Select>
+              필터
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
