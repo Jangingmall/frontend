@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { fetchProductCategoriesServer } from "@/api/products/api";
 import { Footer } from "@/components/common/footer";
 import { getQueryClient } from "@/lib/query/server";
+import { themeInitScript } from "@/lib/theme";
 import { productKeys } from "@/queries/products/keys";
 
 import { AuthBootstrap } from "./auth-bootstrap";
@@ -15,6 +16,7 @@ import { pretendard } from "./fonts";
 import { MockIdentitySwitcher } from "./mock-identity-switcher-loader";
 import { QueryProvider } from "./query-provider";
 import { SiteGnb } from "./site-gnb";
+import { ThemeSync } from "./theme-sync";
 
 export const metadata: Metadata = {
   title: "장인몰",
@@ -32,11 +34,22 @@ export default async function RootLayout({
     queryFn: () => fetchProductCategoriesServer(),
   });
   return (
-    <html lang="ko" className={`${pretendard.variable} h-full antialiased`}>
+    // `suppressHydrationWarning`: 아래 인라인 스크립트가 하이드레이션 전에 `<html>` 의 `dark`
+    // 클래스를 바꾸기 때문이다(서버 마크업은 항상 라이트).
+    <html
+      lang="ko"
+      className={`${pretendard.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* 첫 페인트 전에 테마를 적용해 라이트→다크 깜빡임을 막는다(`lib/theme.ts`). */}
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="flex min-h-full flex-col">
         <QueryProvider>
           <HydrationBoundary state={dehydrate(queryClient)}>
             <AuthBootstrap>
+              <ThemeSync />
               <ConsumerChrome>
                 <SiteGnb />
               </ConsumerChrome>
