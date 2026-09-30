@@ -90,6 +90,8 @@ export function ProductCard({
             aria-hidden="true"
             className={cn(
               "block truncate text-title-m",
+              // 목록 카드는 모바일에서 별도 변형(시안 160px 카드): 이름 14px
+              variant === "list" && "text-body-m md:text-title-m",
               variant === "related" && "text-body-l leading-[1.3] font-medium",
             )}
           >
@@ -99,7 +101,8 @@ export function ProductCard({
             <p
               className={cn(
                 "mt-1 truncate text-body-m",
-                variant === "list" && "mt-0 text-font-dark/60",
+                variant === "list" &&
+                  "mt-0 text-body-s text-font-dark/60 md:text-body-m",
                 variant === "related" &&
                   "mt-0 leading-normal text-font-dark/60",
               )}
@@ -115,7 +118,11 @@ export function ProductCard({
           disabled={!onWishlist}
           title={onWishlist ? undefined : "찜 기능 준비 중"}
           onClick={() => onWishlist?.(product.id)}
-          className="flex size-9 shrink-0 items-center justify-center rounded-xs outline-none focus-visible:outline-2 focus-visible:outline-border-jade-fill disabled:cursor-default"
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-xs outline-none focus-visible:outline-2 focus-visible:outline-border-jade-fill disabled:cursor-default",
+            // 모바일 목록 카드 시안에는 찜 하트가 없다
+            variant === "list" && "hidden md:flex",
+          )}
         >
           {isWishlisted ? (
             <HeartFilledIcon className="size-6" />
@@ -124,7 +131,14 @@ export function ProductCard({
           )}
         </button>
       </div>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 px-2 text-body-m">
+      <div
+        className={cn(
+          "mt-2 flex flex-wrap items-center justify-between gap-2 px-2 text-body-m",
+          // 모바일 목록 카드: 평점이 가격 아래 줄로 내려간다
+          variant === "list" &&
+            "max-md:flex-col max-md:items-start max-md:justify-start max-md:gap-1",
+        )}
+      >
         <span
           className={cn(
             variant === "related" && "text-body-l leading-normal font-medium",
@@ -146,7 +160,14 @@ export function ProductCard({
         )}
       </div>
       {!!product.colors?.length && (
-        <ul aria-label="상품 색상" className="mt-2 flex flex-wrap gap-0.5 px-2">
+        <ul
+          aria-label="상품 색상"
+          className={cn(
+            "mt-2 flex flex-wrap gap-0.5 px-2",
+            // 모바일 목록 카드 시안에는 색상 칩 줄이 없다
+            variant === "list" && "hidden md:flex",
+          )}
+        >
           {product.colors.map((color) => (
             <li
               key={`${color.name}-${color.hex}`}
