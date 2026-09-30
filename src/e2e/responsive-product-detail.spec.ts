@@ -52,8 +52,11 @@ for (const { width, info, twoColumns } of layouts) {
   });
 }
 
+// md 이상: GNB 높이 토큰(122) + 48 = 170px 아래에 붙는다.
+const STICKY_TOP = 170;
+
 for (const width of [1280, 768]) {
-  test(`구매 패널은 ${width}px에서 스크롤해도 GNB 아래에 붙어 있다`, async ({
+  test(`구매 패널은 ${width}px에서 스크롤해도 GNB 아래 ${STICKY_TOP}px에 붙어 있다`, async ({
     page,
   }) => {
     await openDetail(page, width, 700);
@@ -63,19 +66,22 @@ for (const width of [1280, 768]) {
     await page.evaluate(() => window.scrollTo(0, 900));
     await expect
       .poll(async () => Math.round((await panel.boundingBox())!.y))
-      .toBeLessThanOrEqual(170);
-    expect((await panel.boundingBox())!.y).toBeGreaterThanOrEqual(120);
+      .toBeGreaterThanOrEqual(STICKY_TOP - 2);
+    expect((await panel.boundingBox())!.y).toBeLessThanOrEqual(STICKY_TOP + 2);
   });
 }
 
-test("375px에서는 구매 패널이 화면에 붙지 않는다", async ({ page }) => {
-  await openDetail(page, 375, 700);
-  const panel = page
-    .getByRole("complementary", { name: "상품 정보 및 구매" })
-    .locator("> div");
-  await page.evaluate(() => window.scrollTo(0, 600));
-  expect((await panel.boundingBox())!.y).toBeLessThan(0);
-});
+for (const width of [767, 375]) {
+  test(`${width}px에서는 구매 패널이 화면에 붙지 않는다`, async ({ page }) => {
+    await openDetail(page, width, 700);
+    const panel = page
+      .getByRole("complementary", { name: "상품 정보 및 구매" })
+      .locator("> div");
+    // 767px는 갤러리가 커서 패널이 더 아래에서 시작하므로 충분히 내려 패널이 지나간 뒤 위치를 본다.
+    await page.evaluate(() => window.scrollTo(0, 1400));
+    expect((await panel.boundingBox())!.y).toBeLessThan(0);
+  });
+}
 
 test("섹션 탭은 375px에서 화면 폭 전체를 쓴다", async ({ page }) => {
   await openDetail(page, 375);
