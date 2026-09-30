@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type { RefObject } from "react";
 
-import { publicEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 
 /**
@@ -42,15 +41,9 @@ const GNB_NAV_ITEMS: GnbNavItem[] = [
 
 const CATEGORY_TRIGGER_HREF = "/products" as Route;
 
-/**
- * 항목의 이동 경로. 목적지가 없거나(disabled) 지금 모드에서 쓸 수 없으면 `null`이라 호출부가
- * 비활성 항목으로 그린다. 데스크톱 내비와 모바일 메뉴가 같이 쓴다 — 한쪽만 막으면 두 화면의
- * 메뉴가 어긋난다. 「베스트」는 판매량 정렬이 실서버에 없어 `?preset=best`가 최신순 목록이 되므로
- * 실서버 모드에서는 링크를 만들지 않는다(MSW 모드에서만 진입 가능).
- */
+/** 데스크톱과 모바일에서 같은 링크를 사용한다. 베스트는 시연 카탈로그로 연결한다. */
 function getGnbNavItemHref(item: GnbNavItem): Route | null {
   if (item.disabled || !item.href) return null;
-  if (!publicEnv.apiMocking && item.label === "베스트") return null;
   return item.href;
 }
 

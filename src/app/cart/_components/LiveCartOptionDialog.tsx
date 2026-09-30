@@ -10,6 +10,7 @@ interface LiveCartOptionDialogProps {
   pending: boolean;
   error: string;
   onClose: () => void;
+  onPreview?: () => void;
   onApply: (quantity: number, textInputs: CartLine["textInputs"]) => void;
 }
 
@@ -18,6 +19,7 @@ export function LiveCartOptionDialog({
   pending,
   error,
   onClose,
+  onPreview,
   onApply,
 }: LiveCartOptionDialogProps) {
   const [quantity, setQuantity] = useState(String(line.quantity));
@@ -91,6 +93,17 @@ export function LiveCartOptionDialog({
             />
           </label>
         ))}
+        {onPreview && (
+          <div className="space-y-2">
+            <p className="text-body-s">
+              선택형 옵션 변경은 별도 시연 장바구니에서 확인할 수 있습니다. 실제
+              장바구니에는 반영되지 않습니다.
+            </p>
+            <Button variant="outline" disabled={pending} onClick={onPreview}>
+              선택형 옵션 변경 시연
+            </Button>
+          </div>
+        )}
         {error && (
           <p role="alert" className="text-body-s">
             {error}

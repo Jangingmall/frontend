@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { publicEnv } from "@/lib/env";
+import { isDemoFeatureRequest } from "@/lib/data-mode";
 
 import { resolveOrderCompleteOutcome } from "./_components/order-complete-state";
 import { OrderCompleteRoute } from "./_components/OrderCompleteRoute";
@@ -21,7 +21,7 @@ export default async function OrderCompleteRoutePage({
   const outcome = resolveOrderCompleteOutcome(
     orderId,
     result,
-    publicEnv.apiMocking,
+    isDemoFeatureRequest("/api/mock/purchase/orders", "POST"),
   );
 
   if (!outcome) notFound();

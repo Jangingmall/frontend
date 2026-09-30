@@ -2,10 +2,8 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import {
-  fetchProductCategoriesServer,
-  fetchProductList,
-} from "@/api/products/api";
+import { fetchProductCategoriesServer } from "@/api/products/api";
+import { fetchProductCatalogue } from "@/api/products/catalogue-server";
 import { getQueryClient } from "@/lib/query/server";
 import { productKeys } from "@/queries/products/keys";
 import type { ProductCategory } from "@/types/product-filter";
@@ -57,7 +55,7 @@ export default async function ProductsPage({
     const apiQuery = { ...query, category: view.apiCategory };
     await queryClient.prefetchQuery({
       queryKey: productKeys.list(apiQuery),
-      queryFn: () => fetchProductList(apiQuery),
+      queryFn: () => fetchProductCatalogue(apiQuery),
     });
   }
 

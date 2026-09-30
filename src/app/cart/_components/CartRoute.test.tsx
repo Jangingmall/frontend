@@ -47,11 +47,11 @@ it("starts empty instead of inventing sample items", () => {
   expect(screen.getByText("장바구니가 비어있습니다.")).toBeInTheDocument();
 });
 
-it("API mode ignores the preview query parameter", () => {
+it("API mode keeps the explicit preview cart separate from the actual cart", () => {
   Object.assign(publicEnv, { apiMocking: false });
   search.value = "preview=1";
   usePurchasePreviewStore.getState().setLines(cartFixtures.base);
   render(<CartRoute />);
-  expect(screen.getByText("실제 장바구니")).toBeInTheDocument();
-  expect(screen.queryByText(/시연 장바구니/)).not.toBeInTheDocument();
+  expect(screen.queryByText("실제 장바구니")).not.toBeInTheDocument();
+  expect(screen.getByText(/시연 장바구니/)).toBeVisible();
 });

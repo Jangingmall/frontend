@@ -9,7 +9,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components/ui/pagination";
 import { Select, SelectItem } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { publicEnv } from "@/lib/env";
 import { useProductReviews } from "@/queries/reviews/queries";
 import type { ProductNotify } from "@/types/product-detail";
 import type { ReviewFilters, ReviewSort } from "@/types/review";
@@ -54,10 +53,7 @@ function ReviewUrlState(props: ProductReviewsProps) {
       filters={{
         page: Number.isSafeInteger(rawPage) && rawPage > 0 ? rawPage : 1,
         sort,
-        photoOnly:
-          publicEnv.apiMocking &&
-          props.isMock &&
-          search.get("photoOnly") === "true",
+        photoOnly: search.get("photoOnly") === "true",
       }}
     />
   );
@@ -93,31 +89,29 @@ function ReviewContent({
         후기{reviewCount !== undefined ? ` (${reviewCount})` : ""}
       </h2>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-        {
-          <div className="flex items-center gap-2">
-            <ReviewStars rating={rating} size="m" />
-            <span className="text-title-l text-font-dark">
-              {query.isPending
-                ? "—"
-                : rating === null
-                  ? isMock || filters.photoOnly
-                    ? "평점 없음"
-                    : "평점 미제공"
-                  : rating.toFixed(1)}
-            </span>
-          </div>
-        }
+        <div className="flex items-center gap-2">
+          <ReviewStars rating={rating} size="m" />
+          <span className="text-title-l text-font-dark">
+            {query.isPending
+              ? "—"
+              : rating === null
+                ? isMock || filters.photoOnly
+                  ? "평점 없음"
+                  : "평점 미제공"
+                : rating.toFixed(1)}
+          </span>
+        </div>
+
         <div className="flex items-center gap-4">
-          {publicEnv.apiMocking && isMock && (
-            <Checkbox
-              checked={filters.photoOnly}
-              onCheckedChange={(photoOnly) =>
-                changeFilters({ photoOnly, page: 1 })
-              }
-            >
-              사진 후기만 보기
-            </Checkbox>
-          )}
+          <Checkbox
+            checked={filters.photoOnly}
+            onCheckedChange={(photoOnly) =>
+              changeFilters({ photoOnly, page: 1 })
+            }
+          >
+            사진 후기만 보기
+          </Checkbox>
+
           <Select
             ariaLabel="후기 정렬"
             items={SORT_ITEMS}
@@ -136,6 +130,11 @@ function ReviewContent({
           </Select>
         </div>
       </div>
+      {!isMock && filters.photoOnly && (
+        <p role="status" className="mt-3 text-body-s">
+          사진 후기는 시연 데이터입니다.
+        </p>
+      )}
       {query.isPending ? (
         <ReviewLoading />
       ) : query.isError ? (

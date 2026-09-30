@@ -4,8 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { afterEach, expect, it, vi } from "vitest";
 
+import { previewLinesSchema } from "@/api/purchase-preview/validation";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
+import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 
 import { LiveCartRoute } from "./LiveCartRoute";
 const { push } = vi.hoisted(() => ({ push: vi.fn() }));
@@ -262,4 +264,27 @@ it("keeps the cart heading, summary and retry action after an API error", async 
   expect(screen.getByRole("heading", { name: "결제 정보" })).toBeVisible();
   expect(screen.getByRole("button", { name: "구매하기" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "다시 시도" })).toBeEnabled();
+});
+
+it("copies actual cart lines into a valid demo cart without mutating the actual cart", async () => {
+  setup(true);
+  await screen.findByText("상품91");
+  await userEvent.click(
+    screen.getAllByRole("button", { name: "옵션 변경" })[0],
+  );
+  const fetchSpy = vi.spyOn(globalThis, "fetch");
+  await userEvent.click(
+    screen.getByRole("button", { name: "선택형 옵션 변경 시연" }),
+  );
+  await waitFor(() => expect(push).toHaveBeenCalledWith("/cart?preview=1"));
+  const lines = usePurchasePreviewStore.getState().lines;
+  expect(
+    previewLinesSchema.parse(JSON.parse(JSON.stringify(lines))),
+  ).toHaveLength(2);
+  expect(
+    fetchSpy.mock.calls.some(
+      ([url, options]) =>
+        String(url).includes("/api/payments/") && options?.method !== "GET",
+    ),
+  ).toBe(false);
 });

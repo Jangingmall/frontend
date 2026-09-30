@@ -1,7 +1,7 @@
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import { fetchHomeArtisans } from "@/api/home/api";
-import { fetchProductList } from "@/api/products/api";
+import { fetchProductCatalogue as fetchProductList } from "@/api/products/catalogue-server";
 import { publicEnv } from "@/lib/env";
 import { getQueryClient } from "@/lib/query/server";
 import { productKeys } from "@/queries/products/keys";
@@ -46,13 +46,9 @@ export default async function HomePage() {
   const giftQuery = { giftTheme: INITIAL_GIFT_THEME, size: 3 };
 
   const [bestProducts, newProducts, promotions] = await Promise.all([
-    publicEnv.apiMocking
-      ? fetchProductList({ sort: "sales", size: 5 }).catch(() => undefined)
-      : undefined,
+    fetchProductList({ sort: "sales", size: 5 }).catch(() => undefined),
     fetchProductList({ sort: "newest", size: 4 }).catch(() => undefined),
-    publicEnv.apiMocking
-      ? fetchProductList({ sort: "wishlist", size: 4 }).catch(() => undefined)
-      : undefined,
+    fetchProductList({ sort: "wishlist", size: 4 }).catch(() => undefined),
     queryClient.prefetchQuery({
       queryKey: productKeys.list(giftQuery),
       queryFn: () => fetchProductList(giftQuery),
@@ -62,15 +58,16 @@ export default async function HomePage() {
   return (
     <>
       <HeroBanner />
-      {publicEnv.apiMocking && (
-        <ProductCarouselSection
-          title="베스트"
-          description="최근 4주 판매·조회 기준"
-          viewAllPreset="best"
-          columns={5}
-          data={bestProducts}
-        />
-      )}
+      <ProductCarouselSection
+        title="베스트"
+        description={
+          publicEnv.apiMocking ? "최근 4주 판매·조회 기준" : "베스트 상품 시연"
+        }
+        viewAllPreset="best"
+        columns={5}
+        data={bestProducts}
+      />
+
       <HydrationBoundary state={dehydrate(queryClient)}>
         <GiftSection initialTheme={INITIAL_GIFT_THEME} />
       </HydrationBoundary>
@@ -82,9 +79,13 @@ export default async function HomePage() {
         columns={4}
         data={newProducts}
       />
-      {publicEnv.apiMocking && (
+      <div>
+        {!publicEnv.apiMocking && (
+          <p className="text-center text-body-s">기획전 시연</p>
+        )}
         <PromotionSection items={promotions?.items ?? []} />
-      )}
+      </div>
+
       <SiteFloatingActions />
     </>
   );

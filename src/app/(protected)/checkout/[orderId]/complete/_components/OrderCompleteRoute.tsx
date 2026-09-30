@@ -32,6 +32,9 @@ export function OrderCompleteRoute({ outcome }: OrderCompleteRouteProps) {
 
   return (
     <>
+      <p role="status" className="p-3 text-center text-body-s">
+        주문·결제 시연 완료 · 실제 주문, 결제, 입금 계좌가 생성되지 않습니다.
+      </p>
       <OrderCompletePage
         outcome={outcome}
         totalAmount={checkoutTotal ?? (totalAmount || undefined)}
@@ -41,7 +44,7 @@ export function OrderCompleteRoute({ outcome }: OrderCompleteRouteProps) {
       {showOrdersNotice ? (
         <div className="fixed inset-x-4 bottom-6 z-80 flex justify-center">
           <Toast className="h-auto min-h-11.5 bg-bg-deam py-3 [&>span]:px-4">
-            주문 내역은 준비 중입니다.
+            시연 주문은 실제 주문 내역에 저장되지 않습니다.
           </Toast>
         </div>
       ) : null}

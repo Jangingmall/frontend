@@ -1,11 +1,9 @@
 "use client";
 
-import { canUseProductCrafts } from "@/api/products/integration";
 import type { ProductListQuery } from "@/api/products/query";
 import { Accordion, AccordionItem } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { publicEnv } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import type {
   ProductCategory,
@@ -79,7 +77,7 @@ export function ProductFilterPanel({
         multiple
         defaultValue={
           defaultOpen ??
-          (canUseProductCrafts() && isSubcategory && query.crafts?.length
+          (isSubcategory && query.crafts?.length
             ? ["craft", "price", "material"]
             : ["category", "price", "material"])
         }
@@ -91,7 +89,7 @@ export function ProductFilterPanel({
           accordionClassName,
         )}
       >
-        {isSubcategory && canUseProductCrafts() && (
+        {isSubcategory && (
           <AccordionItem title={category.name} value="craft">
             <ProductCraftFilter
               crafts={crafts}
@@ -104,7 +102,7 @@ export function ProductFilterPanel({
             />
           </AccordionItem>
         )}
-        {(!isSubcategory || !canUseProductCrafts()) && (
+        {!isSubcategory && (
           <AccordionItem title={parent.name} value="category">
             <nav aria-label="상품 분류" className="-mx-2 flex flex-col">
               {children.map((item) => (
@@ -140,48 +138,44 @@ export function ProductFilterPanel({
             />
           </div>
         </AccordionItem>
-        {publicEnv.apiMocking && (
-          <AccordionItem title="소재" value="material">
-            <div
-              className={cn(
-                "grid grid-cols-2",
-                isComfortable ? "gap-x-2 gap-y-1" : "gap-1",
-              )}
-            >
-              {materials.map((material) => {
-                const isSelected =
-                  query.materials?.includes(material.id) ?? false;
-                return (
-                  <Button
-                    key={material.id}
-                    type="button"
-                    variant="outline"
-                    className={cn(
-                      "min-w-0 text-body-m aria-pressed:border-border-jade-fill aria-pressed:bg-states-hover",
-                      isComfortable ? "h-9" : "h-7",
-                    )}
-                    size="xs"
-                    aria-pressed={isSelected}
-                    onClick={() => handleMaterial(material.id)}
-                  >
-                    {material.name}
-                  </Button>
-                );
-              })}
-            </div>
-          </AccordionItem>
-        )}
-      </Accordion>
-      {publicEnv.apiMocking && (
-        <div className="flex min-h-9 items-center px-2">
-          <Checkbox
-            checked={query.hasGiftWrap ?? false}
-            onCheckedChange={(checked) => onChange({ hasGiftWrap: checked })}
+        <AccordionItem title="소재" value="material">
+          <div
+            className={cn(
+              "grid grid-cols-2",
+              isComfortable ? "gap-x-2 gap-y-1" : "gap-1",
+            )}
           >
-            선물 포장 가능
-          </Checkbox>
-        </div>
-      )}
+            {materials.map((material) => {
+              const isSelected =
+                query.materials?.includes(material.id) ?? false;
+              return (
+                <Button
+                  key={material.id}
+                  type="button"
+                  variant="outline"
+                  className={cn(
+                    "min-w-0 text-body-m aria-pressed:border-border-jade-fill aria-pressed:bg-states-hover",
+                    isComfortable ? "h-9" : "h-7",
+                  )}
+                  size="xs"
+                  aria-pressed={isSelected}
+                  onClick={() => handleMaterial(material.id)}
+                >
+                  {material.name}
+                </Button>
+              );
+            })}
+          </div>
+        </AccordionItem>
+      </Accordion>
+      <div className="flex min-h-9 items-center px-2">
+        <Checkbox
+          checked={query.hasGiftWrap ?? false}
+          onCheckedChange={(checked) => onChange({ hasGiftWrap: checked })}
+        >
+          선물 포장 가능
+        </Checkbox>
+      </div>
     </>
   );
 }

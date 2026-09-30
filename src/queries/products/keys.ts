@@ -1,4 +1,8 @@
 import {
+  toDemoCatalogueParams,
+  usesDemoCatalogue,
+} from "@/api/products/demo-catalogue";
+import {
   type ProductListQuery,
   toProductListSearchParams,
 } from "@/api/products/query";
@@ -12,16 +16,18 @@ export const productKeys = {
     [
       "products",
       "list",
-      publicEnv.apiMocking
-        ? toProductListSearchParams(query).toString()
-        : JSON.stringify([
-            toProductListSearchParams(query).toString(),
-            query.category ?? null,
-            query.keyword ?? null,
-            query.minPrice ?? null,
-            query.maxPrice ?? null,
-            query.giftTheme ?? null,
-          ]),
+      usesDemoCatalogue(query)
+        ? `demo:${toDemoCatalogueParams(query)}`
+        : publicEnv.apiMocking
+          ? toProductListSearchParams(query).toString()
+          : JSON.stringify([
+              toProductListSearchParams(query).toString(),
+              query.category ?? null,
+              query.keyword ?? null,
+              query.minPrice ?? null,
+              query.maxPrice ?? null,
+              query.giftTheme ?? null,
+            ]),
     ] as const,
   categories: ["products", "categories"] as const,
   crafts: (category?: string) =>

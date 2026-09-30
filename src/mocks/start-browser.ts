@@ -2,10 +2,10 @@ import { publicEnv } from "@/lib/env";
 
 let startPromise: Promise<void> | null = null;
 
-/** 명시적인 MSW 개발 모드에서만 워커를 시작한다. */
+/** API 모드에서는 허용한 미지원 화면의 시연 요청만 가로챈다. */
 export function startMockWorker(): Promise<void> {
   if (process.env.NODE_ENV === "test") return Promise.resolve();
-  if (!publicEnv.apiMocking || publicEnv.isVercelProduction) {
+  if (publicEnv.apiMocking && publicEnv.isVercelProduction) {
     startPromise ??= (async () => {
       if (!("serviceWorker" in navigator)) return;
       const registrations = await navigator.serviceWorker.getRegistrations();

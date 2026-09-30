@@ -7,7 +7,7 @@ import {
   fetchProductActionState,
   requestProductRestock,
   setProductWishlist,
-} from "@/api/products/detail-actions";
+} from "@/api/products/demo-actions";
 import type {
   ProductActionState,
   ProductCartLine,

@@ -9,19 +9,24 @@ import {
   setDynamicMember,
   setMockIdentity,
 } from "@/api/member/mock/mock-identity";
-import { type DataMode, shouldMockRequest } from "@/lib/data-mode";
+import {
+  type DataMode,
+  isDemoFeatureRequest,
+  shouldMockRequest,
+} from "@/lib/data-mode";
 
 import { mockError, mockOk } from "./envelope";
 import { handlers } from "./handlers";
 
 /** 시연 전용 주소는 원본 핸들러로 전달하되 실제 서버로 빠져나가지 않는다. */
 export function createRuntimeHandlers(mode: DataMode) {
-  if (mode === "api") return [];
   return [
-    imageHandlers[1],
+    ...(mode === "msw" ? [imageHandlers[1]] : []),
     http.all("*/api/*", async ({ request }) => {
       const url = new URL(request.url);
       if (!shouldMockRequest(mode, url.pathname)) return passthrough();
+      if (mode === "api" && !isDemoFeatureRequest(url.pathname, request.method))
+        return mockError(501, "MOCK_NOT_IMPLEMENTED");
       if (
         url.pathname === "/api/mock/member/oauth2/naver" &&
         request.method === "POST"
@@ -35,6 +40,7 @@ export function createRuntimeHandlers(mode: DataMode) {
       url.pathname = url.pathname.replace(/^\/api\/mock\/catalogue\//, "/api/");
       const headers = new Headers(request.headers);
       headers.delete("cookie");
+      if (mode === "api") headers.delete("authorization");
       const response = await getResponse(
         handlers,
         new Request(url, {

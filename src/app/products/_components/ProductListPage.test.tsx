@@ -16,7 +16,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
-it("실제 API 모드에서 비활성 소재 조회를 기다리지 않고 가격 필터를 표시한다", async () => {
+it("실제 API 결과를 유지하며 미지원 필터 시연을 표시한다", async () => {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -47,16 +47,18 @@ it("실제 API 모드에서 비활성 소재 조회를 기다리지 않고 가�
         "총 0개의 검색 결과",
       ),
     );
-    expect(
-      screen.queryByRole("button", { name: "소재" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "소재" })).toBeVisible();
     expect(
       screen.queryByRole("checkbox", { name: "선물 포장 가능" }),
-    ).not.toBeInTheDocument();
+    ).toBeVisible();
     expect(
       screen.queryByRole("navigation", { name: "실제 상품 분류" }),
     ).not.toBeInTheDocument();
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(
+      fetchSpy.mock.calls.every(([url]) =>
+        String(url).startsWith("/api/mock/"),
+      ),
+    ).toBe(true);
   } finally {
     unmount();
     client.clear();

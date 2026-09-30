@@ -18,10 +18,15 @@ vi.mock("./_components/RealOrderComplete", () => ({
 beforeEach(() => {
   environment.apiMocking = false;
 });
-it("does not render fabricated completion in API mode", async () => {
+it("allows only the reserved demo completion ID in API mode", async () => {
+  const page = await OrderCompleteRoutePage({
+    params: Promise.resolve({ orderId: "ui-preview-order" }),
+    searchParams: Promise.resolve({ result: "success" }),
+  });
+  expect(page.props.outcome).toBe("success");
   await expect(
     OrderCompleteRoutePage({
-      params: Promise.resolve({ orderId: "ui-preview-order" }),
+      params: Promise.resolve({ orderId: "arbitrary-order" }),
       searchParams: Promise.resolve({ result: "success" }),
     }),
   ).rejects.toThrow("NOT_FOUND");
