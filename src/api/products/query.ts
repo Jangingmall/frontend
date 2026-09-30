@@ -80,7 +80,9 @@ export function toProductListSearchParams(
         ? "PRICE_ASC"
         : query.sort === "price-desc"
           ? "PRICE_DESC"
-          : "NEWEST",
+          : query.sort === "popular"
+            ? "POPULAR"
+            : "NEWEST",
     );
     if (query.keyword?.trim()) params.set("keyword", query.keyword.trim());
     for (const key of ["minPrice", "maxPrice"] as const) {

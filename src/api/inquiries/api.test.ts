@@ -12,7 +12,7 @@ describe("상품 문의 응답 보안", () => {
     resetInquiryMock();
     useAuthStore.getState().clear();
   });
-  it("실제 환경의 비밀문의 조회·등록을 보류한다", async () => {
+  it("실제 환경의 문의 목록과 비밀 문의 등록을 보류한다", async () => {
     const fetch = vi.spyOn(globalThis, "fetch");
     await expect(fetchInquiries(101, false, false, false)).rejects.toThrow(
       "일시 중단",
@@ -23,7 +23,7 @@ describe("상품 문의 응답 보안", () => {
         { type: "배송", title: "", body: "문의", isSecret: true },
         false,
       ),
-    ).rejects.toThrow("일시 중단");
+    ).rejects.toThrow("공개 문의");
     expect(fetch).not.toHaveBeenCalled();
   });
   it("공개 응답 자체에서 다른 사람의 비밀 제목·본문·답변을 제거한다", async () => {

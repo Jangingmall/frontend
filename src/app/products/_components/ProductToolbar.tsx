@@ -36,10 +36,9 @@ export function ProductToolbar({
   const options = SORT_OPTIONS.filter(
     (option) =>
       publicEnv.apiMocking ||
-      ["newest", "price-asc", "price-desc"].includes(option.value),
+      ["popular", "newest", "price-asc", "price-desc"].includes(option.value),
   ).map((option) => ({
     ...option,
-    // BE의 POPULAR는 아직 ID 내림차순이므로 실제 인기순 지원으로 취급하지 않는다.
     disabled: false,
   }));
   return (

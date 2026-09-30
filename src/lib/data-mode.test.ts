@@ -26,7 +26,7 @@ describe("두 데이터 모드의 요청 경계", () => {
   it("실제 검색과 미지원 필터 조합을 명시적으로 구분한다", () => {
     expect(isMockProductQuery("api", { sort: "newest" })).toBe(false);
     expect(isMockProductQuery("api", { materials: ["wood"] })).toBe(true);
-    expect(isMockProductQuery("api", { sort: "popular" })).toBe(true);
+    expect(isMockProductQuery("api", { sort: "popular" })).toBe(false);
     expect(isMockProductQuery("api", { hasGiftWrap: true })).toBe(true);
     expect(isMockProductQuery("msw", {})).toBe(true);
   });

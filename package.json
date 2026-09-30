@@ -23,7 +23,8 @@
     "format:check": "prettier --check .",
     "prepare": "simple-git-hooks",
     "dev:msw": "node scripts/run-data-mode.mjs msw",
-    "dev:api": "node scripts/run-data-mode.mjs api"
+    "dev:api": "node scripts/run-data-mode.mjs api",
+    "verify:live-api": "tsx scripts/verify-live-api.ts"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged",

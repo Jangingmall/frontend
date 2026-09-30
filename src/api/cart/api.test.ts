@@ -9,6 +9,7 @@ import {
   deleteCartItem,
   fetchCart,
   mergeGuestCart,
+  updateCartOptions,
   updateCartQuantity,
 } from "./api";
 const dto = {
@@ -142,4 +143,27 @@ it("treats only missing guest cookie as a merge no-op", async () => {
     ),
   );
   await expect(mergeGuestCart()).rejects.toMatchObject({ status: 409 });
+});
+
+it("updates options using server identifiers and returns authoritative cart state", async () => {
+  server.use(
+    http.patch("*/api/payments/cart/items/91/options", async ({ request }) => {
+      expect(await request.json()).toEqual({
+        quantity: 3,
+        selectedOptions: [{ optionGroupId: 4, choiceId: 8 }],
+        textInputs: [{ optionGroupId: 5, text: "새 각인" }],
+      });
+      return HttpResponse.json({ success: true, data: dto });
+    }),
+  );
+  expect(
+    (
+      await updateCartOptions({
+        cartItemId: 91,
+        quantity: 3,
+        selectedOptions: [{ optionGroupId: 4, choiceId: 8 }],
+        textInputs: [{ optionGroupId: 5, text: "새 각인" }],
+      })
+    ).lines[0].quantity,
+  ).toBe(2);
 });

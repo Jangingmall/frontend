@@ -190,22 +190,76 @@ describe("상품 문의 화면", () => {
   });
 });
 
-it("API 모드에서는 상품이 mock이어도 문의 화면을 열지 않는다", () => {
+it("API 모드에서는 목록을 조회하지 않고 공개 문의만 실제 등록한다", async () => {
   const previous = publicEnv.apiMocking;
   Object.assign(publicEnv, { apiMocking: false });
   try {
-    const spy = vi.spyOn(globalThis, "fetch");
-    const { container } = render(
-      <ProductInquiries
-        productId={101}
-        isMock={true}
-        onNotify={vi.fn()}
-        onRequireLogin={vi.fn()}
-      />,
+    useAuthStore.getState().setSession("live-test-token", {
+      id: 1,
+      name: "검증 사용자",
+      role: "USER",
+    });
+    let posted: unknown;
+    server.use(
+      http.post("*/api/products/101/questions", async ({ request }) => {
+        posted = await request.json();
+        return mockOk(
+          {
+            questionId: 11,
+            productId: 101,
+            writerId: 1,
+            content: "제작 기간 문의",
+            secret: false,
+            createdAt: "2026-09-29T12:00:00",
+            answer: null,
+          },
+          201,
+        );
+      }),
     );
-    expect(container).toBeEmptyDOMElement();
+    const spy = vi.spyOn(globalThis, "fetch");
+    const notify = vi.fn();
+    render(
+      <QueryClientProvider
+        client={
+          new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        }
+      >
+        <ProductInquiries
+          productId={101}
+          isMock={true}
+          onNotify={notify}
+          onRequireLogin={vi.fn()}
+        />
+      </QueryClientProvider>,
+    );
+    expect(
+      screen.getByText(
+        "문의 목록 조회는 일시 중단되었습니다. 공개 문의 등록은 가능합니다.",
+      ),
+    ).toBeVisible();
     expect(spy).not.toHaveBeenCalled();
+    await userEvent.click(screen.getByRole("button", { name: "문의하기" }));
+    expect(
+      screen.queryByRole("combobox", { name: "문의 유형" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("checkbox", { name: "비밀글" }),
+    ).not.toBeInTheDocument();
+    await userEvent.type(
+      screen.getByPlaceholderText("문의할 내용을 작성해주세요."),
+      "제작 기간 문의",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "등록하기" }));
+    await waitFor(() =>
+      expect(notify).toHaveBeenCalledWith("문의가 등록되었습니다."),
+    );
+    expect(posted).toEqual({ content: "제작 기간 문의", secret: false });
+    expect(
+      spy.mock.calls.every(([url]) => !String(url).includes("/inquiries")),
+    ).toBe(true);
   } finally {
     Object.assign(publicEnv, { apiMocking: previous });
+    useAuthStore.getState().clear();
   }
 });

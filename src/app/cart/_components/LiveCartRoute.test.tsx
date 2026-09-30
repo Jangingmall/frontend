@@ -124,9 +124,7 @@ it("keeps unselected lines on selected deletion and restores through the server"
   setup();
   const user = userEvent.setup();
   await screen.findByText("상품91");
-  expect(
-    screen.getAllByRole("button", { name: "옵션 변경" })[0],
-  ).toBeDisabled();
+  expect(screen.getAllByRole("button", { name: "옵션 변경" })[0]).toBeEnabled();
   await user.click(screen.getByRole("button", { name: "선택 삭제" }));
   await user.click(screen.getByRole("button", { name: "삭제하기" }));
   await waitFor(() =>
@@ -209,16 +207,44 @@ it("restores the exact variant and custom text instead of adding the base produc
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 });
 
-it("disables option editing without opening a preview", async () => {
+it("edits existing text with real option IDs, keeps failed drafts and retries", async () => {
   setup(true);
+  const user = userEvent.setup();
+  let body: unknown;
+  let fail = true;
+  server.use(
+    http.patch("*/api/payments/cart/items/91/options", async ({ request }) => {
+      body = await request.json();
+      if (fail)
+        return HttpResponse.json(
+          { errorCode: "BUSINESS_RULE_VIOLATION" },
+          { status: 409 },
+        );
+      const response = await fetch("/api/payments/cart");
+      return HttpResponse.json(await response.json());
+    }),
+  );
   await screen.findByText("상품91");
-  const button = screen.getAllByRole("button", { name: "옵션 변경" })[0];
-  expect(button).toBeDisabled();
-  await userEvent.click(button);
-  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  expect(push).not.toHaveBeenCalled();
+  await user.click(screen.getAllByRole("button", { name: "옵션 변경" })[0]);
+  expect(screen.getByRole("dialog")).toHaveTextContent("색상: 청자");
+  expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+  const text = screen.getByRole("textbox", { name: "각인" });
+  await user.clear(text);
+  await user.type(text, "새 각인");
+  await user.click(screen.getByRole("button", { name: "변경하기" }));
+  await screen.findByRole("alert");
+  expect(text).toHaveValue("새 각인");
+  expect(body).toEqual({
+    quantity: 1,
+    selectedOptions: [{ optionGroupId: 4, choiceId: 8 }],
+    textInputs: [{ optionGroupId: 5, text: "새 각인" }],
+  });
+  fail = false;
+  await user.click(screen.getByRole("button", { name: "변경하기" }));
+  await waitFor(() =>
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+  );
 });
-
 it("keeps the cart heading, summary and retry action after an API error", async () => {
   server.use(http.get("*/api/payments/cart", () => HttpResponse.error()));
   useAuthStore.setState({ status: "authenticated" });
