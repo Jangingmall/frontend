@@ -338,7 +338,7 @@ export function ProductPurchasePanel({
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-1">
           <div className="flex items-start justify-between gap-3">
-            <h1 className="min-w-0 self-center text-title-xl font-bold break-keep">
+            <h1 className="min-w-0 self-center text-title-l font-bold break-keep md:text-title-xl">
               {product.name}
             </h1>
             <div className="flex shrink-0">
@@ -401,9 +401,13 @@ export function ProductPurchasePanel({
             )}
           </div>
         </div>
-        <p className="text-title-m font-bold">{money(product.price)}</p>
+        <p className="text-title-s font-bold md:text-title-m">
+          {money(product.price)}
+        </p>
       </div>
-      <p className="text-body-m whitespace-pre-line">{product.description}</p>
+      <p className="text-body-s whitespace-pre-line md:text-body-m">
+        {product.description}
+      </p>
       <div className="flex flex-col gap-2 border-t border-border-neutral-weak pt-6">
         {product.shipping && (
           <dl className="grid grid-cols-[66px_1fr] gap-x-6 gap-y-2 text-body text-font-dark-subtle">
@@ -613,7 +617,7 @@ export function ProductPurchasePanel({
             <Button
               variant="outline"
               size="xl"
-              className="w-2/5 min-w-0 border-border-neutral-solid px-3 xl:w-50"
+              className="h-12 w-30 min-w-0 border-border-neutral-solid px-3 md:h-14 xl:w-33 2xl:w-50"
               disabled={unsupportedOptions || (unknownStock && !soldOut)}
               loading={busy}
               onClick={soldOut ? handleRestock : () => handlePurchase()}
@@ -623,7 +627,7 @@ export function ProductPurchasePanel({
           )}
           <Button
             size="xl"
-            className="min-w-0 flex-1 px-3"
+            className="h-12 min-w-0 flex-1 px-3 md:h-14"
             disabled={unsupportedOptions || soldOut || unknownStock || busy}
             onClick={() => handlePurchase(true)}
           >
