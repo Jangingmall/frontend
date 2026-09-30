@@ -183,3 +183,323 @@
   min-width: 0;
   max-width: 100%;
 }
+
+/* Figma HIFI 37:4387. API input shares the studio tokens, not .sa-main overrides. */
+.sa-figma-input {
+  max-width: 888px;
+  padding-bottom: 160px;
+}
+.sa-figma-input .ss-input-form {
+  margin-top: 48px;
+}
+.sa-figma-form .ss-upload {
+  height: 180px;
+}
+.sa-figma-form .ss-label {
+  padding-inline: 4px;
+}
+.sa-figma-form .ss-field textarea {
+  height: 130px;
+}
+.sa-figma-form .ss-field input,
+.sa-figma-form .ss-field textarea {
+  border-radius: 0;
+}
+.sa-figma-form .ss-field small {
+  color: #80858c;
+  padding-inline: 4px;
+}
+.sa-figma-form .ss-form-actions {
+  margin-top: 64px;
+}
+.sa-figma-form .ss-form-actions .ss-button {
+  min-height: 56px;
+}
+.sa-figma-form .ss-upload-button {
+  gap: 8px;
+}
+.sa-basic-form {
+  min-height: 0;
+  background: white;
+}
+.sa-generating {
+  min-height: calc(100vh - 70px);
+  position: relative;
+}
+.sa-generation-message {
+  min-height: 570px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+}
+.sa-generation-message > img {
+  margin-bottom: 24px;
+}
+.sa-generation-message h2 {
+  font-size: 22px;
+  font-weight: 600;
+}
+.sa-generation-message button {
+  margin-top: 16px;
+  border: 1px solid #8e9a9c;
+  padding: 12px 24px;
+}
+.sa-generation-hint {
+  text-align: center;
+  margin-top: 70px;
+  font-size: 16px;
+  color: #414954;
+}
+@media (max-width: 950px) {
+  .sa-figma-input,
+  .sa-generating {
+    margin-inline: 24px;
+  }
+  .sa-figma .ss-heading {
+    flex-wrap: wrap;
+  }
+}
+.sa-figma-editor {
+  position: relative;
+  min-height: calc(100vh - 70px);
+}
+.sa-figma-editor .sa-toolbar {
+  height: 73px;
+  padding: 12px 48px;
+  border: 0;
+  background: transparent;
+  justify-content: flex-end;
+}
+.sa-toolbar-actions {
+  display: flex;
+  gap: 12px;
+}
+.sa-figma-editor .sa-toolbar .ss-button {
+  min-height: 48px;
+  padding: 12px 24px;
+}
+.sa-figma-editor .sa-toolbar .ss-primary {
+  background: #121b29;
+  color: white;
+}
+.sa-figma-editor .sa-editor-grid {
+  padding: 23px 48px 64px 328px;
+  gap: 0;
+}
+.sa-figma-editor .sa-controls {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 281px;
+  max-height: none;
+  padding: 0;
+  display: flex;
+  border-right: 1px solid #ecedee;
+  box-shadow: 0 4px 12px #00000014;
+}
+.sa-tool-rail {
+  width: 63px;
+  flex-shrink: 0;
+  padding: 16px 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid #ecedee;
+}
+.sa-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sa-tools button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 54px;
+  min-height: 58px;
+  font-size: 10px;
+  border-bottom: 1px solid #ecedee;
+}
+.sa-tool-symbol {
+  display: block;
+  width: 32px;
+  height: 32px;
+  background: #d3e1e3;
+}
+.sa-tools button[aria-disabled] .sa-tool-symbol {
+  background: #cdd0d3;
+}
+.sa-history {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  bottom: 16px;
+}
+.sa-history button {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sa-history button:last-child img {
+  transform: scaleX(-1);
+}
+.sa-section-list {
+  width: 218px;
+  padding: 24px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sa-section-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  border: 1px solid #c8d9dc;
+  border-radius: 2px;
+  padding: 4px 4px 4px 8px;
+  min-height: 28px;
+  font-size: 13px;
+  text-align: left;
+}
+.sa-section-link > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sa-section-link[aria-pressed="true"] {
+  background: #f0f4f5;
+  border-color: #8e9a9c;
+  font-weight: 700;
+}
+.sa-section-note {
+  margin-top: 16px;
+  color: #80858c;
+  font-size: 12px;
+}
+.sa-figma-editor .sa-preview {
+  background: transparent;
+  padding: 0;
+  min-height: calc(100vh - 230px);
+}
+.sa-figma-editor .sa-document {
+  padding: 0;
+}
+.sa-figma-editor > [role="status"],
+.sa-figma-editor > [role="alert"] {
+  margin-left: 305px;
+  padding: 12px 24px;
+}
+.sa-figma-editor .sa-reload {
+  display: block;
+  margin: 0 48px 24px auto;
+  padding: 8px;
+  font-size: 12px;
+  color: #80858c;
+}
+.sa-figma-editor.is-review .sa-toolbar {
+  background: white;
+  border-bottom: 1px solid #ecedee;
+  box-shadow: 0 4px 12px #00000014;
+  justify-content: space-between;
+}
+.sa-figma-editor .sa-back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  font-size: 14px;
+  padding: 8px 0;
+}
+.sa-device-tabs {
+  display: flex;
+  padding: 4px;
+  border-radius: 4px;
+  background: #ecedee;
+}
+.sa-toolbar .sa-device-tabs button {
+  border: 0;
+  padding: 8px 12px;
+  width: 80px;
+  height: 36px;
+  font-size: 14px;
+}
+.sa-toolbar .sa-device-tabs button[aria-pressed="true"] {
+  background: white;
+  box-shadow: 0 4px 12px #00000014;
+}
+.sa-figma-editor.is-review .sa-editor-grid {
+  padding: 32px 24px;
+}
+.sa-figma-editor.is-review > [role="status"],
+.sa-figma-editor.is-review > [role="alert"] {
+  margin-left: 0;
+}
+@media (max-width: 850px) {
+  .sa-figma-editor .sa-toolbar {
+    padding-inline: 16px;
+  }
+  .sa-figma-editor .sa-controls {
+    position: relative;
+    width: 100%;
+    max-height: 220px;
+  }
+  .sa-figma-editor .sa-editor-grid {
+    padding: 16px;
+    gap: 24px;
+    flex-direction: column;
+  }
+  .sa-section-list {
+    width: 100%;
+    overflow-y: auto;
+  }
+  .sa-figma-editor > [role="status"],
+  .sa-figma-editor > [role="alert"] {
+    margin-left: 0;
+  }
+  .sa-figma-editor.is-review .sa-toolbar {
+    height: auto;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+}
+
+.sa-content-dialog label {
+  display: block;
+  margin-top: 24px;
+  font-size: 13px;
+}
+.sa-content-dialog textarea {
+  display: block;
+  width: 100%;
+  min-height: 130px;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #8e9a9c;
+}
+.sa-content-dialog input {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.sa-footer-logo {
+  color: white;
+}
+
+.sa-figma-editor .ss-product-copy h2 {
+  font-size: 26px;
+  font-weight: 600;
+}
+.sa-figma-editor .ss-review-device {
+  text-align: left;
+}
+.sa-figma-editor.is-review .sa-editor-grid {
+  padding-inline: 0;
+}

@@ -23,11 +23,11 @@ function renderEditor() {
 }
 
 function reviewAndReturn() {
-  fireEvent.click(screen.getByRole("button", { name: "최종 확인" }));
+  fireEvent.click(screen.getByRole("button", { name: "최종 검토하기" }));
   expect(
     screen.queryByRole("button", { name: "편집 도움말" }),
   ).not.toBeInTheDocument();
-  fireEvent.click(screen.getByRole("button", { name: "편집으로 돌아가기" }));
+  fireEvent.click(screen.getByRole("button", { name: "뒤로가기" }));
 }
 
 it("건너뛴 도움말은 검수 후 편집으로 돌아와도 닫힌 상태를 유지한다", () => {

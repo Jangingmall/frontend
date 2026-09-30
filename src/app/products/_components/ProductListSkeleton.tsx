@@ -1,7 +1,7 @@
 import {
   PRODUCT_FILTER_WIDTH_CLASS,
   PRODUCT_LIST_MAIN_CLASS,
-} from "@/app/products/_lib/layout";
+} from "@/app/products/_lib/product-list-layout";
 import { ProductGridSkeleton } from "@/components/product/ProductGridSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";

@@ -1,6 +1,6 @@
 "use client";
 
-import { PRODUCT_FILTER_WIDTH_CLASS } from "@/app/products/_lib/layout";
+import { PRODUCT_FILTER_WIDTH_CLASS } from "@/app/products/_lib/product-list-layout";
 import { cn } from "@/lib/utils";
 
 import type { ProductFilterPanelProps } from "./ProductFilterPanel";

@@ -62,3 +62,14 @@ export function useSellerMutation<T, Variables>(
     onSuccess: () => client.invalidateQueries({ queryKey: sellerKeys.all }),
   });
 }
+
+export function useSellerProduct(
+  productId: number,
+  ownerId: number | undefined,
+) {
+  return useQuery({
+    queryKey: [...sellerKeys.all, ownerId, "product", productId],
+    queryFn: ({ signal }) => api.getSellerProduct(productId, signal),
+    retry: false,
+  });
+}
