@@ -11,7 +11,7 @@ import {
 import {
   PRODUCT_FILTER_WIDTH_CLASS,
   PRODUCT_LIST_MAIN_CLASS,
-} from "@/app/products/_lib/layout";
+} from "@/app/products/_lib/product-list-layout";
 import {
   parseProductSearchParams,
   updateProductSearchParams,

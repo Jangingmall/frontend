@@ -163,3 +163,15 @@ export async function changeContentStatus(
     }),
   );
 }
+
+export async function getSellerProduct(
+  productId: number,
+  signal?: AbortSignal,
+) {
+  const result = productSchema.parse(
+    await clientFetch(`/api/products/${id(productId)}`, { signal }),
+  );
+  if (result.productId !== productId)
+    throw new Error("상품 정보가 일치하지 않습니다.");
+  return result;
+}
