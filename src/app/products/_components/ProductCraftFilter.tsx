@@ -13,6 +13,8 @@ interface ProductCraftFilterProps {
   hasError?: boolean;
   onRetry?: () => void;
   onChange: (crafts: string[]) => void;
+  /** 칩 높이: `compact` 28(사이드바) / `comfortable` 36(필터 시트 시안) */
+  density?: "compact" | "comfortable";
 }
 
 export function ProductCraftFilter({
@@ -22,6 +24,7 @@ export function ProductCraftFilter({
   hasError,
   onRetry,
   onChange,
+  density = "compact",
 }: ProductCraftFilterProps) {
   if (hasError) {
     return (
@@ -44,7 +47,14 @@ export function ProductCraftFilter({
     return <p className="py-2 text-body-m">선택할 수 있는 종목이 없어요.</p>;
   }
   return (
-    <div role="group" aria-label="종목" className="grid grid-cols-2 gap-1">
+    <div
+      role="group"
+      aria-label="종목"
+      className={cn(
+        "grid grid-cols-2",
+        density === "comfortable" ? "gap-x-2 gap-y-1" : "gap-1",
+      )}
+    >
       {crafts.map((craft) => {
         const isSelected = selected.includes(craft.id);
         return (
@@ -56,6 +66,7 @@ export function ProductCraftFilter({
             aria-pressed={isSelected}
             className={cn(
               "min-w-0",
+              density === "comfortable" && "h-9",
               isSelected
                 ? "border-border-jade-fill before:bg-states-hover"
                 : "border-border-neutral-subtle",
