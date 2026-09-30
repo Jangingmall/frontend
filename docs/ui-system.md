@@ -56,7 +56,10 @@ Figma 변수명과 FE 토큰명은 1:1 문자 일치를 요구하지 않는다. 
 - **텍스트 스타일**: Figma named text style → `--text-<name>` (+ `--line-height`, `--font-weight` 서브키). 예: `--text-title-l`. letter-spacing은 전부 0%라 건드리지 않는다. 폰트는 전체 Pretendard라 지정하지 않는다.
 - **그림자**: Figma "Drop Shadow" → Tailwind `--shadow-*` (box-shadow). 용도명으로 등록 (`--shadow-floating` 재사용, `--shadow-nav` Nav 전용).
 - **브레이크포인트·컨테이너·그리드**: mobile-first. Figma 5종(mobile 375~767 · md 768 · lg 1024 · xl 1280 · 2xl 1440)이며 `md`·`lg`·`xl`은 Tailwind 기본값을 그대로 쓰고 `2xl`만 `--breakpoint-2xl: 90rem`으로 재정의한다. 컨테이너 최대폭은 `--container-desktop: 90rem`. 그리드는 거터 24 전 구간, 컬럼 lg 이상 12 / md 이하 4(`grid-cols-4 lg:grid-cols-12`), 좌우 마진 2xl·xl 48 / lg 32 / md·mobile 24(`page-gutter` 유틸). GNB 높이는 `--spacing-gnb`(mobile 64 / md 이상 122).
-- 다크 모드는 `@custom-variant dark (&:is(.dark *))`.
+- **다크 모드**: `<html class="dark">` 일 때 `.dark { … }` 블록이 semantic·component 색 토큰을 다시 정의한다(`@custom-variant dark (&:is(.dark *))`는 이미지 등 토큰으로 못 바꾸는 예외용). 값의 SoT는 Figma `components-color` 컬렉션의 `dark-mode` 모드이고, 다크 전용 배경 프리미티브(`--dark-neutral-*`)만 새로 둔다. `:root`에서 `var()`로 별칭한 토큰은 따라 바뀌므로 값이 다른 토큰만 `.dark`에 적는다(누락은 `src/app/dark-tokens.test.ts`가 잡는다).
+  - **하드코딩 금지**: 색을 hex·프리미티브로 직접 쓰면 다크에서 안 뒤집힌다. 아이콘 SVG는 `fill="var(--icon-black)"`, 글자·배경은 semantic 유틸리티를 쓴다.
+  - **모드가 바뀌어도 고정인 색**은 시안이 프리미티브에 바인딩한 곳만 프리미티브를 직접 쓴다: 항상 어두운 면(GNB·푸터·히어로) 위 글자는 `text-(--white)`, `fill/jade` 배경 위 글자는 `text-(--black)`. 반대로 `--font-white`는 다크에서 어두운 회색이 되므로 `fill-neutral-impact`·`--button-black`처럼 배경이 함께 뒤집히는 면 위 글자에만 쓴다. GNB·푸터 배경은 `--nav-bg`.
+  - **적용·저장**: 로그인 사용자는 설정(`GET|PATCH /api/member/settings`의 `darkMode`), 비로그인은 기기 테마(`prefers-color-scheme`)를 따른다(`src/lib/theme.ts`, `src/app/theme-sync.tsx`). 루트 레이아웃 `<head>`의 인라인 스크립트가 첫 페인트 전에 클래스를 붙여 깜빡임을 막는다. Storybook은 툴바 "Theme"으로 전환한다.
 
 ### 3.4 변경 반영 흐름
 

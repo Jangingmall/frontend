@@ -20,7 +20,7 @@ import { Cart } from "./cart";
  * 높이 64의 `[햄버거][로고][검색][Cart]` — 사람 아이콘(로그인·마이페이지)은 전체화면 메뉴 안으로
  * 옮겨진다. 좌우 마진은 `page-gutter`(24/32/48).
  */
-const DEFAULT_LOGO = <Logo className="h-8 w-auto text-font-white" />;
+const DEFAULT_LOGO = <Logo className="h-8 w-auto text-(--white)" />;
 
 type AuthAreaStatus = "loading" | "anonymous" | "authenticated";
 
@@ -46,7 +46,7 @@ function HeaderIconButton({
   className: extraClassName,
 }: HeaderIconButtonProps) {
   const className = cn(
-    "inline-flex size-8 shrink-0 items-center justify-center text-font-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill [&_path]:fill-current",
+    "inline-flex size-8 shrink-0 items-center justify-center text-(--white) outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill [&_path]:fill-current",
     extraClassName,
   );
 
@@ -131,7 +131,7 @@ function Header({
     <header
       data-slot="header"
       className={cn(
-        "grid h-16 grid-cols-[1fr_auto_1fr] items-center bg-fill-neutral-impact page-gutter md:h-17.5",
+        "grid h-16 grid-cols-[1fr_auto_1fr] items-center bg-(--nav-bg) page-gutter md:h-17.5",
         className,
       )}
       {...props}

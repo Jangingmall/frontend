@@ -8,8 +8,8 @@ const PlusIcon = (props: SVGProps<SVGSVGElement>) => (
     viewBox="0 0 16 16"
     {...props}
   >
-    <path fill="#121B29" d="M8.5 13h-1V3h1z" />
-    <path fill="#121B29" d="M3 8.5v-1h10v1z" />
+    <path fill="var(--icon-black)" d="M8.5 13h-1V3h1z" />
+    <path fill="var(--icon-black)" d="M3 8.5v-1h10v1z" />
   </svg>
 );
 export { PlusIcon };

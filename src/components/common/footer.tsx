@@ -59,7 +59,7 @@ const DEFAULT_COLUMNS: FooterColumn[] = [
   },
 ];
 
-const DEFAULT_LOGO = <Logo className="h-8 w-auto text-font-white" />;
+const DEFAULT_LOGO = <Logo className="h-8 w-auto text-(--white)" />;
 
 const DEFAULT_DESCRIPTION = (
   <div className="flex flex-col gap-7 text-body-s text-font-dark-weak">
@@ -90,7 +90,7 @@ function Footer({
     <footer
       data-slot="footer"
       className={cn(
-        "flex flex-col gap-6 bg-fill-neutral-impact page-gutter pt-12 pb-16 lg:gap-12",
+        "flex flex-col gap-6 bg-(--nav-bg) page-gutter pt-12 pb-16 lg:gap-12",
         className,
       )}
       {...props}
@@ -104,14 +104,14 @@ function Footer({
         <div className="grid grid-cols-2 gap-x-6 gap-y-6 md:w-72 lg:flex lg:w-auto lg:gap-12">
           {columns.map((column) => (
             <div key={column.title} className="flex flex-col gap-2 md:gap-4">
-              <span className="text-body-s-b whitespace-nowrap text-font-white">
+              <span className="text-body-s-b whitespace-nowrap text-(--white)">
                 {column.title}
               </span>
               <ul className="flex flex-col gap-1">
                 {column.items.map((item) => {
                   const itemClass = cn(
                     "text-body-s whitespace-nowrap text-font-dark-weak",
-                    item.strong && "text-body-s-b text-font-white",
+                    item.strong && "text-body-s-b text-(--white)",
                   );
                   return (
                     <li key={item.label}>

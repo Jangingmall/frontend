@@ -9,7 +9,7 @@ const EnterIcon = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path
-      fill="#121B29"
+      fill="var(--icon-black)"
       d="M12.45 3v8.45H4.087l1.231 1.232-.636.636L2.363 11l2.319-2.318.636.636-1.231 1.232h7.463V3z"
     />
   </svg>

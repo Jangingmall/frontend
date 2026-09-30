@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ErrorState } from "@/components/common/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiError } from "@/lib/http/api-error";
+import { applyTheme } from "@/lib/theme";
 import { useUpdateSettingsMutation } from "@/queries/member/mutations";
 import { useSettingsQuery } from "@/queries/member/queries";
 
@@ -25,16 +26,11 @@ function SettingsSection() {
   const [orderNotification, setOrderNotification] = useState(true);
   const [wishlistNotification, setWishlistNotification] = useState(true);
 
-  // 다크 색상 토큰은 아직 없어 지금은 시각적으로 안 바뀌지만, 이후 다크 테마 작업이
-  // 들어오면 바로 동작하도록 `<html>`의 `dark` 클래스는 지금부터 실제로 동기화한다.
-  // cleanup에서 되돌리지 않는다 — 다른 페이지로 이동해도 선호를 유지하려는 의도.
+  // 앱 전역 `ThemeSync` 가 같은 쿼리 캐시로 테마를 맞추지만, 이 화면 단독으로도(테스트·스토리)
+  // 토글 즉시 반영되도록 여기서도 적용한다. cleanup 에서 되돌리지 않는다 — 다른 페이지로 이동해도
+  // 선호를 유지하려는 의도.
   useEffect(() => {
-    if (settingsQuery.data) {
-      document.documentElement.classList.toggle(
-        "dark",
-        settingsQuery.data.darkMode,
-      );
-    }
+    if (settingsQuery.data) applyTheme(settingsQuery.data.darkMode);
   }, [settingsQuery.data]);
 
   if (settingsQuery.isPending) {

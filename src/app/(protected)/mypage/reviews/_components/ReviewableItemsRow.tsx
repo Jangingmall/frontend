@@ -69,7 +69,7 @@ function ReviewableItemCard({
           </Button>
           {item.rewardPoints != null && (
             <div className="absolute -top-4 left-1/2 z-10 -translate-x-1/2">
-              <div className="relative rounded-xs bg-(--button-jade) px-2 py-1 text-center text-caption-b whitespace-nowrap text-font-dark">
+              <div className="relative rounded-xs bg-(--button-jade) px-2 py-1 text-center text-caption-b whitespace-nowrap text-(--black)">
                 적립금 + {item.rewardPoints}원
                 {/* 말풍선 꼬리 — Figma "Vector 156"(1271:53686)을 그대로 옮김: 뱃지 왼쪽에 치우쳐
                     아래로 5px 삐져나온다(대칭 삼각형이 아니라 비대칭 잎사귀 모양). */}

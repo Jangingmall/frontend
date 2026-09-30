@@ -32,7 +32,7 @@ const buttonVariants = cva(
       variant: {
         solid:
           "bg-(--button-black) text-font-white hover:before:bg-states-hover-25 active:before:bg-states-hover-25",
-        jade: "bg-(--button-jade) text-font-dark hover:before:bg-states-hover active:before:bg-states-hover",
+        jade: "bg-(--button-jade) text-(--black) hover:before:bg-states-hover active:before:bg-states-hover",
         outline:
           "border-(--button-border-black) text-font-dark hover:before:bg-states-hover active:border-border-jade-fill active:before:bg-states-hover",
         ghost:
@@ -48,7 +48,11 @@ const buttonVariants = cva(
     },
     compoundVariants: [
       // Figma: xl 의 jade 만 더 옅은 배경(#FAFBFC). 나머지 jade 는 #C8D9DC (불일치 유지)
-      { variant: "jade", size: "xl", class: "bg-(--button-jade-weak)" },
+      {
+        variant: "jade",
+        size: "xl",
+        class: "bg-(--button-jade-weak) text-font-dark",
+      },
       // Figma: jade + xl 의 disabled 만 opacity 0.5 (그 외 0.6)
       { variant: "jade", size: "xl", class: "disabled:opacity-50" },
       // Figma `footer` = ghost + xs: 좌우 패딩 없음, 13px, 흐린 글자

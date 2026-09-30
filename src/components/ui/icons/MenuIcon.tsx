@@ -8,7 +8,10 @@ const MenuIcon = (props: SVGProps<SVGSVGElement>) => (
     viewBox="0 0 16 16"
     {...props}
   >
-    <path fill="#121B29" d="M13 11.5v1H3v-1zm0-4v1H3v-1zm0-4v1H3v-1z" />
+    <path
+      fill="var(--icon-black)"
+      d="M13 11.5v1H3v-1zm0-4v1H3v-1zm0-4v1H3v-1z"
+    />
   </svg>
 );
 export { MenuIcon };

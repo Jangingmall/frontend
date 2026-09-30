@@ -9,7 +9,7 @@ const StarEmptyIcon = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path
-      fill="#121B29"
+      fill="var(--icon-black)"
       d="M9.966 5.187 15 5.636 11.178 9.12l1.148 5.18L8 11.553l-4.326 2.748 1.148-5.18L1 5.636l5.034-.45L8 .302z"
       opacity={0.3}
     />

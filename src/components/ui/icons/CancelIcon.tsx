@@ -9,7 +9,7 @@ const CancelIcon = (props: SVGProps<SVGSVGElement>) => (
     {...props}
   >
     <path
-      fill="#121B29"
+      fill="var(--icon-black)"
       d="M12.604 4.104 8.707 8l3.896 3.896-.707.707L8 8.708l-3.896 3.896-.708-.707L7.293 8 3.396 4.104l.708-.708L8 7.293l3.896-3.897z"
     />
   </svg>

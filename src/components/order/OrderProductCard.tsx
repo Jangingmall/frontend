@@ -142,7 +142,7 @@ export function OrderProductCard(props: OrderProductCardProps) {
                 {ORDER_CARD_ACTION_LABEL[action]}
               </Button>
               {withReward && (
-                <span className="absolute -top-2.5 right-0 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b text-font-dark">
+                <span className="absolute -top-2.5 right-0 rounded-xs bg-(--button-jade) px-2 py-1 text-caption-b text-(--black)">
                   적립금 + 100원
                 </span>
               )}

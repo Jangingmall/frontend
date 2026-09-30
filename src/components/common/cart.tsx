@@ -32,14 +32,14 @@ function Cart({ count = 0, href, className, ...props }: CartProps) {
   const badge = showBadge && (
     <span
       aria-hidden="true"
-      className="absolute -right-1 -bottom-1 inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-(--jade-blue-400) px-1 text-caption-b text-font-dark"
+      className="absolute -right-1 -bottom-1 inline-flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-(--jade-blue-400) px-1 text-caption-b text-(--black)"
     >
       {label}
     </span>
   );
 
   const rootClassName = cn(
-    "relative inline-flex size-8 shrink-0 items-center justify-center text-font-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill [&_path]:fill-current",
+    "relative inline-flex size-8 shrink-0 items-center justify-center text-(--white) outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill [&_path]:fill-current",
     className,
   );
 
