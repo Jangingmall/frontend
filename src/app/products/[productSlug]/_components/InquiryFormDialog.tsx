@@ -97,7 +97,7 @@ export function InquiryFormDialog({
             variant="jade"
             size="xl"
             type="button"
-            className="min-w-0 flex-1 border-border-neutral-subtle px-3 sm:w-40 sm:flex-none sm:px-6"
+            className="min-w-0 flex-1 border-border-neutral-subtle px-3 md:w-40 md:flex-none md:px-6"
             disabled={mutation.isPending}
             onClick={() => close(false)}
           >
@@ -107,7 +107,7 @@ export function InquiryFormDialog({
             type="submit"
             form={formId}
             size="xl"
-            className="min-w-0 flex-1 px-3 sm:px-6"
+            className="min-w-0 flex-1 px-3 md:px-6"
             loading={mutation.isPending}
           >
             등록하기

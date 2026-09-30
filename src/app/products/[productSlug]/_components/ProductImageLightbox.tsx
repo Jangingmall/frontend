@@ -79,13 +79,13 @@ function LightboxImages({ images, initialIndex }: LightboxImagesProps) {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="flex w-full max-w-223 items-center justify-center gap-2 sm:gap-8">
+      <div className="flex w-full max-w-223 items-center justify-center gap-2 md:gap-8">
         <button
           type="button"
           aria-label="이전 이미지"
           disabled={activeIndex === 0}
           onClick={() => setSelectedIndex(activeIndex - 1)}
-          className="flex size-8 shrink-0 items-center justify-center outline-none focus-visible:outline-2 focus-visible:outline-border-white disabled:opacity-30 sm:size-16"
+          className="flex size-8 shrink-0 items-center justify-center outline-none focus-visible:outline-2 focus-visible:outline-border-white disabled:opacity-30 md:size-16"
         >
           <ChevronLeftIcon className="size-full [&_path]:fill-current" />
         </button>
@@ -104,7 +104,7 @@ function LightboxImages({ images, initialIndex }: LightboxImagesProps) {
           aria-label="다음 이미지"
           disabled={activeIndex === images.length - 1}
           onClick={() => setSelectedIndex(activeIndex + 1)}
-          className="flex size-8 shrink-0 items-center justify-center outline-none focus-visible:outline-2 focus-visible:outline-border-white disabled:opacity-30 sm:size-16"
+          className="flex size-8 shrink-0 items-center justify-center outline-none focus-visible:outline-2 focus-visible:outline-border-white disabled:opacity-30 md:size-16"
         >
           <ChevronRightIcon className="size-full [&_path]:fill-current" />
         </button>

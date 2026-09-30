@@ -31,11 +31,11 @@ it("API 모드에서는 지원되는 정렬만 선택한다", async () => {
   const onSortChange = vi.fn();
   render(<ProductToolbar sort="newest" onSortChange={onSortChange} />);
   await user.click(screen.getByRole("combobox"));
-  expect(screen.getAllByRole("option")).toHaveLength(4);
+  expect(await screen.findAllByRole("option")).toHaveLength(4);
   for (const name of ["판매량순", "찜 많은 순"]) {
     expect(screen.queryByRole("option", { name })).not.toBeInTheDocument();
   }
-  await user.click(screen.getByRole("option", { name: "높은 가격순" }));
+  await user.click(await screen.findByRole("option", { name: "높은 가격순" }));
   expect(onSortChange).toHaveBeenCalledWith("price-desc");
 });
 
@@ -54,9 +54,10 @@ it("인기순 선택과 직접 URL은 서버 POPULAR 정렬을 요청한다", as
   expect(toProductListSearchParams({ sort: "popular" }).get("sort")).toBe(
     "POPULAR",
   );
+  const user = userEvent.setup();
   const onSortChange = vi.fn();
   render(<ProductToolbar sort="newest" onSortChange={onSortChange} />);
-  await userEvent.click(screen.getByRole("combobox"));
-  await userEvent.click(screen.getByRole("option", { name: "인기순" }));
+  await user.click(screen.getByRole("combobox"));
+  await user.click(await screen.findByRole("option", { name: "인기순" }));
   expect(onSortChange).toHaveBeenCalledWith("popular");
 });

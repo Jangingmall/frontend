@@ -18,13 +18,16 @@ export function RelatedProducts({ products }: RelatedProductsProps) {
       >
         작가의 다른 작품
       </h2>
-      <div className="grid grid-cols-2 gap-x-3.75 gap-y-4 sm:grid-cols-3">
+      {/* 카드는 브레이크포인트별 고정 폭이라 xl 이상에서만 3장이 한 줄에 들어오고, 그보다 좁으면 가로 스크롤
+          행이 된다(시안 lg 이하). */}
+      <div className="flex gap-3 overflow-x-auto pb-3 md:gap-4 xl:gap-4.5 xl:pb-0 2xl:gap-3.75">
         {products.slice(0, 3).map((product) => (
-          <ProductCard
-            key={product.id}
-            variant="related"
-            product={{ ...product, colors: undefined }}
-          />
+          <div key={product.id} className="w-40 shrink-0 md:w-60.5 xl:w-62">
+            <ProductCard
+              variant="related"
+              product={{ ...product, colors: undefined }}
+            />
+          </div>
         ))}
       </div>
     </section>
