@@ -28,6 +28,9 @@ function toDraft(query: ProductListQuery): FilterDraft {
 
 // md(768~1023) 시안: 항목 헤더 3개가 한 줄, 펼친 패널이 아래 전폭. Accordion API를 바꾸지 않고
 // 항목·헤더를 `display: contents`로 풀어 트리거(order-1)와 패널(order-2, 전폭)을 한 그리드에 둔다.
+// ⚠ Base UI Accordion 마크업에 의존한다: 헤더가 항목의 직계 `h3`, 패널이 직계 `div`라는 전제.
+// 구조가 바뀌면 배치가 조용히 깨지므로 E2E(`products.spec.ts`의 md 필터 시트 테스트)가 세 트리거의
+// 위치·전폭 패널·키보드·헤딩 의미를 지킨다. Accordion을 업그레이드하거나 바꾸면 그 테스트를 먼저 본다.
 const MD_THREE_COLUMN =
   "md:[&_[data-slot=accordion-item]]:contents md:[&_[data-slot=accordion-item]>h3]:contents md:[&_[data-slot=accordion-item]_button]:order-1 md:[&_[data-slot=accordion-item]>div]:order-2 md:[&_[data-slot=accordion-item]>div]:col-span-3 md:[&_[data-slot=accordion]]:grid md:[&_[data-slot=accordion]]:grid-cols-3 md:[&_[data-slot=accordion]]:items-start md:[&_[data-slot=accordion]]:gap-x-2";
 

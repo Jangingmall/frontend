@@ -126,6 +126,50 @@ test("필터 시트에서 소재를 골라 확인하면 결과가 갱신되고 �
   ).toBeVisible();
 });
 
+test("md 필터 시트는 헤더 3개가 한 줄이고 펼친 패널이 전폭이며 키보드·헤딩 의미가 유지된다", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 768, height: 900 });
+  await hideMockSwitcher(page);
+  await page.getByRole("button", { name: "필터", exact: true }).click();
+  const sheet = page.getByRole("dialog", { name: "필터" });
+  const names = ["키친 · 다이닝", "가격대", "소재"];
+  // `display: contents`로 헤더를 풀어도 각 트리거는 h3 헤딩 안에 남는다.
+  for (const name of names) {
+    await expect(
+      sheet
+        .getByRole("heading", { level: 3 })
+        .getByRole("button", { name, exact: true }),
+    ).toBeVisible();
+  }
+  const triggers = names.map((name) =>
+    sheet.getByRole("button", { name, exact: true }),
+  );
+  const boxes = await Promise.all(triggers.map((t) => t.boundingBox()));
+  const [first, second, third] = boxes.map((box) => box!);
+  // 세 트리거가 한 줄(같은 y)에 왼쪽부터 놓인다.
+  expect(Math.round(second.y)).toBe(Math.round(first.y));
+  expect(Math.round(third.y)).toBe(Math.round(first.y));
+  expect(second.x).toBeGreaterThan(first.x + first.width - 1);
+  expect(third.x).toBeGreaterThan(second.x + second.width - 1);
+
+  // 키보드로 가격대를 펼치면 패널은 트리거 줄 아래에 첫~마지막 트리거 폭 전체로 열린다.
+  await triggers[1].focus();
+  await page.keyboard.press("Enter");
+  await expect(triggers[1]).toHaveAttribute("aria-expanded", "true");
+  const panelId = await triggers[1].getAttribute("aria-controls");
+  const panel = page.locator(`[id="${panelId}"]`);
+  await expect(panel).toBeVisible();
+  const panelBox = (await panel.boundingBox())!;
+  expect(panelBox.y).toBeGreaterThanOrEqual(first.y + first.height - 1);
+  expect(panelBox.x).toBeLessThanOrEqual(first.x + 1);
+  expect(panelBox.x + panelBox.width).toBeGreaterThanOrEqual(
+    third.x + third.width - 1,
+  );
+  await page.keyboard.press("Space");
+  await expect(triggers[1]).toHaveAttribute("aria-expanded", "false");
+});
+
 test("시트를 연 채 lg 이상으로 넓어지면 시트가 닫히고 사이드바가 보인다", async ({
   page,
 }) => {
