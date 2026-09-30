@@ -86,9 +86,9 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
   }, [notice]);
 
   return (
-    <div className="mx-auto w-full max-w-desktop px-4 pt-8 pb-24 text-font-dark sm:px-6 lg:px-12 lg:pt-12">
-      <div className="grid min-w-0 grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-[minmax(0,774fr)_minmax(0,522fr)]">
-        <div className="min-w-0 lg:col-start-1 lg:row-start-1">
+    <div className="mx-auto w-full max-w-desktop page-gutter pt-6 pb-24 text-font-dark md:pt-12">
+      <div className="product-detail-grid min-w-0">
+        <div className="min-w-0 md:col-start-1 md:row-start-1">
           <ProductDetailGallery
             images={product.images}
             productName={product.name}
@@ -96,10 +96,9 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
         </div>
         <aside
           aria-label="상품 정보 및 구매"
-          className="min-w-0 lg:col-start-2 lg:row-span-2 lg:row-start-1"
+          className="min-w-0 md:col-start-2 md:row-span-2 md:row-start-1"
         >
-          {/* GNB(122px)와 PD 주석의 상단 여백(48px)을 함께 확보한다. */}
-          <div className="lg:sticky lg:top-42.5 lg:max-h-[calc(100dvh-194px)] lg:overflow-y-auto lg:overscroll-contain">
+          <div className="product-detail-aside">
             <ProductPurchasePanel
               product={product}
               onNotify={handlePurchaseNotify}
@@ -108,7 +107,7 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
             />
           </div>
         </aside>
-        <div className="min-w-0 space-y-6 lg:col-start-1 lg:row-start-2">
+        <div className="min-w-0 space-y-6 max-md:pt-2 md:col-start-1 md:row-start-2">
           <ProductInformation product={product} />
           <div className="space-y-6">
             <ProductReviews

@@ -28,6 +28,48 @@
   }
 }
 
+/* 상품 상세(PD-1) 상단 그리드: mobile 1열, md 이상 [갤러리 + 본문 | 구매 정보] 2열. 구매 정보 열 폭은
+   Figma 실측(md 300 / lg 304 / xl 375 / 2xl 522), 나머지는 갤러리 열이 채운다. 열 간격 20/24/24/48,
+   갤러리와 본문 사이 세로 간격 md·lg 64 / xl 이상 40. */
+@utility product-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 1.5rem;
+
+  @media (min-width: 48rem) {
+    --pd-info: 18.75rem;
+    grid-template-columns: minmax(0, 1fr) var(--pd-info);
+    column-gap: 1.25rem;
+    row-gap: 4rem;
+  }
+
+  @media (min-width: 64rem) {
+    --pd-info: 19rem;
+    column-gap: 1.5rem;
+  }
+
+  @media (min-width: 80rem) {
+    --pd-info: 23.4375rem;
+    row-gap: 2.5rem;
+  }
+
+  @media (min-width: 90rem) {
+    --pd-info: 32.625rem;
+    column-gap: 3rem;
+  }
+}
+
+/* 상품 상세 구매 정보 열: md 이상에서 GNB 아래 48px에 붙어 따라오고, 뷰포트보다 길면 내부 스크롤. */
+@utility product-detail-aside {
+  @media (min-width: 48rem) {
+    position: sticky;
+    top: calc(var(--spacing-gnb) + 3rem);
+    max-height: calc(100dvh - var(--spacing-gnb) - 4.5rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
 /* 히어로: 첫 화면(뷰포트)에서 sticky GNB를 뺀 높이를 채운다. 하한 500은 매우 낮은 창에서도
    제목·버튼이 들어갈 자리를 보장한다. */
 @utility min-h-hero {
