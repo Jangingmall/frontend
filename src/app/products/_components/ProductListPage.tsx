@@ -111,7 +111,7 @@ export function ProductListPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-desktop px-4 pt-16 pb-24 sm:px-8 lg:px-12">
+    <main className="mx-auto w-full max-w-desktop page-gutter pt-12 pb-21 md:pt-16 md:pb-40 lg:pb-50">
       {hasStartupError ? (
         <ErrorState
           title="상품을 불러오지 못했어요"
@@ -139,7 +139,7 @@ export function ProductListPage({
                 onReset={handleReset}
               />
             ) : categories.isPending ? (
-              <Skeleton className="h-48 w-full lg:w-51 lg:shrink-0" />
+              <Skeleton className="h-48 w-full lg:w-41 lg:shrink-0 xl:w-44.25 2xl:w-51" />
             ) : null)}
           <div className="min-w-0 flex-1">
             <ProductToolbar

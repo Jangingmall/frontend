@@ -2,12 +2,12 @@
 
 import { EmptyState } from "@/components/common/empty-state";
 import { ErrorState } from "@/components/common/error-state";
+import { catalogGridClassName } from "@/components/product/catalog-grid";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ProductGridSkeleton } from "@/components/product/ProductGridSkeleton";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components/ui/pagination";
-import { cn } from "@/lib/utils";
 import type { Page } from "@/types/api";
 import type { ProductSummary } from "@/types/product";
 
@@ -67,7 +67,7 @@ export function ProductResults({
       ) : hasError ? (
         <ErrorState title="상품을 불러오지 못했어요" onRetry={onRetry} />
       ) : isPending ? (
-        <ProductGridSkeleton isCategoryList={isCategoryList} />
+        <ProductGridSkeleton layout="catalog" isCategoryList={isCategoryList} />
       ) : !data?.items.length ? (
         <EmptyState
           title="조건에 맞는 상품이 없어요"
@@ -82,11 +82,7 @@ export function ProductResults({
         <>
           <div
             aria-busy={isFetching}
-            className={cn(
-              "grid grid-cols-2 gap-6 xl:grid-cols-4",
-              isCategoryList &&
-                "justify-between xl:grid-cols-[repeat(4,minmax(0,16.25rem))]",
-            )}
+            className={catalogGridClassName(isCategoryList)}
           >
             {data.items.map((product, index) => (
               <ProductCard
@@ -101,7 +97,7 @@ export function ProductResults({
             page={data.page}
             pageCount={data.totalPages}
             onPageChange={onPageChange}
-            className="mt-25 justify-center gap-1 sm:gap-2 [&_button]:size-8 sm:[&_button]:size-9"
+            className="mt-12 justify-center gap-2 md:mt-21 [&_button]:size-6 md:[&_button]:size-9"
           />
         </>
       )}
