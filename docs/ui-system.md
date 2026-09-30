@@ -74,7 +74,7 @@ PD Figma 변수 변경·게시
 - 클래스 병합은 `cn()` (`@/lib/utils` — `clsx` + `tailwind-merge`).
 - variant가 있는 컴포넌트는 `class-variance-authority`(`cva`)로 정의한다.
 - 클래스 정렬은 `prettier-plugin-tailwindcss`가 담당한다 (수동 정렬 금지).
-- 반응형: mobile-first(접두사 없음 = mobile, 첫 단계는 `md:`). 기존 화면이 쓰는 `sm:`(640)은 Figma에 없는 단계라 새 코드에서는 쓰지 않고, 각 화면의 반응형 작업에서 정리한다. 브레이크포인트별 카드 폭(2xl 260 / xl·lg 242 / md 220 / mobile 160)·좌측 카테고리 폭(2xl 318 / 그 외 256~260)은 목록 화면 작업이 이 값을 따른다.
+- 반응형: mobile-first(접두사 없음 = mobile, 첫 단계는 `md:`). 기존 화면이 쓰는 `sm:`(640)은 Figma에 없는 단계라 새 코드에서는 쓰지 않고, 각 화면의 반응형 작업에서 정리한다(홈·상품 목록은 정리됨, 상품 상세 등은 남음). 브레이크포인트별 목록 카드 폭(2xl 260 / xl·lg 242 / md 220 / mobile 160)과 좌측 필터 폭(2xl 204 / xl 177 / lg 164)은 [product-list.md](product-list.md) 반응형 절을 따른다.
 
 ## 5. 컴포넌트 분류
 
