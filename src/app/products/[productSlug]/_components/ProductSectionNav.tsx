@@ -32,7 +32,7 @@ export function ProductSectionNav() {
   return (
     <nav
       aria-label="상품 상세 메뉴"
-      className="-mx-6 flex min-h-11 bg-fill-neutral text-font-white md:mx-0"
+      className="-mx-6 flex min-h-11 bg-(--nav-menu-fill) text-font-white md:mx-0"
     >
       {SECTIONS.map(({ id, label }) => (
         <a
