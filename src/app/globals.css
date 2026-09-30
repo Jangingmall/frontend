@@ -251,6 +251,12 @@
   --red-500: #e84610;
   --red-600: #d3400f;
   --red-700: #a5320b;
+
+  /* 다크 전용 배경 계열(Figma primitive-colors/dark-mode). 라이트에서는 안 쓴다. */
+  --dark-neutral-1000: #0f0f0f;
+  --dark-neutral-950: #141414;
+  --dark-neutral-900: #1f1f21;
+  --dark-neutral-800: #28282b;
 }
 
 /* Semantic 색상: Figma의 그룹.이름 구조를 그대로 옮긴다(bg/fill/border/font/yellow/red/
@@ -367,6 +373,66 @@
   --textfield-font-weak: var(--font-dark-subtle);
   --textfield-border-jade: var(--border-jade-weak);
   --textfield-border-selected: var(--border-jade-fill);
+}
+
+/* 다크 모드: `<html class="dark">` 일 때 semantic·component 토큰만 다시 정의한다. 값은 Figma
+   `components-color` 컬렉션의 `dark-mode` 모드(Darkmode 섹션은 이 모드를 지정한 구조)를 옮긴 것이다.
+   `:root` 에서 `var()` 로 별칭한 토큰(`--button-black: var(--fill-neutral-impact)` 등)은 같은
+   `<html>` 요소에서 계산되므로 여기서 다시 정의하지 않아도 따라 바뀐다. 값이 같아서 생략한 토큰의
+   목록은 `dark-tokens.test.ts` 의 SAME_IN_DARK 에 있다.
+   `--font-white` 는 다크에서 어두운 회색이 된다 — 버튼처럼 배경이 뒤집히는 면 위 글자용이라서다.
+   GNB·푸터·히어로처럼 항상 어두운 면 위의 글자는 시안대로 `text-(--white)` 를 쓴다. */
+.dark {
+  color-scheme: dark;
+
+  --bg-default: var(--dark-neutral-950);
+  --bg-subtle: var(--dark-neutral-950);
+  --bg-skeleton: var(--jade-blue-700);
+
+  --fill-jade-impact: var(--jade-blue-800);
+  --fill-jade-weak: var(--dark-neutral-800);
+  --fill-neutral: var(--cool-grey-300);
+  --fill-neutral-impact: var(--jade-blue-300);
+  --fill-neutral-weak: var(--dark-neutral-800);
+
+  --border-neutral-solid: var(--cool-grey-50);
+  --border-neutral-weak: color-mix(in oklab, var(--white) 30%, transparent);
+  --border-neutral-subtle: color-mix(in oklab, var(--white) 10%, transparent);
+  --border-jade-fill: var(--jade-blue-800);
+  --border-jade-weak: color-mix(
+    in oklab,
+    var(--jade-blue-700) 50%,
+    transparent
+  );
+
+  --font-dark: var(--white);
+  --font-dark-secondary: var(--cool-grey-50);
+  --font-dark-subtle: var(--cool-grey-100);
+  --font-dark-weak: var(--cool-grey-300);
+  --font-white: var(--cool-grey-900);
+
+  --yellow-border: var(--yellow-400);
+  --yellow-font: var(--yellow-400);
+  --yellow-fill: var(--yellow-400);
+
+  --red-border: var(--red-400);
+  --red-fill: var(--red-300);
+  --red-font: var(--red-400);
+
+  --states-hover: color-mix(in oklab, var(--jade-blue-200) 30%, transparent);
+  --states-hover-25: color-mix(in oklab, var(--jade-blue-200) 20%, transparent);
+  --states-hover-black: color-mix(in oklab, var(--white) 15%, transparent);
+  --states-sold-out: rgb(0 0 0 / 60%);
+
+  --nav-bg: var(--dark-neutral-1000);
+  --nav-menu-fill: var(--dark-neutral-900);
+
+  --icon-black: var(--white);
+  --icon-black-weak: var(--fill-neutral-impact);
+  --icon-white-border: var(--bg-default);
+  --icon-white-fill: var(--black);
+
+  --badge-jade: var(--jade-blue-800);
 }
 
 /* Figma `scroll-bar` 컴포넌트를 전역 스타일로 반영(별도 React 컴포넌트로 만들지 않음).
