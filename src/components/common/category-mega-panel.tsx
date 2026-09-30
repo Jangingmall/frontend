@@ -138,7 +138,7 @@ function CategoryMegaPanel({
                 onMouseEnter={() => onActiveCategoryChange(category.id)}
                 onFocus={() => onActiveCategoryChange(category.id)}
                 className={cn(
-                  "flex shrink-0 items-center gap-1 px-3 py-3 text-body-m whitespace-nowrap text-font-white transition-colors duration-600 ease-in lg:px-6 [&_path]:fill-current",
+                  "flex shrink-0 items-center gap-1 px-3 py-3 text-body-m whitespace-nowrap text-(--white) transition-colors duration-600 ease-in lg:px-6 [&_path]:fill-current",
                   active
                     ? "bg-(--jade-blue-400)/[0.075]"
                     : "hover:bg-states-hover-25",

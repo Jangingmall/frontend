@@ -231,9 +231,7 @@ function Gnb({
         isMobileMenuOpen={isMobileMenuOpen}
       />
       <Suspense
-        fallback={
-          <div aria-hidden="true" className="h-13 bg-fill-neutral-impact" />
-        }
+        fallback={<div aria-hidden="true" className="h-13 bg-(--nav-bg)" />}
       >
         <GnbNav
           isCategoryPanelOpen={isCategoryPanelOpen}

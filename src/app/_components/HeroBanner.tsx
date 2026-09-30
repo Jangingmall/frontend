@@ -35,7 +35,7 @@ export function HeroBanner() {
   return (
     <section
       aria-label="히어로"
-      className="relative flex min-h-hero flex-col items-center justify-end gap-6 page-gutter pt-24 pb-8 text-font-white md:pb-12 xl:pb-18 2xl:pb-20"
+      className="relative flex min-h-hero flex-col items-center justify-end gap-6 page-gutter pt-24 pb-8 text-(--white) md:pb-12 xl:pb-18 2xl:pb-20"
     >
       <ImagePlaceholder className="absolute inset-0 -z-20" />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/45" />
@@ -54,7 +54,7 @@ export function HeroBanner() {
         <div className="flex flex-wrap gap-3">
           <Link
             href="/products"
-            className="inline-flex h-11 items-center justify-center rounded-xs bg-(--button-jade) px-4 text-button-xl text-font-dark transition-colors hover:opacity-90 md:h-13.5 md:px-6 md:text-button-l"
+            className="inline-flex h-11 items-center justify-center rounded-xs bg-(--button-jade) px-4 text-button-xl text-(--black) transition-colors hover:opacity-90 md:h-13.5 md:px-6 md:text-button-l"
           >
             공예품 둘러보기
           </Link>

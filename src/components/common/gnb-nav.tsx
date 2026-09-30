@@ -73,7 +73,7 @@ function isGnbNavItemActive(
 }
 
 const ITEM_CLASS =
-  "flex items-center rounded-xs px-6 py-4 text-body-m text-font-white transition-colors duration-600 ease-in";
+  "flex items-center rounded-xs px-6 py-4 text-body-m text-(--white) transition-colors duration-600 ease-in";
 
 interface GnbNavProps {
   className?: string;
@@ -102,7 +102,7 @@ function GnbNav({
       className={cn(
         // 모바일에서는 헤더의 햄버거 메뉴로 대체돼 숨긴다. md는 항목을 폭에 맞춰 고르게
         // 펼치고(시안 768), lg 이상은 왼쪽 정렬로 자연 폭을 쓴다.
-        "hidden bg-fill-neutral-impact px-6 md:flex md:justify-between lg:justify-start lg:px-8",
+        "hidden bg-(--nav-bg) px-6 md:flex md:justify-between lg:justify-start lg:px-8",
         className,
       )}
     >
@@ -114,7 +114,7 @@ function GnbNav({
         className={cn(
           ITEM_CLASS,
           isCategoryPanelOpen
-            ? "bg-(--nav-jade) text-font-dark"
+            ? "bg-(--nav-jade) text-(--black)"
             : "hover:bg-states-hover-25",
         )}
       >
