@@ -6,12 +6,12 @@ import {
   fetchProductCategoriesServer,
   fetchProductList,
 } from "@/api/products/api";
-import { ProductGridSkeleton } from "@/components/product/ProductGridSkeleton";
 import { getQueryClient } from "@/lib/query/server";
 import { productKeys } from "@/queries/products/keys";
 import type { ProductCategory } from "@/types/product-filter";
 
 import { ProductListPage } from "./_components/ProductListPage";
+import { ProductListSkeleton } from "./_components/ProductListSkeleton";
 import { resolveCategoryView } from "./_lib/category-view";
 import { parseProductSearchParams } from "./_lib/search-params";
 import { getProductSeo } from "./_lib/seo";
@@ -64,7 +64,7 @@ export default async function ProductsPage({
   return (
     <Suspense
       fallback={
-        <ProductGridSkeleton isCategoryList={Boolean(query.category)} />
+        <ProductListSkeleton isCategoryList={Boolean(query.category)} />
       }
     >
       <HydrationBoundary state={dehydrate(queryClient)}>

@@ -9,6 +9,10 @@ import {
   resolveCategoryView,
 } from "@/app/products/_lib/category-view";
 import {
+  PRODUCT_FILTER_WIDTH_CLASS,
+  PRODUCT_LIST_MAIN_CLASS,
+} from "@/app/products/_lib/layout";
+import {
   parseProductSearchParams,
   updateProductSearchParams,
 } from "@/app/products/_lib/search-params";
@@ -16,6 +20,7 @@ import { SiteFloatingActions } from "@/app/site-floating-actions";
 import { ErrorState } from "@/components/common/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { publicEnv } from "@/lib/env";
+import { cn } from "@/lib/utils";
 import { startMockWorker } from "@/mocks/start-browser";
 import { productKeys } from "@/queries/products/keys";
 import {
@@ -29,6 +34,7 @@ import type { ProductSummary } from "@/types/product";
 import type { ProductCategory } from "@/types/product-filter";
 
 import { ProductFilters } from "./ProductFilters";
+import { ProductFilterSheet } from "./ProductFilterSheet";
 import { ProductResults } from "./ProductResults";
 import { ProductToolbar } from "./ProductToolbar";
 
@@ -49,6 +55,7 @@ export function ProductListPage({
   );
   const [isReady, setIsReady] = useState(false);
   const [hasStartupError, setHasStartupError] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -64,6 +71,19 @@ export function ProductListPage({
       isActive = false;
     };
   }, []);
+
+  // 필터 시트는 lg 미만에서만 쓴다. 열린 채 lg 이상으로 넓어지면 `lg:hidden` 버튼처럼 화면에서만
+  // 숨겨질 뿐 모달의 스크롤 잠금이 남으므로 상태를 닫는다.
+  useEffect(() => {
+    if (!isFilterOpen) return;
+    const media = window.matchMedia?.("(min-width: 64rem)");
+    if (!media) return;
+    function handleChange(event: MediaQueryListEvent) {
+      if (event.matches) setIsFilterOpen(false);
+    }
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, [isFilterOpen]);
 
   const categories = useProductCategories(isReady, initialCategories);
   const view = resolveCategoryView(query.category, categories.data ?? []);
@@ -85,6 +105,18 @@ export function ProductListPage({
     view.apiCategory,
   );
   const parent = view.categories.find((item) => item.id === category?.parentId);
+
+  // 사이드바(lg 이상)와 필터 시트(lg 미만)가 같은 데이터를 본다.
+  const filterData = {
+    categories: view.categories,
+    materials: materials.data ?? (publicEnv.apiMocking ? DESIGN_MATERIALS : []),
+    crafts: crafts.data ?? [],
+    isCraftsPending: crafts.isPending,
+    hasCraftsError: crafts.isError,
+    onRetryCrafts: () => {
+      void crafts.refetch();
+    },
+  };
 
   function handleChange(patch: Partial<ProductListQuery>) {
     const params = updateProductSearchParams(
@@ -111,7 +143,7 @@ export function ProductListPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-desktop px-4 pt-16 pb-24 sm:px-8 lg:px-12">
+    <main className={PRODUCT_LIST_MAIN_CLASS}>
       {hasStartupError ? (
         <ErrorState
           title="상품을 불러오지 못했어요"
@@ -121,25 +153,33 @@ export function ProductListPage({
         <div className="flex flex-col gap-6 lg:flex-row">
           {query.category &&
             (category ? (
-              <ProductFilters
-                query={query}
-                category={category}
-                categories={view.categories}
-                materials={
-                  materials.data ??
-                  (publicEnv.apiMocking ? DESIGN_MATERIALS : [])
-                }
-                crafts={crafts.data ?? []}
-                isCraftsPending={crafts.isPending}
-                hasCraftsError={crafts.isError}
-                onRetryCrafts={() => {
-                  void crafts.refetch();
-                }}
-                onChange={handleChange}
-                onReset={handleReset}
-              />
+              <>
+                <ProductFilters
+                  {...filterData}
+                  query={query}
+                  category={category}
+                  onChange={handleChange}
+                  onReset={handleReset}
+                />
+                <ProductFilterSheet
+                  {...filterData}
+                  open={isFilterOpen}
+                  onOpenChange={setIsFilterOpen}
+                  query={query}
+                  category={category}
+                  onApply={(patch) => {
+                    handleChange(patch);
+                    setIsFilterOpen(false);
+                  }}
+                />
+              </>
             ) : categories.isPending ? (
-              <Skeleton className="h-48 w-full lg:w-51 lg:shrink-0" />
+              <Skeleton
+                className={cn(
+                  "hidden h-48 w-full lg:block",
+                  PRODUCT_FILTER_WIDTH_CLASS,
+                )}
+              />
             ) : null)}
           <div className="min-w-0 flex-1">
             <ProductToolbar
@@ -147,6 +187,7 @@ export function ProductListPage({
               parent={parent}
               sort={query.sort ?? (publicEnv.apiMocking ? "popular" : "newest")}
               onSortChange={(sort) => handleChange({ sort })}
+              onFilterOpen={category ? () => setIsFilterOpen(true) : undefined}
             />
             <ProductResults
               isCategoryList={Boolean(query.category)}

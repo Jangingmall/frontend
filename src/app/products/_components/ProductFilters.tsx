@@ -1,155 +1,24 @@
 "use client";
 
-import { canUseProductCrafts } from "@/api/products/integration";
-import type { ProductListQuery } from "@/api/products/query";
-import { Accordion, AccordionItem } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { publicEnv } from "@/lib/env";
-import type {
-  ProductCategory,
-  ProductCraft,
-  ProductMaterial,
-} from "@/types/product-filter";
+import { PRODUCT_FILTER_WIDTH_CLASS } from "@/app/products/_lib/layout";
+import { cn } from "@/lib/utils";
 
-import { ProductCraftFilter } from "./ProductCraftFilter";
-import { ProductPriceFilter } from "./ProductPriceFilter";
+import type { ProductFilterPanelProps } from "./ProductFilterPanel";
+import { ProductFilterPanel } from "./ProductFilterPanel";
 
-interface ProductFiltersProps {
-  query: ProductListQuery;
-  category: ProductCategory;
-  categories: ProductCategory[];
-  materials: ProductMaterial[];
-  crafts: ProductCraft[];
-  isCraftsPending?: boolean;
-  hasCraftsError?: boolean;
-  onRetryCrafts?: () => void;
-  onChange: (patch: Partial<ProductListQuery>) => void;
-  onReset: () => void;
-}
+type ProductFiltersProps = Omit<
+  ProductFilterPanelProps,
+  "density" | "defaultOpen" | "accordionClassName" | "onReset"
+> & { onReset: () => void };
 
-export function ProductFilters({
-  query,
-  category,
-  categories,
-  materials,
-  crafts,
-  isCraftsPending,
-  hasCraftsError,
-  onRetryCrafts,
-  onChange,
-  onReset,
-}: ProductFiltersProps) {
-  const parent =
-    categories.find((item) => item.id === category.parentId) ?? category;
-  const children = categories.filter((item) => item.parentId === parent.id);
-  const isSubcategory = category.parentId !== null;
-
-  function handleMaterial(id: string) {
-    const selected = query.materials ?? [];
-    onChange({
-      materials: selected.includes(id)
-        ? selected.filter((item) => item !== id)
-        : [...selected, id],
-    });
-  }
-
+/** 데스크톱(lg 이상) 좌측 사이드바 필터. 변경을 즉시 반영한다. */
+export function ProductFilters(props: ProductFiltersProps) {
   return (
-    <aside aria-label="상품 필터" className="w-full lg:w-51 lg:shrink-0">
-      <Accordion
-        key={category.id}
-        title="필터"
-        onReset={onReset}
-        multiple
-        defaultValue={
-          canUseProductCrafts() && isSubcategory && query.crafts?.length
-            ? ["craft", "price", "material"]
-            : ["category", "price", "material"]
-        }
-        className="[&_[data-slot=accordion-item]]:border-b [&_[data-slot=accordion-item]]:border-border-neutral-weak [&_[data-slot=accordion]]:space-y-1 [&_[data-slot=accordion]]:pt-1 [&>div:first-child]:py-2 [&>div:first-child]:pl-2 [&>div:first-child>button]:underline"
-      >
-        {isSubcategory && canUseProductCrafts() && (
-          <AccordionItem title={category.name} value="craft">
-            <ProductCraftFilter
-              crafts={crafts}
-              selected={query.crafts ?? []}
-              isPending={isCraftsPending}
-              hasError={hasCraftsError}
-              onRetry={onRetryCrafts}
-              onChange={(crafts) => onChange({ crafts })}
-            />
-          </AccordionItem>
-        )}
-        {(!isSubcategory || !canUseProductCrafts()) && (
-          <AccordionItem title={parent.name} value="category">
-            <nav aria-label="상품 분류" className="-mx-2 flex flex-col">
-              {children.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  aria-current={query.category === item.id ? "page" : undefined}
-                  onClick={() =>
-                    onChange({
-                      category: item.id,
-                      materials: [],
-                      minPrice: undefined,
-                      maxPrice: undefined,
-                    })
-                  }
-                  className="border-b border-border-neutral-subtle px-2 py-2 text-left text-body-m text-font-dark last:border-b-0 aria-[current=page]:font-bold"
-                >
-                  {item.name}
-                </button>
-              ))}
-            </nav>
-          </AccordionItem>
-        )}
-        <AccordionItem title="가격대" value="price">
-          <div className="-mx-1 pt-2 pb-1">
-            <ProductPriceFilter
-              key={category.id}
-              min={category.minPrice}
-              max={category.maxPrice}
-              minPrice={query.minPrice}
-              maxPrice={query.maxPrice}
-              onChange={onChange}
-            />
-          </div>
-        </AccordionItem>
-        {publicEnv.apiMocking && (
-          <AccordionItem title="소재" value="material">
-            <div className="grid grid-cols-2 gap-1">
-              {materials.map((material) => {
-                const isSelected =
-                  query.materials?.includes(material.id) ?? false;
-                return (
-                  <Button
-                    key={material.id}
-                    type="button"
-                    variant="outline"
-                    className="h-7 min-w-0 text-body-m aria-pressed:border-border-jade-fill aria-pressed:bg-states-hover"
-                    size="xs"
-                    aria-pressed={isSelected}
-                    onClick={() => handleMaterial(material.id)}
-                  >
-                    {material.name}
-                  </Button>
-                );
-              })}
-            </div>
-          </AccordionItem>
-        )}
-      </Accordion>
-      {publicEnv.apiMocking && (
-        <div className="flex min-h-9 items-center px-2">
-          <Checkbox
-            checked={query.hasGiftWrap ?? false}
-            onCheckedChange={(checked) => onChange({ hasGiftWrap: checked })}
-          >
-            선물 포장 가능
-          </Checkbox>
-        </div>
-      )}
+    <aside
+      aria-label="상품 필터"
+      className={cn("hidden w-full lg:block", PRODUCT_FILTER_WIDTH_CLASS)}
+    >
+      <ProductFilterPanel {...props} />
     </aside>
   );
 }

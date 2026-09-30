@@ -16,6 +16,9 @@ const dialogVariants = cva(
         default: "max-w-lg overflow-y-auto p-6",
         form: "flex max-w-140 flex-col gap-3 overflow-hidden py-6",
         confirmation: "max-w-120 overflow-y-auto px-6 pt-16 pb-6",
+        // 필터 시트(Figma PL-2/3 filter): 폭 100%·고정 높이(mobile 548 / md 707), 아래에 붙는다.
+        sheet:
+          "flex h-137 max-w-none flex-col overflow-hidden rounded-t-xs rounded-b-none md:h-176.75",
       },
     },
     defaultVariants: { variant: "default" },
@@ -40,7 +43,7 @@ interface DialogProps extends VariantProps<typeof dialogVariants> {
   headerAction?: ReactNode;
   /** form 본문 스크롤과 분리되는 하단 액션 */
   footer?: ReactNode;
-  /** form/confirmation은 하단 액션으로 닫으며, 기본 모달은 X 버튼을 표시한다. */
+  /** form/confirmation은 하단 액션으로 닫으며, 기본 모달·sheet는 X 버튼을 표시한다. */
   showClose?: boolean;
   /**
    * `variant="form"` 전용. 기본(`true`)은 본문을 548px(`h-137`)로 고정해 내부 스크롤한다
@@ -63,7 +66,7 @@ export function Dialog({
   variant = "default",
   headerAction,
   footer,
-  showClose = variant === "default",
+  showClose = variant === "default" || variant === "sheet",
   scrollableContent = true,
   onClick,
   container,
@@ -86,7 +89,8 @@ export function Dialog({
         <DialogPrimitive.Viewport
           className={cn(
             container ? "absolute inset-0" : "fixed inset-0",
-            "z-10 flex items-center justify-center overflow-y-auto p-6",
+            "z-10 flex justify-center overflow-y-auto",
+            variant === "sheet" ? "items-end p-0" : "items-center p-6",
           )}
         >
           <DialogPrimitive.Popup
@@ -99,13 +103,17 @@ export function Dialog({
                 variant === "form" &&
                   "flex min-h-9.5 shrink-0 items-center justify-between gap-3 px-6 pb-2",
                 variant === "confirmation" && "text-center",
+                variant === "sheet" &&
+                  "mx-6 mt-3 mb-1 flex h-14 shrink-0 items-center justify-between border-b border-border-neutral-solid",
               )}
             >
               <div>
                 <DialogPrimitive.Title
                   className={cn(
-                    variant === "form" ? "text-title-m" : "text-title-l",
-                    showClose && "pr-10",
+                    variant === "form" || variant === "sheet"
+                      ? "text-title-m"
+                      : "text-title-l",
+                    showClose && variant !== "sheet" && "pr-10",
                     hideTitle && "sr-only",
                   )}
                 >
@@ -124,8 +132,17 @@ export function Dialog({
                 )}
               </div>
               {headerAction}
+              {showClose && variant === "sheet" && (
+                <DialogPrimitive.Close
+                  data-slot="dialog-close"
+                  aria-label="닫기"
+                  className="flex size-9 items-center justify-center rounded-xs outline-none focus-visible:outline-2 focus-visible:outline-border-jade-fill"
+                >
+                  <CancelIcon className="size-6 [&_path]:fill-current" />
+                </DialogPrimitive.Close>
+              )}
             </div>
-            {showClose && (
+            {showClose && variant !== "sheet" && (
               <DialogPrimitive.Close
                 data-slot="dialog-close"
                 aria-label="닫기"
@@ -144,6 +161,8 @@ export function Dialog({
                     scrollableContent ? "h-137" : "max-h-137",
                   ),
                 variant === "confirmation" && "mt-12",
+                variant === "sheet" &&
+                  "scrollbar-slim min-h-0 flex-1 overflow-y-auto overscroll-contain px-6",
               )}
             >
               {children}
@@ -153,7 +172,9 @@ export function Dialog({
                 data-slot="dialog-footer"
                 className={cn(
                   "shrink-0",
-                  variant === "form" ? "px-6 pt-6" : "mt-6",
+                  variant === "form" && "px-6 pt-6",
+                  variant === "sheet" && "px-6 pt-3 pb-4",
+                  variant !== "form" && variant !== "sheet" && "mt-6",
                 )}
               >
                 {footer}

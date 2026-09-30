@@ -34,6 +34,21 @@ export const ProductList: Story = {
   decorators: [withListWidth],
   args: { variant: "list" },
 };
+/**
+ * 모바일(375) 목록 카드: 160px 폭, 이름 14/장인 13, 찜 하트·색상 칩 없음, 평점이 가격 아래.
+ * `md` 이상에서는 `ProductList`와 같다 — 뷰포트 폭으로 전환되므로 모바일 뷰포트로 본다.
+ */
+export const ProductListMobile: Story = {
+  parameters: { viewport: { defaultViewport: "mobile1" } },
+  decorators: [
+    (Story) => (
+      <div className="w-40">
+        <Story />
+      </div>
+    ),
+  ],
+  args: { variant: "list" },
+};
 export const SoldOut: Story = {
   decorators: [withListWidth],
   args: { product: { ...product, isSoldOut: true } },

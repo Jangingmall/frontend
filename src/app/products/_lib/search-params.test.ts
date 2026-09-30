@@ -92,3 +92,19 @@ it("선물 테마 URL은 알려진 테마만 읽고 페이지 변경에도 유�
     }).get("giftTheme"),
   ).toBe("housewarming");
 });
+
+it("분류 변경 패치에 종목을 함께 넘기면 그 종목이 남는다 — 초안 전체를 넘기는 호출부가 비워야 한다", () => {
+  const current = new URLSearchParams("category=kitchen&subcategory=1");
+  expect(
+    updateProductSearchParams(current, {
+      category: "kitchen-1",
+      crafts: ["1"],
+    }).getAll("subcategory"),
+  ).toEqual(["1"]);
+  expect(
+    updateProductSearchParams(current, {
+      category: "kitchen-1",
+      crafts: [],
+    }).has("subcategory"),
+  ).toBe(false);
+});
