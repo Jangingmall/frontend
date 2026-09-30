@@ -1,5 +1,8 @@
 "use client";
 
+import { PRODUCT_FILTER_WIDTH_CLASS } from "@/app/products/_lib/layout";
+import { cn } from "@/lib/utils";
+
 import type { ProductFilterPanelProps } from "./ProductFilterPanel";
 import { ProductFilterPanel } from "./ProductFilterPanel";
 
@@ -13,7 +16,7 @@ export function ProductFilters(props: ProductFiltersProps) {
   return (
     <aside
       aria-label="상품 필터"
-      className="hidden w-full lg:block lg:w-41 lg:shrink-0 xl:w-44.25 2xl:w-51"
+      className={cn("hidden w-full lg:block", PRODUCT_FILTER_WIDTH_CLASS)}
     >
       <ProductFilterPanel {...props} />
     </aside>

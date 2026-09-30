@@ -9,6 +9,10 @@ import {
   resolveCategoryView,
 } from "@/app/products/_lib/category-view";
 import {
+  PRODUCT_FILTER_WIDTH_CLASS,
+  PRODUCT_LIST_MAIN_CLASS,
+} from "@/app/products/_lib/layout";
+import {
   parseProductSearchParams,
   updateProductSearchParams,
 } from "@/app/products/_lib/search-params";
@@ -16,6 +20,7 @@ import { SiteFloatingActions } from "@/app/site-floating-actions";
 import { ErrorState } from "@/components/common/error-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { publicEnv } from "@/lib/env";
+import { cn } from "@/lib/utils";
 import { startMockWorker } from "@/mocks/start-browser";
 import { productKeys } from "@/queries/products/keys";
 import {
@@ -138,7 +143,7 @@ export function ProductListPage({
   }
 
   return (
-    <main className="mx-auto w-full max-w-desktop page-gutter pt-12 pb-21 md:pt-16 md:pb-40 lg:pb-50">
+    <main className={PRODUCT_LIST_MAIN_CLASS}>
       {hasStartupError ? (
         <ErrorState
           title="상품을 불러오지 못했어요"
@@ -169,7 +174,12 @@ export function ProductListPage({
                 />
               </>
             ) : categories.isPending ? (
-              <Skeleton className="hidden h-48 w-full lg:block lg:w-41 lg:shrink-0 xl:w-44.25 2xl:w-51" />
+              <Skeleton
+                className={cn(
+                  "hidden h-48 w-full lg:block",
+                  PRODUCT_FILTER_WIDTH_CLASS,
+                )}
+              />
             ) : null)}
           <div className="min-w-0 flex-1">
             <ProductToolbar
