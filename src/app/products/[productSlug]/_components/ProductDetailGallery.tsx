@@ -39,9 +39,9 @@ export function ProductDetailGallery({
   return (
     <section
       aria-label="상품 이미지"
-      className="flex flex-col-reverse items-start gap-3 sm:flex-row sm:gap-6"
+      className="flex items-start gap-2 md:gap-3 xl:gap-6"
     >
-      <div className="flex w-full shrink-0 gap-1 overflow-x-auto p-px sm:w-22.5 sm:flex-col sm:overflow-visible sm:p-0">
+      <div className="flex w-10 shrink-0 flex-col gap-1 lg:w-20 xl:w-22.5">
         {galleryImages.map((image, index) => (
           <button
             key={`${image.src}-${index}`}
@@ -50,7 +50,7 @@ export function ProductDetailGallery({
             aria-pressed={index === activeIndex}
             onClick={() => setSelectedIndex(index)}
             className={cn(
-              "relative aspect-square w-16 shrink-0 overflow-hidden bg-fill-jade-weak outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill sm:w-full",
+              "relative aspect-square w-full shrink-0 overflow-hidden bg-fill-jade-weak outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill",
               index === activeIndex &&
                 "ring-1 ring-border-jade-fill ring-inset",
             )}
@@ -63,7 +63,7 @@ export function ProductDetailGallery({
         type="button"
         aria-label={`${productName} 이미지 확대`}
         onClick={() => setIsLightboxOpen(true)}
-        className="relative aspect-square w-full min-w-0 overflow-hidden bg-fill-jade-weak outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill sm:flex-1"
+        className="relative aspect-square min-w-0 flex-1 overflow-hidden bg-fill-jade-weak outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill"
       >
         <ProductDetailImage
           image={{ ...selectedImage, alt: selectedImage.alt || productName }}
