@@ -15,11 +15,14 @@ export function ArtisanSummary({ artisan }: ArtisanSummaryProps) {
   return (
     <section
       aria-label="장인 소개"
-      className="flex flex-col bg-bg-subtle sm:flex-row"
+      className="flex flex-col bg-bg-subtle lg:flex-row"
     >
-      <div className="relative h-70 shrink-0 sm:w-51">
+      <div className="relative aspect-100/137 shrink-0 lg:aspect-auto lg:h-70 lg:w-51">
         {artisan.image ? (
-          <ProductDetailImage image={artisan.image} sizes="204px" />
+          <ProductDetailImage
+            image={artisan.image}
+            sizes="(min-width: 1024px) 204px, 400px"
+          />
         ) : (
           <span
             role="img"
