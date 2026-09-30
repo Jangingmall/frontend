@@ -168,4 +168,25 @@ describe("ProductFilterSheet", () => {
       }),
     );
   });
+
+  it("분류를 바꾸면 이전에 남아 있던 종목이 확인 때 되살아나지 않는다", async () => {
+    const onApply = vi.fn();
+    render(
+      <Harness
+        onApply={onApply}
+        query={{ category: "kitchen", crafts: ["1"], materials: ["wood"] }}
+      />,
+    );
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "필터 열기" }));
+    const sheet = await screen.findByRole("dialog", { name: "필터" });
+    await user.click(within(sheet).getByRole("button", { name: /키친/ }));
+    await user.click(
+      within(sheet).getByRole("button", { name: "다기 · 찻잔" }),
+    );
+    await user.click(within(sheet).getByRole("button", { name: "확인" }));
+    expect(onApply).toHaveBeenCalledWith(
+      expect.objectContaining({ category: "kitchen-1", crafts: [] }),
+    );
+  });
 });

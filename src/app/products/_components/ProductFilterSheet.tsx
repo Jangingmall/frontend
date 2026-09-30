@@ -112,7 +112,16 @@ export function ProductFilterSheet({
         density="comfortable"
         defaultOpen={draft.crafts?.length ? ["craft"] : []}
         accordionClassName={MD_THREE_COLUMN}
-        onChange={(patch) => setDraft((current) => ({ ...current, ...patch }))}
+        onChange={(patch) =>
+          setDraft((current) => ({
+            ...current,
+            ...patch,
+            // 분류가 바뀌면 종목을 해제한다(사이드바·URL 갱신 규칙과 같다). 초안 전체를 넘기는
+            // [확인]이 분류 변경 때 지워진 `subcategory`를 되살리지 않게 한다.
+            ...(patch.category !== undefined &&
+              patch.category !== current.category && { crafts: [] }),
+          }))
+        }
       />
     </Dialog>
   );
