@@ -5,7 +5,7 @@ export default function ProductDetailLoading() {
     <div
       role="status"
       aria-label="상품 상세 불러오는 중"
-      className="mx-auto grid w-full max-w-desktop gap-12 px-4 py-12 sm:px-6 lg:grid-cols-[minmax(0,774fr)_minmax(0,522fr)] lg:px-12"
+      className="mx-auto product-detail-grid w-full max-w-desktop page-gutter pt-6 pb-24 md:pt-12"
     >
       <Skeleton className="aspect-square w-full" />
       <div className="space-y-6">
