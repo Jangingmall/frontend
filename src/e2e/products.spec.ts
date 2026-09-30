@@ -205,15 +205,21 @@ for (const [path, label] of [
       await page.setViewportSize({ width, height: 900 });
       await page.goto(path);
       await expect(page.locator("article").first()).toBeVisible();
-      const columnCount = await page
-        .locator("article")
-        .evaluateAll(
-          (cards) =>
-            new Set(
-              cards.map((card) => Math.round(card.getBoundingClientRect().x)),
-            ).size,
-        );
-      expect(columnCount).toBe(columns);
+      // 뷰포트 변경·이동 직후에는 레이아웃이 안정되기 전일 수 있어 폴링으로 확인한다.
+      await expect
+        .poll(() =>
+          page
+            .locator("article")
+            .evaluateAll(
+              (cards) =>
+                new Set(
+                  cards.map((card) =>
+                    Math.round(card.getBoundingClientRect().x),
+                  ),
+                ).size,
+            ),
+        )
+        .toBe(columns);
       expect(await hasNoHorizontalOverflow(page)).toBe(true);
       if (path.includes("category")) {
         // 보이는 필터 UI는 하나: lg 이상 사이드바 / 미만 [필터] 버튼.
