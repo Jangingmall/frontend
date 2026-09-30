@@ -19,9 +19,8 @@ export function RelatedProducts({ products }: RelatedProductsProps) {
         작가의 다른 작품
       </h2>
       {/* 카드는 브레이크포인트별 고정 폭이라 xl 이상에서만 3장이 한 줄에 들어오고, 그보다 좁으면 가로 스크롤
-          행이 된다(시안 lg 이하). `relative`: 카드 안 `sr-only`(absolute)가 스크롤 영역 밖에 놓여 페이지
-          가로 스크롤을 만들지 않게 이 행을 위치 기준으로 만든다. */}
-      <div className="relative flex gap-3 overflow-x-auto pb-3 md:gap-4 xl:gap-4.5 xl:pb-0 2xl:gap-3.75">
+          행이 된다(시안 lg 이하). */}
+      <div className="flex gap-3 overflow-x-auto pb-3 md:gap-4 xl:gap-4.5 xl:pb-0 2xl:gap-3.75">
         {products.slice(0, 3).map((product) => (
           <div key={product.id} className="w-40 shrink-0 md:w-60.5 xl:w-62">
             <ProductCard
