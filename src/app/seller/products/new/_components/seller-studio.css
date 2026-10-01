@@ -670,7 +670,7 @@
   z-index: 30;
 }
 .ss-review-header > .ss-logo {
-  color: #121b29;
+  color: var(--cool-grey-900);
 }
 .ss-review-header > button {
   font-size: 14px;
