@@ -1,15 +1,41 @@
 # 판매자 AI 상세페이지 MSW 시연
 
-## 경로와 응답
+## 경로
 
-- `/seller/products/new/1`: 청자 분청 찻잔 (`cheongja-buncheong/react_document.json`)
-- `/seller/products/new/2`: 전주 합죽선 매화선 (`hapjukseon-maehwa-v2/react_document.json`)
+- `/seller/products/new/1`: 청자 분청 찻잔
+- `/seller/products/new/2`: 전주 합죽선 매화선
 
-두 경로 모두 사진·작품 정보 입력에서 시작합니다. 생성하기 → 텍스트 편집 → 임시 저장·저장본 불러오기 → PC/태블릿/모바일 미리보기 → 제작 완료를 시연할 수 있습니다.
+두 경로는 기존 `ServerSellerStudio`를 그대로 사용합니다. 입력, 가격·재고 모달, 사진 업로드, 생성 상태 조회, 편집, 사진 교체, 실행 취소/다시 실행, 저장·재조회, 상품 미리보기, 검수·승인·게시 UI를 별도로 구현하지 않습니다.
 
-입력값과 사진은 변경할 수 있지만 생성 결과는 경로별 제공 JSON으로 고정됩니다. 실제 AI 생성, 이미지 업로드, 상품 게시는 수행하지 않습니다. 저장은 MSW의 브라우저 메모리에만 유지되며 새로고침하면 입력 화면으로 돌아갑니다. 기존 `/seller/products/new`의 실제 API 흐름은 유지합니다.
+## 시연 방법
 
-## 로컬 실행
+1. 사진·상품명·제작 과정·관리 방법은 제공 자료로 채워져 있습니다. 필요하면 변경합니다.
+2. 생성하기를 누르고 기존 상품 기본정보 모달에 가격·재고를 입력합니다.
+3. 생성 완료 후 기존 왼쪽 목록에서 문구와 사진을 선택해 편집합니다.
+4. 임시저장, 서버 문서 다시 조회, 최종 검토하기를 사용할 수 있습니다.
+5. 제작 완료하기에서 검수 요청 → 사실·사진 확인 → 승인 → 콘텐츠 게시 순서를 진행합니다.
+
+모든 생성·저장·게시 결과는 MSW 브라우저 메모리에만 있습니다. 실제 AI·상품 DB·S3는 호출하지 않습니다. 생성 결과는 입력 내용에 따라 달라지지 않는 경로별 고정 문서입니다. 새로고침하면 새 시연 세션의 입력 화면으로 돌아갑니다.
+
+## 기존 코드 재사용
+
+`SellerDemoStudio`는 초기 자료를 읽고 `SellerStudioRuntimeContext`에 시연 연결을 제공하는 래퍼입니다. 별도 편집 UI나 편집 상태를 갖지 않습니다.
+
+기본 컨텍스트는 기존 API·업로더·인증·URL을 사용합니다. 시연 컨텍스트는 같은 API 함수와 응답 검증을 사용하면서 전송 경로만 `/api/mock/seller-demos/{1,2}/api/...`로 변경합니다. 쿼리 캐시와 MSW 데이터는 시나리오·세션별로 분리합니다. 시연 경로에서만 인증 경계를 건너뛰고 실제 인증 상태는 바꾸지 않습니다.
+
+사진 업로드도 기존 압축 → presigned URL → PUT 흐름을 재사용합니다. 시연용 URL은 같은 origin의 `/api/mock/seller-demos/{1,2}/uploads/...`이며 MSW가 바이너리를 메모리에 보관합니다. 원본 사진으로 실행 취소한 뒤 저장하는 경우도 지원합니다.
+
+## PNG 기준 문서
+
+- 시연 응답: `src/api/seller-demo/mock/fixtures/{1,2}.json`
+- 자료: `public/seller-demos/{1,2}/`
+- 초기 입력값: `src/api/seller-demo/scenarios.ts`
+
+제공 JSON에서 빠진 갤러리·카드·목록을 sections PNG와 대조해 보충했습니다. 갤러리 사진은 해당 PNG의 사진 영역을 추출해 크롭을 보존합니다. 문구·카드·표는 편집 가능한 문서 요소로 유지합니다. 원본 Downloads 파일은 수정하지 않습니다.
+
+문서 렌더러의 `fitCanvas` 옵션은 시연 문서의 774px 구성을 미리보기 너비에 맞춰 비례 축소합니다. 기존 실제 경로에서는 기본값(false)을 사용합니다.
+
+## 실행 및 검증
 
 ```powershell
 $env:NEXT_PUBLIC_DATA_MODE='api'
@@ -17,32 +43,11 @@ $env:NEXT_PUBLIC_API_MOCKING=''
 npm run dev -- --port 3109
 ```
 
-API 모드에서도 위 시연 화면의 `/api/mock/seller-demos/1`, `/api/mock/seller-demos/2` GET/POST/PUT 요청만 MSW로 처리합니다. 백엔드는 필요하지 않습니다. 요청의 `X-Studio-Session`으로 각 생성 세션의 편집 결과를 분리합니다.
+백엔드 없이 시연할 수 있습니다. 타입 검사·린트·단위 테스트·빌드를 수행하고, 위 서버 실행 후 다음 브라우저 검사를 실행합니다.
 
-## 자료 위치
+```powershell
+$env:PLAYWRIGHT_BASE_URL='http://localhost:3109'
+npx playwright test src/e2e/seller-demo.spec.ts src/e2e/seller-demo-fidelity.spec.ts
+```
 
-- 응답 원본: `src/api/seller-demo/mock/fixtures/{1,2}.json`
-- 시나리오 입력값: `src/api/seller-demo/scenarios.ts`
-- 이미지: `public/seller-demos/{1,2}/`
-
-첫 번째 폴더에 원본 사진이 없어 사용자의 승인에 따라 제공된 hero, detail_split, usage_scene 섹션 PNG에서 작품 사진 영역을 추출했습니다. 두 번째 시나리오는 제공된 photos 파일을 사용합니다. 원본 폴더는 수정하지 않습니다.
-
-## 검증
-
-- `npm run typecheck`
-- `npm run lint`
-- `npm run test`
-- `npm run build`
-- 실행 중인 로컬 서버에 대해 `PLAYWRIGHT_BASE_URL`을 설정하고 `npx playwright test src/e2e/seller-demo.spec.ts` 실행 (프로젝트 Playwright 설정의 환경 변수 확인)
-
-E2E는 각 경로에서 생성·텍스트 수정·저장·재조회·미리보기·완료와 실제 판매자 API 요청 부재, 미지원 시나리오의 404를 확인합니다.
-
-## 섹션 PNG 기준 복원
-
-제공 JSON은 PNG와 별도 결과로, 갤러리·카드·목록 등 일부 내용이 누락되어 있습니다. 시연 fixture는 원본 sections PNG를 기준으로 보충했습니다. 원본 Downloads 파일은 유지합니다.
-
-- 찻잔: 제작 이야기 번호/가로 배치, 갤러리 5장, 디테일/사용 장면 좌우 배치, 제품 정보 표, 관리 목록 3개, 마무리 정렬 복원
-- 합죽선: 소개 문구, 제작 이야기 번호/가로 배치, 색상 표시 3개 및 packshot 연결, 갤러리 5장, 추천 카드 3개, 관리 목록과 마무리 정렬 복원
-- 두 갤러리는 PNG의 사진별 크롭까지 보존하기 위해 해당 사진 영역을 추출한 WebP를 사용합니다. 섹션 전체를 이미지로 치환하지 않으며 제목·본문·카드·표는 편집 가능합니다.
-- 스타일은 시연 fixture와 `.seller-demo` 범위에만 적용합니다. 실제 판매자 문서 파서/렌더러는 변경하지 않습니다.
-- 브라우저 검증: `src/e2e/seller-demo-fidelity.spec.ts`에서 이미지 로딩, 갤러리/카드 수, 좌우 배치를 검사하고 17개 섹션을 개별 캡처합니다.
+브라우저 검사는 기존 화면의 전체 제작 흐름, 사진 교체·실행 취소·저장, 실제 판매자 API 호출 부재, 17개 섹션 내용과 이미지 로딩, 모바일 캔버스를 확인합니다. 캡처는 `artifacts/`에 저장됩니다.
