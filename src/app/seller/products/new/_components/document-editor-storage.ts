@@ -41,10 +41,46 @@ export const documentEditorSnapshotSchema = z.object(snapshotFields);
 export const demoDocumentSnapshotSchema = z.object({
   format: z.literal("document-v1"),
   ...snapshotFields,
+  document: snapshotFields.document.transform(repairDemoUsageScene),
   productId: z.number().int().nonnegative(),
   product: productSchema.optional(),
 });
 export type DemoDocumentSnapshot = z.infer<typeof demoDocumentSnapshotSchema>;
+
+/** 이전 부채 시연 초안의 666px 폭만 보정하고 사용자가 편집한 노드는 유지한다. */
+function repairDemoUsageScene(document: StudioDocument): StudioDocument {
+  return {
+    ...document,
+    root: document.root.map((section) => {
+      const style = section.props?.style;
+      if (
+        !section.id.endsWith("section-05-usage_scene-root") ||
+        style?.maxWidth !== 666 ||
+        style.gridTemplateColumns !== "minmax(0,350fr) minmax(0,316fr)"
+      )
+        return section;
+      return {
+        ...section,
+        props: {
+          ...section.props,
+          style: { ...style, maxWidth: document.canvasWidth },
+        },
+        children: section.children?.map((node) =>
+          node.tag === "img" && node.props?.style?.objectFit === "cover"
+            ? {
+                ...node,
+                props: {
+                  ...node.props,
+                  style: { ...node.props.style, objectFit: "contain" },
+                },
+              }
+            : node,
+        ),
+      };
+    }),
+  };
+}
+
 const serverSnapshotSchema = z.object({
   ownerId: z.number().int().nonnegative(),
   productId: z.number().int().positive(),

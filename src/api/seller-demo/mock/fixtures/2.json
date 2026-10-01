@@ -839,7 +839,7 @@
           "borderColor": "#dce2e3",
           "display": "grid",
           "gridTemplateColumns": "minmax(0,350fr) minmax(0,316fr)",
-          "maxWidth": 666,
+          "maxWidth": 774,
           "margin": "0 auto"
         }
       },
@@ -957,7 +957,7 @@
               "display": "block",
               "width": "100%",
               "height": 310,
-              "objectFit": "cover",
+              "objectFit": "contain",
               "marginTop": 13
             },
             "imageId": "lifestyle",

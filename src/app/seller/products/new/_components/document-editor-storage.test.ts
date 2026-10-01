@@ -123,6 +123,46 @@ describe("저장 가능한 사진 준비", () => {
 });
 
 describe("이전 데모 저장본 호환", () => {
+  it("부채 사용 장면의 좁은 폭과 사진 잘림을 복구하면서 편집 문구·배경·사진을 보존한다", () => {
+    const document = fixture("2");
+    const section = document.root[4];
+    section.id = `demo-page-5-${section.id}`;
+    section.props!.style!.maxWidth = 666;
+    section.props!.style!.backgroundColor = "#eef1f2";
+    const nodes = flattenDocument({ ...document, root: [section] });
+    nodes.find((node) => node.type === "text")!.value = "편집한 사용 장면";
+    const photo = nodes.find((node) => node.tag === "img")!;
+    photo.props!.imageId = "upload";
+    photo.props!.style!.objectFit = "cover";
+    const restored = parseDemoDocumentSnapshot(
+      JSON.stringify({
+        format: "document-v1",
+        document,
+        images: { upload: "data:image/png;base64,aGVsbG8=" },
+        review: false,
+        productId: 2,
+      }),
+    );
+    expect(restored.document.root[4].props!.style!.maxWidth).toBe(774);
+    expect(restored.document.root[4].props!.style!.backgroundColor).toBe(
+      "#eef1f2",
+    );
+    const restoredNodes = flattenDocument(restored.document);
+    expect(
+      restoredNodes.find((node) => node.id === photo.id)?.props,
+    ).toMatchObject({
+      imageId: "upload",
+      style: { objectFit: "contain" },
+    });
+    expect(
+      restoredNodes.some((node) => node.value === "편집한 사용 장면"),
+    ).toBe(true);
+    expect(restored.document.root.filter((_, i) => i !== 4)).toEqual(
+      document.root.filter((_, i) => i !== 4),
+    );
+    expect(restored.images.upload).toBe("data:image/png;base64,aGVsbG8=");
+  });
+
   it("편집·복제·추가·삭제·정렬과 업로드 이미지를 raw 문서로 유지한다", () => {
     const source = fixture("1");
     const { draft, assets } = createDemoDraft(source, "저장한 작품");
