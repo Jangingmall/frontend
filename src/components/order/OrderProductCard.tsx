@@ -133,7 +133,7 @@ export function OrderProductCard(props: OrderProductCardProps) {
               <Button
                 variant="solid"
                 size="m"
-                className="w-full"
+                className="h-10 w-full text-button-xl"
                 disabled={
                   !props.onAction || !ORDER_LIST_IMPLEMENTED_ACTIONS.has(action)
                 }
