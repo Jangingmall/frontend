@@ -24,17 +24,18 @@ async function cartRequest(suffix: string, method = "GET", body?: unknown) {
         .map((line) => line.productId),
     ),
   ];
+  const results = await Promise.allSettled(
+    missingIds.map((productId) => fetchProductThumbnail(productId)),
+  );
+  // 보조 이미지 조회 실패가 성공한 장바구니 조회·변경을 실패로 바꾸지 않는다.
   const thumbnails = new Map(
-    await Promise.all(
-      missingIds.map(async (productId) => {
-        try {
-          return [productId, await fetchProductThumbnail(productId)] as const;
-        } catch {
-          // 보조 이미지 조회 실패가 성공한 장바구니 조회·변경을 실패로 바꾸지 않는다.
-          return [productId, null] as const;
-        }
-      }),
-    ),
+    missingIds.map((productId, index) => {
+      const result = results[index];
+      return [
+        productId,
+        result.status === "fulfilled" ? result.value : null,
+      ] as const;
+    }),
   );
   return {
     ...cart,

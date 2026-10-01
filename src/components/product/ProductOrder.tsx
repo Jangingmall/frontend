@@ -35,7 +35,7 @@ export function ProductOrder({
   quantityControl,
   thumbnailOverlay,
 }: ProductOrderProps) {
-  const [hasImageError, setHasImageError] = useState(false);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const thumbnailUrl =
     typeof thumbnail === "string"
       ? thumbnail
@@ -47,7 +47,7 @@ export function ProductOrder({
         <div className="relative size-22.5 shrink-0 overflow-hidden bg-fill-jade-weak">
           <Image
             src={
-              hasImageError || !thumbnailUrl
+              !thumbnailUrl || failedUrl === thumbnailUrl
                 ? "/images/product-placeholder.png"
                 : thumbnailUrl
             }
@@ -55,7 +55,7 @@ export function ProductOrder({
             fill
             unoptimized
             className="object-cover"
-            onError={() => setHasImageError(true)}
+            onError={() => setFailedUrl(thumbnailUrl ?? null)}
           />
           {thumbnailOverlay}
         </div>
