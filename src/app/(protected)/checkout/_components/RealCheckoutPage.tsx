@@ -1,6 +1,5 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ANONYMOUS, loadTossPayments } from "@tosspayments/tosspayments-sdk";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -19,12 +18,12 @@ import {
   savePaymentContext,
 } from "@/app/(protected)/checkout/_lib/checkout-session";
 import { getPaymentErrorMessage } from "@/app/(protected)/checkout/_lib/payment-error";
+import { openTossWidget } from "@/app/(protected)/checkout/_lib/toss-widget";
 import { OrderSummary } from "@/components/order/OrderSummary";
 import { PaymentsMethod } from "@/components/order/PaymentsMethod";
 import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { Select, SelectItem } from "@/components/ui/select";
 import { splitPhone } from "@/constants/phone";
 import { useCartQuery } from "@/queries/cart";
 import { useCreateAddressMutation } from "@/queries/member/mutations";
@@ -75,6 +74,15 @@ export function RealCheckoutPage({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
+  const widgetController = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      widgetController.current?.abort();
+    };
+  }, []);
   const createdAddress = useRef<Address | undefined>(undefined);
   const [revisedOrder, setRevisedOrder] = useState<{
     key: string;
@@ -236,38 +244,34 @@ export function RealCheckoutPage({
         throw new Error(
           "결제 서비스 설정이 완료되지 않아 결제할 수 없습니다. 주문 내역에서 상태를 확인해 주세요.",
         );
+      if (!mounted.current) return;
       savePaymentContext({
         requestKey: key,
         orderId: order.orderId,
         orderNumber: order.orderNumber,
         amount: payment.amount,
       });
-      const toss = await loadTossPayments(payment.tossClientKey);
-      const common = {
-        amount: { currency: "KRW" as const, value: payment.amount },
-        orderId: order.orderNumber,
-        orderName:
-          lines[0]!.productName +
-          (lines.length > 1 ? ` 외 ${lines.length - 1}건` : ""),
-        successUrl: `${window.location.origin}/payments/success`,
-        failUrl: `${window.location.origin}/payments/fail`,
-      };
-      const gateway = toss.payment({ customerKey: ANONYMOUS });
-      if (paymentMethod === "TRANSFER") {
-        await gateway.requestPayment({ ...common, method: "TRANSFER" });
-      } else {
-        await gateway.requestPayment({
-          ...common,
-          method: "CARD",
-          card:
-            paymentMethod === "EASY_PAY"
-              ? { flowMode: "DIRECT", easyPay: "TOSSPAY" }
-              : undefined,
-        });
-      }
+      const controller = new AbortController();
+      widgetController.current = controller;
+      await openTossWidget(
+        {
+          clientKey: payment.tossClientKey.trim(),
+          amount: payment.amount,
+          orderId: order.orderNumber,
+          orderName: (
+            lines[0]!.productName +
+            (lines.length > 1 ? " 외 " + (lines.length - 1) + "건" : "")
+          ).slice(0, 100),
+          successUrl: window.location.origin + "/payments/success",
+          failUrl: window.location.origin + "/payments/fail",
+          method: paymentMethod === "EASY_PAY" ? "TOSSPAY" : paymentMethod,
+        },
+        controller.signal,
+      );
     } catch (cause) {
       setError(getPaymentErrorMessage(cause));
     } finally {
+      widgetController.current = null;
       submitting.current = false;
       setBusy(false);
     }
@@ -335,27 +339,6 @@ export function RealCheckoutPage({
               </p>
             )}
             <hr className="border-border-jade-weak" />
-            {!!addresses.data?.length && (
-              <Select
-                ariaLabel="저장된 배송지"
-                items={addresses.data.map((address) => ({
-                  value: String(address.id),
-                  label: `${address.recipientName} · ${address.address1}`,
-                }))}
-                value={selectedAddress?.toString() ?? null}
-                placeholder="저장된 배송지 선택"
-                onValueChange={(value) => {
-                  setSameCustomer(false);
-                  setAddressId(value ? Number(value) : undefined);
-                }}
-              >
-                {addresses.data.map((address) => (
-                  <SelectItem key={address.id} value={String(address.id)}>
-                    {address.recipientName} · {address.address1}
-                  </SelectItem>
-                ))}
-              </Select>
-            )}
             <ShippingFields
               sameCustomer={sameCustomer}
               onSameCustomerChange={setSameCustomer}

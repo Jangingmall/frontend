@@ -8,6 +8,8 @@ const state = vi.hoisted(() => ({
   selected: true,
   phone: "01012345678",
   loadSdk: vi.fn(),
+  setAmount: vi.fn(),
+  windowMethod: "CARD",
   soldOut: false,
   unavailable: false,
   empty: false,
@@ -26,7 +28,29 @@ vi.mock("@tosspayments/tosspayments-sdk", () => ({
   ANONYMOUS: "anonymous",
   loadTossPayments: async (key: string) => {
     state.loadSdk(key);
-    return { payment: () => ({ requestPayment: state.request }) };
+    return {
+      widgets: () => ({
+        setAmount: state.setAmount,
+        requestPayment: state.request,
+        renderPaymentWindow: async () => ({
+          destroy: async () => undefined,
+          on: (
+            event: string,
+            callback: (value: {
+              paymentMethod: { code: string };
+            }) => Promise<void>,
+          ) => {
+            if (event === "paymentRequest")
+              queueMicrotask(
+                () =>
+                  void callback({
+                    paymentMethod: { code: state.windowMethod },
+                  }),
+              );
+          },
+        }),
+      }),
+    };
   },
 }));
 vi.mock("react-daum-postcode", () => ({
@@ -119,6 +143,7 @@ beforeEach(() => {
   state.postcode.mockResolvedValue(undefined);
   state.selected = true;
   state.phone = "01012345678";
+  state.windowMethod = "CARD";
   sessionStorage.clear();
   vi.clearAllMocks();
   state.soldOut = false;
@@ -315,15 +340,13 @@ it("requests the Toss card window with the verified server order and amount", as
   state.prepare.mockResolvedValueOnce({
     orderId: 42,
     amount: 1000,
-    tossClientKey: "test_ck_fixture",
+    tossClientKey: "test_gck_fixture",
   });
   render(<RealCheckoutPage />);
   fill();
   await waitFor(() =>
     expect(state.request).toHaveBeenCalledWith(
       expect.objectContaining({
-        method: "CARD",
-        amount: { currency: "KRW", value: 1000 },
         orderId: "ORD-12345",
         successUrl: `${window.location.origin}/payments/success`,
         failUrl: `${window.location.origin}/payments/fail`,
@@ -335,7 +358,7 @@ it("never opens the gateway for a mismatched prepared amount", async () => {
   state.prepare.mockResolvedValueOnce({
     orderId: 42,
     amount: 999,
-    tossClientKey: "test_ck_fixture",
+    tossClientKey: "test_gck_fixture",
   });
   render(<RealCheckoutPage />);
   fill();
@@ -349,14 +372,15 @@ it("never opens the gateway for a mismatched prepared amount", async () => {
 
 it.each([
   ["계좌이체 선택", "TRANSFER", "TRANSFER"],
-  ["토스페이 선택", "EASY_PAY", "CARD"],
+  ["토스페이 선택", "EASY_PAY", "TOSSPAY"],
 ])(
   "opens %s using its real payment method",
   async (label, paymentMethod, gatewayMethod) => {
+    state.windowMethod = gatewayMethod;
     state.prepare.mockResolvedValueOnce({
       orderId: 42,
       amount: 1000,
-      tossClientKey: "test_ck_fixture",
+      tossClientKey: "test_gck_fixture",
     });
     render(<RealCheckoutPage />);
     fireEvent.click(screen.getByRole("button", { name: label }));
@@ -370,15 +394,10 @@ it.each([
       amount: 1000,
       paymentMethod,
     });
-    expect(state.request).toHaveBeenCalledWith(
-      expect.objectContaining({ method: gatewayMethod }),
-    );
-    if (paymentMethod === "EASY_PAY")
-      expect(state.request).toHaveBeenCalledWith(
-        expect.objectContaining({
-          card: { flowMode: "DIRECT", easyPay: "TOSSPAY" },
-        }),
-      );
+    expect(state.setAmount).toHaveBeenCalledWith({
+      currency: "KRW",
+      value: 1000,
+    });
   },
 );
 
@@ -452,6 +471,7 @@ it.each(["", "1", "a123", "12345678901234567890"])(
 
 it("opens Toss Pay with the server test key when customer phone contains hyphens", async () => {
   state.phone = "010-1234-5678";
+  state.windowMethod = "TOSSPAY";
   state.saveAddress.mockResolvedValueOnce({
     id: 3,
     recipientName: "주문자",
@@ -464,7 +484,7 @@ it("opens Toss Pay with the server test key when customer phone contains hyphens
   state.prepare.mockResolvedValueOnce({
     orderId: 42,
     amount: 1000,
-    tossClientKey: "test_ck_fixture",
+    tossClientKey: "test_gck_fixture",
   });
   render(<RealCheckoutPage />);
   fireEvent.click(screen.getByRole("checkbox", { name: "주문자 정보와 동일" }));
@@ -475,11 +495,34 @@ it("opens Toss Pay with the server test key when customer phone contains hyphens
   fireEvent.click(screen.getByRole("checkbox", { name: "약관에 동의합니다." }));
   fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
   await waitFor(() => expect(state.request).toHaveBeenCalledTimes(1));
-  expect(state.loadSdk).toHaveBeenCalledWith("test_ck_fixture");
-  expect(state.request).toHaveBeenCalledWith(
-    expect.objectContaining({
-      method: "CARD",
-      card: { flowMode: "DIRECT", easyPay: "TOSSPAY" },
-    }),
+  expect(state.loadSdk).toHaveBeenCalledWith("test_gck_fixture");
+  expect(state.setAmount).toHaveBeenCalledWith({
+    currency: "KRW",
+    value: 1000,
+  });
+});
+
+it("keeps saved addresses in the Figma fields without an extra selector", () => {
+  render(<RealCheckoutPage />);
+  expect(
+    screen.queryByRole("combobox", { name: "저장된 배송지" }),
+  ).not.toBeInTheDocument();
+  expect(screen.getByRole("textbox", { name: "기본주소" })).toHaveValue("주소");
+});
+
+it("does not open Toss after unmounting while preparation is pending", async () => {
+  let finish!: (value: unknown) => void;
+  state.prepare.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
   );
+  const view = render(<RealCheckoutPage />);
+  fill();
+  await waitFor(() => expect(state.prepare).toHaveBeenCalledOnce());
+  view.unmount();
+  finish({ orderId: 42, amount: 1000, tossClientKey: "test_gck_fixture" });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(state.loadSdk).not.toHaveBeenCalled();
 });
