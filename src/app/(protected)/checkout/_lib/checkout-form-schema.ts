@@ -18,6 +18,16 @@ export const checkoutFormSchema = z.object({
   memo: z.string(),
   memoText: z.string(),
 });
+export const realCheckoutFormSchema = checkoutFormSchema.refine(
+  (values) =>
+    /^\d{9,20}$/.test(
+      `${values.recipientPhoneFirst}${values.recipientPhoneMiddle}${values.recipientPhoneLast}`,
+    ),
+  {
+    message: "수령인 휴대전화 번호를 확인해 주세요.",
+    path: ["recipientPhoneMiddle"],
+  },
+);
 export type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;
 export const EMPTY_CHECKOUT_FORM: CheckoutFormValues = {
   customerName: "",

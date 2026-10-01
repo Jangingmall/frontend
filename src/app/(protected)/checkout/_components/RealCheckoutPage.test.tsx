@@ -1,14 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 
-import { submitPreviewOrder } from "@/api/purchase-preview/api";
-import { previewLinesSchema } from "@/api/purchase-preview/validation";
 import { ApiError } from "@/lib/http/api-error";
-import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 
 import { RealCheckoutPage } from "./RealCheckoutPage";
 const state = vi.hoisted(() => ({
   selected: true,
+  phone: "01012345678",
+  loadSdk: vi.fn(),
   soldOut: false,
   unavailable: false,
   empty: false,
@@ -25,9 +24,10 @@ vi.mock("next/navigation", () => ({
 }));
 vi.mock("@tosspayments/tosspayments-sdk", () => ({
   ANONYMOUS: "anonymous",
-  loadTossPayments: async () => ({
-    payment: () => ({ requestPayment: state.request }),
-  }),
+  loadTossPayments: async (key: string) => {
+    state.loadSdk(key);
+    return { payment: () => ({ requestPayment: state.request }) };
+  },
 }));
 vi.mock("react-daum-postcode", () => ({
   useKakaoPostcodePopup: () => state.postcode,
@@ -63,7 +63,7 @@ vi.mock("@/queries/cart", () => ({
 vi.mock("@/types/cart", () => ({ getCartShippingAmount: () => 0 }));
 vi.mock("@/queries/member/queries", () => ({
   useMemberProfileQuery: () => ({
-    data: { name: "주문자", email: "buyer@example.com", phone: "01012345678" },
+    data: { name: "주문자", email: "buyer@example.com", phone: state.phone },
   }),
   useAddressesQuery: () => ({
     data: [
@@ -118,6 +118,7 @@ vi.mock("@/components/order/PaymentsMethod", () => ({
 beforeEach(() => {
   state.postcode.mockResolvedValue(undefined);
   state.selected = true;
+  state.phone = "01012345678";
   sessionStorage.clear();
   vi.clearAllMocks();
   state.soldOut = false;
@@ -235,7 +236,7 @@ it("saves edited shipping fields and uses the returned address ID for the order"
   fill();
   await waitFor(() => expect(state.create).toHaveBeenCalled());
   expect(state.saveAddress).toHaveBeenCalledWith(
-    expect.objectContaining({ address2: "새 상세주소", phone: "01012345678" }),
+    expect.objectContaining({ address2: "새 상세주소", phone: state.phone }),
   );
   expect(state.create.mock.calls[0][0].input.addressId).toBe(7);
   await screen.findByRole("alert");
@@ -271,17 +272,13 @@ it("retries the same reserved order after its final stock becomes sold out", asy
   expect(state.create.mock.calls[1][0].key).toBe(firstKey);
 });
 
-it("API checkout disables bank deposits and hides mock benefits", () => {
+it("API checkout preserves the Figma benefit fields without mock discounts", () => {
   render(<RealCheckoutPage />);
   expect(
     screen.getByRole("button", { name: "무통장 시연 선택" }),
   ).toBeDisabled();
-  expect(
-    screen.queryByRole("textbox", { name: "할인코드" }),
-  ).not.toBeInTheDocument();
-  expect(
-    screen.queryByRole("textbox", { name: "적립금" }),
-  ).not.toBeInTheDocument();
+  expect(screen.getByRole("textbox", { name: "할인코드" })).toBeInTheDocument();
+  expect(screen.getByRole("textbox", { name: "적립금" })).toBeInTheDocument();
   expect(screen.queryByText(/주문·결제 시연/)).not.toBeInTheDocument();
 });
 it("opens the real address search and fills the chosen address", async () => {
@@ -385,19 +382,104 @@ it.each([
   },
 );
 
-it("copies actual checkout into a valid demo order without starting actual payment", async () => {
+it("keeps unavailable benefits on checkout without applying a fake discount", () => {
   render(<RealCheckoutPage />);
-  fireEvent.click(
-    screen.getByRole("button", { name: "할인·무통장입금 시연하기" }),
-  );
-  const lines = usePurchasePreviewStore.getState().checkoutLines;
-  expect(
-    previewLinesSchema.parse(JSON.parse(JSON.stringify(lines))),
-  ).toHaveLength(1);
-  expect(await submitPreviewOrder(lines, "bank-pending")).toMatchObject({
-    outcome: "bank-pending",
+  fireEvent.change(screen.getByRole("textbox", { name: "할인코드" }), {
+    target: { value: "TEST" },
   });
+  fireEvent.click(screen.getByRole("button", { name: "코드적용" }));
+  expect(screen.getByRole("status")).toHaveTextContent(
+    "할인 혜택은 현재 준비 중입니다.",
+  );
+  expect(screen.getByRole("combobox", { name: "쿠폰" })).toBeInTheDocument();
+  expect(
+    screen.getByText("사용 가능 적립금 :", { exact: false }),
+  ).toHaveTextContent("0 원");
+  expect(
+    screen.getByText("사용 가능 쿠폰 :", { exact: false }),
+  ).toHaveTextContent("0매");
+  expect(
+    screen.queryByRole("button", { name: "할인·무통장입금 시연하기" }),
+  ).not.toBeInTheDocument();
   expect(state.create).not.toHaveBeenCalled();
   expect(state.prepare).not.toHaveBeenCalled();
   expect(state.request).not.toHaveBeenCalled();
+});
+
+it.each(["", "1", "a123", "12345678901234567890"])(
+  "identifies invalid recipient phone %j inline before calling payment APIs",
+  async (middle) => {
+    render(<RealCheckoutPage />);
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
+      { target: { value: middle } },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 끝자리" }),
+      { target: { value: "5678" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "토스페이 선택" }));
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "약관에 동의합니다." }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
+      ).toHaveAttribute("aria-invalid", "true"),
+    );
+    expect(state.create).not.toHaveBeenCalled();
+    expect(state.prepare).not.toHaveBeenCalled();
+    expect(state.saveAddress).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("button", { name: "결제하기" }).closest("aside"),
+    ).not.toHaveTextContent("수령인 휴대전화 번호");
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
+      { target: { value: "1234" } },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 끝자리" }),
+      { target: { value: "5678" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
+    await waitFor(() => expect(state.prepare).toHaveBeenCalledTimes(1));
+    expect(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
+    ).not.toHaveAttribute("aria-invalid", "true");
+  },
+);
+
+it("opens Toss Pay with the server test key when customer phone contains hyphens", async () => {
+  state.phone = "010-1234-5678";
+  state.saveAddress.mockResolvedValueOnce({
+    id: 3,
+    recipientName: "주문자",
+    phone: "01012345678",
+    zipCode: "12345",
+    address1: "주소",
+    address2: "상세",
+    isDefault: false,
+  });
+  state.prepare.mockResolvedValueOnce({
+    orderId: 42,
+    amount: 1000,
+    tossClientKey: "test_ck_fixture",
+  });
+  render(<RealCheckoutPage />);
+  fireEvent.click(screen.getByRole("checkbox", { name: "주문자 정보와 동일" }));
+  expect(
+    screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
+  ).toHaveValue("1234");
+  fireEvent.click(screen.getByRole("button", { name: "토스페이 선택" }));
+  fireEvent.click(screen.getByRole("checkbox", { name: "약관에 동의합니다." }));
+  fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
+  await waitFor(() => expect(state.request).toHaveBeenCalledTimes(1));
+  expect(state.loadSdk).toHaveBeenCalledWith("test_ck_fixture");
+  expect(state.request).toHaveBeenCalledWith(
+    expect.objectContaining({
+      method: "CARD",
+      card: { flowMode: "DIRECT", easyPay: "TOSSPAY" },
+    }),
+  );
 });
