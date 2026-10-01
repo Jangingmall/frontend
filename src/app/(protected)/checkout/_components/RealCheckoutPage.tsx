@@ -1,7 +1,7 @@
 "use client";
 import { ANONYMOUS, loadTossPayments } from "@tosspayments/tosspayments-sdk";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useKakaoPostcodePopup } from "react-daum-postcode";
 import { FormProvider, useForm } from "react-hook-form";
@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Select, SelectItem } from "@/components/ui/select";
 import { splitPhone } from "@/constants/phone";
-import { copyCartForDemo } from "@/lib/purchase-demo";
 import { useCartQuery } from "@/queries/cart";
 import { useCreateAddressMutation } from "@/queries/member/mutations";
 import {
@@ -36,16 +35,15 @@ import {
   usePreparePaymentMutation,
 } from "@/queries/payments";
 import { useAuthStore } from "@/stores/auth";
-import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import { getCartShippingAmount } from "@/types/cart";
 import type { Address } from "@/types/member";
 import type { CreateOrderInput } from "@/types/payment";
 import type { PreviewPaymentMethod } from "@/types/purchase-preview";
-import { PURCHASE_PREVIEW_ORDER_ID } from "@/types/purchase-preview";
 
 import { CheckoutProducts } from "./CheckoutProducts";
 import { CustomerFields } from "./CustomerFields";
 import { DeliveryMemoField } from "./DeliveryMemoField";
+import { DiscountSlots } from "./DiscountSlots";
 import { PaymentAgreement } from "./PaymentAgreement";
 import { ShippingFields } from "./ShippingFields";
 export function RealCheckoutPage({
@@ -53,7 +51,6 @@ export function RealCheckoutPage({
 }: {
   allowOrder?: boolean;
 }) {
-  const router = useRouter();
   const params = useSearchParams();
   const ids = parseCartItemIds(params.get("items"));
   const user = useAuthStore((state) => state.user);
@@ -139,9 +136,12 @@ export function RealCheckoutPage({
       address2: values.addressDetail.trim(),
       isDefault: false,
     };
+    if (!/^\d{9,20}$/.test(addressInput.phone)) {
+      setError("수령인 휴대전화 번호를 확인해 주세요.");
+      return;
+    }
     if (
       !addressInput.recipientName ||
-      !/^\d{9,20}$/.test(addressInput.phone) ||
       !addressInput.zipCode ||
       !addressInput.address1 ||
       !method ||
@@ -376,26 +376,7 @@ export function RealCheckoutPage({
               }
             />
             <hr className="border-border-jade-weak" />
-            <section className="space-y-2">
-              <h2 className="text-title-m">할인/부가결제</h2>
-              <p className="text-body-s">
-                쿠폰·적립금·할인코드·무통장입금은 별도 시연 화면에서 사용할 수
-                있습니다. 실제 주문과 결제에는 적용되지 않습니다.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={busy || blocked}
-                onClick={() => {
-                  usePurchasePreviewStore
-                    .getState()
-                    .beginCheckout(copyCartForDemo(lines));
-                  router.push(`/checkout/${PURCHASE_PREVIEW_ORDER_ID}`);
-                }}
-              >
-                할인·무통장입금 시연하기
-              </Button>
-            </section>
+            <DiscountSlots mode="unavailable" />
             <hr className="border-border-jade-weak" />
             <PaymentsMethod
               value={method}
