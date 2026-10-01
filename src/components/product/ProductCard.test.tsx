@@ -73,6 +73,26 @@ describe("ProductCard", () => {
     expect(screen.getByText("품절")).toBeInTheDocument();
     expect(screen.queryByLabelText(/평점/)).not.toBeInTheDocument();
   });
+  it("품절 카드는 품절 색을 쓰고 hover 오버레이를 겹치지 않는다", () => {
+    const { container } = render(
+      <ProductCard
+        product={{
+          ...mapProductSummary(productListPage1.items[1]),
+          isSoldOut: true,
+        }}
+      />,
+    );
+    expect(screen.getByText("품절")).toHaveClass("bg-states-sold-out");
+    expect(container.querySelector(".bg-states-hover-black")).toBeNull();
+  });
+  it("판매 중인 카드는 사진 영역에 hover 오버레이를 둔다", () => {
+    const { container } = render(
+      <ProductCard product={mapProductSummary(productListPage1.items[0])} />,
+    );
+    expect(
+      container.querySelector(".bg-states-hover-black"),
+    ).toBeInTheDocument();
+  });
   it("이미지 로드에 실패하면 placeholder로 전환한다", () => {
     const { container } = render(
       <ProductCard product={mapProductSummary(productListPage1.items[0])} />,

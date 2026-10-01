@@ -48,7 +48,7 @@ export function ProductCard({
           ...(product.isDemo ? { query: { preview: "1" } } : {}),
         }}
         aria-label={product.name}
-        className="relative block aspect-square overflow-hidden bg-fill-jade-weak focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill"
+        className="group/card-image relative block aspect-square overflow-hidden bg-fill-jade-weak focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-jade-fill"
       >
         <Image
           src={
@@ -68,10 +68,16 @@ export function ProductCard({
             {badge}
           </Badge>
         )}
-        {product.isSoldOut && (
-          <span className="absolute inset-0 flex items-center justify-center bg-bg-default/60 text-title-m">
+        {product.isSoldOut ? (
+          <span className="absolute inset-0 flex items-center justify-center bg-states-sold-out text-title-m text-(--white)">
             품절
           </span>
+        ) : (
+          // 사진 영역에만 덮는 hover 오버레이(시안 `hover-black`). 품절 카드는 품절 색만 쓴다.
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-states-hover-black opacity-0 transition-opacity duration-600 ease-in group-hover/card-image:opacity-100"
+          />
         )}
       </Link>
       <div
