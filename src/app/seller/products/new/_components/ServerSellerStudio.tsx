@@ -7,7 +7,6 @@ import { useState } from "react";
 
 import { Footer } from "@/components/common/footer";
 import { Logo } from "@/components/ui/logo";
-import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useGeneration,
@@ -60,11 +59,6 @@ function Studio({
         </Link>
         <span>판매 관리</span>
       </header>
-      {(publicEnv.apiMocking || runtime.demo) && (
-        <p className="sa-note">
-          MSW 시연 · 실제 AI 생성이나 서버 DB 저장은 실행하지 않습니다.
-        </p>
-      )}
       {showInput ? (
         <main className="ss-form-wrap sa-figma-input">
           <div className="ss-heading">
