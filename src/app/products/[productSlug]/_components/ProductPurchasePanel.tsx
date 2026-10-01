@@ -533,7 +533,7 @@ export function ProductPurchasePanel({
           {lines.map((line) => (
             <div key={line.key} className="bg-bg-subtle px-3 pt-3 pb-2">
               <div className="mb-1 flex items-start justify-between gap-3">
-                <p className="text-body-s font-bold">{product.name}</p>
+                <p className="text-body-m font-semibold">{product.name}</p>
                 <Button
                   variant="ghost"
                   size="xs"
@@ -550,7 +550,7 @@ export function ProductPurchasePanel({
                   <CancelIcon className="size-5" />
                 </Button>
               </div>
-              <ul className="flex flex-col gap-1 text-caption text-font-label">
+              <ul className="flex flex-col gap-1 text-body-s text-font-label">
                 {groups.map((group) => (
                   <li key={group.id}>
                     - {group.label}: {line.optionLabels[group.id]}
