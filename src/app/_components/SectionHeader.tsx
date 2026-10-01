@@ -22,7 +22,7 @@ interface SectionHeaderProps {
  * 없는 경우.
  *
  * 「전체보기」는 밑줄이 있는 링크다(모든 섹션 공통) — 색은 Figma 실측 텍스트 색(`#414954`)과
- * 일치하는 `font-dark-subtle`.
+ * 일치하는 `font-dark-subtle`. hover 시 굵기 700(시안 mouse over 규칙).
  */
 export function SectionHeader({
   title,
@@ -30,7 +30,7 @@ export function SectionHeader({
   viewAll,
 }: SectionHeaderProps) {
   const viewAllClassName =
-    "shrink-0 text-body-s text-font-dark-subtle underline underline-offset-2";
+    "shrink-0 text-body-s text-font-dark-subtle underline underline-offset-2 hover:font-bold";
   return (
     <div className="flex flex-col">
       <h2 className="text-title-l text-font-dark md:text-title-xl lg:text-display-m">
