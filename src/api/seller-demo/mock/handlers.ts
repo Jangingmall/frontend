@@ -138,7 +138,11 @@ export function createSellerDemoHandlers() {
             202,
           );
         }
-        if (tail === `/generations/${row.generationId}` && method === "GET") {
+        if (
+          row.generationId !== undefined &&
+          tail === `/generations/${row.generationId}` &&
+          method === "GET"
+        ) {
           row.polls++;
           if (row.polls >= 2 && !row.content)
             row.content = {
