@@ -2,6 +2,8 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import { Logo } from "@/components/ui/logo";
+
 import { ContractPreview } from "./ContractPreview";
 import type { StudioAsset, StudioDraft } from "./studio-contract";
 import { buildPreview } from "./studio-contract";
@@ -26,7 +28,9 @@ export function StudioReview({
   return (
     <>
       <header className="ss-review-header">
-        <span className="ss-logo">로고</span>
+        <span className="ss-logo" role="img" aria-label="미담">
+          <Logo />
+        </span>
         <button type="button" onClick={onBack}>
           ‹ 뒤로가기
         </button>
@@ -59,7 +63,9 @@ export function StudioReview({
         className={`ss-review-device ${device === "태블릿" ? "tablet" : device === "모바일" ? "mobile" : ""}`}
       >
         <div className="ss-preview-shop">
-          <span className="ss-logo">로고</span>
+          <span className="ss-logo" role="img" aria-label="미담">
+            <Logo />
+          </span>
           <div>
             전체 카테고리　　전체
             상품　　선물관　　장인관　　신상품　　베스트　　기획전

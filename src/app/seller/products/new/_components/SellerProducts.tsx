@@ -4,6 +4,7 @@ import "./seller-api.css";
 import Link from "next/link";
 import { useState } from "react";
 
+import { Logo } from "@/components/ui/logo";
 import { publicEnv } from "@/lib/env";
 import { useSellerProducts } from "@/queries/seller-studio/queries";
 import { useAuthStore } from "@/stores/auth";
@@ -20,8 +21,8 @@ function Products() {
   return (
     <div className="ss-shell">
       <header className="ss-header">
-        <Link className="ss-logo" href="/">
-          로고
+        <Link className="ss-logo" href="/" aria-label="미담 홈으로 이동">
+          <Logo />
         </Link>
         <span>판매 관리</span>
       </header>

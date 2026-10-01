@@ -4,6 +4,8 @@ import "./seller-studio.css";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { Logo } from "@/components/ui/logo";
+
 import { readSavedDraft, STORAGE_PREFIX } from "./studio-state";
 export function StudioProjects() {
   const [projects, setProjects] = useState<
@@ -38,8 +40,8 @@ export function StudioProjects() {
   return (
     <div className="ss-shell">
       <header className="ss-header">
-        <Link className="ss-logo" href="/">
-          로고
+        <Link className="ss-logo" href="/" aria-label="미담 홈으로 이동">
+          <Logo />
         </Link>
         <span>판매 관리</span>
       </header>

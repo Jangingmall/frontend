@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Footer } from "@/components/common/footer";
+import { Logo } from "@/components/ui/logo";
 import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import {
@@ -48,8 +49,12 @@ function Studio({
   return (
     <div className="ss-shell sa-figma">
       <header className="ss-header">
-        <Link href="/seller/products" className="ss-logo">
-          로고
+        <Link
+          href="/seller/products"
+          className="ss-logo"
+          aria-label="판매 관리로 이동"
+        >
+          <Logo />
         </Link>
         <span>판매 관리</span>
       </header>
@@ -158,9 +163,7 @@ function Studio({
           <button onClick={() => void content.refetch()}>문서 다시 조회</button>
         </main>
       ) : null}
-      {showInput && (
-        <Footer logo={<span className="ss-logo sa-footer-logo">로고</span>} />
-      )}
+      {showInput && <Footer />}
     </div>
   );
 }

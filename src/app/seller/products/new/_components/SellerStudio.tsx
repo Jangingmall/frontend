@@ -4,6 +4,8 @@ import "./seller-studio.css";
 import Link from "next/link";
 import { useEffect, useReducer, useRef, useState } from "react";
 
+import { Logo } from "@/components/ui/logo";
+
 import type { StudioAsset, StudioDraft } from "./studio-contract";
 import { buildPreview, draftSchema, parseContract } from "./studio-contract";
 import { exampleAssets, exampleDraft } from "./studio-fixture";
@@ -145,6 +147,7 @@ export function SellerStudio({
           <Link
             href="/seller/products"
             className="ss-logo"
+            aria-label="판매 관리로 이동"
             onClick={(event) => {
               if (isUploading) {
                 event.preventDefault();
@@ -155,7 +158,7 @@ export function SellerStudio({
                 event.preventDefault();
             }}
           >
-            로고
+            <Logo />
           </Link>
           <span>판매 관리</span>
         </header>
