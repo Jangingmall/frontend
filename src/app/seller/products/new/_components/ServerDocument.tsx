@@ -36,7 +36,8 @@ export function ServerDocument({
     if (node.type === "text")
       return onSelectNode ? (
         <span
-          key={node.id}
+          // 저장값이 바뀌면 브라우저가 편집한 DOM도 해당 값으로 복원한다.
+          key={`${node.id}:${node.value}`}
           data-node-id={node.id}
           className={`sd-editable-text ${selectedNodeId === node.id ? "is-selected" : ""}`}
           role="textbox"
