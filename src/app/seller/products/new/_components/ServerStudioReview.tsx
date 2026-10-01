@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import { Logo } from "@/components/ui/logo";
 import { useSellerProduct } from "@/queries/seller-studio/queries";
 import { useAuthStore } from "@/stores/auth";
 import {
@@ -46,7 +47,9 @@ export function ServerStudioReview({
       className={`ss-review-device ${width === 600 ? "tablet" : width === 360 ? "mobile" : ""}`}
     >
       <div className="ss-preview-shop">
-        <span className="ss-logo">로고</span>
+        <span className="ss-logo" role="img" aria-label="미담">
+          <Logo />
+        </span>
         <div>
           전체 카테고리　　전체
           상품　　선물관　　장인관　　신상품　　베스트　　기획전

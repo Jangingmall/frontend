@@ -40,11 +40,7 @@
   width: 100px;
   height: 32px;
   flex-shrink: 0;
-  background: #d3e1e3;
-  color: #414954;
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1;
+  color: inherit;
 }
 .ss-form-wrap {
   max-width: 888px;
@@ -672,6 +668,9 @@
   position: sticky;
   top: 0;
   z-index: 30;
+}
+.ss-review-header > .ss-logo {
+  color: var(--cool-grey-900);
 }
 .ss-review-header > button {
   font-size: 14px;
