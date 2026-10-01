@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 import {
@@ -32,7 +33,7 @@ import { SectionHeader } from "./SectionHeader";
  * - 경력·작품 수·공방 라벨/값 전부 14px·17px + `font-dark-weak`(Figma 실측 라벨·값 색이
  *   동일 — 특이하지만 그대로 반영). 세 항목 사이에 세로 구분선 추가.
  * - 이미지 비율은 4:3이 아니라 Figma 실측(774:520) 그대로.
- * - 이미지는 다른 "자산 없음" 자리와 같은 체크보드 플레이스홀더(`ImagePlaceholder`).
+ * - 홈 시연에서는 생성한 공예 작업 사진을 사용하고, 이미지 미제공 시 플레이스홀더를 유지한다.
  *
  * 좌우 화살표로 6장 사이를 넘기는 건 로컬 UI 상태라 그대로 동작한다. 「전체보기」·카드 내
  * 「장인관 둘러보기」·카드 자체 클릭은 GNB의 비활성 항목 처리(`components/common/gnb-nav.tsx`)
@@ -79,7 +80,19 @@ export function ArtisanCarousel({
       {/* md 이하는 이미지가 화면 가장자리까지 닿는다(시안) — 좌우 마진은 헤더·정보 영역에만 준다.
           lg 이상은 마진 안에서 이미지가 남는 폭을 채우고 정보 영역은 고정 폭이다. */}
       <div className="relative mt-6 flex flex-col bg-bg-subtle md:flex-row md:gap-6 lg:mx-8 xl:mx-12 2xl:gap-9.5">
-        <ImagePlaceholder className="h-100 w-full shrink-0 md:w-auto md:min-w-0 md:flex-1 lg:h-130" />
+        <div className="relative h-100 w-full shrink-0 overflow-hidden md:w-auto md:min-w-0 md:flex-1 lg:h-130">
+          {item.image ? (
+            <Image
+              src={item.image.src}
+              alt={item.image.alt}
+              fill
+              sizes="(max-width: 767px) 100vw, 65vw"
+              className="object-cover"
+            />
+          ) : (
+            <ImagePlaceholder className="h-full w-full" />
+          )}
+        </div>
         <div className="flex flex-col gap-6 px-6 py-6 md:w-76 md:shrink-0 md:justify-center md:px-0 md:py-0 md:pr-6 lg:pr-9.5 xl:w-100.5 2xl:w-105.5 2xl:gap-7">
           <div className="flex gap-2">
             <Badge variant="jade">

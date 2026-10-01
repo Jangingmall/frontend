@@ -1,0 +1,156 @@
+{
+  "generator": "GPT built-in image_gen",
+  "purpose": "홈 MSW 시연 전용 가상 상품 24장과 가상 장인 작업 장면 6장",
+  "images": [
+    {
+      "id": 101,
+      "path": "public/images/home-demo/gift-101.webp",
+      "prompt": "Generate one square photorealistic premium Korean craft ecommerce product photograph. A single handmade white porcelain moon jar (dalhangari), rounded slightly asymmetric spherical body, fine ivory glaze, on a warm limestone plinth against a soft cream seamless background. Product fully visible with generous margins, centered, soft natural side light, delicate shadow, tactile ceramic texture, understated editorial catalogue aesthetic, no people, no text, no logo, no watermark. This is a fictional craft product for a demo store. 1:1 composition."
+    },
+    {
+      "id": 102,
+      "path": "public/images/home-demo/gift-102.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A Korean three-tier round ottchil lacquer food box, deep chestnut red-brown lustrous lacquer, fitted lid and subtle wood grain, on pale linen on a stone table."
+    },
+    {
+      "id": 103,
+      "path": "public/images/home-demo/gift-103.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. Traditional Korean bangjja yugi brass dinnerware set: two lidded rice bowls, two soup bowls, three small side dishes and two spoon/chopstick sets, satin warm gold metal, neatly arranged on warm ivory linen."
+    },
+    {
+      "id": 104,
+      "path": "public/images/home-demo/gift-104.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A handmade ivory white porcelain moon jar, elegant large rounded vessel, slight organic asymmetry, on a low raw oak display block, pale greige studio backdrop."
+    },
+    {
+      "id": 105,
+      "path": "public/images/home-demo/gift-105.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A three-tier Korean lacquered wooden round food box with fitted lid, black-brown ottchil and rich amber highlights, one tier placed alongside to reveal craftsmanship, cream studio background."
+    },
+    {
+      "id": 106,
+      "path": "public/images/home-demo/gift-106.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A refined Korean brass bangjja dinnerware set for two, softly polished warm gold rice and soup bowls, small side plates and spoons, on light stone with a folded natural linen napkin."
+    },
+    {
+      "id": 107,
+      "path": "public/images/home-demo/gift-107.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A small handmade Korean white porcelain moon jar, softly rounded ivory vessel with faint crackle glaze, resting on cream fabric draped over a plinth, warm neutral background."
+    },
+    {
+      "id": 108,
+      "path": "public/images/home-demo/gift-108.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A Korean three-tier round lacquer food container in deep oxblood brown, subtle mother of pearl accent on lid only, elegant handcrafted finish, centered on pale stone against warm cream background."
+    },
+    {
+      "id": 109,
+      "path": "public/images/home-demo/gift-109.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A traditional Korean bangjja brass dinnerware set, two lidded rice bowls and soup bowls with side dishes and spoons, satin gold finish on a clean travertine plinth, no food."
+    },
+    {
+      "id": 110,
+      "path": "public/images/home-demo/gift-110.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A handmade white porcelain moon jar with a softly flattened spherical silhouette and smooth milky white glaze on an oak table against warm ivory plaster, single vase only."
+    },
+    {
+      "id": 111,
+      "path": "public/images/home-demo/gift-111.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A three-tier round Korean ottchil food box in warm reddish chestnut wood, closed fitted lid, fine polished lacquer grain, on a folded pale linen cloth, minimal arrangement."
+    },
+    {
+      "id": 112,
+      "path": "public/images/home-demo/gift-112.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A paired Korean bangjja brass dining set, broad soup bowls, lidded rice bowls and small plates, delicate hammered gold texture, natural cream background and dark walnut serving board, no food."
+    },
+    {
+      "id": 113,
+      "path": "public/images/home-demo/gift-113.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A white porcelain moon jar, a generously rounded ivory vessel with tiny natural iron speckles, on a pale stone bench and warm greige backdrop, sculptural calm."
+    },
+    {
+      "id": 114,
+      "path": "public/images/home-demo/gift-114.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A three-tier cylindrical Korean lacquered food box in deep walnut brown, satin natural ottchil finish, open top lid leaning gently beside box, pale cream studio backdrop."
+    },
+    {
+      "id": 115,
+      "path": "public/images/home-demo/gift-115.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. Traditional Korean brass bangjja dinnerware for two, warm golden bowls and small plates with long spoons and chopsticks, neatly balanced arrangement on ivory tabletop, soft morning light, no food."
+    },
+    {
+      "id": 116,
+      "path": "public/images/home-demo/gift-116.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A Korean porcelain moon jar in creamy white, short neck and softly imperfect globe, resting on folded natural linen on a limestone pedestal, delicate shadow."
+    },
+    {
+      "id": 117,
+      "path": "public/images/home-demo/gift-117.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A three-tier Korean round ottchil lacquer serving box, deep reddish mahogany with a smooth closed lid, beautifully finished rim edges, sitting on warm limestone with a small folded ivory napkin."
+    },
+    {
+      "id": 118,
+      "path": "public/images/home-demo/gift-118.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A traditional Korean bangjja brass dinnerware set: paired lidded rice bowls, soup bowls, three side plates and elegant spoons, matte gold with soft patina, arranged on pale linen, no food."
+    },
+    {
+      "id": 119,
+      "path": "public/images/home-demo/gift-119.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A handmade Korean white porcelain moon jar with low broad round body and subtle celadon-white undertone, elegant irregular handmade glaze, on a cream stone plinth."
+    },
+    {
+      "id": 120,
+      "path": "public/images/home-demo/gift-120.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A three-tier cylindrical Korean black lacquer food box, tiny iridescent mother of pearl plum blossom motif on lid, polished surface with restrained highlights, ivory fabric studio set."
+    },
+    {
+      "id": 121,
+      "path": "public/images/home-demo/gift-121.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A Korean brass bangjja dinnerware gift set for two, lidded bowls and shallow side dishes with spoon and chopstick pairs, warm gold brushed finish, on a light oak board and cream background, no food."
+    },
+    {
+      "id": 122,
+      "path": "public/images/home-demo/gift-122.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A handmade Korean white porcelain moon jar, round sculptural vase with softly creamy glaze and narrow neck, sitting beside a loosely folded beige linen textile on pale limestone."
+    },
+    {
+      "id": 123,
+      "path": "public/images/home-demo/gift-123.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A Korean three-tier round wooden food box finished in honey brown natural ottchil lacquer, warm wood grain and precise fitted lid, isolated on warm beige stone, premium artisan finish."
+    },
+    {
+      "id": 124,
+      "path": "public/images/home-demo/gift-124.webp",
+      "prompt": "Use case: product-mockup. Generate ONE square 1:1 photorealistic premium Korean craft ecommerce product photo, not a collage. Fully visible centered product with breathing room. Soft natural side lighting, subtle shadows, warm cream and stone palette, exquisite tactile detail, understated editorial catalogue. No text, labels, logo, watermark or people. Fictional demo-store product. A premium Korean bangjja brass dinnerware set, two deep bowls, lidded rice bowls and elegant small side dishes, lightly hammered rich gold surface, centered orderly composition on cream linen, no food."
+    },
+    {
+      "id": "artisan-1",
+      "path": "public/images/home-demo/artisan-1.webp",
+      "prompt": "Use case: photorealistic-natural. Generate ONE landscape 3:2 editorial photograph for a premium Korean craft store artisan carousel. Authentic tactile materials, candid quiet concentration, muted warm earth colors, soft window light, tasteful documentary photography, realistic anatomy and tools, medium-wide composition showing artisan and workspace with subject near center for responsive cropping. Entirely fictional person, not a real celebrity or identifiable artisan. No text, no logos, no watermarks, no collage. A fictional Korean male potter in his late fifties wearing a linen work shirt and clay-stained apron, shaping a round vessel on a pottery wheel with wet clay hands. Warm sunlit pottery workshop with shelves of simple white ceramic bowls and jars, craft process is the focus."
+    },
+    {
+      "id": "artisan-2",
+      "path": "public/images/home-demo/artisan-2.webp",
+      "prompt": "Use case: photorealistic-natural. Generate ONE landscape 3:2 editorial photograph for a premium Korean craft store artisan carousel. Authentic tactile materials, candid quiet concentration, muted warm earth colors, soft window light, tasteful documentary photography, realistic anatomy and tools, medium-wide composition showing artisan and workspace with subject near center for responsive cropping. Entirely fictional person, not a real celebrity or identifiable artisan. No text, no logos, no watermarks, no collage. A fictional Korean female lacquer artist in her forties applying a fine brush coat of dark reddish ottchil lacquer to a round wooden bowl at a tidy wooden workbench. Natural linen apron, delicate careful brushwork, lacquer boxes and small brushes softly blurred on workshop shelves."
+    },
+    {
+      "id": "artisan-3",
+      "path": "public/images/home-demo/artisan-3.webp",
+      "prompt": "Use case: photorealistic-natural. Generate ONE landscape 3:2 editorial photograph for a premium Korean craft store artisan carousel. Authentic tactile materials, candid quiet concentration, muted warm earth colors, soft window light, tasteful documentary photography, realistic anatomy and tools, medium-wide composition showing artisan and workspace with subject near center for responsive cropping. Entirely fictional person, not a real celebrity or identifiable artisan. No text, no logos, no watermarks, no collage. A fictional Korean blacksmith in his sixties with gray hair, leather apron and eye protection, using tongs and a hammer to shape a short glowing iron bar on an anvil. Traditional workshop with subtle forge glow, atmospheric yet readable details, realistic safe working posture."
+    },
+    {
+      "id": "artisan-4",
+      "path": "public/images/home-demo/artisan-4.webp",
+      "prompt": "Use case: photorealistic-natural. Generate ONE landscape 3:2 editorial photograph for a premium Korean craft store artisan carousel. Authentic tactile materials, candid quiet concentration, muted warm earth colors, soft window light, tasteful documentary photography, realistic anatomy and tools, medium-wide composition showing artisan and workspace with subject near center for responsive cropping. Entirely fictional person, not a real celebrity or identifiable artisan. No text, no logos, no watermarks, no collage. A fictional Korean female textile artisan in her forties operating a traditional wooden loom, weaving natural beige hemp fabric. Hands carefully handling the shuttle, daylight filtering through a workshop window, linen and thread textures, calm unposed scene."
+    },
+    {
+      "id": "artisan-5",
+      "path": "public/images/home-demo/artisan-5.webp",
+      "prompt": "Use case: photorealistic-natural. Generate ONE landscape 3:2 editorial photograph for a premium Korean craft store artisan carousel. Authentic tactile materials, candid quiet concentration, muted warm earth colors, soft window light, tasteful documentary photography, realistic anatomy and tools, medium-wide composition showing artisan and workspace with subject near center for responsive cropping. Entirely fictional person, not a real celebrity or identifiable artisan. No text, no logos, no watermarks, no collage. A fictional Korean male papermaker in his fifties wearing a rolled-sleeve indigo cotton shirt, lifting a rectangular bamboo screen containing pale wet hanji paper pulp from a shallow vat. Traditional airy paper workshop, drying paper sheets in soft background."
+    },
+    {
+      "id": "artisan-6",
+      "path": "public/images/home-demo/artisan-6.webp",
+      "prompt": "Use case: photorealistic-natural. Generate ONE landscape 3:2 editorial photograph for a premium Korean craft store artisan carousel. Authentic tactile materials, candid quiet concentration, muted warm earth colors, soft window light, tasteful documentary photography, realistic anatomy and tools, medium-wide composition showing artisan and workspace with subject near center for responsive cropping. Entirely fictional person, not a real celebrity or identifiable artisan. No text, no logos, no watermarks, no collage. A fictional Korean male woodworker in his thirties wearing a brown work apron, smoothing a curved wooden tray with a small hand plane at a workbench. Visible curly wood shavings, beautiful grain, modest sunlit woodshop, focused three-quarter profile."
+    }
+  ]
+}

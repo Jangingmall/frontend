@@ -7,6 +7,7 @@
  */
 export interface ArtisanCarouselItem {
   id: string;
+  image?: { src: string; alt: string };
   /** Figma `badge-artisan` 두 번째 배지: 「보유자」/「이수자」(첫 배지 「국가무형유산」은 공통 고정값). */
   badge: string;
   certificationTitle?: string;
