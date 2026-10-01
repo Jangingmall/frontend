@@ -83,15 +83,16 @@ src/lib/http/
 
 - **Base URL은 상대경로 `/api`.** FE·BE가 same-origin이고(Vercel rewrite로 `/api/*`를 백엔드로 전달 — [routing-and-auth.md](routing-and-auth.md) §7) 브라우저 요청이므로 절대 URL이 필요 없다. `NEXT_PUBLIC_API_BASE_URL`은 두지 않는다.
 - 인증이 필요한 요청에 메모리의 access token을 `Authorization: Bearer {accessToken}`로 주입한다. Public 요청에는 넣지 않는다.
-- 쿠키가 필요한 요청은 refresh(`POST /api/member/token/refresh`)뿐이며 `credentials: "same-origin"`으로 호출한다. 그 외 요청은 `credentials` 기본값. 쿠키·CORS 정책은 [routing-and-auth.md](routing-and-auth.md) §4.
+- refresh는 기존 HttpOnly 쿠키로 인증하며 새 access token만 반영한다. 기본 `credentials: "same-origin"`, 스테이징 회원 API는 쿠키가 있는 백엔드 호스트에 `include`로 전송한다. 쿠키·CORS 정책은 [routing-and-auth.md](routing-and-auth.md) §4.
 - 응답 처리(래퍼 해제, `ApiError` throw)는 서버 fetcher와 동일 규칙을 공유한다. 공통 로직은 한 곳에 두고 두 fetcher가 재사용한다.
 - **401 처리**: `UNAUTHORIZED` 응답을 받으면
   1. 진행 중인 refresh가 없으면 `POST /api/member/token/refresh` 호출 (single-flight — 동시 다발 401은 하나의 refresh Promise를 공유)
   2. refresh 성공 → 새 access token으로 원요청 1회 재시도
-  3. refresh 실패 → `useAuthStore.getState().clear()`로 auth store만 초기화하고
+  3. refresh 401/403 인증 거절 → `useAuthStore.getState().clear()`로 auth store만 초기화하고
      `ApiError`를 그대로 전파한다. 로그인 화면 리다이렉트는 `anonymous` 상태를 구독하는
      보호 가드([routing-and-auth.md](routing-and-auth.md) §5.1)가 이어서 수행한다. Query
      캐시 정리는 없다(§6.3)
+  4. 네트워크·5xx·응답 검증 실패는 기존 세션을 유지하고 오류를 전달한다. 네트워크 실패는 503으로 전달하며 이후 요청에서 갱신을 다시 시도할 수 있다.
 - 재시도는 401 refresh 경로에서 1회로 한정한다. 그 외 재시도는 TanStack Query가 담당(§6).
 
 ### 4.3 응답 검증·변환
@@ -164,7 +165,7 @@ export function createQueryClient() {
 ### 6.3 전역 에러 처리
 
 `queryCache`/`mutationCache`의 전역 `onError` 훅은 아직 도입하지 않았다(§10). 401 처리는
-fetcher와 보호 가드로 역할이 나뉜다 — refresh 실패 시 fetcher(§4.2)는
+fetcher와 보호 가드로 역할이 나뉜다 — refresh 401/403 인증 거절 시 fetcher(§4.2)는
 `useAuthStore.getState().clear()`로 auth store만 초기화하고, 로그인 화면 리다이렉트는
 `anonymous` 상태를 구독하는 `(protected)/layout.tsx` 가드([routing-and-auth.md](routing-and-auth.md) §5.1)가 이어서 수행한다. Query
 캐시를 별도로 비우는 로직은 없다. 403/429/5xx의 공통 처리도 없고, 필요한 화면·도메인이

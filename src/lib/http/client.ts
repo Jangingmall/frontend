@@ -106,11 +106,14 @@ let refreshInFlight: Promise<string> | null = null;
  * 401 재시도와 부팅 복원이 겹쳐도 refresh 요청은 1건이다. 401 자동 재시도 경로(`clientFetch`)와
  * `api/member`의 `refreshToken()`이 이 primitive를 공유해 fetch 구현을 한 곳에 둔다.
  *
+ * BE #109: refresh 쿠키는 만료까지 재사용하며 응답은 새 accessToken만 반영한다.
+ * Set-Cookie 재발급을 기다리거나 클라이언트에서 쿠키 만료를 연장하지 않는다.
+ *
  * raw `fetch`를 쓴다 — `clientFetch`를 거치면 refresh 응답의 401이 또 refresh를 부른다.
  *
  * 401 자동 재시도 경로는 이 primitive를 직접 호출하므로(`api/member`의 Zod를 안 거침)
  * 여기서 `accessToken`이 비어 있지 않은 문자열인지 확인한다 — 아니면 `clientFetch`의
- * catch가 세션을 정리한다. (docs/data-layer.md §4.3 — 인증 응답은 검증 실패 시 throw)
+ * catch가 502 오류를 전파한다. (docs/data-layer.md §4.3 — 인증 응답은 검증 실패 시 throw)
  */
 export function refreshAccessToken(): Promise<string> {
   refreshInFlight ??= (async () => {
@@ -175,9 +178,11 @@ async function fetchWithAuthRetry(
     const accessToken = await refreshAccessToken();
     useAuthStore.getState().setAccessToken(accessToken);
   } catch (error) {
-    // refresh 실패 확정 → 세션 종료. 전역 처리(§6.3)·가드가 로그인 이동을 담당한다.
-    useAuthStore.getState().clear();
-    throw error instanceof ApiError ? error : new ApiError(401, null);
+    // 서버가 인증을 거절한 경우만 종료한다. 일시 장애는 화면을 유지해 재시도할 수 있다.
+    if (error instanceof ApiError && [401, 403].includes(error.status)) {
+      useAuthStore.getState().clear();
+    }
+    throw error instanceof ApiError ? error : new ApiError(503, null);
   }
 
   // 재시도 결과는 그대로 표면화한다(재-refresh 없음).

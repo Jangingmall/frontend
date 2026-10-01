@@ -1,4 +1,10 @@
-import { type DefaultBodyType, delay, http, type PathParams } from "msw";
+import {
+  type DefaultBodyType,
+  delay,
+  http,
+  HttpResponse,
+  type PathParams,
+} from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { setMockIdentity } from "@/api/member/mock/mock-identity";
@@ -149,28 +155,31 @@ describe("clientFetch — 401 refresh", () => {
     for (const result of results) expect(result).toMatchObject({ memberId: 1 });
   });
 
-  it("refresh 실패 → store.clear() + ApiError 전파", async () => {
-    server.use(
-      http.post("*/api/member/token/refresh", () =>
-        mockError(401, "TOKEN_MISMATCH"),
-      ),
-    );
-    useAuthStore.setState({
-      status: "authenticated",
-      accessToken: "stale",
-      user: { id: 1, name: "n", role: "USER" },
-    });
+  it.each([401, 403])(
+    "refresh %s → store.clear() + ApiError 전파",
+    async (status) => {
+      server.use(
+        http.post("*/api/member/token/refresh", () =>
+          mockError(status, "TOKEN_MISMATCH"),
+        ),
+      );
+      useAuthStore.setState({
+        status: "authenticated",
+        accessToken: "stale",
+        user: { id: 1, name: "n", role: "USER" },
+      });
 
-    await expect(clientFetch("/api/member/me")).rejects.toMatchObject({
-      name: "ApiError",
-      status: 401,
-    });
-    expect(useAuthStore.getState()).toMatchObject({
-      status: "anonymous",
-      accessToken: null,
-      user: null,
-    });
-  });
+      await expect(clientFetch("/api/member/me")).rejects.toMatchObject({
+        name: "ApiError",
+        status,
+      });
+      expect(useAuthStore.getState()).toMatchObject({
+        status: "anonymous",
+        accessToken: null,
+        user: null,
+      });
+    },
+  );
 
   it("지연된 401: 다른 요청이 이미 토큰을 갱신했으면 refresh 없이 새 토큰으로 재시도", async () => {
     let refreshCalls = 0;
@@ -208,7 +217,7 @@ describe("clientFetch — 401 refresh", () => {
     expect(meAuthHeaders).toEqual(["Bearer stale-T1", "Bearer fresh-T2"]);
   });
 
-  it("refresh 응답의 accessToken이 문자열이 아니면 store.clear() + 에러 전파", async () => {
+  it("refresh 응답의 accessToken이 문자열이 아니면 세션 유지 + 502 전파", async () => {
     server.use(
       http.post("*/api/member/token/refresh", () =>
         mockOk({ accessToken: 123 }),
@@ -222,11 +231,12 @@ describe("clientFetch — 401 refresh", () => {
 
     await expect(clientFetch("/api/member/me")).rejects.toMatchObject({
       name: "ApiError",
+      status: 502,
     });
     expect(useAuthStore.getState()).toMatchObject({
-      status: "anonymous",
-      accessToken: null,
-      user: null,
+      status: "authenticated",
+      accessToken: "stale",
+      user: { id: 1, name: "n", role: "USER" },
     });
   });
 
@@ -291,3 +301,47 @@ describe("clientFetchExists — 봉투 없는 status-only 엔드포인트", () =
     expect(useAuthStore.getState().accessToken).toBe(REFRESHED);
   });
 });
+
+it.each(["server", "network"] as const)(
+  "refresh %s 장애 후 재요청으로 복구하며 세션을 유지한다",
+  async (failure) => {
+    let refreshCalls = 0;
+    const user = { id: 1, name: "판매자", role: "ARTISAN" as const };
+    useAuthStore.getState().setSession("expired", user);
+    server.use(
+      http.get<PathParams, DefaultBodyType, Envelope>(
+        "*/api/session-check",
+        ({ request }) =>
+          request.headers.get("Authorization") === "Bearer recovered"
+            ? mockOk({ ok: true })
+            : mockError(401, "UNAUTHORIZED"),
+      ),
+      http.post("*/api/member/token/refresh", () => {
+        refreshCalls++;
+        if (refreshCalls === 1)
+          return failure === "server"
+            ? mockError(503, "SERVICE_UNAVAILABLE")
+            : HttpResponse.error();
+        return mockOk({ accessToken: "recovered", expiresIn: 1800 });
+      }),
+    );
+    await expect(clientFetch("/api/session-check")).rejects.toMatchObject({
+      status: 503,
+    });
+    expect(useAuthStore.getState()).toMatchObject({
+      status: "authenticated",
+      accessToken: "expired",
+      user,
+    });
+    expect(refreshCalls).toBe(1);
+    await expect(clientFetch("/api/session-check")).resolves.toEqual({
+      ok: true,
+    });
+    expect(refreshCalls).toBe(2);
+    expect(useAuthStore.getState()).toMatchObject({
+      status: "authenticated",
+      accessToken: "recovered",
+      user,
+    });
+  },
+);
