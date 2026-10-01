@@ -1,4 +1,5 @@
 "use client";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ANONYMOUS, loadTossPayments } from "@tosspayments/tosspayments-sdk";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -9,6 +10,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import {
   type CheckoutFormValues,
   EMPTY_CHECKOUT_FORM,
+  realCheckoutFormSchema,
 } from "@/app/(protected)/checkout/_lib/checkout-form-schema";
 import {
   clearOrderRequestKey,
@@ -64,6 +66,7 @@ export function RealCheckoutPage({
   const profile = useMemberProfileQuery();
   const form = useForm<CheckoutFormValues>({
     defaultValues: EMPTY_CHECKOUT_FORM,
+    resolver: zodResolver(realCheckoutFormSchema),
   });
   const openPostcode = useKakaoPostcodePopup();
   const [sameCustomer, setSameCustomer] = useState(false);
@@ -126,6 +129,12 @@ export function RealCheckoutPage({
   );
   async function submit() {
     if (submitting.current || blocked) return;
+    const phoneValid = await form.trigger([
+      "recipientPhoneFirst",
+      "recipientPhoneMiddle",
+      "recipientPhoneLast",
+    ]);
+    if (!phoneValid || submitting.current) return;
     const values = form.getValues();
     const memo = values.memo === "직접 입력" ? values.memoText : values.memo;
     const addressInput = {
@@ -136,10 +145,6 @@ export function RealCheckoutPage({
       address2: values.addressDetail.trim(),
       isDefault: false,
     };
-    if (!/^\d{9,20}$/.test(addressInput.phone)) {
-      setError("수령인 휴대전화 번호를 확인해 주세요.");
-      return;
-    }
     if (
       !addressInput.recipientName ||
       !addressInput.zipCode ||

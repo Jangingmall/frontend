@@ -406,25 +406,49 @@ it("keeps unavailable benefits on checkout without applying a fake discount", ()
   expect(state.request).not.toHaveBeenCalled();
 });
 
-it("identifies invalid recipient phone before calling payment APIs", () => {
-  render(<RealCheckoutPage />);
-  fireEvent.change(
-    screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
-    { target: { value: "" } },
-  );
-  fireEvent.change(
-    screen.getByRole("textbox", { name: "수령인 휴대전화 끝자리" }),
-    { target: { value: "" } },
-  );
-  fireEvent.click(screen.getByRole("button", { name: "토스페이 선택" }));
-  fireEvent.click(screen.getByRole("checkbox", { name: "약관에 동의합니다." }));
-  fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
-  expect(screen.getByRole("alert")).toHaveTextContent(
-    "수령인 휴대전화 번호를 확인해 주세요.",
-  );
-  expect(state.create).not.toHaveBeenCalled();
-  expect(state.prepare).not.toHaveBeenCalled();
-});
+it.each(["", "1", "a123", "12345678901234567890"])(
+  "identifies invalid recipient phone %j inline before calling payment APIs",
+  async (middle) => {
+    render(<RealCheckoutPage />);
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
+      { target: { value: middle } },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 끝자리" }),
+      { target: { value: "5678" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "토스페이 선택" }));
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "약관에 동의합니다." }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
+      ).toHaveAttribute("aria-invalid", "true"),
+    );
+    expect(state.create).not.toHaveBeenCalled();
+    expect(state.prepare).not.toHaveBeenCalled();
+    expect(state.saveAddress).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("button", { name: "결제하기" }).closest("aside"),
+    ).not.toHaveTextContent("수령인 휴대전화 번호");
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
+      { target: { value: "1234" } },
+    );
+    fireEvent.change(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 끝자리" }),
+      { target: { value: "5678" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "결제하기" }));
+    await waitFor(() => expect(state.prepare).toHaveBeenCalledTimes(1));
+    expect(
+      screen.getByRole("textbox", { name: "수령인 휴대전화 중간자리" }),
+    ).not.toHaveAttribute("aria-invalid", "true");
+  },
+);
 
 it("opens Toss Pay with the server test key when customer phone contains hyphens", async () => {
   state.phone = "010-1234-5678";
