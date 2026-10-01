@@ -1,11 +1,15 @@
-import { http } from "msw";
+import { type DefaultBodyType, http, type PathParams } from "msw";
 import { afterEach, expect, it, vi } from "vitest";
 
 import { startMockOAuthLogin } from "@/api/member/api";
+import { getGeneration } from "@/api/seller-studio/api";
 import { publicEnv } from "@/lib/env";
-import { mockOk } from "@/mocks/envelope";
+import { mockError, mockOk } from "@/mocks/envelope";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
+import type { ApiErrorResponse, ApiResponse } from "@/types/api";
+
+type Envelope = ApiResponse<unknown> | ApiErrorResponse;
 
 import { clientFetch, refreshAccessToken } from "./client";
 
@@ -113,3 +117,69 @@ it.each([
     ).toEqual({ url: `${target}/api/member/oauth2/exchange`, credentials });
   },
 );
+
+it("Set-Cookie 없는 반복 갱신으로 동일 AI 작업 조회를 이어가고 무효 토큰은 종료한다", async () => {
+  stageWindow();
+  const user = { id: 59, name: "판매자", role: "ARTISAN" as const };
+  useAuthStore.getState().setSession("stage-token-0", user);
+  let requiredToken = "stage-token-1";
+  let refreshCalls = 0;
+  let revoked = false;
+  const authorizations: (string | null)[] = [];
+  server.use(
+    http.get<PathParams, DefaultBodyType, Envelope>(
+      "https://stg.midam.store/api/content/products/753/generations/29",
+      ({ request }) => {
+        const authorization = request.headers.get("Authorization");
+        authorizations.push(authorization);
+        return authorization === "Bearer " + requiredToken
+          ? mockOk({ productId: 753, generationId: 29, status: "PROCESSING" })
+          : mockError(401, "UNAUTHORIZED");
+      },
+    ),
+    http.post<PathParams, DefaultBodyType, Envelope>(
+      "https://api.stg.midam.store/api/member/token/refresh",
+      ({ request }) => {
+        refreshCalls++;
+        expect(request.credentials).toBe("include");
+        expect(request.headers.has("Authorization")).toBe(false);
+        if (revoked) return mockError(401, "UNAUTHORIZED");
+        const response = mockOk({
+          accessToken: requiredToken,
+          expiresIn: 1800,
+        });
+        expect(response.headers.has("Set-Cookie")).toBe(false);
+        return response;
+      },
+    ),
+  );
+  await expect(getGeneration(753, 29)).resolves.toMatchObject({
+    generationId: 29,
+    status: "PROCESSING",
+  });
+  requiredToken = "stage-token-2"; // 다음 액세스 토큰 만료를 모사한다.
+  await expect(getGeneration(753, 29)).resolves.toMatchObject({
+    generationId: 29,
+    status: "PROCESSING",
+  });
+  expect(refreshCalls).toBe(2);
+  expect(authorizations).toEqual([
+    "Bearer stage-token-0",
+    "Bearer stage-token-1",
+    "Bearer stage-token-1",
+    "Bearer stage-token-2",
+  ]);
+  expect(useAuthStore.getState()).toMatchObject({
+    status: "authenticated",
+    accessToken: "stage-token-2",
+    user,
+  });
+  requiredToken = "stage-token-3";
+  revoked = true; // 로그아웃·재로그인·비밀번호 변경으로 서버 토큰이 무효화된 경우
+  await expect(getGeneration(753, 29)).rejects.toMatchObject({ status: 401 });
+  expect(useAuthStore.getState()).toMatchObject({
+    status: "anonymous",
+    accessToken: null,
+    user: null,
+  });
+});

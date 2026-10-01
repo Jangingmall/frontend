@@ -25,7 +25,7 @@ interface AuthState {
    * `GET /api/member/me`를 다시 부르지 않는다. (§4.1)
    */
   setAccessToken: (accessToken: string) => void;
-  /** 로그아웃·부팅 복원 실패·refresh 실패: 초기화 → `anonymous`. */
+  /** 로그아웃·부팅 복원 실패·refresh 인증 거절: 초기화 → `anonymous`. */
   clear: () => void;
 }
 

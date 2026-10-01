@@ -93,11 +93,11 @@ BE 계약([PHASE2-2 인증 정책 계약서](https://github.com/Jangingmall/back
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | 인증 방식      | JWT                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | Access Token   | 30분. `Authorization: Bearer {accessToken}` 헤더. **브라우저 메모리 저장** (LocalStorage 금지)                                                                                                                                                                                                                                                                                                                                                                                                               |
-| Refresh Token  | 1주. **HttpOnly Cookie**. `POST /api/member/token/refresh`로만 사용                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Refresh Token  | 1주(로그인 시 고정 만료). **HttpOnly Cookie**. 갱신 때 교체·만료 연장 없이 재사용                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | 로그인         | `POST /api/member/login` → access는 응답 body(메모리), refresh는 Set-Cookie                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | OAuth          | `GET /api/member/oauth2/{naver\|kakao}` → 302로 `/oauth2/authorization/{provider}`(Spring Security 실제 시작 경로) → 콜백 후 쿠키 기반 티켓 → `POST /api/member/oauth2/exchange`로 교환(`onboardingRequired` 확인) → 최초 로그인이면 `POST /api/member/oauth2/complete-profile`(바디는 `{name, phone, agreements}`뿐 — email·provider는 서버가 쿠키로 식별)로 추가 정보 입력 후 `USER` 부여. BE 소스(`OAuthController`) 직접 대조로 확인 — [api-contract.md](api-contract.md) §9 "OAuth 목업·실제 계약 괴리" |
 | 부팅·새로고침  | 메모리가 비므로 앱 시작 시 **silent refresh 1회** 시도 → 성공 시 세션 복원, 실패 시 비로그인 시작                                                                                                                                                                                                                                                                                                                                                                                                            |
-| 요청 중 만료   | 401 → 클라이언트 fetcher가 refresh(single-flight) 후 원요청 1회 재시도 → refresh도 실패 시 로그아웃 처리                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 요청 중 만료   | 401 → 클라이언트 fetcher가 refresh(single-flight) 후 원요청 1회 재시도 → refresh 401/403 시 로그아웃, 일시 오류는 기존 세션 유지                                                                                                                                                                                                                                                                                                                                                                             |
 | 로그아웃       | `api/member/api.ts`의 `logout()`(`POST /api/member/logout`, 서버 refresh 무효화)은 **모바일 전체화면 메뉴(HO-menu-1)의 로그아웃 버튼**에 연결돼 있다(GUI 반응형 페이지 인터랙션 주석: 로그인 상태에서 사용자 이름 + 로그아웃 버튼). 서버 호출이 실패해도 클라이언트 세션(`stores/auth.clear()`)은 정리하고, 이때 `QueryProvider`가 사용자 변경을 감지해 Query 캐시를 비운다. 데스크톱 GNB에는 로그아웃 UI가 아직 없다(시안 없음)                                                                             |
 | `ARTISAN` 전환 | `POST /api/member/artisans/applications` → `ADMIN` 승인 후 role 전환                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
@@ -121,7 +121,7 @@ interface AuthState {
 }
 ```
 
-- `lib/http/client.ts`가 `useAuthStore.getState().accessToken`을 동기로 읽어 헤더에 주입한다. 401 refresh 성공 → `setAccessToken`(토큰만 교체, `GET /me` 재호출 없음), 실패 → `clear`.
+- `lib/http/client.ts`가 `useAuthStore.getState().accessToken`을 동기로 읽어 헤더에 주입한다. 401 refresh 성공 → `setAccessToken`(토큰만 교체, `GET /me` 재호출 없음), 401/403 인증 거절 → `clear`. 네트워크·5xx·응답 검증 오류는 기존 세션을 유지하고 에러를 전달한다.
 - 세부 fetcher 동작은 [data-layer.md](data-layer.md) §4.2.
 - `role`은 배열이 아니라 단일 값이다. BE `MemberProfileResponse.role`이 `MemberRole` 단일 enum이라(판매자는 `"ARTISAN"` 하나) — 2026-09-15 BE 레포(`Jangingmall/backend`) 직접 대조로 확인.
 
@@ -130,6 +130,9 @@ interface AuthState {
 - `POST /api/member/login` → `{ accessToken, member }`로 한 번에 온다. `GET /api/member/me` 후속 호출이 필요 없다.
 - 부팅 silent refresh는 다르다 — `POST /api/member/token/refresh` 응답엔 `member`가 없다(`{ accessToken, expiresIn }`뿐). 그래서 이쪽은 여전히 `refresh()` → `GET /api/member/me` 2단계를 유지한다.
 - `status`는 토큰 + user가 모두 확보돼야 `authenticated`로 전환한다(중간엔 `loading` 유지). 401 자동 refresh 후에는 토큰만 갱신되므로 `GET /api/member/me`를 다시 호출하지 않는다.
+
+- [BE #109](https://github.com/Jangingmall/backend/pull/109) 계약: refresh 응답은 `accessToken`과 `expiresIn`만 반환하고 `Set-Cookie`는 없다. 동일 쿠키로 반복·동시 갱신할 수 있으며 FE는 메모리 access token만 교체한다. 로그아웃·비밀번호 변경·재로그인으로 서버가 이전 토큰을 거절하면 로그인 상태를 종료한다.
+- 로그인된 화면에서 갱신 일시 오류가 나면 원요청을 실패로 전달하고 화면을 유지한다. AI 생성 화면의 기존 ‘상태 다시 조회’로 같은 상품·작업을 재조회할 수 있다. 자동 재시도 루프나 신규 생성 요청은 추가하지 않는다.
 
 ### 4.2 부팅 silent refresh — 하이브리드
 
@@ -140,9 +143,9 @@ interface AuthState {
 
 ### 4.3 쿠키와 CORS
 
-- FE·BE는 same-origin이다. Vercel rewrite가 `/api/*`를 백엔드로 전달하므로(§7) 브라우저에서 보면 동일 출처다. 별도 CORS 설정·preflight이 필요 없다.
-- refresh 쿠키(HttpOnly): BE는 `Set-Cookie: HttpOnly; Secure; SameSite=Lax; Path=/` (host-only, `Domain` 미설정). refresh는 POST라 `SameSite=Lax`로 충분하다.
-- FE fetch: refresh(`POST /api/member/token/refresh`) 호출만 `credentials: "same-origin"`. Bearer 토큰을 쓰는 그 외 요청은 쿠키가 필요 없어 기본값을 쓴다.
+- 기본은 same-origin rewrite다. 스테이징의 회원 API(`/api/member/*`)는 쿠키가 저장된 `https://api.stg.midam.store`로 직접 보내며 `credentials: "include"`를 사용한다(`clientRequestTarget`). 이 경로는 백엔드의 credential CORS 설정이 필요하다.
+- 로그인 refresh 쿠키는 `HttpOnly; Secure; SameSite=Strict; Path=/api/member; Max-Age=604800`이다(BE #109 테스트 기준). 갱신 응답에서는 쿠키를 다시 내려주지 않는다.
+- refresh는 Bearer 헤더 없이 쿠키로 인증한다. 기본 `credentials: "same-origin"`, 스테이징 회원 API는 `include`를 사용하며 쿠키는 브라우저가 관리한다.
 
 ## 5. 보호 라우트 — route group + layout 가드
 
