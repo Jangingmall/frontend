@@ -39,3 +39,15 @@ describe("formatPhone", () => {
     expect(formatPhone("01011112222")).toBe("010-1111-2222");
   });
 });
+
+it.each(["010-1111-2222", "010 1111 2222"])(
+  "formats %s without retaining separators inside fields",
+  (value) => {
+    expect(splitPhone(value)).toEqual({
+      phonePrefix: "010",
+      phoneMiddle: "1111",
+      phoneLast: "2222",
+    });
+    expect(formatPhone(value)).toBe("010-1111-2222");
+  },
+);

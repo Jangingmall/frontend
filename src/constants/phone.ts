@@ -28,6 +28,8 @@ export function splitPhone(phone: string): {
   phoneMiddle: string;
   phoneLast: string;
 } {
+  // 표시용 구분자가 포함된 서버 응답도 입력칸에는 숫자만 배치한다.
+  phone = phone.replace(/[-\s]/g, "");
   const prefix = PHONE_PREFIXES.find((candidate) =>
     phone.startsWith(candidate),
   );
