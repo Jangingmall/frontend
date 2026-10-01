@@ -8,7 +8,7 @@ import type { Money } from "@/types/money";
 import { pickThumbnailVariant } from "@/utils/image";
 
 interface ProductOrderProps {
-  thumbnail: ImageRef;
+  thumbnail: ImageRef | string;
   productName: string;
   /** "− 옵션 내용" 줄. 없거나 빈 배열이면 옵션 영역을 표시하지 않는다. */
   options?: string[];
@@ -35,8 +35,11 @@ export function ProductOrder({
   quantityControl,
   thumbnailOverlay,
 }: ProductOrderProps) {
-  const [hasImageError, setHasImageError] = useState(false);
-  const variant = pickThumbnailVariant(thumbnail, 320);
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  const thumbnailUrl =
+    typeof thumbnail === "string"
+      ? thumbnail
+      : pickThumbnailVariant(thumbnail, 320)?.url;
 
   return (
     <div className="text-font-dark">
@@ -44,15 +47,15 @@ export function ProductOrder({
         <div className="relative size-22.5 shrink-0 overflow-hidden bg-fill-jade-weak">
           <Image
             src={
-              hasImageError || !variant
+              !thumbnailUrl || failedUrl === thumbnailUrl
                 ? "/images/product-placeholder.png"
-                : variant.url
+                : thumbnailUrl
             }
             alt=""
             fill
             unoptimized
             className="object-cover"
-            onError={() => setHasImageError(true)}
+            onError={() => setFailedUrl(thumbnailUrl ?? null)}
           />
           {thumbnailOverlay}
         </div>

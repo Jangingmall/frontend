@@ -33,7 +33,7 @@ export function CheckoutProducts({
             >
               <ProductOrder
                 variant="stacked"
-                thumbnail={line.thumbnail}
+                thumbnail={line.thumbnailUrl || line.thumbnail}
                 productName={line.productName}
                 options={
                   line.options.length || !showUnavailableDetails

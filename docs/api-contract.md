@@ -239,6 +239,8 @@ BE 레포(`ChatController`) 직접 대조로 4종 전부 `@PreAuthorize("hasRole
 
 ### 장바구니 · 주문 · 결제
 
+- 이미지 호환: 스테이징의 일부 기존 상품은 장바구니 응답의 `thumbnail`이 빈 배열이며 공개 상품 상세에만 `thumbnailUrl`이 있다. FE는 장바구니 이미지 URL을 우선 사용하고, 없는 상품만 `GET /api/products/{productId}`에서 대표 이미지를 보완한다. 요청 내 같은 상품은 한 번만 조회하며 3초 제한과 실패 시 placeholder를 적용한다. 보완 결과는 장바구니와 주문서의 주문 작품 정보에서 함께 사용한다.
+
 | 구분      | 엔드포인트                                                                                                                                                                                                                    |
 | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 장바구니  | `GET /api/payments/cart`, `POST /api/payments/cart/items`, `PATCH\|DELETE /api/payments/cart/items/{cartItemId}`, `PATCH /api/payments/cart/items/{cartItemId}/options`, `POST /api/payments/cart/merge`                      |

@@ -8,6 +8,8 @@ const cartItemDto = z
     unitPrice: money,
     quantity: z.number().int().positive(),
     subtotal: money,
+    thumbnailUrl: z.string().nullish(),
+    legacyThumbnailUrl: z.string().nullish(),
     thumbnail: z.array(
       z
         .object({

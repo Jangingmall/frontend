@@ -78,7 +78,10 @@ describe("ProductOrder", () => {
     );
     const image = container.querySelector("img")!;
     fireEvent.error(image);
-    expect(image).toHaveAttribute("src", "/images/product-placeholder.png");
+    expect(image).toHaveAttribute(
+      "src",
+      expect.stringContaining("/images/product-placeholder.png"),
+    );
   });
 });
 it("stacked slots preserve accessible interactive controls and replace quantity text", () => {
@@ -97,4 +100,52 @@ it("stacked slots preserve accessible interactive controls and replace quantity 
   expect(screen.getByRole("button", { name: "수량 조절" })).toBeInTheDocument();
   expect(screen.getByText("품절")).toBeInTheDocument();
   expect(screen.queryByText("2개 / 3,000원")).not.toBeInTheDocument();
+});
+
+it("renders a legacy thumbnail URL and falls back only when loading fails", () => {
+  render(
+    <ProductOrder
+      thumbnail="/legacy.jpg"
+      productName="작품"
+      quantity={1}
+      price={1000}
+    />,
+  );
+  const image = screen.getByRole("presentation");
+  expect(image).toHaveAttribute("src", expect.stringContaining("/legacy.jpg"));
+  fireEvent.error(image);
+  expect(image).toHaveAttribute("src", "/images/product-placeholder.png");
+});
+
+it("tries a new thumbnail URL after the previous image failed", () => {
+  const { rerender } = render(
+    <ProductOrder
+      thumbnail="/broken.jpg"
+      productName="작품"
+      quantity={1}
+      price={1000}
+    />,
+  );
+  fireEvent.error(screen.getByRole("presentation"));
+  expect(screen.getByRole("presentation")).toHaveAttribute(
+    "src",
+    expect.stringContaining("/images/product-placeholder.png"),
+  );
+  rerender(
+    <ProductOrder
+      thumbnail="/replacement.jpg"
+      productName="작품"
+      quantity={1}
+      price={1000}
+    />,
+  );
+  expect(screen.getByRole("presentation")).toHaveAttribute(
+    "src",
+    expect.stringContaining("/replacement.jpg"),
+  );
+  fireEvent.error(screen.getByRole("presentation"));
+  expect(screen.getByRole("presentation")).toHaveAttribute(
+    "src",
+    expect.stringContaining("/images/product-placeholder.png"),
+  );
 });

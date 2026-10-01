@@ -51,7 +51,7 @@ export function CartProductCard({
       </Button>
       <div className="pl-6">
         <ProductOrder
-          thumbnail={line.thumbnail}
+          thumbnail={line.thumbnailUrl || line.thumbnail}
           productName={line.productName}
           options={
             line.options.length || !showUnavailableDetails
