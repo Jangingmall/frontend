@@ -48,14 +48,29 @@ function login() {
 }
 
 describe("SiteFloatingActions", () => {
-  it("USER가 아닌 인증 계정(ARTISAN)에는 챗봇 진입점이 숨겨진다", () => {
-    useAuthStore.setState({
-      status: "authenticated",
-      accessToken: "token",
-      user: { id: 2, name: "김도예", role: "ARTISAN" },
-    });
+  it("판매자도 챗봇을 열고 메시지를 보내 추천을 받을 수 있다", async () => {
+    useAuthStore
+      .getState()
+      .setSession("token", { id: 2, name: "김도예", role: "ARTISAN" });
     setup();
+    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
+    fireEvent.change(
+      screen.getByPlaceholderText("궁금한 내용을 입력해주세요."),
+      { target: { value: "선물 추천" } },
+    );
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+    await waitFor(() =>
+      expect(
+        screen.getAllByText("예산과 취향에 맞춰 골라봤어요."),
+      ).toHaveLength(3),
+    );
+  });
 
+  it("관리자 계정의 기존 챗봇 숨김 정책은 유지한다", () => {
+    useAuthStore
+      .getState()
+      .setSession("token", { id: 3, name: "관리자", role: "ADMIN" });
+    setup();
     expect(
       screen.queryByRole("button", { name: "미담 챗봇" }),
     ).not.toBeInTheDocument();

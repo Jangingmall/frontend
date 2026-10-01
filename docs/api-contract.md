@@ -106,7 +106,7 @@ type PagedResponse<T> = {
 
 - FE는 `user.role: Role` **단일 값**으로 판단한다(판매자는 `"ARTISAN"` 하나 — 배열 아님). BE `MemberProfileResponse.role`이 `MemberRole` 단일 enum이라는 걸 2026-09-15 BE 레포(`Jangingmall/backend`) 직접 대조로 확인했다. `MemberRole.authorities`(`ARTISAN` → `["ROLE_USER","ROLE_ARTISAN"]`)는 Spring Security 내부 권한 문자열일 뿐 응답 DTO 필드로 노출되지 않는다. 라우트 가드는 [routing-and-auth.md](routing-and-auth.md) §5.
 - API별 인증 수준(`Public` / `Public(게스트)` / `Authenticated` / `USER` / `ARTISAN` / `ADMIN`)은 BE `PHASE2-2` §5 표 기준.
-- **챗봇은 Guest가 아니라 `USER` 전용이다** — 2026-09-22 BE 레포(`ChatController`) 직접 대조로
+- **챗봇은 Guest가 아니라 `ROLE_USER` 권한이 필요하다** — 2026-09-22 BE 레포(`ChatController`) 직접 대조로
   확인. 챗봇 API 4종 전부 `@PreAuthorize("hasRole('USER')")`라, 이전 버전 문서가 전제했던
   "Guest도 챗봇 가능"은 틀렸다. FE는 비로그인 사용자가 챗봇 진입을 시도하면 로그인 유도
   다이얼로그로 게이트한다(BE 쪽 인증 완화 요청은 하지 않음) — §7 참고.
@@ -181,11 +181,11 @@ type PagedResponse<T> = {
 - 응답 블록 구조: `{ order, tag(h2/p/img/video), text, imageUrl }`.
 - 문단·사진 상세 DTO, interview↔generation 데이터 소유 관계, 여러 버전 중 publish 대상 선택 규칙은 미확정(§9). AI 상세 화면 구조는 이 계약 확정 후 설계.
 
-## 7. 챗봇 도메인 (`USER`)
+## 7. 챗봇 도메인 (로그인한 소비자·판매자)
 
-**2026-09-22 정정**: `USER` 전용이다(§3) — 이전 버전 문서는 Public(게스트 포함)으로 적어뒀으나
+**2026-10-01 정정**: 로그인한 소비자와 판매자가 사용할 수 있다(§3) — 이전 버전 문서는 Public(게스트 포함)으로 적어뒀으나
 BE 레포(`ChatController`) 직접 대조로 4종 전부 `@PreAuthorize("hasRole('USER')")`임을
-확인했다.
+확인했다. `MemberRole.ARTISAN`도 `ROLE_USER`를 포함하므로 FE는 `USER`와 `ARTISAN` 모두에게 기존 챗봇 진입점을 제공한다. 관리자 노출 정책은 유지한다.
 
 | Method | 경로                                         | 용도                                        |
 | ------ | -------------------------------------------- | ------------------------------------------- |
