@@ -38,9 +38,8 @@ export function ArtisanSummary({ artisan }: ArtisanSummaryProps) {
           {artisan.stage && <Badge>{artisan.stage}</Badge>}
           {artisan.craft && <Badge>{artisan.craft}</Badge>}
         </div>
-        <h3 className="text-[1.25rem] leading-[1.1] font-bold">
-          {artisan.name}
-        </h3>
+        {/* 시안 `title-l-cta`(20px/행간 1.1/600)와 같은 값이라 `button-l` 토큰을 쓴다. */}
+        <h3 className="text-button-l">{artisan.name}</h3>
         <p className="mt-2 max-w-119.5 text-body-m whitespace-pre-line text-font-dark-subtle">
           {artisan.introduction || "장인 소개를 준비하고 있습니다."}
         </p>
