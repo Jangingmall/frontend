@@ -30,6 +30,7 @@ export const PRODUCT_SHIPPING_INFORMATION: ProductInformationRow[] = [
       {
         label: "지원 결제수단",
         content: "실시간 계좌이체\n무통장입금\n신용·체크카드\n토스페이",
+        marker: "dash",
       },
     ],
   },
