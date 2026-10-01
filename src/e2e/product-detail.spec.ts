@@ -149,6 +149,22 @@ test("갤러리 전환과 라이트박스 키보드·경계·포커스 복귀", 
   await expect(trigger).toBeFocused();
 });
 
+test("옵션 목록은 겹쳐 뜨지 않고 아래 옵션을 밀어낸다", async ({ page }) => {
+  await openDetail(page);
+  const color = page.getByRole("combobox", {
+    name: "색상 (필수)",
+    exact: true,
+  });
+  const size = page.getByRole("combobox", { name: "크기 (필수)", exact: true });
+  const before = (await size.boundingBox())!.y;
+  await color.click();
+  await expect(
+    page.getByRole("listbox", { name: "색상 (필수)", exact: true }),
+  ).toBeVisible();
+  const after = (await size.boundingBox())!.y;
+  expect(after).toBeGreaterThan(before);
+});
+
 test("필수 옵션 검증·조합별 수량·합계·삭제·장바구니", async ({ page }) => {
   await openDetail(page);
   await page.getByRole("button", { name: "장바구니", exact: true }).click();

@@ -60,6 +60,26 @@ it("MSW 상세 응답에서도 구조화된 배송 안내를 보존한다", () =
     {
       label: "지원 결제수단",
       content: "실시간 계좌이체\n무통장입금\n신용·체크카드\n토스페이",
+      marker: "dash",
     },
   ]);
+});
+
+it("지원 결제수단만 점 대신 대시 마커로 표시한다", async () => {
+  const user = userEvent.setup();
+  const product = getProductDetailMock(101)!;
+  render(
+    <ProductInformation
+      product={{ ...product, isMock: false, shippingInformation: [] }}
+    />,
+  );
+  await user.click(screen.getByRole("button", { name: "결제정보" }));
+  const paymentList = screen.getByText("실시간 계좌이체").closest("ul")!;
+  expect(paymentList).toHaveClass("list-none");
+  expect(paymentList).not.toHaveClass("list-disc");
+  await user.click(screen.getByRole("button", { name: "배송정보" }));
+  const shippingList = screen
+    .getByText(/장인이 개별 계약한 택배사를 통해 직접 발송/)
+    .closest("ul")!;
+  expect(shippingList).toHaveClass("list-disc");
 });

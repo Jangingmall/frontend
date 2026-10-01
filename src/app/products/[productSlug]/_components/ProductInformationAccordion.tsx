@@ -7,14 +7,31 @@ interface ProductInformationAccordionProps {
   rows: ProductInformationRow[];
 }
 
-function InformationList({ content }: { content: string }) {
+function InformationList({
+  content,
+  marker,
+}: {
+  content: string;
+  marker?: "dash";
+}) {
   return (
-    <ul className="list-outside list-disc pl-4">
+    <ul
+      className={
+        marker === "dash" ? "list-none" : "list-outside list-disc pl-4"
+      }
+    >
       {content
         .split(/\r?\n/)
         .filter((line) => line.trim())
         .map((line, index) => (
-          <li key={index} className="break-words">
+          <li
+            key={index}
+            className={
+              marker === "dash"
+                ? "break-words before:mr-1 before:content-['-']"
+                : "break-words"
+            }
+          >
             {line}
           </li>
         ))}
@@ -61,7 +78,10 @@ export function ProductInformationAccordion({
                           {detail.label}
                         </dt>
                         <dd className="min-w-0">
-                          <InformationList content={detail.content} />
+                          <InformationList
+                            content={detail.content}
+                            marker={detail.marker}
+                          />
                         </dd>
                       </div>
                     ))}

@@ -83,6 +83,11 @@ export function ProductFilterPanel({
         }
         className={cn(
           "[&_[data-slot=accordion-item]]:border-b [&_[data-slot=accordion-item]]:border-border-neutral-weak [&_[data-slot=accordion]]:space-y-1 [&_[data-slot=accordion]]:pt-1",
+          // 사이드바 패널은 항목이 이미 아래 선을 그리므로 트리거의 자체 선은 지운다 — 접힌 행에서
+          // 두 선이 겹쳐 2px로 보이던 것을 시안처럼 1px 하나로 맞춘다. 필터 시트(comfortable)는
+          // md에서 항목이 `display: contents`라 항목 선이 안 그려져 트리거 선이 필요하다.
+          !isComfortable &&
+            "[&_[data-slot=accordion-item]_h3>button]:border-b-0",
           // 상단 "필터 / 초기화" 헤더가 있을 때만 그 헤더 스타일을 준다.
           onReset &&
             "[&>div:first-child]:py-2 [&>div:first-child]:pl-2 [&>div:first-child>button]:underline",

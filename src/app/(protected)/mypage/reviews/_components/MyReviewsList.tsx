@@ -48,7 +48,7 @@ function MyReviewRow({ review }: { review: MyReviewPage["items"][number] }) {
             onError={() => setHasImageError(true)}
           />
         </div>
-        <div className="flex min-w-0 flex-1 flex-col justify-between">
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
           <div className="flex flex-col gap-1">
             <p className="truncate text-title-s text-font-dark">
               {productName}
@@ -69,7 +69,7 @@ function MyReviewRow({ review }: { review: MyReviewPage["items"][number] }) {
           type="button"
           disabled
           title="준비 중"
-          className="flex shrink-0 items-end gap-1 self-stretch pb-1 text-body-m text-font-dark-secondary disabled:cursor-default disabled:opacity-60"
+          className="flex h-8 shrink-0 items-center gap-1 self-end text-body-m text-font-dark-secondary disabled:cursor-default disabled:opacity-60"
         >
           후기 자세히 보기
           <ChevronRightIcon aria-hidden className="size-6" />

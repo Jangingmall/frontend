@@ -47,7 +47,12 @@ export type ProductContentBlock =
 export interface ProductInformationRow {
   label: string;
   content: string;
-  details?: { label: string; content: string }[];
+  details?: {
+    label: string;
+    content: string;
+    /** 목록 앞 마커. 기본은 점(•), `dash`는 대시(-). */
+    marker?: "dash";
+  }[];
 }
 
 /** 공개 기본 응답과 상세 확장 계약을 분리한 구매자 표시 모델. */

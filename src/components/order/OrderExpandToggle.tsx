@@ -24,7 +24,7 @@ export function OrderExpandToggle({
     <Button
       variant="outline"
       size="l"
-      className="w-full"
+      className="h-10.5 w-full text-button-xl"
       aria-expanded={isExpanded}
       onClick={onToggle}
     >

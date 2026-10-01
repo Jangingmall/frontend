@@ -149,7 +149,7 @@ function OrdersFilterBar({
         </div>
       </div>
 
-      <ul className="list-disc space-y-1 py-2 pl-5 text-caption text-font-label">
+      <ul className="list-disc space-y-1 py-2 pl-5 text-body-s text-font-label">
         {notices.map((notice) => (
           <li key={notice}>{notice}</li>
         ))}

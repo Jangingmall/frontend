@@ -1,14 +1,19 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const { redirect } = vi.hoisted(() => ({ redirect: vi.fn() }));
+
+vi.mock("next/navigation", () => ({ redirect }));
 
 import MypagePage from "./page";
 
 describe("MypagePage", () => {
-  it("준비 중 안내를 보여준다", () => {
-    render(<MypagePage />);
+  beforeEach(() => {
+    redirect.mockClear();
+  });
 
-    expect(
-      screen.getByText("마이페이지 대시보드는 준비 중입니다"),
-    ).toBeInTheDocument();
+  it("진입하면 주문 및 배송 화면으로 이동한다", () => {
+    MypagePage();
+
+    expect(redirect).toHaveBeenCalledWith("/mypage/orders");
   });
 });
