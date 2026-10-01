@@ -107,9 +107,11 @@ test("판매자 API 계약: 등록·업로드·생성·서버 저장·페이지 
   });
 
   await page.getByRole("button", { name: "미리보기", exact: true }).click();
-  await expect(page.locator(".ss-review-device")).toContainText(
-    "브라우저에 보관할 새 페이지",
-  );
+  await expect(
+    page
+      .frameLocator('iframe[title="상품 상세페이지 미리보기"]')
+      .locator(".sa-document"),
+  ).toContainText("브라우저에 보관할 새 페이지");
   await expect(page.locator(".sd-editable-text")).toHaveCount(0);
   await page.getByRole("button", { name: "모바일", exact: true }).click();
   await expect(page.locator(".ss-review-device")).toHaveClass(/mobile/);

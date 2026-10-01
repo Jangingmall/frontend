@@ -29,6 +29,7 @@ interface HeaderIconButtonProps {
   children: ReactNode;
   /** 주어지면 `next/link`로 이동, 없으면 `<button>`(예: 검색 토글 — `onClick`으로 동작 연결). */
   href?: Route;
+  prefetch?: boolean;
   /** `href` 없는 버튼 전용 — 검색 토글처럼 클릭 핸들러가 필요한 경우. */
   onClick?: () => void;
   ref?: Ref<HTMLButtonElement>;
@@ -40,6 +41,7 @@ function HeaderIconButton({
   label,
   children,
   href,
+  prefetch,
   onClick,
   ref,
   "aria-expanded": ariaExpanded,
@@ -52,7 +54,12 @@ function HeaderIconButton({
 
   if (href) {
     return (
-      <Link href={href} aria-label={label} className={className}>
+      <Link
+        href={href}
+        prefetch={prefetch}
+        aria-label={label}
+        className={className}
+      >
         {children}
       </Link>
     );
@@ -80,9 +87,10 @@ function HeaderIconButton({
  */
 interface AuthAreaProps {
   status: AuthAreaStatus;
+  prefetch?: boolean;
 }
 
-function AuthArea({ status }: AuthAreaProps) {
+function AuthArea({ status, prefetch }: AuthAreaProps) {
   if (status === "loading") {
     return <Skeleton className="size-8 rounded-full" />;
   }
@@ -92,6 +100,7 @@ function AuthArea({ status }: AuthAreaProps) {
     <HeaderIconButton
       label={authenticated ? "마이페이지" : "로그인"}
       href={(authenticated ? "/mypage" : "/login") as Route}
+      prefetch={prefetch}
     >
       <ProfileIcon className="size-6" />
     </HeaderIconButton>
@@ -99,6 +108,7 @@ function AuthArea({ status }: AuthAreaProps) {
 }
 
 interface HeaderProps extends ComponentProps<"header"> {
+  prefetch?: boolean;
   logo?: ReactNode;
   /** 모바일(`md` 미만) 햄버거 클릭 핸들러 — 전체화면 메뉴를 연다. 안 주면 아무 동작 없는 정적 버튼. */
   onMenuOpen?: () => void;
@@ -116,6 +126,7 @@ interface HeaderProps extends ComponentProps<"header"> {
 }
 
 function Header({
+  prefetch,
   logo = DEFAULT_LOGO,
   onMenuOpen,
   isMobileMenuOpen = false,
@@ -146,13 +157,18 @@ function Header({
           <MenuIcon className="size-6" />
         </HeaderIconButton>
       </div>
-      <Link href="/" aria-label="홈으로 이동" className="justify-self-center">
+      <Link
+        href="/"
+        prefetch={prefetch}
+        aria-label="홈으로 이동"
+        className="justify-self-center"
+      >
         {logo}
       </Link>
       <div className="flex items-center gap-3 justify-self-end">
         {/* 모바일에서는 로그인·마이페이지 진입이 전체화면 메뉴 안에 있다. */}
         <div className="hidden md:block">
-          <AuthArea status={authStatus} />
+          <AuthArea status={authStatus} prefetch={prefetch} />
         </div>
         <HeaderIconButton
           ref={searchTriggerRef}
@@ -162,7 +178,7 @@ function Header({
         >
           <SearchIcon className="size-6" />
         </HeaderIconButton>
-        <Cart href={"/cart" as Route} count={cartCount} />
+        <Cart href={"/cart" as Route} count={cartCount} prefetch={prefetch} />
       </div>
     </header>
   );

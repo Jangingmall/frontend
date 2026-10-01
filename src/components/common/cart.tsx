@@ -22,9 +22,10 @@ interface CartProps extends ComponentProps<"button"> {
   count?: number;
   /** 주어지면 `<button>` 대신 이 경로로 이동하는 `<Link>`로 렌더한다. */
   href?: Route;
+  prefetch?: boolean;
 }
 
-function Cart({ count = 0, href, className, ...props }: CartProps) {
+function Cart({ count = 0, href, prefetch, className, ...props }: CartProps) {
   const showBadge = count > 0;
   const label = count > 99 ? "99+" : String(count);
   const ariaLabel = showBadge ? `장바구니 (${count}개)` : "장바구니";
@@ -47,6 +48,7 @@ function Cart({ count = 0, href, className, ...props }: CartProps) {
     return (
       <Link
         href={href}
+        prefetch={prefetch}
         data-slot="cart"
         aria-label={ariaLabel}
         className={rootClassName}

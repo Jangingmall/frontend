@@ -7,6 +7,14 @@
 .ss-shell:has(.sd-review) > .ss-header {
   display: none;
 }
+.ss-product-preview-frame {
+  display: block;
+  width: 100%;
+  height: calc(100dvh - 70px);
+  min-height: 480px;
+  border: 0;
+  background: #fff;
+}
 .sd-studio .ss-editor-actions {
   top: 70px;
 }

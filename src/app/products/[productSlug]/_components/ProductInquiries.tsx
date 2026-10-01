@@ -24,6 +24,7 @@ interface ProductInquiriesProps {
   product?: ProductDetail;
   onNotify: ProductNotify;
   onRequireLogin: () => void;
+  preview?: boolean;
 }
 export function ProductInquiries({
   productId,
@@ -31,6 +32,7 @@ export function ProductInquiries({
   product,
   onNotify,
   onRequireLogin,
+  preview = false,
 }: ProductInquiriesProps) {
   const isMock = publicEnv.apiMocking || isMockProduct;
   const [composeDemo, setComposeDemo] = useState(false);
@@ -41,10 +43,12 @@ export function ProductInquiries({
   const [excludeSecret, setExcludeSecret] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
-  const query = useProductInquiries(productId, false, true, viewerId);
+  const query = useProductInquiries(productId, false, !preview, viewerId);
+  const data = preview ? { items: [], totalCount: 0 } : query.data;
   const items =
-    query.data?.items.filter((item) => !excludeSecret || !item.isSecret) ?? [];
+    data?.items.filter((item) => !excludeSecret || !item.isSecret) ?? [];
   function compose(demo = false) {
+    if (preview) return;
     setComposeDemo(demo);
     if (isAuthLoading) return;
     if (viewerId === null) {
@@ -59,7 +63,7 @@ export function ProductInquiries({
       id="product-inquiries"
       className="scroll-mt-40 border-t border-border-neutral-weak px-2 pt-4"
     >
-      {!isMockProduct && (
+      {!preview && !isMockProduct && (
         <p className="mb-2 text-body-s">
           {isMock
             ? "문의 기능은 시연 중입니다. 판매자에게 전송되지 않습니다."
@@ -68,7 +72,7 @@ export function ProductInquiries({
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-title-l leading-[1.3] font-bold">
-          문의{query.data ? ` (${query.data.totalCount})` : ""}
+          문의{data ? ` (${data.totalCount})` : ""}
         </h2>
         <div className="flex items-center gap-4">
           {
@@ -79,7 +83,7 @@ export function ProductInquiries({
               비밀글 제외
             </Checkbox>
           }
-          {!isMock && (
+          {!preview && !isMock && (
             <Button
               size="s"
               variant="outline"
@@ -93,6 +97,7 @@ export function ProductInquiries({
             size="s"
             className="h-9 w-18.75 min-w-18 px-0"
             onClick={() => compose()}
+            aria-disabled={preview || undefined}
             disabled={isAuthLoading}
             title={isAuthLoading ? "로그인 상태를 확인하고 있어요." : undefined}
           >
@@ -100,13 +105,13 @@ export function ProductInquiries({
           </Button>
         </div>
       </div>
-      {query.isPending ? (
+      {!preview && query.isPending ? (
         <Skeleton
           role="status"
           aria-label="문의 불러오는 중"
           className="mt-4 h-40 w-full"
         />
-      ) : query.isError ? (
+      ) : !preview && query.isError ? (
         <ErrorState
           title="문의를 불러오지 못했어요"
           onRetry={() => void query.refetch()}
@@ -122,13 +127,13 @@ export function ProductInquiries({
           ) : (
             <EmptyState
               title={
-                query.data.totalCount === 0
+                data?.totalCount === 0
                   ? "등록된 문의가 없습니다."
                   : "표시할 문의가 없습니다."
               }
             />
           )}
-          {query.data.totalCount > 0 && (
+          {(data?.totalCount ?? 0) > 0 && (
             <div className="text-right">
               <Button
                 variant="ghost"

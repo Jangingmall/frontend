@@ -1,7 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { recordRecentView } from "@/api/recent-views/api";
 import { FloatingActions } from "@/components/common/floating-actions";
@@ -21,17 +27,21 @@ import { RelatedProducts } from "./RelatedProducts";
 
 interface ProductDetailPageProps {
   product: ProductDetail;
+  preview?: { content: ReactNode; priceKnown: boolean };
 }
 
-export function ProductDetailPage({ product }: ProductDetailPageProps) {
+export function ProductDetailPage({
+  product,
+  preview,
+}: ProductDetailPageProps) {
   const router = useRouter();
   const userId = useAuthStore((state) => state.user?.id);
   useEffect(() => {
-    if (!userId || (product.isMock && !publicEnv.apiMocking)) return;
+    if (preview || !userId || (product.isMock && !publicEnv.apiMocking)) return;
     void recordRecentView(product.id).catch(() => {
       /* Nonessential history must not prevent viewing a product. */
     });
-  }, [userId, product.id, product.isMock]);
+  }, [userId, product.id, product.isMock, preview]);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [notice, setNotice] = useState<{
     id: number;
@@ -92,6 +102,7 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
           <ProductDetailGallery
             images={product.images}
             productName={product.name}
+            preview={!!preview}
           />
         </div>
         <aside
@@ -101,6 +112,8 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
           <div className="product-detail-aside">
             <ProductPurchasePanel
               product={product}
+              preview={!!preview}
+              priceKnown={preview?.priceKnown}
               onNotify={handlePurchaseNotify}
               onRequireLogin={handleRequireLogin}
               notice={notice?.placement === "purchase" ? toast : null}
@@ -108,16 +121,18 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
           </div>
         </aside>
         <div className="min-w-0 space-y-6 max-md:pt-2 md:col-start-1 md:row-start-2">
-          <ProductInformation product={product} />
+          <ProductInformation product={product} content={preview?.content} />
           <div className="space-y-6">
             <ProductReviews
               productId={product.id}
+              preview={!!preview}
               isMock={product.isMock}
               onNotify={handleNotify}
               onRequireLogin={handleRequireLogin}
             />
             <ProductInquiries
               product={product}
+              preview={!!preview}
               productId={product.id}
               isMock={product.isMock}
               onNotify={handleNotify}
@@ -128,7 +143,7 @@ export function ProductDetailPage({ product }: ProductDetailPageProps) {
         </div>
       </div>
 
-      <FloatingActions showAiChat={false} />
+      {!preview && <FloatingActions showAiChat={false} />}
       <Dialog
         open={isLoginOpen}
         onOpenChange={setIsLoginOpen}

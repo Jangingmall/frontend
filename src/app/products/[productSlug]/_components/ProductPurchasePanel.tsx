@@ -43,6 +43,8 @@ const NO_OPTION = "__no_option__";
 
 interface ProductPurchasePanelProps {
   product: ProductDetail;
+  preview?: boolean;
+  priceKnown?: boolean;
   onNotify: ProductNotify;
   onRequireLogin: (confirm?: boolean) => void;
   notice?: ReactNode;
@@ -50,6 +52,8 @@ interface ProductPurchasePanelProps {
 
 export function ProductPurchasePanel({
   product,
+  preview = false,
+  priceKnown = true,
   onNotify,
   onRequireLogin,
   notice,
@@ -66,7 +70,7 @@ export function ProductPurchasePanel({
   const actions = useProductActions(
     product.id,
     userId,
-    isAuthenticated,
+    isAuthenticated && !preview,
     product.isMock || isDemoSession(),
   );
   const [choices, setChoices] = useState<ProductChoices>({});
@@ -229,6 +233,7 @@ export function ProductPurchasePanel({
   }
 
   function handlePurchase(checkout = false) {
+    if (preview) return;
     if (!product.isMock && !isDemoSession()) {
       void handleLivePurchase(checkout);
       return;
@@ -280,6 +285,7 @@ export function ProductPurchasePanel({
   }
 
   function handleWishlist() {
+    if (preview) return;
     if (!isAuthenticated) {
       onRequireLogin(true);
       return;
@@ -300,6 +306,7 @@ export function ProductPurchasePanel({
   }
 
   function handleRestock() {
+    if (preview) return;
     if (!isAuthenticated) {
       onRequireLogin(false);
       return;
@@ -319,6 +326,7 @@ export function ProductPurchasePanel({
   }
 
   async function handleShare() {
+    if (preview) return;
     try {
       const canonical =
         document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
@@ -351,6 +359,7 @@ export function ProductPurchasePanel({
                 className="size-10 p-1"
                 aria-label={wished ? "찜 취소" : "찜하기"}
                 aria-pressed={wished}
+                aria-disabled={preview || undefined}
                 disabled={
                   actions.wishlist.isPending ||
                   (isAuthenticated && actions.state.isFetching)
@@ -368,6 +377,7 @@ export function ProductPurchasePanel({
                 size="xs"
                 className="size-10 p-1"
                 aria-label="작품 링크 공유"
+                aria-disabled={preview || undefined}
                 onClick={handleShare}
               >
                 <ShareIcon className="size-8" />
@@ -405,7 +415,7 @@ export function ProductPurchasePanel({
           </div>
         </div>
         <p className="text-title-s font-bold md:text-title-m">
-          {money(product.price)}
+          {priceKnown ? money(product.price) : "상품 정보 확인 필요"}
         </p>
       </div>
       <p className="text-body-s whitespace-pre-line md:text-body-m">
@@ -589,7 +599,9 @@ export function ProductPurchasePanel({
               aria-live="polite"
               data-testid="purchase-total"
             >
-              {money(getSelectionTotal(lines))}
+              {priceKnown
+                ? money(getSelectionTotal(lines))
+                : "상품 정보 확인 필요"}
             </strong>
           </p>
           {notice && (
@@ -616,6 +628,7 @@ export function ProductPurchasePanel({
               className="h-12 w-30 min-w-0 border-border-neutral-solid px-3 md:h-14 xl:w-33 2xl:w-50"
               disabled={unsupportedOptions || (unknownStock && !soldOut)}
               loading={busy}
+              aria-disabled={preview || undefined}
               onClick={soldOut ? handleRestock : () => handlePurchase()}
             >
               {soldOut ? "재입고 알림" : "장바구니"}
@@ -626,6 +639,7 @@ export function ProductPurchasePanel({
             className="h-12 min-w-0 flex-1 px-3 md:h-14"
             disabled={unsupportedOptions || soldOut || unknownStock || busy}
             onClick={() => handlePurchase(true)}
+            aria-disabled={preview || undefined}
           >
             {soldOut ? "품절" : "구매하기"}
           </Button>

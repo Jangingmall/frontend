@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { type DefaultBodyType, http, type HttpResponse } from "msw";
 import { beforeEach, expect, it, vi } from "vitest";
 
@@ -21,6 +21,12 @@ import {
   type DemoDocumentSnapshot,
   parseDemoDocumentSnapshot,
 } from "./document-editor-storage";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/seller/products/new/1",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 const product = {
   productId: 12,
@@ -136,10 +142,17 @@ it("전체 편집본과 브라우저 업로드 사진을 저장하고 미리보�
   view.unmount();
   productRequests = 0;
   const next = await setup(restored);
-  expect(next.container.querySelector(".ss-product-detail")).toHaveTextContent(
-    "복원된 전체 편집본",
-  );
-  expect(screen.getByText("입력한 작품명")).toBeVisible();
+  const frame = next.container.querySelector("iframe")!;
+  fireEvent.load(frame);
+  expect(
+    frame.contentDocument!.querySelector(".sa-document"),
+  ).toHaveTextContent("복원된 전체 편집본");
+  expect(
+    within(frame.contentDocument!.body).getByRole("heading", {
+      name: "입력한 작품명",
+      level: 1,
+    }),
+  ).toBeVisible();
   expect(productRequests).toBe(0);
 });
 it("이전 데모 저장본의 수정 내용을 실제 공통 UI에 복원한다", async () => {

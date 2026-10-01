@@ -5,6 +5,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { type DefaultBodyType, delay, http, HttpResponse } from "msw";
 import { beforeEach, expect, it, vi } from "vitest";
@@ -33,6 +34,12 @@ import {
   writeServerDocumentSnapshot,
 } from "./document-editor-storage";
 import { ServerStudioEditor } from "./ServerStudioEditor";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => "/seller/products/new",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 // jsdom에는 이미지 디코더와 canvas가 없으므로 codec만 대체한다. API와 UI는 실제 구현이다.
 vi.mock("browser-image-compression", () => ({
@@ -409,7 +416,13 @@ it("실제 상품 미리보기의 기기 전환과 편집 복귀가 미저장 �
   const { container } = await setup();
   editText("미리보기 왕복 문구");
   fireEvent.click(screen.getByRole("button", { name: "미리보기" }));
-  await screen.findByText("판매 작품");
+  const frame =
+    screen.getByTitle<HTMLIFrameElement>("상품 상세페이지 미리보기");
+  fireEvent.load(frame);
+  await within(frame.contentDocument!.body).findByRole("heading", {
+    name: "판매 작품",
+    level: 1,
+  });
   fireEvent.click(screen.getByRole("button", { name: "모바일" }));
   expect(container.querySelector(".ss-review-device")).toHaveClass("mobile");
   fireEvent.click(screen.getByRole("button", { name: "뒤로가기" }));

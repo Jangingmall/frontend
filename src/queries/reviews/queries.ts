@@ -15,9 +15,11 @@ export function useProductReviews(
   id: number,
   filters: ReviewFilters,
   isMock: boolean,
+  enabled = true,
 ) {
   return useQuery({
     queryKey: reviewKeys.list(id, filters, isMock),
+    enabled,
     queryFn: async () => {
       await startMockWorker();
       return isMock || filters.photoOnly

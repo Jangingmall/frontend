@@ -31,7 +31,10 @@ for (const id of ["1", "2"]) {
       });
     await page.getByRole("button", { name: "미리보기", exact: true }).click();
     await page.getByRole("button", { name: "모바일", exact: true }).click();
-    const canvas = page.locator(".sa-document-canvas").first();
+    const canvas = page
+      .frameLocator('iframe[title="상품 상세페이지 미리보기"]')
+      .locator(".sa-document-canvas")
+      .first();
     await expect
       .poll(async () => Math.round((await canvas.boundingBox())!.width))
       .toBeLessThanOrEqual(360);

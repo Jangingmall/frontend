@@ -70,6 +70,7 @@ const ITEM_CLASS =
 
 interface GnbNavProps {
   className?: string;
+  prefetch?: boolean;
   /** 카테고리 메가패널 열림 여부. `Gnb`가 소유(§3.4) — 트리거 강조 스타일에만 쓴다. */
   isCategoryPanelOpen: boolean;
   categoryTriggerRef: RefObject<HTMLAnchorElement | null>;
@@ -81,6 +82,7 @@ interface GnbNavProps {
 
 function GnbNav({
   className,
+  prefetch,
   isCategoryPanelOpen,
   categoryTriggerRef,
   onCategoryTriggerMouseEnter,
@@ -102,6 +104,7 @@ function GnbNav({
       <Link
         ref={categoryTriggerRef}
         href={CATEGORY_TRIGGER_HREF}
+        prefetch={prefetch}
         onMouseEnter={onCategoryTriggerMouseEnter}
         onFocus={onCategoryTriggerFocus}
         className={cn(
@@ -133,6 +136,7 @@ function GnbNav({
           <Link
             key={item.label}
             href={href}
+            prefetch={prefetch}
             aria-current={active ? "page" : undefined}
             className={cn(
               ITEM_CLASS,
