@@ -22,7 +22,7 @@ export async function startSellerDemo(
     }),
   ).toBeVisible({ timeout: 30000 });
   await expect(
-    page.getByRole("button", { name: "제작 완료", exact: true }),
+    page.getByRole("button", { name: "미리보기", exact: true }),
   ).toBeVisible({ timeout: 30000 });
   await page.getByRole("button", { name: "도움말 닫기" }).click();
   await expect(page).toHaveURL(new RegExp(`/seller/products/new/${scenario}$`));

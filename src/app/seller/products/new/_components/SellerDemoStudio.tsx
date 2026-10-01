@@ -14,17 +14,17 @@ import {
   SellerStudioRuntimeContext,
 } from "@/queries/seller-studio/runtime";
 
-import {
-  type DemoSnapshot,
-  demoSnapshotSchema,
-  demoStorageKey,
-} from "./demo-editor-document";
+import { demoStorageKey } from "./demo-editor-document";
 import { DemoFrontendEditor } from "./DemoFrontendEditor";
+import {
+  type DemoDocumentSnapshot,
+  parseDemoDocumentSnapshot,
+} from "./document-editor-storage";
 import { ServerSellerStudio } from "./ServerSellerStudio";
 
 export function SellerDemoStudio({ scenario }: { scenario: SellerDemoId }) {
   const [runtime, setRuntime] = useState<SellerStudioRuntime>();
-  const [restored, setRestored] = useState<DemoSnapshot>();
+  const [restored, setRestored] = useState<DemoDocumentSnapshot>();
   const [error, setError] = useState("");
   useEffect(() => {
     const controller = new AbortController();
@@ -36,7 +36,7 @@ export function SellerDemoStudio({ scenario }: { scenario: SellerDemoId }) {
       if (controller.signal.aborted) return;
       if (new URLSearchParams(window.location.search).get("draft") === "1") {
         const raw = localStorage.getItem(demoStorageKey(scenario));
-        if (raw) setRestored(demoSnapshotSchema.parse(JSON.parse(raw)));
+        if (raw) setRestored(parseDemoDocumentSnapshot(raw));
       }
       let navigationGuard: (() => boolean) | null = null;
       setRuntime({

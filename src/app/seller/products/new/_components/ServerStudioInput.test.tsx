@@ -107,3 +107,80 @@ it("기존 상품은 가격·재고 입력 없이 Figma의 네 입력 영역으�
     images: ["img-2"],
   });
 });
+
+it("필수 입력 누락을 모든 필드에 표시하고 기본정보 대화상자를 열지 않는다", async () => {
+  const user = userEvent.setup();
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <ServerStudioInput onStarted={vi.fn()} />
+    </QueryClientProvider>,
+  );
+  await user.click(screen.getByRole("button", { name: "생성하기" }));
+  for (const label of [
+    "사진 첨부",
+    "상품명",
+    "제작 과정 · 상품 설명",
+    "사용 · 보관 관리 방법",
+  ]) {
+    expect(screen.getByLabelText(label)).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+  }
+  expect(screen.getByRole("status")).toHaveTextContent(
+    "필수 항목을 모두 입력해 주세요.",
+  );
+  expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  await user.type(screen.getByLabelText("상품명"), "찻잔");
+  expect(screen.getByLabelText("상품명")).not.toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
+  expect(screen.getByLabelText("제작 과정 · 상품 설명")).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
+});
+
+it("8장을 유지한 채 사진 추가 클릭으로 최대 장수 안내를 보여준다", async () => {
+  const user = userEvent.setup();
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <ServerStudioInput onStarted={vi.fn()} />
+    </QueryClientProvider>,
+  );
+  await user.upload(
+    screen.getByLabelText("사진 첨부"),
+    Array.from(
+      { length: 8 },
+      (_, index) =>
+        new File(["x"], `photo-${index}.png`, { type: "image/png" }),
+    ),
+  );
+  expect(screen.getAllByRole("button", { name: /번 사진 삭제/ })).toHaveLength(
+    8,
+  );
+  await user.click(screen.getByRole("button", { name: "사진 추가" }));
+  expect(screen.getByRole("status")).toHaveTextContent("최대 8장");
+  expect(screen.getAllByRole("button", { name: /번 사진 삭제/ })).toHaveLength(
+    8,
+  );
+  await user.click(screen.getByRole("button", { name: "1번 사진 삭제" }));
+  expect(screen.getAllByRole("button", { name: /번 사진 삭제/ })).toHaveLength(
+    7,
+  );
+});
+
+it("제작 과정과 관리 방법의 입력을 각각 100자까지 받는다", async () => {
+  const user = userEvent.setup();
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <ServerStudioInput onStarted={vi.fn()} />
+    </QueryClientProvider>,
+  );
+  for (const label of ["제작 과정 · 상품 설명", "사용 · 보관 관리 방법"]) {
+    await user.click(screen.getByLabelText(label));
+    await user.paste("가".repeat(101));
+    expect(screen.getByLabelText(label)).toHaveValue("가".repeat(100));
+  }
+});

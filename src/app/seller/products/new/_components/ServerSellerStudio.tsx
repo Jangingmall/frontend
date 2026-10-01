@@ -1,18 +1,21 @@
 "use client";
 import "./seller-api.css";
+import "./seller-input.css";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
-import { Footer } from "@/components/common/footer";
+import { ChatThinkingIndicator } from "@/components/chatbot/ChatThinkingIndicator";
 import { Logo } from "@/components/ui/logo";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useGeneration,
   useSellerContent,
 } from "@/queries/seller-studio/queries";
-import { useSellerStudioRuntime } from "@/queries/seller-studio/runtime";
+import {
+  SellerStudioRuntimeContext,
+  useSellerStudioRuntime,
+} from "@/queries/seller-studio/runtime";
 import { useAuthStore } from "@/stores/auth";
 
 import { DemoFrontendEditor } from "./DemoFrontendEditor";
@@ -67,10 +70,12 @@ function Studio({
       {showInput ? (
         <main className="ss-form-wrap sa-figma-input">
           <div className="ss-heading">
-            <h1>AI 제작 페이지</h1>
+            <h1>AI 상세페이지 제작</h1>
             <StudioSteps current={0} />
           </div>
-          <p className="ss-intro">정보 입력에 관한 설명.</p>
+          <p className="ss-intro">
+            작품 사진과 제작 정보를 입력하면 AI가 상세페이지를 만들어 드립니다.
+          </p>
           <ServerStudioInput
             productId={productId}
             onStarted={(pid, gid) => {
@@ -88,19 +93,14 @@ function Studio({
       ) : generationId && !ready ? (
         <main className="ss-form-wrap sa-generating">
           <div className="ss-heading">
-            <h1>AI 제작 페이지</h1>
+            <h1>AI 상세페이지 제작</h1>
             <StudioSteps current={1} />
           </div>
           <div className="sa-generation-message">
             {!generation.isError &&
               generation.data?.status !== "FAILED" &&
               generation.data?.status !== "DRAFT_READY" && (
-                <Image
-                  src="/seller-figma/loading.svg"
-                  width={40}
-                  height={8}
-                  alt=""
-                />
+                <ChatThinkingIndicator variant="dots" />
               )}
             <h2>
               {generation.data?.status === "DRAFT_READY"
@@ -171,7 +171,6 @@ function Studio({
           <button onClick={() => void content.refetch()}>문서 다시 조회</button>
         </main>
       ) : null}
-      {showInput && <Footer />}
     </div>
   );
 }
@@ -181,10 +180,23 @@ export function ServerSellerStudio(props: {
 }) {
   const runtime = useSellerStudioRuntime();
   const ownerId = useAuthStore((state) => state.user?.id);
+  const guard = useRef<(() => boolean) | null>(null);
+  const guardedRuntime = useMemo(
+    () => ({
+      ...runtime,
+      setNavigationGuard: (next: (() => boolean) | null) => {
+        guard.current = next;
+      },
+      canNavigate: () => guard.current?.() ?? true,
+    }),
+    [runtime],
+  );
   if (runtime.demo) return <Studio key={runtime.scope} {...props} />;
   return (
     <SellerAccess>
-      <Studio key={ownerId} {...props} />
+      <SellerStudioRuntimeContext value={guardedRuntime}>
+        <Studio key={ownerId} {...props} />
+      </SellerStudioRuntimeContext>
     </SellerAccess>
   );
 }

@@ -8,19 +8,37 @@
  * 버블과 같은 스타일(테두리·라운드 규칙 포함 `rounded-tl-none`)을 그대로 쓴다 —
  * 별도 디자인이 아니라 실제 답변 버블이 올 자리를 그대로 보여주는 placeholder다.
  */
-export function ChatThinkingIndicator() {
+interface ChatThinkingIndicatorProps {
+  variant?: "bubble" | "dots";
+}
+
+export function ChatThinkingIndicator({
+  variant = "bubble",
+}: ChatThinkingIndicatorProps) {
+  const dotsOnly = variant === "dots";
   return (
     <div
       role="status"
       aria-label="생각 하는 중"
-      className="flex w-fit shrink-0 items-center gap-2 self-start rounded-xl rounded-tl-none border border-border-neutral-subtle bg-bg-default px-3 py-2 text-body-s text-font-dark"
+      className={
+        dotsOnly
+          ? "flex h-4.5 w-10 items-center justify-center"
+          : "flex w-fit shrink-0 items-center gap-2 self-start rounded-xl rounded-tl-none border border-border-neutral-subtle bg-bg-default px-3 py-2 text-body-s text-font-dark"
+      }
     >
-      <span className="flex items-center gap-1">
+      <span
+        aria-hidden="true"
+        className={
+          dotsOnly
+            ? "flex items-center gap-2 [&>span]:size-2"
+            : "flex items-center gap-1"
+        }
+      >
         <span className="size-1.5 animate-bounce rounded-full bg-font-dark-subtle [animation-delay:-0.3s]" />
         <span className="size-1.5 animate-bounce rounded-full bg-font-dark-subtle [animation-delay:-0.15s]" />
         <span className="size-1.5 animate-bounce rounded-full bg-font-dark-subtle" />
       </span>
-      생각 하는 중...
+      {!dotsOnly && "생각 하는 중..."}
     </div>
   );
 }

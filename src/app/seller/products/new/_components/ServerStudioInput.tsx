@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import { Dialog } from "@/components/ui/dialog";
+import { Toast } from "@/components/ui/toast";
 import { useSellerMutation } from "@/queries/seller-studio/queries";
 import { useSellerStudioRuntime } from "@/queries/seller-studio/runtime";
 
@@ -29,6 +30,15 @@ export function ServerStudioInput({
   const [files, setFiles] = useState<File[]>(runtime.initialInput?.files ?? []);
   const [error, setError] = useState("");
   const [phase, setPhase] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<"photos" | "productName" | "howMade" | "careTips", string>>
+  >({});
+  const [toast, setToast] = useState<{ message: string }>();
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(undefined), 4000);
+    return () => clearTimeout(timer);
+  }, [toast]);
   const created = useRef(productId);
   const [hasProduct, setHasProduct] = useState(Boolean(productId));
   const uploaded = useRef(new Map<File, string>());
@@ -51,9 +61,9 @@ export function ServerStudioInput({
       !title ||
       title.length > 15 ||
       !howMade ||
-      howMade.length > 2000 ||
+      howMade.length > 100 ||
       !careTips ||
-      careTips.length > 2000 ||
+      careTips.length > 100 ||
       files.length < 1 ||
       files.length > 8
     )
@@ -100,21 +110,67 @@ export function ServerStudioInput({
   });
   function selectFiles(next: File[]) {
     if (mutation.isPending) return;
+    if (!next.length) return;
+    if (files.length + next.length > 8) {
+      setToast({ message: "사진은 최대 8장까지 첨부할 수 있습니다." });
+      return;
+    }
     if (
-      files.length + next.length > 8 ||
       next.some(
         (file) =>
           !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
           file.size > 10 * 1024 * 1024,
       )
     ) {
-      setError("JPG·PNG·WebP 사진을 최대 8장, 장당 10MB 이내로 선택해 주세요.");
+      setToast({
+        message: "JPG·PNG·WebP 사진을 장당 10MB 이내로 선택해 주세요.",
+      });
       return;
     }
     setError("");
     setFiles((current) => [...current, ...next]);
+    setFieldErrors((current) => ({ ...current, photos: undefined }));
+  }
+  function openFilePicker() {
+    if (files.length >= 8) {
+      setToast({ message: "사진은 최대 8장까지 첨부할 수 있습니다." });
+      return;
+    }
+    fileInput.current?.click();
+  }
+  function validateFields() {
+    const next: typeof fieldErrors = {};
+    if (!files.length) next.photos = "사진을 1장 이상 첨부해 주세요.";
+    for (const [key, label, max] of [
+      ["productName", "상품명", 15],
+      ["howMade", "제작 과정 · 상품 설명", 100],
+      ["careTips", "사용 · 보관 관리 방법", 100],
+    ] as const) {
+      if (!values[key].trim()) next[key] = label + "을 입력해 주세요.";
+      else if (values[key].length > max)
+        next[key] = max + "자 이내로 입력해 주세요.";
+    }
+    setFieldErrors(next);
+    if (Object.keys(next).length) {
+      setToast({
+        message: Object.values(next).some((message) =>
+          message.includes("자 이내"),
+        )
+          ? "각 항목의 최대 글자 수를 확인해 주세요."
+          : "필수 항목을 모두 입력해 주세요.",
+      });
+      return false;
+    }
+    return true;
+  }
+  function updateValue(key: keyof typeof values, value: string) {
+    setValues((current) => ({ ...current, [key]: value }));
+    const max = key === "productName" ? 15 : 100;
+    if (value.trim() && value.length <= max)
+      setFieldErrors((current) => ({ ...current, [key]: undefined }));
   }
   function submit(form: FormData) {
+    if (!validateFields()) return;
     setError("");
     for (const [key, value] of Object.entries(values)) form.set(key, value);
     void mutation
@@ -129,12 +185,10 @@ export function ServerStudioInput({
     <>
       <form
         className="ss-input-form sa-figma-form"
+        noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          if (!files.length) {
-            setError("사진을 1장 이상 첨부해 주세요.");
-            return;
-          }
+          if (!validateFields()) return;
           if (!created.current) {
             setError("");
             setBasicOpen(true);
@@ -149,7 +203,7 @@ export function ServerStudioInput({
               사진 첨부<span aria-hidden="true">*</span>
             </span>
             <div
-              className={`ss-upload ${dragging ? "is-dragging" : ""}`}
+              className={`ss-upload ${dragging ? "is-dragging" : ""} ${fieldErrors.photos ? "is-invalid" : ""}`}
               onDragOver={(event) => {
                 event.preventDefault();
                 if (!mutation.isPending) setDragging(true);
@@ -168,6 +222,11 @@ export function ServerStudioInput({
                 multiple
                 accept="image/jpeg,image/png,image/webp"
                 aria-label="사진 첨부"
+                aria-required="true"
+                aria-invalid={Boolean(fieldErrors.photos)}
+                aria-describedby={
+                  fieldErrors.photos ? "studio-photos-error" : undefined
+                }
                 onChange={(event) => {
                   selectFiles(Array.from(event.target.files ?? []));
                   event.target.value = "";
@@ -177,18 +236,20 @@ export function ServerStudioInput({
                 <button
                   type="button"
                   className="ss-upload-button"
-                  onClick={() => fileInput.current?.click()}
+                  onClick={openFilePicker}
                 >
-                  <Image
-                    src="/seller-figma/plus.svg"
-                    width={16}
-                    height={16}
-                    alt=""
-                  />
+                  <span className="sa-upload-icon">
+                    <Image
+                      src="/seller-figma/plus.svg"
+                      width={16}
+                      height={16}
+                      alt=""
+                    />
+                  </span>
                   <span>
                     사진 첨부하기
                     <br />
-                    (최대 8장 / 각 10MB 이내)
+                    (최대 8장, 10MB 이내)
                   </span>
                 </button>
               ) : (
@@ -198,8 +259,9 @@ export function ServerStudioInput({
                       {previews[index] && (
                         <Image
                           src={previews[index]}
-                          width={96}
-                          height={96}
+                          className="sa-input-photo"
+                          width={114}
+                          height={114}
                           alt={file.name}
                           unoptimized
                         />
@@ -213,36 +275,52 @@ export function ServerStudioInput({
                           )
                         }
                       >
-                        ×
+                        <Image
+                          src="/seller-figma/upload-close.svg"
+                          width={16}
+                          height={16}
+                          alt=""
+                        />
                       </button>
                     </div>
                   ))}
-                  {files.length < 8 && (
-                    <button
-                      type="button"
-                      aria-label="사진 추가"
-                      onClick={() => fileInput.current?.click()}
-                    >
-                      ＋
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className="ss-upload-button"
+                    aria-label="사진 추가"
+                    onClick={openFilePicker}
+                  >
+                    <span className="sa-upload-icon">
+                      <Image
+                        src="/seller-figma/plus.svg"
+                        width={16}
+                        height={16}
+                        alt=""
+                      />
+                    </span>
+                    <span>
+                      사진 첨부하기
+                      <br />
+                      (최대 8장, 10MB 이내)
+                    </span>
+                  </button>
                 </div>
               )}
             </div>
+            {fieldErrors.photos && (
+              <span className="sr-only" id="studio-photos-error">
+                {fieldErrors.photos}
+              </span>
+            )}
           </div>
           {(
             [
               ["productName", "상품명", 15, "상품명을 입력해주세요."],
-              [
-                "howMade",
-                "제작 과정 · 상품 설명",
-                2000,
-                "설명을 입력해주세요.",
-              ],
+              ["howMade", "제작 과정 · 상품 설명", 100, "설명을 입력해주세요."],
               [
                 "careTips",
                 "사용 · 보관 관리 방법",
-                2000,
+                100,
                 "설명을 입력해주세요.",
               ],
             ] as const
@@ -256,31 +334,36 @@ export function ServerStudioInput({
                 <input
                   name={key}
                   aria-label={label}
+                  aria-invalid={Boolean(fieldErrors[key])}
+                  aria-describedby={`studio-${key}-count${fieldErrors[key] ? ` studio-${key}-error` : ""}`}
                   required
                   maxLength={max}
                   value={values[key]}
                   readOnly={hasProduct && !productId}
                   placeholder={placeholder}
-                  onChange={(event) =>
-                    setValues({ ...values, [key]: event.target.value })
-                  }
+                  onChange={(event) => updateValue(key, event.target.value)}
                 />
               ) : (
                 <textarea
                   name={key}
                   aria-label={label}
+                  aria-invalid={Boolean(fieldErrors[key])}
+                  aria-describedby={`studio-${key}-count${fieldErrors[key] ? ` studio-${key}-error` : ""}`}
                   required
                   maxLength={max}
                   value={values[key]}
                   placeholder={placeholder}
-                  onChange={(event) =>
-                    setValues({ ...values, [key]: event.target.value })
-                  }
+                  onChange={(event) => updateValue(key, event.target.value)}
                 />
               )}
-              <small>
+              <small id={`studio-${key}-count`}>
                 {values[key].length} / {max} 자
               </small>
+              {fieldErrors[key] && (
+                <span className="sr-only" id={`studio-${key}-error`}>
+                  {fieldErrors[key]}
+                </span>
+              )}
             </label>
           ))}
           {error && !basicOpen && (
@@ -297,6 +380,7 @@ export function ServerStudioInput({
           </div>
         </fieldset>
       </form>
+      {toast && <Toast className="sa-input-toast">{toast.message}</Toast>}
       <Dialog
         open={basicOpen}
         onOpenChange={(open) => {

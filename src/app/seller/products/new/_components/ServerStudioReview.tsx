@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
+import type { SellerProduct } from "@/api/seller-studio/api";
 import { Logo } from "@/components/ui/logo";
 import { useSellerProduct } from "@/queries/seller-studio/queries";
 import { useAuthStore } from "@/stores/auth";
@@ -13,21 +14,40 @@ import {
 
 import { ServerDocument } from "./ServerDocument";
 
-export function ServerStudioReview({
-  productId,
-  document,
-  images,
-  width,
-  fitCanvas,
-}: {
+interface Props {
   productId: number;
+  product?: SellerProduct;
   document: StudioDocument;
   images: Record<string, string>;
   width: number;
   fitCanvas?: boolean;
-}) {
+}
+export function ServerStudioReview(props: Props) {
+  return props.product || props.productId < 1 ? (
+    <ReviewContent {...props} />
+  ) : (
+    <QueriedReview {...props} />
+  );
+}
+function QueriedReview(props: Props) {
   const ownerId = useAuthStore((state) => state.user?.id);
-  const product = useSellerProduct(productId, ownerId);
+  const query = useSellerProduct(props.productId, ownerId);
+  return (
+    <ReviewContent
+      {...props}
+      product={query.data}
+      failedQuery={query.isError}
+    />
+  );
+}
+function ReviewContent({
+  document,
+  images,
+  width,
+  fitCanvas,
+  product,
+  failedQuery,
+}: Props & { failedQuery?: boolean }) {
   const sources = [
     ...new Set(
       flattenDocument(document)
@@ -96,35 +116,32 @@ export function ServerStudioReview({
           )}
         </div>
         <div className="ss-product-copy">
-          <h2>{product.data?.title ?? "상품 상세페이지 미리보기"}</h2>
-          {product.data && (
-            <strong>{product.data.price.toLocaleString("ko-KR")}원</strong>
+          <h2>{product?.title ?? "상품 상세페이지 미리보기"}</h2>
+          {product && (
+            <strong>{product.price.toLocaleString("ko-KR")}원</strong>
           )}
           <p>AI로 작성한 상세페이지와 작품 사진을 확인해 주세요.</p>
           <hr />
           <dl>
             <dt>판매 가격</dt>
             <dd>
-              {product.data
-                ? `${product.data.price.toLocaleString("ko-KR")}원`
+              {product
+                ? `${product.price.toLocaleString("ko-KR")}원`
                 : "상품 정보 확인 필요"}
             </dd>
             <dt>재고</dt>
-            <dd>
-              {product.data ? `${product.data.stock}개` : "상품 정보 확인 필요"}
-            </dd>
+            <dd>{product ? `${product.stock}개` : "상품 정보 확인 필요"}</dd>
             <dt>배송·옵션</dt>
             <dd>상품 판매 정보에서 확인</dd>
           </dl>
-          {product.isError && (
+          {failedQuery && (
             <p>
               상품 기본정보를 불러오지 못했습니다. 상세페이지 내용은 아래에서
               확인할 수 있습니다.
             </p>
           )}
           <p className="ss-preview-notice">
-            미리보기 화면입니다. 제작 완료하기에서 내용을 확인한 뒤 게시할 수
-            있습니다.
+            상품 정보와 상세페이지 구성을 확인해 주세요.
           </p>
         </div>
       </div>
