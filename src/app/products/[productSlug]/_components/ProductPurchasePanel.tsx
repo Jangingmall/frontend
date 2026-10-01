@@ -25,7 +25,6 @@ import {
   ShareIcon,
   StarFilledIcon,
 } from "@/components/ui/icons";
-import { Select, SelectItem } from "@/components/ui/select";
 import { Stepper } from "@/components/ui/stepper";
 import { isDemoSession } from "@/lib/demo-session";
 import { publicEnv } from "@/lib/env";
@@ -36,6 +35,8 @@ import { selectIsAuthenticated, useAuthStore } from "@/stores/auth";
 import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import type { ProductDetail, ProductNotify } from "@/types/product-detail";
 import { PURCHASE_PREVIEW_ORDER_ID } from "@/types/purchase-preview";
+
+import { OptionSelect } from "./OptionSelect";
 
 const money = (amount: number) => `${amount.toLocaleString("ko-KR")}원`;
 const NO_OPTION = "__no_option__";
@@ -458,10 +459,18 @@ export function ProductPurchasePanel({
                       optionRefs.current[index] = element;
                     }}
                   >
-                    <Select
+                    <OptionSelect
                       ariaLabel={`${group.label}${group.required ? " (필수)" : " (선택)"}`}
                       placeholder={`${index + 1}. ${group.label}${group.required ? " (필수)" : " (선택)"}`}
-                      items={items}
+                      items={items.map((item) => {
+                        const stock = group.values.find(
+                          (value) => value.id === item.value,
+                        )?.stock;
+                        return {
+                          ...item,
+                          disabled: stock === 0 || stock === null,
+                        };
+                      })}
                       value={choices[group.id] ?? null}
                       open={openGroup === group.id}
                       onOpenChange={(open) =>
@@ -485,22 +494,7 @@ export function ProductPurchasePanel({
                         choices[group.id] && "font-bold",
                         hasError && !choices[group.id] && "border-red-border",
                       )}
-                    >
-                      {items.map((item) => {
-                        const stock = group.values.find(
-                          (value) => value.id === item.value,
-                        )?.stock;
-                        return (
-                          <SelectItem
-                            key={item.value}
-                            value={item.value}
-                            disabled={stock === 0 || stock === null}
-                          >
-                            {item.label}
-                          </SelectItem>
-                        );
-                      })}
-                    </Select>
+                    />
                   </div>
                 );
               })}
