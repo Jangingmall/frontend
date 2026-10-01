@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 import { applyTheme, subscribeSystemTheme } from "@/lib/theme";
@@ -16,15 +17,18 @@ import { useAuthStore } from "@/stores/auth";
  *   적용해 뒀다.
  */
 export function ThemeSync() {
+  const pathname = usePathname();
   const status = useAuthStore((state) => state.status);
 
   useEffect(() => {
     if (status !== "anonymous") return;
     applyTheme(null);
     return subscribeSystemTheme();
-  }, [status]);
+  }, [status, pathname]);
 
-  return status === "authenticated" ? <AuthenticatedThemeSync /> : null;
+  return status === "authenticated" ? (
+    <AuthenticatedThemeSync key={pathname} />
+  ) : null;
 }
 
 function AuthenticatedThemeSync() {
