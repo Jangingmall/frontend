@@ -21,11 +21,21 @@ const inputSchema = z.object({
 const photoPaths: Record<SellerDemoId, Record<string, string>> = {
   "1": {
     hero: "hero.webp",
+    "gallery-1": "gallery-1.webp",
+    "gallery-2": "gallery-2.webp",
+    "gallery-3": "gallery-3.webp",
+    "gallery-4": "gallery-4.webp",
+    "gallery-5": "gallery-5.webp",
     detail: "detail.webp",
     lifestyle: "lifestyle.webp",
   },
   "2": {
     hero: "photos/01-hero.png",
+    "gallery-1": "gallery-1.webp",
+    "gallery-2": "gallery-2.webp",
+    "gallery-3": "gallery-3.webp",
+    "gallery-4": "gallery-4.webp",
+    "gallery-5": "gallery-5.webp",
     packshot: "photos/02-packshot.png",
     detail: "photos/03-detail.png",
     lifestyle: "photos/04-lifestyle.png",

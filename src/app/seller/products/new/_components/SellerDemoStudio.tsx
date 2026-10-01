@@ -5,7 +5,7 @@ import "./seller-demo.css";
 
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { requestSellerDemo, saveSellerDemo } from "@/api/seller-demo/client";
 import {
@@ -35,6 +35,18 @@ export function SellerDemoStudio({ scenario }: { scenario: SellerDemoId }) {
     "input" | "generating" | "editing" | "review"
   >("input");
   const [width, setWidth] = useState(774);
+  const preview = useRef<HTMLDivElement>(null);
+  const [previewScale, setPreviewScale] = useState(1);
+  useEffect(() => {
+    const element = preview.current;
+    if (!element) return;
+    const resize = () =>
+      setPreviewScale(Math.min(1, element.clientWidth / 774));
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [step]);
   const [notice, setNotice] = useState("");
   const [saved, setSaved] = useState("");
   const [formKey, setFormKey] = useState(0);
@@ -308,6 +320,7 @@ export function SellerDemoStudio({ scenario }: { scenario: SellerDemoId }) {
                   )}
                   <p>{dirty ? "저장하지 않은 변경사항" : "저장된 상태"}</p>
                   <h3>섹션</h3>
+
                   {document.root.map((node, i) => (
                     <a key={node.id} href={"#demo-section-" + i}>
                       {i + 1}.{" "}
@@ -320,19 +333,25 @@ export function SellerDemoStudio({ scenario }: { scenario: SellerDemoId }) {
               )}
               <div className="demo-preview">
                 <div
+                  ref={preview}
                   style={{
                     width: step === "review" ? width : 774,
                     maxWidth: "100%",
                   }}
                 >
-                  {document.root.map((node, i) => (
-                    <section key={node.id} id={"demo-section-" + i}>
-                      <ServerDocument
-                        document={{ ...document, root: [node] }}
-                        images={{}}
-                      />
-                    </section>
-                  ))}
+                  <div
+                    className="demo-canvas"
+                    style={{ width: 774, zoom: previewScale }}
+                  >
+                    {document.root.map((node, i) => (
+                      <section key={node.id} id={"demo-section-" + i}>
+                        <ServerDocument
+                          document={{ ...document, root: [node] }}
+                          images={{}}
+                        />
+                      </section>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

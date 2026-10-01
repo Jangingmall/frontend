@@ -104,3 +104,18 @@
     padding: 8px;
   }
 }
+
+/* Section fixtures own their spacing; the production renderer remains unchanged. */
+.seller-demo .sa-document {
+  padding: 0;
+  font-family: var(--font-pretendard), sans-serif;
+}
+.seller-demo .sa-document table {
+  border-collapse: collapse;
+}
+.seller-demo .sa-document ul {
+  list-style: none;
+}
+.seller-demo .sa-document {
+  word-break: keep-all;
+}
