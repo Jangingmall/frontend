@@ -24,18 +24,14 @@ for (const id of ["1", "2"]) {
       );
     });
     for (let i = 0; i < (await sections.count()); i++)
-      await sections
-        .nth(i)
-        .screenshot({
-          path: `artifacts/sections-${id}-${i + 1}.png`,
-          style:
-            ".sa-toolbar,.ss-header,nextjs-portal {visibility:hidden !important}",
-        });
-    await page
-      .getByRole("button", { name: "최종 검토하기", exact: true })
-      .click();
+      await sections.nth(i).screenshot({
+        path: `artifacts/sections-${id}-${i + 1}.png`,
+        style:
+          ".ss-tools,.ss-page-list,.ss-editor-actions,.ss-header,nextjs-portal {visibility:hidden !important}",
+      });
+    await page.getByRole("button", { name: "제작 완료", exact: true }).click();
     await page.getByRole("button", { name: "모바일", exact: true }).click();
-    const canvas = page.locator(".sa-document-canvas");
+    const canvas = page.locator(".sa-document-canvas").first();
     await expect
       .poll(async () => Math.round((await canvas.boundingBox())!.width))
       .toBeLessThanOrEqual(360);

@@ -150,12 +150,15 @@ export function readSavedDraft(raw: string) {
 export async function readImages(
   files: File[],
   count: number,
+  limit = 8,
 ): Promise<StudioAsset[]> {
   if (
-    files.length + count > 8 ||
+    files.length + count > limit ||
     files.some((file) => file.size > 10 * 1024 * 1024)
   )
-    throw new Error("사진은 최대 8장, 장당 10MB까지 첨부할 수 있습니다.");
+    throw new Error(
+      `사진은 최대 ${limit}장, 장당 10MB까지 첨부할 수 있습니다.`,
+    );
   if (
     files.some(
       (file) => !["image/png", "image/jpeg", "image/webp"].includes(file.type),

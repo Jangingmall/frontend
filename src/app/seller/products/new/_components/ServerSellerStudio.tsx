@@ -15,6 +15,7 @@ import {
 import { useSellerStudioRuntime } from "@/queries/seller-studio/runtime";
 import { useAuthStore } from "@/stores/auth";
 
+import { DemoFrontendEditor } from "./DemoFrontendEditor";
 import { SellerAccess } from "./SellerAccess";
 import { ServerStudioEditor } from "./ServerStudioEditor";
 import { ServerStudioInput } from "./ServerStudioInput";
@@ -54,6 +55,10 @@ function Studio({
           href="/seller/products"
           className="ss-logo"
           aria-label="판매 관리로 이동"
+          onClick={(event) => {
+            if (runtime.canNavigate && !runtime.canNavigate())
+              event.preventDefault();
+          }}
         >
           <Logo />
         </Link>
@@ -144,10 +149,17 @@ function Studio({
               서버 재조회에 실패했습니다. 편집 내용은 유지됩니다.
             </p>
           )}
-          <ServerStudioEditor
-            key={content.data.contentId}
-            content={content.data}
-          />
+          {runtime.demo ? (
+            <DemoFrontendEditor
+              key={content.data.contentId}
+              content={content.data}
+            />
+          ) : (
+            <ServerStudioEditor
+              key={content.data.contentId}
+              content={content.data}
+            />
+          )}
         </>
       ) : content.isError ? (
         <main className="ss-form-wrap">

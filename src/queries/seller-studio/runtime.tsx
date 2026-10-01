@@ -9,6 +9,8 @@ export interface SellerStudioRuntime {
   uploadImage: typeof uploadPublicImage;
   scope?: string;
   demo?: boolean;
+  setNavigationGuard?: (guard: (() => boolean) | null) => void;
+  canNavigate?: () => boolean;
   initialInput?: {
     values: { productName: string; howMade: string; careTips: string };
     files: File[];
