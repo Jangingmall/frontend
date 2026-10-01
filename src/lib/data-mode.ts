@@ -19,6 +19,8 @@ export function resolveDataMode(mode?: string, legacy?: string): DataMode {
 export function isDemoFeatureRequest(path: string, method = "GET") {
   const pathname = path.split(/[?#]/, 1)[0];
   const read = method.toUpperCase() === "GET";
+  if (/^\/api\/mock\/seller-demos\/[12]$/.test(pathname))
+    return ["GET", "POST", "PUT"].includes(method.toUpperCase());
   if (
     read &&
     /^\/api\/mock\/catalogue\/products(?:\/(?:\d+|crafts|materials))?$/.test(

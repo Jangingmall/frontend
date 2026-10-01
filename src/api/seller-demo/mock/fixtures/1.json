@@ -1,0 +1,3284 @@
+{
+  "schemaVersion": "2.0",
+  "canvasWidth": 774,
+  "root": [
+    {
+      "id": "section-01-hero-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "variant": "paper",
+        "layout": {
+          "display": "stack",
+          "direction": null,
+          "columns": null,
+          "gap": 24.0,
+          "wrap": false,
+          "align": "stretch"
+        },
+        "style": {
+          "color": "#222222",
+          "backgroundColor": "#F6F2EC",
+          "gradient": null,
+          "fontFamily": null,
+          "fontSize": null,
+          "fontWeight": null,
+          "lineHeight": null,
+          "letterSpacing": null,
+          "textAlign": null,
+          "opacity": null,
+          "borderColor": null,
+          "borderWidth": null,
+          "borderRadius": null,
+          "boxShadow": null,
+          "objectFit": null,
+          "objectPosition": null,
+          "rotate": null,
+          "padding": {
+            "top": 40.0,
+            "right": 40.0,
+            "bottom": 40.0,
+            "left": 40.0
+          },
+          "margin": {
+            "top": 0.0,
+            "right": 0.0,
+            "bottom": 0.0,
+            "left": 0.0
+          }
+        },
+        "href": null,
+        "target": null,
+        "imageId": null,
+        "alt": null,
+        "crop": null,
+        "videoUrl": null,
+        "scope": null,
+        "colSpan": null,
+        "rowSpan": null
+      },
+      "children": [
+        {
+          "id": "section-01-hero-copy",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-01-hero-eyebrow",
+              "type": "element",
+              "tag": "span",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 13.0,
+                  "fontWeight": 500,
+                  "lineHeight": 1.5,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-01-hero-eyebrow-text",
+                  "type": "text",
+                  "value": "OBJECT STORY",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-01-hero-title",
+              "type": "element",
+              "tag": "h2",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 40.0,
+                  "fontWeight": 700,
+                  "lineHeight": 1.25,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-01-hero-title-text",
+                  "type": "text",
+                  "value": "청자 분청 찻잔",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-01-hero-body",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 16.0,
+                  "fontWeight": 400,
+                  "lineHeight": 1.7,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-01-hero-body-text",
+                  "type": "text",
+                  "value": "물레로 빚고 귀얄로 백토를 발라 붓결을 남긴 뒤 청자빛 유약을 입힌 찻잔입니다. 장작 가마에서 구워 잔마다 빛깔이 조금씩 달라 같은 잔이 없습니다.",
+                  "marks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "section-01-hero-media",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-01-hero-figure-01",
+              "type": "element",
+              "tag": "figure",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": null,
+                  "fontSize": null,
+                  "fontWeight": null,
+                  "lineHeight": null,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-01-hero-image-01",
+                  "type": "element",
+                  "tag": "img",
+                  "props": {
+                    "variant": null,
+                    "layout": null,
+                    "style": {
+                      "color": null,
+                      "backgroundColor": null,
+                      "gradient": null,
+                      "fontFamily": null,
+                      "fontSize": null,
+                      "fontWeight": null,
+                      "lineHeight": null,
+                      "letterSpacing": null,
+                      "textAlign": null,
+                      "opacity": null,
+                      "borderColor": null,
+                      "borderWidth": null,
+                      "borderRadius": null,
+                      "boxShadow": null,
+                      "objectFit": "contain",
+                      "objectPosition": {
+                        "x": 0.5,
+                        "y": 0.5
+                      },
+                      "rotate": null,
+                      "padding": null,
+                      "margin": {
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0,
+                        "left": 0.0
+                      }
+                    },
+                    "href": null,
+                    "target": null,
+                    "imageId": "hero",
+                    "alt": "청자 분청 찻잔 청자 분청 찻잔",
+                    "crop": null,
+                    "videoUrl": null,
+                    "scope": null,
+                    "colSpan": null,
+                    "rowSpan": null
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-02-statement-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "variant": "paper",
+        "layout": {
+          "display": "stack",
+          "direction": null,
+          "columns": null,
+          "gap": 24.0,
+          "wrap": false,
+          "align": "stretch"
+        },
+        "style": {
+          "color": "#222222",
+          "backgroundColor": "#F6F2EC",
+          "gradient": null,
+          "fontFamily": null,
+          "fontSize": null,
+          "fontWeight": null,
+          "lineHeight": null,
+          "letterSpacing": null,
+          "textAlign": null,
+          "opacity": null,
+          "borderColor": null,
+          "borderWidth": null,
+          "borderRadius": null,
+          "boxShadow": null,
+          "objectFit": null,
+          "objectPosition": null,
+          "rotate": null,
+          "padding": {
+            "top": 40.0,
+            "right": 40.0,
+            "bottom": 40.0,
+            "left": 40.0
+          },
+          "margin": {
+            "top": 0.0,
+            "right": 0.0,
+            "bottom": 0.0,
+            "left": 0.0
+          }
+        },
+        "href": null,
+        "target": null,
+        "imageId": null,
+        "alt": null,
+        "crop": null,
+        "videoUrl": null,
+        "scope": null,
+        "colSpan": null,
+        "rowSpan": null
+      },
+      "children": [
+        {
+          "id": "section-02-statement-copy",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-02-statement-eyebrow",
+              "type": "element",
+              "tag": "span",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 13.0,
+                  "fontWeight": 500,
+                  "lineHeight": 1.5,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-02-statement-eyebrow-text",
+                  "type": "text",
+                  "value": "MAKING STORY",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-02-statement-title",
+              "type": "element",
+              "tag": "h2",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 30.0,
+                  "fontWeight": 700,
+                  "lineHeight": 1.35,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-02-statement-title-text",
+                  "type": "text",
+                  "value": "장작 가마의 흔적",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-02-statement-body",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 16.0,
+                  "fontWeight": 400,
+                  "lineHeight": 1.7,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-02-statement-body-text",
+                  "type": "text",
+                  "value": "물레로 흙을 빚어 형태를 잡고, 귀얄로 백토를 발라 붓결을 남긴 뒤 청자빛 유약을 입혔습니다. 장작 가마에서 구워 잔마다 빛깔이 조금씩 달라 같은 잔이 없습니다.",
+                  "marks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-03-gallery-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "variant": "sand",
+        "layout": {
+          "display": "stack",
+          "direction": null,
+          "columns": null,
+          "gap": 24.0,
+          "wrap": false,
+          "align": "stretch"
+        },
+        "style": {
+          "color": "#222222",
+          "backgroundColor": "#EEE5D8",
+          "gradient": null,
+          "fontFamily": null,
+          "fontSize": null,
+          "fontWeight": null,
+          "lineHeight": null,
+          "letterSpacing": null,
+          "textAlign": null,
+          "opacity": null,
+          "borderColor": null,
+          "borderWidth": null,
+          "borderRadius": null,
+          "boxShadow": null,
+          "objectFit": null,
+          "objectPosition": null,
+          "rotate": null,
+          "padding": {
+            "top": 40.0,
+            "right": 40.0,
+            "bottom": 40.0,
+            "left": 40.0
+          },
+          "margin": {
+            "top": 0.0,
+            "right": 0.0,
+            "bottom": 0.0,
+            "left": 0.0
+          }
+        },
+        "href": null,
+        "target": null,
+        "imageId": null,
+        "alt": null,
+        "crop": null,
+        "videoUrl": null,
+        "scope": null,
+        "colSpan": null,
+        "rowSpan": null
+      },
+      "children": [
+        {
+          "id": "section-03-gallery-copy",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-03-gallery-eyebrow",
+              "type": "element",
+              "tag": "span",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 13.0,
+                  "fontWeight": 500,
+                  "lineHeight": 1.5,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-03-gallery-eyebrow-text",
+                  "type": "text",
+                  "value": "GALLERY",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-03-gallery-title",
+              "type": "element",
+              "tag": "h2",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 30.0,
+                  "fontWeight": 700,
+                  "lineHeight": 1.35,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-03-gallery-title-text",
+                  "type": "text",
+                  "value": "잔과 받침의 조화",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-03-gallery-body",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 16.0,
+                  "fontWeight": 400,
+                  "lineHeight": 1.7,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-03-gallery-body-text",
+                  "type": "text",
+                  "value": "청자빛 잔과 꽃잎 모양의 받침이 어우러진 모습입니다.",
+                  "marks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "section-03-gallery-media",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-03-gallery-gallery-row-01",
+              "type": "element",
+              "tag": "div",
+              "props": {
+                "variant": null,
+                "layout": {
+                  "display": "grid",
+                  "direction": null,
+                  "columns": 3,
+                  "gap": 16.0,
+                  "wrap": false,
+                  "align": "stretch"
+                },
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": null,
+                  "fontSize": null,
+                  "fontWeight": null,
+                  "lineHeight": null,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-03-gallery-figure-01",
+                  "type": "element",
+                  "tag": "figure",
+                  "props": {
+                    "variant": null,
+                    "layout": null,
+                    "style": {
+                      "color": null,
+                      "backgroundColor": null,
+                      "gradient": null,
+                      "fontFamily": null,
+                      "fontSize": null,
+                      "fontWeight": null,
+                      "lineHeight": null,
+                      "letterSpacing": null,
+                      "textAlign": null,
+                      "opacity": null,
+                      "borderColor": null,
+                      "borderWidth": null,
+                      "borderRadius": null,
+                      "boxShadow": null,
+                      "objectFit": null,
+                      "objectPosition": null,
+                      "rotate": null,
+                      "padding": null,
+                      "margin": {
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0,
+                        "left": 0.0
+                      }
+                    },
+                    "href": null,
+                    "target": null,
+                    "imageId": null,
+                    "alt": null,
+                    "crop": null,
+                    "videoUrl": null,
+                    "scope": null,
+                    "colSpan": null,
+                    "rowSpan": null
+                  },
+                  "children": [
+                    {
+                      "id": "section-03-gallery-image-01",
+                      "type": "element",
+                      "tag": "img",
+                      "props": {
+                        "variant": null,
+                        "layout": null,
+                        "style": {
+                          "color": null,
+                          "backgroundColor": null,
+                          "gradient": null,
+                          "fontFamily": null,
+                          "fontSize": null,
+                          "fontWeight": null,
+                          "lineHeight": null,
+                          "letterSpacing": null,
+                          "textAlign": null,
+                          "opacity": null,
+                          "borderColor": null,
+                          "borderWidth": null,
+                          "borderRadius": null,
+                          "boxShadow": null,
+                          "objectFit": "contain",
+                          "objectPosition": {
+                            "x": 0.5,
+                            "y": 0.5
+                          },
+                          "rotate": null,
+                          "padding": null,
+                          "margin": {
+                            "top": 0.0,
+                            "right": 0.0,
+                            "bottom": 0.0,
+                            "left": 0.0
+                          }
+                        },
+                        "href": null,
+                        "target": null,
+                        "imageId": "hero",
+                        "alt": "청자 분청 찻잔 잔과 받침의 조화",
+                        "crop": null,
+                        "videoUrl": null,
+                        "scope": null,
+                        "colSpan": null,
+                        "rowSpan": null
+                      },
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-04-detail_split-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "variant": "sand",
+        "layout": {
+          "display": "flex",
+          "direction": "row",
+          "columns": null,
+          "gap": 24.0,
+          "wrap": false,
+          "align": "center"
+        },
+        "style": {
+          "color": "#222222",
+          "backgroundColor": "#EEE5D8",
+          "gradient": null,
+          "fontFamily": null,
+          "fontSize": null,
+          "fontWeight": null,
+          "lineHeight": null,
+          "letterSpacing": null,
+          "textAlign": null,
+          "opacity": null,
+          "borderColor": null,
+          "borderWidth": null,
+          "borderRadius": null,
+          "boxShadow": null,
+          "objectFit": null,
+          "objectPosition": null,
+          "rotate": null,
+          "padding": {
+            "top": 40.0,
+            "right": 40.0,
+            "bottom": 40.0,
+            "left": 40.0
+          },
+          "margin": {
+            "top": 0.0,
+            "right": 0.0,
+            "bottom": 0.0,
+            "left": 0.0
+          }
+        },
+        "href": null,
+        "target": null,
+        "imageId": null,
+        "alt": null,
+        "crop": null,
+        "videoUrl": null,
+        "scope": null,
+        "colSpan": null,
+        "rowSpan": null
+      },
+      "children": [
+        {
+          "id": "section-04-detail_split-copy",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-04-detail_split-eyebrow",
+              "type": "element",
+              "tag": "span",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 13.0,
+                  "fontWeight": 500,
+                  "lineHeight": 1.5,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-04-detail_split-eyebrow-text",
+                  "type": "text",
+                  "value": "DETAIL",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-04-detail_split-title",
+              "type": "element",
+              "tag": "h2",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 30.0,
+                  "fontWeight": 700,
+                  "lineHeight": 1.35,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-04-detail_split-title-text",
+                  "type": "text",
+                  "value": "귀얄 붓결과 유약",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-04-detail_split-body",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 16.0,
+                  "fontWeight": 400,
+                  "lineHeight": 1.7,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-04-detail_split-body-text",
+                  "type": "text",
+                  "value": "잔 안쪽과 바깥쪽에서 귀얄로 백토를 발랐을 때 남은 붓결과 청자빛 유약의 광택이 확인됩니다. 테두리에는 붉은색 선이 들어가 잔의 윤곽을 정리합니다.",
+                  "marks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "section-04-detail_split-media",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-04-detail_split-figure-01",
+              "type": "element",
+              "tag": "figure",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": null,
+                  "fontSize": null,
+                  "fontWeight": null,
+                  "lineHeight": null,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-04-detail_split-image-01",
+                  "type": "element",
+                  "tag": "img",
+                  "props": {
+                    "variant": null,
+                    "layout": null,
+                    "style": {
+                      "color": null,
+                      "backgroundColor": null,
+                      "gradient": null,
+                      "fontFamily": null,
+                      "fontSize": null,
+                      "fontWeight": null,
+                      "lineHeight": null,
+                      "letterSpacing": null,
+                      "textAlign": null,
+                      "opacity": null,
+                      "borderColor": null,
+                      "borderWidth": null,
+                      "borderRadius": null,
+                      "boxShadow": null,
+                      "objectFit": "contain",
+                      "objectPosition": {
+                        "x": 0.5,
+                        "y": 0.5
+                      },
+                      "rotate": null,
+                      "padding": null,
+                      "margin": {
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0,
+                        "left": 0.0
+                      }
+                    },
+                    "href": null,
+                    "target": null,
+                    "imageId": "detail",
+                    "alt": "청자 분청 찻잔 귀얄 붓결과 유약",
+                    "crop": null,
+                    "videoUrl": null,
+                    "scope": null,
+                    "colSpan": null,
+                    "rowSpan": null
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-05-usage_scene-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "variant": "image-left",
+        "layout": {
+          "display": "stack",
+          "direction": null,
+          "columns": null,
+          "gap": 24.0,
+          "wrap": false,
+          "align": "stretch"
+        },
+        "style": {
+          "color": "#222222",
+          "backgroundColor": "#F7F7F5",
+          "gradient": null,
+          "fontFamily": null,
+          "fontSize": null,
+          "fontWeight": null,
+          "lineHeight": null,
+          "letterSpacing": null,
+          "textAlign": null,
+          "opacity": null,
+          "borderColor": null,
+          "borderWidth": null,
+          "borderRadius": null,
+          "boxShadow": null,
+          "objectFit": null,
+          "objectPosition": null,
+          "rotate": null,
+          "padding": {
+            "top": 40.0,
+            "right": 40.0,
+            "bottom": 40.0,
+            "left": 40.0
+          },
+          "margin": {
+            "top": 0.0,
+            "right": 0.0,
+            "bottom": 0.0,
+            "left": 0.0
+          }
+        },
+        "href": null,
+        "target": null,
+        "imageId": null,
+        "alt": null,
+        "crop": null,
+        "videoUrl": null,
+        "scope": null,
+        "colSpan": null,
+        "rowSpan": null
+      },
+      "children": [
+        {
+          "id": "section-05-usage_scene-copy",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-05-usage_scene-eyebrow",
+              "type": "element",
+              "tag": "span",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 13.0,
+                  "fontWeight": 500,
+                  "lineHeight": 1.5,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-05-usage_scene-eyebrow-text",
+                  "type": "text",
+                  "value": "USAGE",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-05-usage_scene-title",
+              "type": "element",
+              "tag": "h2",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 30.0,
+                  "fontWeight": 700,
+                  "lineHeight": 1.35,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-05-usage_scene-title-text",
+                  "type": "text",
+                  "value": "차 한 잔의 자리",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-05-usage_scene-body",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 16.0,
+                  "fontWeight": 400,
+                  "lineHeight": 1.7,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-05-usage_scene-body-text",
+                  "type": "text",
+                  "value": "꽃잎 모양의 받침 위에 올려 차를 마시는 자리에 어울립니다. 잔마다 색이 조금씩 달라지는 장작 가마의 특징이 차 자리의 변화를 더합니다.",
+                  "marks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "section-05-usage_scene-media",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-05-usage_scene-figure-01",
+              "type": "element",
+              "tag": "figure",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": null,
+                  "fontSize": null,
+                  "fontWeight": null,
+                  "lineHeight": null,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-05-usage_scene-image-01",
+                  "type": "element",
+                  "tag": "img",
+                  "props": {
+                    "variant": null,
+                    "layout": null,
+                    "style": {
+                      "color": null,
+                      "backgroundColor": null,
+                      "gradient": null,
+                      "fontFamily": null,
+                      "fontSize": null,
+                      "fontWeight": null,
+                      "lineHeight": null,
+                      "letterSpacing": null,
+                      "textAlign": null,
+                      "opacity": null,
+                      "borderColor": null,
+                      "borderWidth": null,
+                      "borderRadius": null,
+                      "boxShadow": null,
+                      "objectFit": "cover",
+                      "objectPosition": {
+                        "x": 0.5,
+                        "y": 0.5
+                      },
+                      "rotate": null,
+                      "padding": null,
+                      "margin": {
+                        "top": 0.0,
+                        "right": 0.0,
+                        "bottom": 0.0,
+                        "left": 0.0
+                      }
+                    },
+                    "href": null,
+                    "target": null,
+                    "imageId": "lifestyle",
+                    "alt": "청자 분청 찻잔 차 한 잔의 자리",
+                    "crop": null,
+                    "videoUrl": null,
+                    "scope": null,
+                    "colSpan": null,
+                    "rowSpan": null
+                  },
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-06-info_table-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "variant": "light",
+        "layout": {
+          "display": "stack",
+          "direction": null,
+          "columns": null,
+          "gap": 24.0,
+          "wrap": false,
+          "align": "stretch"
+        },
+        "style": {
+          "color": "#222222",
+          "backgroundColor": "#F7F7F5",
+          "gradient": null,
+          "fontFamily": null,
+          "fontSize": null,
+          "fontWeight": null,
+          "lineHeight": null,
+          "letterSpacing": null,
+          "textAlign": null,
+          "opacity": null,
+          "borderColor": null,
+          "borderWidth": null,
+          "borderRadius": null,
+          "boxShadow": null,
+          "objectFit": null,
+          "objectPosition": null,
+          "rotate": null,
+          "padding": {
+            "top": 40.0,
+            "right": 40.0,
+            "bottom": 40.0,
+            "left": 40.0
+          },
+          "margin": {
+            "top": 0.0,
+            "right": 0.0,
+            "bottom": 0.0,
+            "left": 0.0
+          }
+        },
+        "href": null,
+        "target": null,
+        "imageId": null,
+        "alt": null,
+        "crop": null,
+        "videoUrl": null,
+        "scope": null,
+        "colSpan": null,
+        "rowSpan": null
+      },
+      "children": [
+        {
+          "id": "section-06-info_table-copy",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-06-info_table-eyebrow",
+              "type": "element",
+              "tag": "span",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 13.0,
+                  "fontWeight": 500,
+                  "lineHeight": 1.5,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-06-info_table-eyebrow-text",
+                  "type": "text",
+                  "value": "INFO",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-06-info_table-title",
+              "type": "element",
+              "tag": "h2",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 30.0,
+                  "fontWeight": 700,
+                  "lineHeight": 1.35,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-06-info_table-title-text",
+                  "type": "text",
+                  "value": "제품 정보",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-06-info_table-body",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 16.0,
+                  "fontWeight": 400,
+                  "lineHeight": 1.7,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-06-info_table-body-text",
+                  "type": "text",
+                  "value": "제품명과 제작 과정, 관리법에 대한 기본 정보입니다.",
+                  "marks": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "section-06-info_table-table",
+          "type": "element",
+          "tag": "table",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 12.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-06-info_table-table-caption",
+              "type": "element",
+              "tag": "caption",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 13.0,
+                  "fontWeight": 500,
+                  "lineHeight": 1.5,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-06-info_table-table-caption-text",
+                  "type": "text",
+                  "value": "제품 정보",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-06-info_table-table-body",
+              "type": "element",
+              "tag": "tbody",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": null,
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-06-info_table-row-01",
+                  "type": "element",
+                  "tag": "tr",
+                  "props": {
+                    "variant": null,
+                    "layout": null,
+                    "style": null,
+                    "href": null,
+                    "target": null,
+                    "imageId": null,
+                    "alt": null,
+                    "crop": null,
+                    "videoUrl": null,
+                    "scope": null,
+                    "colSpan": null,
+                    "rowSpan": null
+                  },
+                  "children": [
+                    {
+                      "id": "section-06-info_table-row-01-label",
+                      "type": "element",
+                      "tag": "th",
+                      "props": {
+                        "variant": null,
+                        "layout": null,
+                        "style": {
+                          "color": null,
+                          "backgroundColor": null,
+                          "gradient": null,
+                          "fontFamily": "sans",
+                          "fontSize": 16.0,
+                          "fontWeight": 600,
+                          "lineHeight": 1.5,
+                          "letterSpacing": null,
+                          "textAlign": null,
+                          "opacity": null,
+                          "borderColor": null,
+                          "borderWidth": null,
+                          "borderRadius": null,
+                          "boxShadow": null,
+                          "objectFit": null,
+                          "objectPosition": null,
+                          "rotate": null,
+                          "padding": null,
+                          "margin": {
+                            "top": 0.0,
+                            "right": 0.0,
+                            "bottom": 0.0,
+                            "left": 0.0
+                          }
+                        },
+                        "href": null,
+                        "target": null,
+                        "imageId": null,
+                        "alt": null,
+                        "crop": null,
+                        "videoUrl": null,
+                        "scope": "row",
+                        "colSpan": null,
+                        "rowSpan": null
+                      },
+                      "children": [
+                        {
+                          "id": "section-06-info_table-row-01-label-text",
+                          "type": "text",
+                          "value": "제품명",
+                          "marks": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "section-06-info_table-row-01-value",
+                      "type": "element",
+                      "tag": "td",
+                      "props": {
+                        "variant": null,
+                        "layout": null,
+                        "style": {
+                          "color": null,
+                          "backgroundColor": null,
+                          "gradient": null,
+                          "fontFamily": "sans",
+                          "fontSize": 16.0,
+                          "fontWeight": 400,
+                          "lineHeight": 1.7,
+                          "letterSpacing": null,
+                          "textAlign": null,
+                          "opacity": null,
+                          "borderColor": null,
+                          "borderWidth": null,
+                          "borderRadius": null,
+                          "boxShadow": null,
+                          "objectFit": null,
+                          "objectPosition": null,
+                          "rotate": null,
+                          "padding": null,
+                          "margin": {
+                            "top": 0.0,
+                            "right": 0.0,
+                            "bottom": 0.0,
+                            "left": 0.0
+                          }
+                        },
+                        "href": null,
+                        "target": null,
+                        "imageId": null,
+                        "alt": null,
+                        "crop": null,
+                        "videoUrl": null,
+                        "scope": null,
+                        "colSpan": null,
+                        "rowSpan": null
+                      },
+                      "children": [
+                        {
+                          "id": "section-06-info_table-row-01-value-text",
+                          "type": "text",
+                          "value": "청자 분청 찻잔",
+                          "marks": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "section-06-info_table-row-02",
+                  "type": "element",
+                  "tag": "tr",
+                  "props": {
+                    "variant": null,
+                    "layout": null,
+                    "style": null,
+                    "href": null,
+                    "target": null,
+                    "imageId": null,
+                    "alt": null,
+                    "crop": null,
+                    "videoUrl": null,
+                    "scope": null,
+                    "colSpan": null,
+                    "rowSpan": null
+                  },
+                  "children": [
+                    {
+                      "id": "section-06-info_table-row-02-label",
+                      "type": "element",
+                      "tag": "th",
+                      "props": {
+                        "variant": null,
+                        "layout": null,
+                        "style": {
+                          "color": null,
+                          "backgroundColor": null,
+                          "gradient": null,
+                          "fontFamily": "sans",
+                          "fontSize": 16.0,
+                          "fontWeight": 600,
+                          "lineHeight": 1.5,
+                          "letterSpacing": null,
+                          "textAlign": null,
+                          "opacity": null,
+                          "borderColor": null,
+                          "borderWidth": null,
+                          "borderRadius": null,
+                          "boxShadow": null,
+                          "objectFit": null,
+                          "objectPosition": null,
+                          "rotate": null,
+                          "padding": null,
+                          "margin": {
+                            "top": 0.0,
+                            "right": 0.0,
+                            "bottom": 0.0,
+                            "left": 0.0
+                          }
+                        },
+                        "href": null,
+                        "target": null,
+                        "imageId": null,
+                        "alt": null,
+                        "crop": null,
+                        "videoUrl": null,
+                        "scope": "row",
+                        "colSpan": null,
+                        "rowSpan": null
+                      },
+                      "children": [
+                        {
+                          "id": "section-06-info_table-row-02-label-text",
+                          "type": "text",
+                          "value": "제작 과정",
+                          "marks": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "section-06-info_table-row-02-value",
+                      "type": "element",
+                      "tag": "td",
+                      "props": {
+                        "variant": null,
+                        "layout": null,
+                        "style": {
+                          "color": null,
+                          "backgroundColor": null,
+                          "gradient": null,
+                          "fontFamily": "sans",
+                          "fontSize": 16.0,
+                          "fontWeight": 400,
+                          "lineHeight": 1.7,
+                          "letterSpacing": null,
+                          "textAlign": null,
+                          "opacity": null,
+                          "borderColor": null,
+                          "borderWidth": null,
+                          "borderRadius": null,
+                          "boxShadow": null,
+                          "objectFit": null,
+                          "objectPosition": null,
+                          "rotate": null,
+                          "padding": null,
+                          "margin": {
+                            "top": 0.0,
+                            "right": 0.0,
+                            "bottom": 0.0,
+                            "left": 0.0
+                          }
+                        },
+                        "href": null,
+                        "target": null,
+                        "imageId": null,
+                        "alt": null,
+                        "crop": null,
+                        "videoUrl": null,
+                        "scope": null,
+                        "colSpan": null,
+                        "rowSpan": null
+                      },
+                      "children": [
+                        {
+                          "id": "section-06-info_table-row-02-value-text",
+                          "type": "text",
+                          "value": "물레로 흙을 빚어 형태를 잡고, 귀얄로 백토를 발라 붓결을 남긴 뒤 청자빛 유약을 입혔습니다. 장작 가마에서 구워 잔마다 빛깔이 조금씩 달라 같은 잔이 없습니다.",
+                          "marks": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "section-06-info_table-row-03",
+                  "type": "element",
+                  "tag": "tr",
+                  "props": {
+                    "variant": null,
+                    "layout": null,
+                    "style": null,
+                    "href": null,
+                    "target": null,
+                    "imageId": null,
+                    "alt": null,
+                    "crop": null,
+                    "videoUrl": null,
+                    "scope": null,
+                    "colSpan": null,
+                    "rowSpan": null
+                  },
+                  "children": [
+                    {
+                      "id": "section-06-info_table-row-03-label",
+                      "type": "element",
+                      "tag": "th",
+                      "props": {
+                        "variant": null,
+                        "layout": null,
+                        "style": {
+                          "color": null,
+                          "backgroundColor": null,
+                          "gradient": null,
+                          "fontFamily": "sans",
+                          "fontSize": 16.0,
+                          "fontWeight": 600,
+                          "lineHeight": 1.5,
+                          "letterSpacing": null,
+                          "textAlign": null,
+                          "opacity": null,
+                          "borderColor": null,
+                          "borderWidth": null,
+                          "borderRadius": null,
+                          "boxShadow": null,
+                          "objectFit": null,
+                          "objectPosition": null,
+                          "rotate": null,
+                          "padding": null,
+                          "margin": {
+                            "top": 0.0,
+                            "right": 0.0,
+                            "bottom": 0.0,
+                            "left": 0.0
+                          }
+                        },
+                        "href": null,
+                        "target": null,
+                        "imageId": null,
+                        "alt": null,
+                        "crop": null,
+                        "videoUrl": null,
+                        "scope": "row",
+                        "colSpan": null,
+                        "rowSpan": null
+                      },
+                      "children": [
+                        {
+                          "id": "section-06-info_table-row-03-label-text",
+                          "type": "text",
+                          "value": "관리법",
+                          "marks": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "section-06-info_table-row-03-value",
+                      "type": "element",
+                      "tag": "td",
+                      "props": {
+                        "variant": null,
+                        "layout": null,
+                        "style": {
+                          "color": null,
+                          "backgroundColor": null,
+                          "gradient": null,
+                          "fontFamily": "sans",
+                          "fontSize": 16.0,
+                          "fontWeight": 400,
+                          "lineHeight": 1.7,
+                          "letterSpacing": null,
+                          "textAlign": null,
+                          "opacity": null,
+                          "borderColor": null,
+                          "borderWidth": null,
+                          "borderRadius": null,
+                          "boxShadow": null,
+                          "objectFit": null,
+                          "objectPosition": null,
+                          "rotate": null,
+                          "padding": null,
+                          "margin": {
+                            "top": 0.0,
+                            "right": 0.0,
+                            "bottom": 0.0,
+                            "left": 0.0
+                          }
+                        },
+                        "href": null,
+                        "target": null,
+                        "imageId": null,
+                        "alt": null,
+                        "crop": null,
+                        "videoUrl": null,
+                        "scope": null,
+                        "colSpan": null,
+                        "rowSpan": null
+                      },
+                      "children": [
+                        {
+                          "id": "section-06-info_table-row-03-value-text",
+                          "type": "text",
+                          "value": "첫 사용 전 미지근한 물에 한 번 헹궈 주세요. 전자레인지·식기세척기는 피하고, 부드러운 스펀지로 손설거지하면 오래 쓸 수 있습니다. 급격한 온도 변화는 피해 주세요.",
+                          "marks": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-07-notice-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "variant": "dark",
+        "layout": {
+          "display": "stack",
+          "direction": null,
+          "columns": null,
+          "gap": 24.0,
+          "wrap": false,
+          "align": "stretch"
+        },
+        "style": {
+          "color": "#F7F4EE",
+          "backgroundColor": "#242424",
+          "gradient": null,
+          "fontFamily": null,
+          "fontSize": null,
+          "fontWeight": null,
+          "lineHeight": null,
+          "letterSpacing": null,
+          "textAlign": null,
+          "opacity": null,
+          "borderColor": null,
+          "borderWidth": null,
+          "borderRadius": null,
+          "boxShadow": null,
+          "objectFit": null,
+          "objectPosition": null,
+          "rotate": null,
+          "padding": {
+            "top": 40.0,
+            "right": 40.0,
+            "bottom": 40.0,
+            "left": 40.0
+          },
+          "margin": {
+            "top": 0.0,
+            "right": 0.0,
+            "bottom": 0.0,
+            "left": 0.0
+          }
+        },
+        "href": null,
+        "target": null,
+        "imageId": null,
+        "alt": null,
+        "crop": null,
+        "videoUrl": null,
+        "scope": null,
+        "colSpan": null,
+        "rowSpan": null
+      },
+      "children": [
+        {
+          "id": "section-07-notice-copy",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-07-notice-eyebrow",
+              "type": "element",
+              "tag": "span",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 13.0,
+                  "fontWeight": 500,
+                  "lineHeight": 1.5,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-07-notice-eyebrow-text",
+                  "type": "text",
+                  "value": "CARE",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-07-notice-title",
+              "type": "element",
+              "tag": "h2",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 30.0,
+                  "fontWeight": 700,
+                  "lineHeight": 1.35,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-07-notice-title-text",
+                  "type": "text",
+                  "value": "관리 안내",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-07-notice-body",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 16.0,
+                  "fontWeight": 400,
+                  "lineHeight": 1.7,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-07-notice-body-text",
+                  "type": "text",
+                  "value": "첫 사용 전 미지근한 물에 한 번 헹궈 주세요. 전자레인지·식기세척기는 피하고, 부드러운 스펀지로 손설거지하면 오래 쓸 수 있습니다. 급격한 온도 변화는 피해 주세요.",
+                  "marks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-08-closing-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "variant": "sand",
+        "layout": {
+          "display": "stack",
+          "direction": null,
+          "columns": null,
+          "gap": 24.0,
+          "wrap": false,
+          "align": "stretch"
+        },
+        "style": {
+          "color": "#222222",
+          "backgroundColor": "#EEE5D8",
+          "gradient": null,
+          "fontFamily": null,
+          "fontSize": null,
+          "fontWeight": null,
+          "lineHeight": null,
+          "letterSpacing": null,
+          "textAlign": null,
+          "opacity": null,
+          "borderColor": null,
+          "borderWidth": null,
+          "borderRadius": null,
+          "boxShadow": null,
+          "objectFit": null,
+          "objectPosition": null,
+          "rotate": null,
+          "padding": {
+            "top": 40.0,
+            "right": 40.0,
+            "bottom": 40.0,
+            "left": 40.0
+          },
+          "margin": {
+            "top": 0.0,
+            "right": 0.0,
+            "bottom": 0.0,
+            "left": 0.0
+          }
+        },
+        "href": null,
+        "target": null,
+        "imageId": null,
+        "alt": null,
+        "crop": null,
+        "videoUrl": null,
+        "scope": null,
+        "colSpan": null,
+        "rowSpan": null
+      },
+      "children": [
+        {
+          "id": "section-08-closing-copy",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "variant": null,
+            "layout": {
+              "display": "stack",
+              "direction": null,
+              "columns": null,
+              "gap": 16.0,
+              "wrap": false,
+              "align": "stretch"
+            },
+            "style": {
+              "color": null,
+              "backgroundColor": null,
+              "gradient": null,
+              "fontFamily": null,
+              "fontSize": null,
+              "fontWeight": null,
+              "lineHeight": null,
+              "letterSpacing": null,
+              "textAlign": null,
+              "opacity": null,
+              "borderColor": null,
+              "borderWidth": null,
+              "borderRadius": null,
+              "boxShadow": null,
+              "objectFit": null,
+              "objectPosition": null,
+              "rotate": null,
+              "padding": null,
+              "margin": {
+                "top": 0.0,
+                "right": 0.0,
+                "bottom": 0.0,
+                "left": 0.0
+              }
+            },
+            "href": null,
+            "target": null,
+            "imageId": null,
+            "alt": null,
+            "crop": null,
+            "videoUrl": null,
+            "scope": null,
+            "colSpan": null,
+            "rowSpan": null
+          },
+          "children": [
+            {
+              "id": "section-08-closing-eyebrow",
+              "type": "element",
+              "tag": "span",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 13.0,
+                  "fontWeight": 500,
+                  "lineHeight": 1.5,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-08-closing-eyebrow-text",
+                  "type": "text",
+                  "value": "CLOSING",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-08-closing-title",
+              "type": "element",
+              "tag": "h2",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 30.0,
+                  "fontWeight": 700,
+                  "lineHeight": 1.35,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-08-closing-title-text",
+                  "type": "text",
+                  "value": "같은 잔이 없습니다",
+                  "marks": []
+                }
+              ]
+            },
+            {
+              "id": "section-08-closing-body",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "variant": null,
+                "layout": null,
+                "style": {
+                  "color": null,
+                  "backgroundColor": null,
+                  "gradient": null,
+                  "fontFamily": "sans",
+                  "fontSize": 16.0,
+                  "fontWeight": 400,
+                  "lineHeight": 1.7,
+                  "letterSpacing": null,
+                  "textAlign": null,
+                  "opacity": null,
+                  "borderColor": null,
+                  "borderWidth": null,
+                  "borderRadius": null,
+                  "boxShadow": null,
+                  "objectFit": null,
+                  "objectPosition": null,
+                  "rotate": null,
+                  "padding": null,
+                  "margin": {
+                    "top": 0.0,
+                    "right": 0.0,
+                    "bottom": 0.0,
+                    "left": 0.0
+                  }
+                },
+                "href": null,
+                "target": null,
+                "imageId": null,
+                "alt": null,
+                "crop": null,
+                "videoUrl": null,
+                "scope": null,
+                "colSpan": null,
+                "rowSpan": null
+              },
+              "children": [
+                {
+                  "id": "section-08-closing-body-text",
+                  "type": "text",
+                  "value": "장작 가마에서 구워 잔마다 빛깔이 조금씩 달라지는 청자 분청 찻잔입니다. 꽃잎 모양의 받침과 함께 차 자리에 두면 좋습니다.",
+                  "marks": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
