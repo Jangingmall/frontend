@@ -54,3 +54,36 @@ it("API 모드에서 시연 취소와 카탈로그 쓰기를 허용하지 않는
     expect(response?.status).toBe(501);
   }
 });
+
+it("시연 업로드의 바이너리 바이트를 보존한다", async () => {
+  const handlers = createRuntimeHandlers("api");
+  const result = await getResponse(
+    handlers,
+    new Request(
+      "http://localhost/api/mock/seller-demos/1/api/images/presigned-url",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Studio-Session": "binary-test",
+        },
+        body: JSON.stringify({
+          variants: [{ name: "320w" }, { name: "640w" }, { name: "1280w" }],
+        }),
+      },
+    ),
+  );
+  const url = (await result!.json()).data.uploads[0].presignedUrl;
+  const bytes = new Uint8Array([82, 73, 70, 70, 255, 0, 128, 254]);
+  const upload = await getResponse(
+    handlers,
+    new Request(url, {
+      method: "PUT",
+      body: bytes,
+      headers: { "Content-Type": "image/webp" },
+    }),
+  );
+  expect(upload?.status).toBe(200);
+  const image = await getResponse(handlers, new Request(url));
+  expect(new Uint8Array(await image!.arrayBuffer())).toEqual(bytes);
+});

@@ -13,6 +13,7 @@ import {
   useGeneration,
   useSellerContent,
 } from "@/queries/seller-studio/queries";
+import { useSellerStudioRuntime } from "@/queries/seller-studio/runtime";
 import { useAuthStore } from "@/stores/auth";
 
 import { SellerAccess } from "./SellerAccess";
@@ -27,6 +28,7 @@ function Studio({
   initialProductId?: number;
   initialGenerationId?: number;
 }) {
+  const runtime = useSellerStudioRuntime();
   const [productId, setProductId] = useState(initialProductId);
   const [generationId, setGenerationId] = useState(initialGenerationId);
   const [retryInput, setRetryInput] = useState(false);
@@ -58,7 +60,7 @@ function Studio({
         </Link>
         <span>판매 관리</span>
       </header>
-      {publicEnv.apiMocking && (
+      {(publicEnv.apiMocking || runtime.demo) && (
         <p className="sa-note">
           MSW 시연 · 실제 AI 생성이나 서버 DB 저장은 실행하지 않습니다.
         </p>
@@ -79,7 +81,7 @@ function Studio({
               window.history.replaceState(
                 null,
                 "",
-                `/seller/products/new?productId=${pid}&generationId=${gid}`,
+                runtime.studioUrl(pid, gid),
               );
             }}
           />
@@ -171,7 +173,9 @@ export function ServerSellerStudio(props: {
   initialProductId?: number;
   initialGenerationId?: number;
 }) {
+  const runtime = useSellerStudioRuntime();
   const ownerId = useAuthStore((state) => state.user?.id);
+  if (runtime.demo) return <Studio key={runtime.scope} {...props} />;
   return (
     <SellerAccess>
       <Studio key={ownerId} {...props} />

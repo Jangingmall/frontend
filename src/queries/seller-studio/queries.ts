@@ -1,16 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import * as api from "@/api/seller-studio/api";
+import { useSellerStudioRuntime } from "./runtime";
 export const sellerKeys = { all: ["seller-studio"] as const };
 export function useSellerProducts(
   page: number,
   enabled: boolean,
   ownerId: number,
 ) {
+  const { api, scope, demo } = useSellerStudioRuntime();
   return useQuery({
-    queryKey: [...sellerKeys.all, ownerId, "products", page],
+    queryKey: [...sellerKeys.all, scope ?? ownerId, "products", page],
     queryFn: () => api.listSellerProducts(page),
-    enabled: enabled && ownerId > 0,
+    enabled: enabled && (demo || ownerId > 0),
     retry: false,
   });
 }
@@ -19,10 +20,11 @@ export function useSellerContent(
   enabled: boolean,
   ownerId: number,
 ) {
+  const { api, scope, demo } = useSellerStudioRuntime();
   return useQuery({
-    queryKey: [...sellerKeys.all, ownerId, "content", productId],
+    queryKey: [...sellerKeys.all, scope ?? ownerId, "content", productId],
     queryFn: ({ signal }) => api.getContent(productId!, signal),
-    enabled: enabled && ownerId > 0 && !!productId,
+    enabled: enabled && (demo || ownerId > 0) && !!productId,
     retry: false,
   });
 }
@@ -32,10 +34,11 @@ export function useGeneration(
   enabled: boolean,
   ownerId: number,
 ) {
+  const { api, scope } = useSellerStudioRuntime();
   return useQuery({
     queryKey: [
       ...sellerKeys.all,
-      ownerId,
+      scope ?? ownerId,
       "generation",
       productId,
       generationId,
@@ -67,8 +70,9 @@ export function useSellerProduct(
   productId: number,
   ownerId: number | undefined,
 ) {
+  const { api, scope } = useSellerStudioRuntime();
   return useQuery({
-    queryKey: [...sellerKeys.all, ownerId, "product", productId],
+    queryKey: [...sellerKeys.all, scope ?? ownerId, "product", productId],
     queryFn: ({ signal }) => api.getSellerProduct(productId, signal),
     retry: false,
   });

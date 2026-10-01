@@ -1,110 +1,255 @@
-import { type DefaultBodyType, http, type PathParams } from "msw";
+import { type DefaultBodyType, http, HttpResponse, type PathParams } from "msw";
 import { z } from "zod";
 
-import { isSellerDemoId, type SellerDemoId } from "@/api/seller-demo/scenarios";
+import { isSellerDemoId } from "@/api/seller-demo/scenarios";
+import type { SellerContent, SellerProduct } from "@/api/seller-studio/api";
 import { mockError, mockOk } from "@/mocks/envelope";
 import type { ApiErrorResponse, ApiResponse } from "@/types/api";
-import {
-  parseDocument,
-  type StudioDocument,
-} from "@/utils/seller-studio/document";
+import { editNode, flattenDocument } from "@/utils/seller-studio/document";
 
-import first from "./fixtures/1.json";
-import second from "./fixtures/2.json";
+import { fixture } from "./document";
 
-const inputSchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  making: z.string().trim().min(1).max(2000),
-  care: z.string().trim().min(1).max(2000),
-  images: z.array(z.string().max(200)).min(1).max(8),
-});
-const photoPaths: Record<SellerDemoId, Record<string, string>> = {
-  "1": {
-    hero: "hero.webp",
-    "gallery-1": "gallery-1.webp",
-    "gallery-2": "gallery-2.webp",
-    "gallery-3": "gallery-3.webp",
-    "gallery-4": "gallery-4.webp",
-    "gallery-5": "gallery-5.webp",
-    detail: "detail.webp",
-    lifestyle: "lifestyle.webp",
-  },
-  "2": {
-    hero: "photos/01-hero.png",
-    "gallery-1": "gallery-1.webp",
-    "gallery-2": "gallery-2.webp",
-    "gallery-3": "gallery-3.webp",
-    "gallery-4": "gallery-4.webp",
-    "gallery-5": "gallery-5.webp",
-    packshot: "photos/02-packshot.png",
-    detail: "photos/03-detail.png",
-    lifestyle: "photos/04-lifestyle.png",
-    "lifestyle-02": "photos/05-lifestyle-02.png",
-    "detail-02": "photos/06-detail-02.png",
-    "detail-03": "photos/07-detail-03.png",
-    "detail-04": "photos/08-detail-04.png",
-    "detail-05": "photos/09-detail-05.png",
-  },
+type Envelope = ApiResponse<unknown> | ApiErrorResponse;
+type RecordData = {
+  product: SellerProduct;
+  generationId?: number;
+  polls: number;
+  content?: SellerContent;
 };
-function fixture(id: SellerDemoId) {
-  const document = parseDocument(id === "1" ? first : second);
-  const visit = (nodes: StudioDocument["root"]) =>
-    nodes.forEach((node) => {
-      if (node.tag === "img" && node.props?.imageId) {
-        const path = photoPaths[id][node.props.imageId];
-        if (!path) throw new Error("시연 사진이 없습니다.");
-        node.props.src = "/seller-demos/" + id + "/" + path;
-        node.props.imageId = node.props.src;
-      }
-      if (node.children) visit(node.children);
-    });
-  visit(document.root);
-  return document;
-}
+const generationInput = z.object({
+  productName: z.string().trim().min(1).max(15),
+  howMade: z.string().trim().min(1).max(2000),
+  careTips: z.string().trim().min(1).max(2000),
+  images: z.array(z.string()).min(1).max(8),
+});
+const productInput = z.object({
+  title: z.string().trim().min(1).max(15),
+  price: z.number().int().positive(),
+  stock: z.number().int().nonnegative(),
+});
 export function createSellerDemoHandlers() {
-  const records = new Map<
+  const sessions = new Map<string, Map<number, RecordData>>();
+  const uploads = new Map<
     string,
-    { document: StudioDocument; version: number }
+    { data: ArrayBuffer | null; owner: string }
   >();
+  let nextId = 1;
   return [
-    http.all<
-      PathParams,
-      DefaultBodyType,
-      ApiResponse<unknown> | ApiErrorResponse
-    >("*/api/mock/seller-demos/:scenario", async ({ request, params }) => {
-      const id = String(params.scenario);
-      if (!isSellerDemoId(id)) return mockError(404, "NOT_FOUND");
-      const session = request.headers.get("X-Studio-Session");
-      if (!session || session.length > 100)
-        return mockError(400, "INVALID_REQUEST");
-      const key = id + ":" + session;
-      if (request.method === "GET") {
-        const row = records.get(key);
-        return row ? mockOk(row) : mockError(404, "NOT_FOUND");
-      }
-      if (request.method === "POST") {
-        const input = inputSchema.safeParse(
-          await request.json().catch(() => null),
-        );
-        if (!input.success) return mockError(400, "INVALID_REQUEST");
-        const row = { document: fixture(id), version: 1 };
-        records.set(key, row);
-        return mockOk(row);
-      }
-      if (request.method === "PUT") {
-        if (!records.has(key)) return mockError(404, "NOT_FOUND");
-        try {
-          const body = (await request.json()) as { document: unknown };
-          const document = parseDocument(body.document);
-          const row = { document, version: records.get(key)!.version + 1 };
-          records.set(key, row);
-          return mockOk(row);
-        } catch {
-          return mockError(400, "INVALID_REQUEST");
+    http.all(
+      "*/api/mock/seller-demos/:scenario/uploads/:imageId/:variant",
+      async ({ request, params }) => {
+        const key = new URL(request.url).pathname;
+        if (!isSellerDemoId(String(params.scenario)) || !uploads.has(key))
+          return new HttpResponse(null, { status: 404 });
+        if (request.method === "PUT") {
+          const body = await request.arrayBuffer();
+          if (body.byteLength > 10 * 1024 * 1024)
+            return new HttpResponse(null, { status: 413 });
+          uploads.get(key)!.data = body;
+          return new HttpResponse(null, { status: 200 });
         }
-      }
-      return mockError(405, "METHOD_NOT_ALLOWED");
-    }),
+        const data = uploads.get(key)?.data;
+        return request.method === "GET" && data
+          ? new HttpResponse(data, {
+              headers: { "Content-Type": "image/webp" },
+            })
+          : new HttpResponse(null, { status: 404 });
+      },
+    ),
+    http.all<PathParams, DefaultBodyType, Envelope>(
+      "*/api/mock/seller-demos/:scenario/api/*",
+      async ({ request, params }) => {
+        const scenario = String(params.scenario);
+        if (!isSellerDemoId(scenario)) return mockError(404, "NOT_FOUND");
+        const session = request.headers.get("X-Studio-Session");
+        if (!session || session.length > 100)
+          return mockError(400, "INVALID_REQUEST");
+        const key = scenario + ":" + session;
+        let records = sessions.get(key);
+        if (!records) {
+          records = new Map();
+          sessions.set(key, records);
+        }
+        const url = new URL(request.url);
+        const path = url.pathname.replace(
+          /^\/api\/mock\/seller-demos\/[12]/,
+          "",
+        );
+        const method = request.method;
+        const body = ["POST", "PATCH"].includes(method)
+          ? await request.json().catch(() => null)
+          : null;
+        if (path === "/api/images/presigned-url" && method === "POST") {
+          const input = z
+            .object({
+              variants: z
+                .array(z.object({ name: z.enum(["320w", "640w", "1280w"]) }))
+                .length(3),
+            })
+            .safeParse(body);
+          if (!input.success) return mockError(400, "INVALID_REQUEST");
+          const prefix = `/api/mock/seller-demos/${scenario}/uploads/${crypto.randomUUID()}`;
+          return mockOk({
+            imageId: prefix + "/1280w",
+            expiresInSeconds: 300,
+            uploads: input.data.variants.map(({ name }) => {
+              uploads.set(prefix + "/" + name, { data: null, owner: key });
+              return {
+                variant: name,
+                objectKey: prefix + "/" + name,
+                presignedUrl: url.origin + prefix + "/" + name,
+              };
+            }),
+          });
+        }
+        if (path === "/api/products" && method === "POST") {
+          const input = productInput.safeParse(body);
+          if (!input.success) return mockError(400, "INVALID_REQUEST");
+          const product = {
+            ...input.data,
+            productId: nextId++,
+            status: "DRAFT",
+          };
+          records.set(product.productId, { product, polls: 0 });
+          return mockOk(product, 201);
+        }
+        const productMatch = path.match(/^\/api\/products\/(\d+)$/);
+        if (productMatch && method === "GET") {
+          const row = records.get(Number(productMatch[1]));
+          return row ? mockOk(row.product) : mockError(404, "NOT_FOUND");
+        }
+        const match = path.match(/^\/api\/content\/products\/(\d+)(\/.*)$/);
+        if (!match) return mockError(404, "NOT_FOUND");
+        const row = records.get(Number(match[1]));
+        if (!row) return mockError(404, "NOT_FOUND");
+        const tail = match[2];
+        if (tail === "/generations" && method === "POST") {
+          if (!generationInput.safeParse(body).success)
+            return mockError(400, "INVALID_REQUEST");
+          row.generationId = nextId++;
+          row.polls = 0;
+          delete row.content;
+          return mockOk(
+            {
+              productId: row.product.productId,
+              generationId: row.generationId,
+              status: "QUEUED",
+            },
+            202,
+          );
+        }
+        if (tail === `/generations/${row.generationId}` && method === "GET") {
+          row.polls++;
+          if (row.polls >= 2 && !row.content)
+            row.content = {
+              contentId: nextId++,
+              productId: row.product.productId,
+              status: "DRAFT",
+              version: 1,
+              reactDocument: fixture(scenario),
+            };
+          return mockOk({
+            productId: row.product.productId,
+            generationId: row.generationId,
+            status: row.polls >= 2 ? "COMPLETED" : "PROCESSING",
+          });
+        }
+        const content = row.content;
+        if (!content) return mockError(404, "NOT_FOUND");
+        if (tail === "/contents" && method === "GET") return mockOk(content);
+        if (tail === `/contents/${content.contentId}` && method === "PATCH") {
+          if (!["DRAFT", "REJECTED"].includes(content.status))
+            return mockError(422, "INVALID_STATE");
+          const parsed = z
+            .object({
+              patches: z
+                .array(
+                  z.object({
+                    nodeId: z.string(),
+                    text: z.string().max(50000).optional(),
+                    imageId: z.string().optional(),
+                  }),
+                )
+                .max(2500),
+            })
+            .safeParse(body);
+          if (!parsed.success) return mockError(400, "INVALID_REQUEST");
+          const nodes = flattenDocument(content.reactDocument);
+          for (const patch of parsed.data.patches) {
+            const node = nodes.find((n) => n.id === patch.nodeId);
+            if (
+              !node ||
+              (patch.text !== undefined && node.type !== "text") ||
+              (patch.imageId !== undefined &&
+                (node.tag !== "img" ||
+                  !(
+                    flattenDocument(fixture(scenario)).some(
+                      (original) => original.props?.imageId === patch.imageId,
+                    ) ||
+                    (uploads.get(patch.imageId)?.owner === key &&
+                      uploads.get(patch.imageId)?.data)
+                  )))
+            )
+              return mockError(400, "INVALID_REQUEST");
+          }
+          for (const patch of parsed.data.patches)
+            content.reactDocument = editNode(
+              content.reactDocument,
+              patch.nodeId,
+              patch,
+            );
+          content.version++;
+          return mockOk({
+            contentId: content.contentId,
+            productId: content.productId,
+            status: content.status,
+            version: content.version,
+          });
+        }
+        const action =
+          tail === "/publish"
+            ? "publish"
+            : tail.startsWith(`/contents/${content.contentId}/`)
+              ? tail.split("/").at(-1)
+              : undefined;
+        if (
+          method === "POST" &&
+          action &&
+          ["submit", "approve", "reject", "publish"].includes(action)
+        ) {
+          const allowed: Record<string, string[]> = {
+            submit: ["DRAFT", "REJECTED"],
+            approve: ["PENDING_REVIEW"],
+            reject: ["PENDING_REVIEW"],
+            publish: ["APPROVED"],
+          };
+          if (!allowed[action].includes(content.status))
+            return mockError(422, "INVALID_STATE");
+          if (
+            action === "approve" &&
+            !z
+              .object({
+                factCheckConfirmed: z.literal(true),
+                photoMatchConfirmed: z.literal(true),
+              })
+              .safeParse(body).success
+          )
+            return mockError(400, "INVALID_REQUEST");
+          const states = {
+            submit: "PENDING_REVIEW",
+            approve: "APPROVED",
+            reject: "REJECTED",
+            publish: "PUBLISHED",
+          } as const;
+          content.status = states[action as keyof typeof states];
+          return mockOk({
+            contentId: content.contentId,
+            status: content.status,
+          });
+        }
+        return mockError(404, "NOT_FOUND");
+      },
+    ),
   ];
 }
 export const sellerDemoHandlers = createSellerDemoHandlers();

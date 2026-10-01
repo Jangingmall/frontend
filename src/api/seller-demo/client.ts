@@ -1,37 +1,25 @@
-import { z } from "zod";
-
+import { uploadPublicImage } from "@/api/images/api";
+import { createSellerStudioApi } from "@/api/seller-studio/api";
 import { clientFetch } from "@/lib/http/client";
 import { startMockWorker } from "@/mocks/start-browser";
-import {
-  parseDocument,
-  type StudioDocument,
-} from "@/utils/seller-studio/document";
 
 import type { SellerDemoId } from "./scenarios";
-const result = z.object({
-  document: z.unknown().transform(parseDocument),
-  version: z.number().int().positive(),
-});
-export async function requestSellerDemo(
-  id: SellerDemoId,
-  session: string,
-  method: "GET" | "POST" | "PUT",
-  body?: unknown,
-) {
-  await startMockWorker();
-  return result.parse(
-    await clientFetch("/api/mock/seller-demos/" + id, {
-      method,
-      body,
+
+export function createSellerDemoRuntime(id: SellerDemoId, session: string) {
+  const fetcher: typeof clientFetch = async (path, options) => {
+    await startMockWorker();
+    return clientFetch(`/api/mock/seller-demos/${id}${path}`, {
+      ...options,
       auth: false,
-      headers: { "X-Studio-Session": session },
-    }),
-  );
-}
-export function saveSellerDemo(
-  id: SellerDemoId,
-  session: string,
-  document: StudioDocument,
-) {
-  return requestSellerDemo(id, session, "PUT", { document });
+      headers: { ...options?.headers, "X-Studio-Session": session },
+    });
+  };
+  return {
+    api: createSellerStudioApi(fetcher),
+    uploadImage: (file: File, purpose: "PRODUCT" | "ARTISAN" | "CONTENT") =>
+      uploadPublicImage(file, purpose, fetcher),
+    scope: `seller-demo-${id}-${session}`,
+    demo: true,
+    studioUrl: () => `/seller/products/new/${id}`,
+  };
 }

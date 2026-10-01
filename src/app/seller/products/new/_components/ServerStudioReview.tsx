@@ -18,11 +18,13 @@ export function ServerStudioReview({
   document,
   images,
   width,
+  fitCanvas,
 }: {
   productId: number;
   document: StudioDocument;
   images: Record<string, string>;
   width: number;
+  fitCanvas?: boolean;
 }) {
   const ownerId = useAuthStore((state) => state.user?.id);
   const product = useSellerProduct(productId, ownerId);
@@ -128,7 +130,11 @@ export function ServerStudioReview({
       </div>
       <div className="ss-product-detail">
         <h2>상품 상세정보</h2>
-        <ServerDocument document={document} images={images} />
+        <ServerDocument
+          document={document}
+          images={images}
+          fitCanvas={fitCanvas}
+        />
       </div>
     </div>
   );

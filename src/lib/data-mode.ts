@@ -19,8 +19,31 @@ export function resolveDataMode(mode?: string, legacy?: string): DataMode {
 export function isDemoFeatureRequest(path: string, method = "GET") {
   const pathname = path.split(/[?#]/, 1)[0];
   const read = method.toUpperCase() === "GET";
-  if (/^\/api\/mock\/seller-demos\/[12]$/.test(pathname))
-    return ["GET", "POST", "PUT"].includes(method.toUpperCase());
+  const sellerDemo = pathname.match(/^\/api\/mock\/seller-demos\/[12](\/.*)$/);
+  if (sellerDemo) {
+    const route = sellerDemo[1];
+    const verb = method.toUpperCase();
+    if (/^\/uploads\/[a-f0-9-]+\/(320w|640w|1280w)$/.test(route))
+      return ["GET", "PUT"].includes(verb);
+    if (route === "/api/products" || route === "/api/images/presigned-url")
+      return verb === "POST";
+    if (/^\/api\/products\/\d+$/.test(route)) return verb === "GET";
+    if (/^\/api\/content\/products\/\d+\/generations$/.test(route))
+      return verb === "POST";
+    if (
+      /^\/api\/content\/products\/\d+\/(generations\/\d+|contents)$/.test(route)
+    )
+      return verb === "GET";
+    if (/^\/api\/content\/products\/\d+\/contents\/\d+$/.test(route))
+      return verb === "PATCH";
+    if (
+      /^\/api\/content\/products\/\d+\/(publish|contents\/\d+\/(submit|approve|reject))$/.test(
+        route,
+      )
+    )
+      return verb === "POST";
+    return false;
+  }
   if (
     read &&
     /^\/api\/mock\/catalogue\/products(?:\/(?:\d+|crafts|materials))?$/.test(

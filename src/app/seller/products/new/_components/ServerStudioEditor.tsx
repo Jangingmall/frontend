@@ -3,15 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { uploadPublicImage } from "@/api/images/api";
-import {
-  changeContentStatus,
-  getContent,
-  saveContent,
-  type SellerContent,
-} from "@/api/seller-studio/api";
+import type { SellerContent } from "@/api/seller-studio/api";
 import { Dialog } from "@/components/ui/dialog";
 import { useSellerMutation } from "@/queries/seller-studio/queries";
+import { useSellerStudioRuntime } from "@/queries/seller-studio/runtime";
 import {
   editNode,
   flattenDocument,
@@ -26,6 +21,9 @@ import { ServerStudioReview } from "./ServerStudioReview";
 import { StudioHelp } from "./StudioHelp";
 
 export function ServerStudioEditor({ content }: { content: SellerContent }) {
+  const runtime = useSellerStudioRuntime();
+  const { changeContentStatus, getContent, saveContent } = runtime.api;
+  const uploadPublicImage = runtime.uploadImage;
   const [selected, setSelected] = useState<string | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
   const [baseline, setBaseline] = useState(content.reactDocument);
@@ -352,10 +350,15 @@ export function ServerStudioEditor({ content }: { content: SellerContent }) {
               document={document}
               images={resolvedImages}
               width={width}
+              fitCanvas={runtime.demo}
             />
           ) : (
             <div style={{ width: "min(100%, 774px)" }}>
-              <ServerDocument document={document} images={resolvedImages} />
+              <ServerDocument
+                document={document}
+                images={resolvedImages}
+                fitCanvas={runtime.demo}
+              />
             </div>
           )}
         </div>

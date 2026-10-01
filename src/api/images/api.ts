@@ -28,8 +28,9 @@ export interface PresignedUpload {
 /** `POST /api/images/presigned-url` → variant별 업로드 URL 발급. */
 export async function createPresignedUpload(
   input: CreatePresignedUploadInput,
+  fetcher: typeof clientFetch = clientFetch,
 ): Promise<PresignedUpload> {
-  const data = await clientFetch<unknown>("/api/images/presigned-url", {
+  const data = await fetcher<unknown>("/api/images/presigned-url", {
     method: "POST",
     body: input,
   });
@@ -97,6 +98,7 @@ export async function uploadReturnPhoto(file: File): Promise<string> {
 export async function uploadPublicImage(
   file: File,
   purpose: "PRODUCT" | "ARTISAN" | "CONTENT",
+  fetcher: typeof clientFetch = clientFetch,
 ): Promise<string> {
   const SIZES = [320, 640, 1280] as const;
   const { width: sourceWidth, height: sourceHeight } =
@@ -104,17 +106,20 @@ export async function uploadPublicImage(
   const compressed = await Promise.all(
     SIZES.map((size) => compressToWebp(file, size)),
   );
-  const presigned = await createPresignedUpload({
-    fileName: file.name,
-    contentType: "image/webp",
-    purpose,
-    sourceWidth,
-    sourceHeight,
-    variants: SIZES.map((size, index) => ({
-      name: `${size}w`,
-      sizeBytes: compressed[index]!.size,
-    })),
-  });
+  const presigned = await createPresignedUpload(
+    {
+      fileName: file.name,
+      contentType: "image/webp",
+      purpose,
+      sourceWidth,
+      sourceHeight,
+      variants: SIZES.map((size, index) => ({
+        name: `${size}w`,
+        sizeBytes: compressed[index]!.size,
+      })),
+    },
+    fetcher,
+  );
   await Promise.all(
     SIZES.map((size, index) => {
       const upload = presigned.uploads.find(

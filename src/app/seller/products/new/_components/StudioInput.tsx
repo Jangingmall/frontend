@@ -6,18 +6,10 @@ import type { StudioAsset, StudioDraft } from "./studio-contract";
 import { createDraft, readImages } from "./studio-state";
 interface StudioInputProps {
   onGenerate: (draft: StudioDraft, assets: StudioAsset[]) => void;
-  initialValues?: { name: string; making: string; care: string };
-  initialAssets?: StudioAsset[];
 }
-export function StudioInput({
-  onGenerate,
-  initialValues,
-  initialAssets,
-}: StudioInputProps) {
-  const [values, setValues] = useState(
-    initialValues ?? { name: "", making: "", care: "" },
-  );
-  const [assets, setAssets] = useState<StudioAsset[]>(initialAssets ?? []);
+export function StudioInput({ onGenerate }: StudioInputProps) {
+  const [values, setValues] = useState({ name: "", making: "", care: "" });
+  const [assets, setAssets] = useState<StudioAsset[]>([]);
   const [error, setError] = useState("");
   const [isUploading, setUploading] = useState(false);
   const [isDragging, setDragging] = useState(false);

@@ -4,6 +4,8 @@ import {
   createElement,
   type CSSProperties,
   type ReactNode,
+  useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -16,9 +18,11 @@ import {
 export function ServerDocument({
   document,
   images,
+  fitCanvas = false,
 }: {
   document: StudioDocument;
   images: Record<string, string>;
+  fitCanvas?: boolean;
 }) {
   function render(node: DocumentNode): ReactNode {
     if (node.type === "text") return node.value;
@@ -46,10 +50,15 @@ export function ServerDocument({
       node.tag === "br" ? undefined : node.children?.map(render),
     );
   }
-  return (
+  const result = (
     <div className="sa-document" style={{ maxWidth: document.canvasWidth }}>
       {document.root.map(render)}
     </div>
+  );
+  return fitCanvas ? (
+    <DocumentCanvas width={document.canvasWidth}>{result}</DocumentCanvas>
+  ) : (
+    result
   );
 }
 
@@ -79,5 +88,32 @@ function DocumentImage({
       style={{ width: "100%", height: "auto", ...style }}
       onError={() => setFailed(true)}
     />
+  );
+}
+
+function DocumentCanvas({
+  width,
+  children,
+}: {
+  width: number;
+  children: ReactNode;
+}) {
+  const frame = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const node = frame.current;
+    if (!node) return;
+    const observer = new ResizeObserver(() =>
+      setScale(Math.min(1, node.clientWidth / width)),
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [width]);
+  return (
+    <div ref={frame} style={{ width: "100%", maxWidth: width }}>
+      <div className="sa-document-canvas" style={{ width, zoom: scale }}>
+        {children}
+      </div>
+    </div>
   );
 }

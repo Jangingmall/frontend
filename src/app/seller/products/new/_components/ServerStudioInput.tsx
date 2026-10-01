@@ -2,10 +2,9 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-import { uploadPublicImage } from "@/api/images/api";
-import { createSellerProduct, startGeneration } from "@/api/seller-studio/api";
 import { Dialog } from "@/components/ui/dialog";
 import { useSellerMutation } from "@/queries/seller-studio/queries";
+import { useSellerStudioRuntime } from "@/queries/seller-studio/runtime";
 
 export function ServerStudioInput({
   productId,
@@ -14,15 +13,20 @@ export function ServerStudioInput({
   productId?: number;
   onStarted: (productId: number, generationId: number) => void;
 }) {
+  const runtime = useSellerStudioRuntime();
+  const { createSellerProduct, startGeneration } = runtime.api;
+  const uploadPublicImage = runtime.uploadImage;
   const fileInput = useRef<HTMLInputElement>(null);
-  const [values, setValues] = useState({
-    productName: "",
-    howMade: "",
-    careTips: "",
-  });
+  const [values, setValues] = useState(
+    runtime.initialInput?.values ?? {
+      productName: "",
+      howMade: "",
+      careTips: "",
+    },
+  );
   const [basicOpen, setBasicOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<File[]>(runtime.initialInput?.files ?? []);
   const [error, setError] = useState("");
   const [phase, setPhase] = useState("");
   const created = useRef(productId);
@@ -74,11 +78,7 @@ export function ServerStudioInput({
       ).productId;
     }
     setHasProduct(true);
-    window.history.replaceState(
-      null,
-      "",
-      `/seller/products/new?productId=${created.current}`,
-    );
+    window.history.replaceState(null, "", runtime.studioUrl(created.current));
     setPhase("사진 업로드 중");
     const images: string[] = [];
     for (const file of files) {
