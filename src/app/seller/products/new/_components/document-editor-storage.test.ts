@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import imageCompression from "browser-image-compression";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { fixture } from "@/api/seller-demo/mock/document";
 import { flattenDocument } from "@/utils/seller-studio/document";
@@ -13,13 +14,22 @@ import {
   writeServerDocumentSnapshot,
 } from "./document-editor-storage";
 
+vi.mock("browser-image-compression", () => ({ default: vi.fn() }));
+
 const identity = { ownerId: 7, productId: 12, contentId: 18, version: 3 };
 const snapshot = {
   document: fixture("1"),
   images: { upload: "data:image/png;base64,aGVsbG8=" },
   review: true,
 };
-beforeEach(() => localStorage.clear());
+beforeEach(() => {
+  localStorage.clear();
+  vi.mocked(imageCompression)
+    .mockReset()
+    .mockImplementation(
+      async (file) => new File([file], file.name, { type: "image/webp" }),
+    );
+});
 
 describe("전체 문서 브라우저 저장", () => {
   it("편집 문서, 업로드 이미지, 미리보기 상태를 서버 버전과 함께 복원한다", () => {
@@ -56,12 +66,30 @@ describe("전체 문서 브라우저 저장", () => {
 });
 
 describe("저장 가능한 사진 준비", () => {
-  it("업로드 이미지를 페이지를 다시 열어도 읽을 수 있는 데이터 URL로 변환한다", async () => {
-    expect(
-      await fileToDataUrl(
-        new File(["photo"], "photo.png", { type: "image/png" }),
-      ),
-    ).toBe("data:image/png;base64,cGhvdG8=");
+  it("원본 대신 용량을 제한한 WebP 사본을 데이터 URL로 변환한다", async () => {
+    const file = new File([new Uint8Array(3 * 1024 * 1024)], "photo.png", {
+      type: "image/png",
+    });
+    vi.mocked(imageCompression).mockResolvedValueOnce(
+      new File(["photo"], "photo.webp", { type: "image/webp" }),
+    );
+    expect(await fileToDataUrl(file)).toBe("data:image/webp;base64,cGhvdG8=");
+    expect(imageCompression).toHaveBeenCalledWith(file, {
+      maxWidthOrHeight: 640,
+      maxSizeMB: 48 / 1024,
+      fileType: "image/webp",
+      useWebWorker: false,
+    });
+  });
+  it("압축 후에도 용량을 초과하면 편집기에 사진을 추가하지 않는다", async () => {
+    vi.mocked(imageCompression).mockResolvedValueOnce(
+      new File([new Uint8Array(48 * 1024 + 1)], "photo.webp", {
+        type: "image/webp",
+      }),
+    );
+    await expect(
+      fileToDataUrl(new File(["photo"], "photo.png", { type: "image/png" })),
+    ).rejects.toThrow("임시 저장용 사진 용량을 줄이지 못했습니다.");
   });
   it("빈 파일과 이미지가 아닌 파일은 읽기를 시작하기 전에 거절한다", async () => {
     await expect(

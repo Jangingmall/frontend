@@ -370,7 +370,7 @@ it("사진 presign·3개 PUT·교체를 완료한 뒤 imageId PATCH와 복원 �
     readServerDocumentSnapshot({ ...identity, version: 4 })?.images[
       "uploaded-photo"
     ],
-  ).toMatch(/^data:image\/png;base64,/);
+  ).toMatch(/^data:image\/webp;base64,/);
 });
 
 it("사진 PUT 실패 시 기존 사진을 유지하며 업로드 중에는 header 이동을 차단한다", async () => {

@@ -1,3 +1,4 @@
+import imageCompression from "browser-image-compression";
 import { z } from "zod";
 
 import type { SellerContent } from "@/api/seller-studio/api";
@@ -165,6 +166,9 @@ export function contentImages(content: SellerContent): Record<string, string> {
   return images;
 }
 
+// 최대 32장의 base64 사진이 UTF-16 기준 약 4MB 안에 들어가도록 제한한다.
+const MAX_STORED_IMAGE_BYTES = 48 * 1024;
+
 export async function fileToDataUrl(file: File): Promise<string> {
   if (
     !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
@@ -172,6 +176,16 @@ export async function fileToDataUrl(file: File): Promise<string> {
     file.size > 10 * 1024 * 1024
   )
     throw new Error("JPG, PNG, WebP 사진을 10MB 이내로 선택해 주세요.");
+  const compact = await imageCompression(file, {
+    maxWidthOrHeight: 640,
+    maxSizeMB: MAX_STORED_IMAGE_BYTES / (1024 * 1024),
+    fileType: "image/webp",
+    useWebWorker: false,
+  });
+  if (compact.size > MAX_STORED_IMAGE_BYTES)
+    throw new Error(
+      "임시 저장용 사진 용량을 줄이지 못했습니다. 더 작은 사진을 선택해 주세요.",
+    );
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -182,6 +196,6 @@ export async function fileToDataUrl(file: File): Promise<string> {
       }
     };
     reader.onerror = () => reject(new Error("사진을 읽지 못했습니다."));
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(compact);
   });
 }

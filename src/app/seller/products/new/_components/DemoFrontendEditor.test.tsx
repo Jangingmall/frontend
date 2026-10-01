@@ -28,6 +28,11 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+vi.mock("browser-image-compression", () => ({
+  default: async (file: File) =>
+    new File([file], file.name, { type: "image/webp" }),
+}));
+
 const product = {
   productId: 12,
   title: "입력한 작품명",
@@ -136,7 +141,7 @@ it("전체 편집본과 브라우저 업로드 사진을 저장하고 미리보�
   expect(restored.review).toBe(true);
   expect(restored.product).toEqual(product);
   expect(Object.values(restored.images)).toContain(
-    "data:image/png;base64,cGhvdG8=",
+    "data:image/webp;base64,cGhvdG8=",
   );
   expect(window.location.search).toBe("?draft=1");
   view.unmount();
