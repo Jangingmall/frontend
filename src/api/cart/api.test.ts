@@ -28,7 +28,9 @@ const dto = {
           unitPrice: 20000,
           quantity: 2,
           subtotal: 40000,
-          thumbnail: [],
+          thumbnail: [
+            { url: "/cart.webp", width: 320, height: 320, format: "webp" },
+          ],
           isCustomOrder: false,
           soldOut: false,
           selected: true,
@@ -166,4 +168,94 @@ it("updates options using server identifiers and returns authoritative cart stat
       })
     ).lines[0].quantity,
   ).toBe(2);
+});
+
+it("fills missing cart images from the public product and deduplicates product lookups", async () => {
+  let reads = 0;
+  server.use(
+    http.get("*/api/payments/cart", () =>
+      HttpResponse.json({
+        success: true,
+        data: {
+          ...dto,
+          sections: dto.sections.map((section) => ({
+            ...section,
+            items: [
+              { ...section.items[0], thumbnail: [] },
+              { ...section.items[0], cartItemId: 92, thumbnail: [] },
+            ],
+          })),
+        },
+      }),
+    ),
+    http.get("*/api/products/3", () => {
+      reads++;
+      return HttpResponse.json({
+        success: true,
+        data: { productId: 3, thumbnailUrl: "/legacy.jpg" },
+      });
+    }),
+  );
+  const cart = await fetchCart();
+  expect(cart.lines.map((line) => line.thumbnailUrl)).toEqual([
+    "/legacy.jpg",
+    "/legacy.jpg",
+  ]);
+  expect(reads).toBe(1);
+});
+it("keeps cart state when the supplementary image request fails", async () => {
+  server.use(
+    http.get("*/api/payments/cart", () =>
+      HttpResponse.json({
+        success: true,
+        data: {
+          ...dto,
+          sections: dto.sections.map((section) => ({
+            ...section,
+            items: [{ ...section.items[0], thumbnail: [] }],
+          })),
+        },
+      }),
+    ),
+    http.get("*/api/products/3", () => new HttpResponse(null, { status: 503 })),
+  );
+  expect((await fetchCart()).lines[0]).toMatchObject({
+    quantity: 2,
+    unitPrice: 20000,
+  });
+});
+it("uses cart image URLs without filtering by format or width or requesting product details", async () => {
+  let reads = 0;
+  server.use(
+    http.get("*/api/payments/cart", () =>
+      HttpResponse.json({
+        success: true,
+        data: {
+          ...dto,
+          sections: dto.sections.map((section) => ({
+            ...section,
+            items: [
+              {
+                ...section.items[0],
+                thumbnail: [
+                  {
+                    url: "/original.jpg",
+                    width: 600,
+                    height: 400,
+                    format: "jpeg",
+                  },
+                ],
+              },
+            ],
+          })),
+        },
+      }),
+    ),
+    http.get("*/api/products/3", () => {
+      reads++;
+      return new HttpResponse(null, { status: 500 });
+    }),
+  );
+  expect((await fetchCart()).lines[0].thumbnailUrl).toBe("/original.jpg");
+  expect(reads).toBe(0);
 });

@@ -1,3 +1,4 @@
+import { imageUrl } from "@/api/images/read-model";
 import type { Cart } from "@/types/cart";
 import type { ImageVariant } from "@/types/image";
 
@@ -20,6 +21,10 @@ export function mapCart(dto: CartDto): Cart {
         artisanId: section.artisanId,
         artisanName: section.artisanName,
         productName: item.productName,
+        thumbnailUrl: imageUrl(
+          item.thumbnail,
+          item.thumbnailUrl || item.legacyThumbnailUrl,
+        ),
         thumbnail: {
           imageId: `cart-${item.productId}`,
           variants: item.thumbnail

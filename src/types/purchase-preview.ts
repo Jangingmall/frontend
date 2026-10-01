@@ -11,6 +11,8 @@ export interface CartPreviewLine {
   artisanName: string;
   productName: string;
   thumbnail: ImageRef;
+  /** 실제 API의 단일 대표 이미지 URL. variant가 없는 기존 상품도 표시한다. */
+  thumbnailUrl?: string | null;
   options: string[];
   quantity: number;
   unitPrice: number;

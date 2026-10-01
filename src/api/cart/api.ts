@@ -1,3 +1,4 @@
+import { fetchProductThumbnail } from "@/api/products/thumbnail-client";
 import { ApiError } from "@/lib/http/api-error";
 import { clientFetch } from "@/lib/http/client";
 import type { CartItemInput } from "@/types/cart";
@@ -6,7 +7,7 @@ import { mapCart } from "./mapper";
 import { cartDto } from "./validation";
 const path = "/api/payments/cart";
 async function cartRequest(suffix: string, method = "GET", body?: unknown) {
-  return mapCart(
+  const cart = mapCart(
     cartDto.parse(
       await clientFetch<unknown>(path + suffix, {
         method,
@@ -15,6 +16,33 @@ async function cartRequest(suffix: string, method = "GET", body?: unknown) {
       }),
     ),
   );
+  // 구형 상품은 장바구니 thumbnail이 비어 있어 공개 상품 대표 이미지로 보완한다.
+  const missingIds = [
+    ...new Set(
+      cart.lines
+        .filter((line) => !line.thumbnailUrl)
+        .map((line) => line.productId),
+    ),
+  ];
+  const thumbnails = new Map(
+    await Promise.all(
+      missingIds.map(async (productId) => {
+        try {
+          return [productId, await fetchProductThumbnail(productId)] as const;
+        } catch {
+          // 보조 이미지 조회 실패가 성공한 장바구니 조회·변경을 실패로 바꾸지 않는다.
+          return [productId, null] as const;
+        }
+      }),
+    ),
+  );
+  return {
+    ...cart,
+    lines: cart.lines.map((line) => ({
+      ...line,
+      thumbnailUrl: line.thumbnailUrl || thumbnails.get(line.productId) || null,
+    })),
+  };
 }
 export const fetchCart = () => cartRequest("");
 export const addCartItem = (body: CartItemInput) =>

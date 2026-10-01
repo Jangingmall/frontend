@@ -78,7 +78,10 @@ describe("ProductOrder", () => {
     );
     const image = container.querySelector("img")!;
     fireEvent.error(image);
-    expect(image).toHaveAttribute("src", "/images/product-placeholder.png");
+    expect(image).toHaveAttribute(
+      "src",
+      expect.stringContaining("/images/product-placeholder.png"),
+    );
   });
 });
 it("stacked slots preserve accessible interactive controls and replace quantity text", () => {
@@ -97,4 +100,19 @@ it("stacked slots preserve accessible interactive controls and replace quantity 
   expect(screen.getByRole("button", { name: "수량 조절" })).toBeInTheDocument();
   expect(screen.getByText("품절")).toBeInTheDocument();
   expect(screen.queryByText("2개 / 3,000원")).not.toBeInTheDocument();
+});
+
+it("renders a legacy thumbnail URL and falls back only when loading fails", () => {
+  render(
+    <ProductOrder
+      thumbnail="/legacy.jpg"
+      productName="작품"
+      quantity={1}
+      price={1000}
+    />,
+  );
+  const image = screen.getByRole("presentation");
+  expect(image).toHaveAttribute("src", expect.stringContaining("/legacy.jpg"));
+  fireEvent.error(image);
+  expect(image).toHaveAttribute("src", "/images/product-placeholder.png");
 });
