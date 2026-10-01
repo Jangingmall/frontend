@@ -25,6 +25,7 @@ import { ServerSellerStudio } from "./ServerSellerStudio";
 export function SellerDemoStudio({ scenario }: { scenario: SellerDemoId }) {
   const [runtime, setRuntime] = useState<SellerStudioRuntime>();
   const [restored, setRestored] = useState<DemoDocumentSnapshot>();
+  const [restoreNotice, setRestoreNotice] = useState("");
   const [error, setError] = useState("");
   useEffect(() => {
     const controller = new AbortController();
@@ -35,8 +36,15 @@ export function SellerDemoStudio({ scenario }: { scenario: SellerDemoId }) {
       const blob = await response.blob();
       if (controller.signal.aborted) return;
       if (new URLSearchParams(window.location.search).get("draft") === "1") {
-        const raw = localStorage.getItem(demoStorageKey(scenario));
-        if (raw) setRestored(parseDemoDocumentSnapshot(raw));
+        try {
+          const raw = localStorage.getItem(demoStorageKey(scenario));
+          if (raw) setRestored(parseDemoDocumentSnapshot(raw));
+        } catch {
+          setRestored(undefined);
+          setRestoreNotice(
+            "임시 저장본을 불러오지 못해 입력 화면을 열었습니다. 기존 저장본은 유지됩니다.",
+          );
+        }
       }
       let navigationGuard: (() => boolean) | null = null;
       setRuntime({
@@ -75,6 +83,7 @@ export function SellerDemoStudio({ scenario }: { scenario: SellerDemoId }) {
   return (
     <SellerStudioRuntimeContext value={runtime}>
       <div className="seller-demo">
+        {restoreNotice && <p role="alert">{restoreNotice}</p>}
         {restored ? (
           <div className="ss-shell">
             <header className="ss-header">
