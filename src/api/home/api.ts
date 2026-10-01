@@ -4,7 +4,7 @@ import { publicEnv } from "@/lib/env";
 import { fetchPublicApi } from "@/lib/http/fetcher";
 const read = (path: string) =>
   fetchPublicApi(path, { tags: ["home"], revalidate: 300 });
-const carouselItem = z.object({
+export const carouselItem = z.object({
   id: z.string(),
   badge: z.string(),
   headline: z.string(),

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { startMockWorker } from "@/mocks/start-browser";
-import { useProductList } from "@/queries/products/queries";
+import { useHomeGifts } from "@/queries/home/queries";
 import type { Page } from "@/types/api";
 import { GIFT_THEMES, type GiftThemeId } from "@/types/gift-theme";
 import type { ProductSummary } from "@/types/product";
@@ -24,26 +24,7 @@ interface GiftSectionProps {
   initialData?: Page<ProductSummary>;
 }
 
-/**
- * 홈 "선물" 섹션(design.md §0.2 "선물") — 좌측 테마 토글 2×4(8개, 단일 선택) + 우측 그
- * 선택에 반응하는 상품 추천 3개, 나란히 배치. 초기 설계는 이 8개를 "이미지 타일→링크"로,
- * 배치도 세로로 쌓인 형태로 가정했는데 Figma 실측(`987:25006`, `Gift products container`)
- * 확인 결과 둘 다 틀렸다 — 실제로는 좌우 2단 구성이고 테마는 클라이언트에서 실시간으로
- * 카드를 바꾼다. 섹션 전체 배경도 다른 섹션과 달리 옅은 배경(`bg-bg-subtle`)이 풀블리드로
- * 깔린다.
- *
- * 최초 테마 결과는 `page.tsx`가 `queryClient.prefetchQuery()` + `dehydrate()` +
- * `HydrationBoundary`로 미리 채워 넘긴다(`lib/query/server.ts`) — `useProductList`가 계산하는
- * `productKeys.list(...)` 캐시 키와 정확히 같은 키로 채우기 때문에 이 컴포넌트는 "지금 테마가
- * 초기 테마와 같은지" 따로 신경 쓸 필요가 없다. `initialData` prop은 그 배선이 없는 환경
- * (Storybook 등 MSW가 안 붙은 프리뷰)에서만 쓰는 대체 경로로 남겨둔다.
- *
- * 테마 버튼은 `components/ui/button`의 실제 `Button`(`variant="solid"`/`"ghost"`,
- * `size="s"`)을 쓴다 — Figma 인스턴스 속성을 보니 선택 상태는 `fills` 있음(진한 배경,
- * `solid`), 비선택은 `fills: []`(완전 투명, `ghost`)라 직접 그린 배경·테두리보다 이 매핑이
- * 맞다. 그리드는 `self-start`로 고정해 옆 카드 열이 로딩→실제 카드로 바뀌며 키가 늘어나도
- * (첫 구현의 버그) 버튼 그리드가 같이 늘어나 보이지 않게 한다.
- */
+/** 홈 전용 MSW 추천. 실제 상품 목록과 캐시를 분리하고 테마별로 조회한다. */
 export function GiftSection({ initialTheme, initialData }: GiftSectionProps) {
   const [theme, setTheme] = useState<GiftThemeId>(initialTheme);
   const [isReady, setIsReady] = useState(false);
@@ -65,8 +46,8 @@ export function GiftSection({ initialTheme, initialData }: GiftSectionProps) {
   }, []);
 
   const isInitialTheme = theme === initialTheme;
-  const products = useProductList(
-    { giftTheme: theme, size: SUGGESTION_SIZE },
+  const products = useHomeGifts(
+    theme,
     isReady,
     isInitialTheme ? initialData : undefined,
   );

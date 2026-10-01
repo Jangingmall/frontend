@@ -59,3 +59,7 @@
 - [이전 Stage 실제 모드 정리](staging-live-checkout-2026-09-29.md)
 - [백엔드 구현 감사](backend/api-implementation-audit-2026-09-28.md)
 - [기존 전체 API 연결표](backend/frontend-route-coverage-2026-09-28.csv)
+
+### 홈 선물·장인관
+
+홈의 선물 추천과 장인관은 API/MSW 모드 모두 기존 MSW 자료로 표시한다. 첫 화면은 서버에서 MSW 핸들러를 직접 실행하므로 브라우저 워커나 실제 API 응답 없이 렌더링된다. 선물 테마 변경은 기존 시연 카탈로그 주소를 사용하며 `home/demo-gifts` 캐시로 일반 상품 목록과 분리한다. 일반 상품 목록의 선물 필터 및 실제 장인 API 계약은 변경하지 않는다. 장인관 상세 이동은 기존처럼 비활성이다.
