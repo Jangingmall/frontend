@@ -95,9 +95,9 @@ function SiteFloatingActionsInner({
   const userId = useAuthStore((state) => state.user?.id ?? null);
   const router = useRouter();
   const chatPanelRef = useRef<HTMLDivElement>(null);
-  // 챗봇 API 4종 전부 `hasRole('USER')`다(docs/api-contract.md §7) — ARTISAN/ADMIN은
-  // 인증은 됐지만 권한이 없으므로, 게스트(로그인 유도)와 달리 진입점 자체를 숨긴다.
-  const isWrongRole = status === "authenticated" && role !== "USER";
+  // 판매자도 백엔드 ROLE_USER 권한을 포함하므로 기존 추천 챗봇을 사용할 수 있다.
+  const isWrongRole =
+    status === "authenticated" && role !== "USER" && role !== "ARTISAN";
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
