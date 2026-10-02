@@ -6,9 +6,38 @@ import {
   within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CheckoutPage } from "./CheckoutPage";
+const { openPayment, openAddress } = vi.hoisted(() => ({
+  openPayment: vi.fn(),
+  openAddress: vi.fn(),
+}));
+vi.mock("@/app/(protected)/checkout/_lib/toss-widget", () => ({
+  openTossWidget: openPayment,
+}));
+vi.mock("@/lib/env", async (original) => {
+  const actual = await original<typeof import("@/lib/env")>();
+  return {
+    ...actual,
+    publicEnv: { ...actual.publicEnv, tossClientKey: "test_gck_checkout" },
+  };
+});
+vi.mock("react-daum-postcode", () => ({
+  useKakaoPostcodePopup: () => openAddress,
+}));
+beforeEach(() => {
+  openPayment.mockReset().mockResolvedValue(undefined);
+  openAddress
+    .mockReset()
+    .mockImplementation(async ({ onComplete }) =>
+      onComplete({
+        zonecode: "04524",
+        roadAddress: "서울특별시 중구 세종대로 110",
+      }),
+    );
+  sessionStorage.clear();
+});
 
 describe("주문 결제", () => {
   it("이메일 단일 입력과 수정 가능한 전화 앞자리를 제공하고 주문자를 복사한다", async () => {
@@ -52,7 +81,7 @@ describe("주문 결제", () => {
       ).not.toBeInTheDocument(),
     );
   });
-  it("직접 배송메모와 샘플 주소를 입력한다", async () => {
+  it("주소검색 결과와 직접 배송메모를 반영한다", async () => {
     const user = userEvent.setup();
     render(<CheckoutPage />);
     await user.click(screen.getByRole("combobox", { name: "배송 메모" }));
@@ -62,7 +91,7 @@ describe("주문 결제", () => {
       "문 앞에 놓아주세요",
     );
     await user.click(screen.getByRole("button", { name: "주소검색" }));
-    expect(screen.getByLabelText("우편번호")).toHaveValue("00000");
+    expect(screen.getByLabelText("우편번호")).toHaveValue("04524");
     expect(screen.getByLabelText("배송메모 직접 입력")).toHaveValue(
       "문 앞에 놓아주세요",
     );
@@ -128,11 +157,29 @@ it.each(["CARD", "BANK_TRANSFER"] as const)(
       screen.getByRole("checkbox", { name: "약관에 동의합니다." }),
     );
     await user.click(screen.getByRole("button", { name: "결제하기" }));
-    await waitFor(() =>
-      expect(complete).toHaveBeenCalledWith(
-        method === "CARD" ? "success" : "bank-pending",
-      ),
-    );
+    if (method === "CARD") {
+      await waitFor(() =>
+        expect(openPayment).toHaveBeenCalledWith(
+          expect.objectContaining({
+            clientKey: "test_gck_checkout",
+            method: "CARD",
+            orderId: expect.stringMatching(/^demo-/),
+          }),
+          expect.any(AbortSignal),
+        ),
+      );
+      expect(complete).not.toHaveBeenCalled();
+      expect(JSON.parse(sessionStorage.getItem("preview-payment")!)).toEqual(
+        expect.objectContaining({
+          orderId: expect.stringMatching(/^demo-/),
+          amount: expect.any(Number),
+        }),
+      );
+    } else {
+      await waitFor(() =>
+        expect(complete).toHaveBeenCalledWith("bank-pending"),
+      );
+    }
   },
 );
 it("결제 시 거절된 입력과 수단은 재시도 후에도 유지한다", async () => {

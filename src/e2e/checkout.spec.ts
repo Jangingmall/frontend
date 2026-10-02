@@ -1,4 +1,35 @@
 import { expect, test } from "@playwright/test";
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const w = window as any;
+    w.kakao = w.kakao ?? {};
+    w.kakao.Postcode = function (options: {
+      oncomplete: (address: unknown) => void;
+    }) {
+      const self = this as { open: () => void; embed: () => void };
+      self.open = () => {
+        options.oncomplete({
+          zonecode: "12345",
+          roadAddress: "서울특별시 종로구 세종대로 1",
+        });
+      };
+      self.embed = () => {};
+    };
+    const originalAppendChild = Element.prototype.appendChild;
+    Element.prototype.appendChild = function <T extends Node>(node: T): T {
+      if (
+        node instanceof HTMLScriptElement &&
+        node.id === "kakao_postcode_script"
+      ) {
+        setTimeout(() => node.onload?.(new Event("load")), 0);
+        return node;
+      }
+      return originalAppendChild.call(this, node) as T;
+    };
+  });
+});
+
 async function login(
   page: import("@playwright/test").Page,
   path = "/checkout/ui-preview-order",
@@ -41,6 +72,9 @@ test("단일 이메일·복사·주소·메모·은행 안내를 검토한다", 
     "홍길동",
   );
   await page.getByRole("button", { name: "주소검색" }).click();
+  await expect(page.getByLabel("우편번호", { exact: true })).toHaveValue(
+    "12345",
+  );
   await expect(page.getByLabel("상세주소", { exact: true })).toBeFocused();
   await page.getByLabel("상세주소", { exact: true }).fill("101동 1234호");
   await page.getByRole("combobox", { name: "배송 메모" }).click();

@@ -6,9 +6,9 @@ import { CHECKOUT_PREVIEW_LINES } from "@/app/(protected)/checkout/_lib/checkout
 import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import { PURCHASE_PREVIEW_ORDER_ID } from "@/types/purchase-preview";
 
-import { PreviewPaymentReturn } from "./PreviewPaymentReturn";
 import { CheckoutPage } from "./CheckoutPage";
 import type { PaymentFailure } from "./PaymentFeedbackDialog";
+import { PreviewPaymentReturn } from "./PreviewPaymentReturn";
 import { RealCheckoutPage } from "./RealCheckoutPage";
 interface CheckoutEntryProps {
   orderId: string;

@@ -2,9 +2,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
 import { useKakaoPostcodePopup } from "react-daum-postcode";
-import { publicEnv } from "@/lib/env";
-import { openTossWidget } from "@/app/(protected)/checkout/_lib/toss-widget";
-import { getPaymentErrorMessage } from "@/app/(protected)/checkout/_lib/payment-error";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { submitPreviewOrder } from "@/api/purchase-preview/api";
@@ -15,12 +12,15 @@ import {
   type CheckoutFormValues,
   EMPTY_CHECKOUT_FORM,
 } from "@/app/(protected)/checkout/_lib/checkout-form-schema";
+import { getPaymentErrorMessage } from "@/app/(protected)/checkout/_lib/payment-error";
+import { openTossWidget } from "@/app/(protected)/checkout/_lib/toss-widget";
 import { OrderSummary } from "@/components/order/OrderSummary";
 import { PaymentsMethod } from "@/components/order/PaymentsMethod";
 import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Toast } from "@/components/ui/toast";
+import { publicEnv } from "@/lib/env";
 import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 import type {
   CartPreviewLine,
@@ -80,7 +80,7 @@ export function CheckoutPage({
     (sum, line) => sum + line.unitPrice * line.quantity,
     0,
   );
-  const submit = form.handleSubmit(async () => {
+  async function handlePayment() {
     if (!method) {
       setWarning("결제수단을 선택해 주세요.");
       return;
@@ -153,7 +153,7 @@ export function CheckoutPage({
     }
     if (result === "success" || result === "bank-pending") onComplete?.(result);
     else setFeedback(result);
-  });
+  }
   return (
     <FormProvider {...form}>
       <form
@@ -165,7 +165,7 @@ export function CheckoutPage({
             setWarning("약관에 동의해 주세요.");
             return;
           }
-          void submit(event);
+          void form.handleSubmit(handlePayment)(event);
         }}
         className="mx-auto w-full max-w-[936px] px-6 pt-16 pb-[200px] text-font-dark"
       >
