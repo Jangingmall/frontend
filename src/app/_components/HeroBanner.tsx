@@ -1,21 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
-
-import { ImagePlaceholder } from "./ImagePlaceholder";
 
 /**
  * 홈 히어로. 헤드라인 1줄 + 본문 2줄 + CTA 2개(Figma `987:25006`, 어노테이션 `843:36940`).
  * 타이포·CTA 색은 Figma 실측값 그대로: 헤드라인 48px/600(`display-l`), 본문 16px(`body-l`),
  * CTA 1 = `button` 컴포넌트 `l-jade` variant, CTA 2 = `l-black` variant.
  *
- * 배경은 Figma에선 실제 사진(`Background image`)인데 자산이 없어 `ImagePlaceholder`
- * 체크보드 패턴을 쓴다 — 단색 블록보다 "자산 대기 중"이라는 신호가 분명하다.
- *
- * 텍스트는 Figma 실측대로 흰색이다(본문 fill이 `#ffffff` — 실제 사진이 깔리면 그 위에서
- * 읽히도록 디자인된 색). 체크보드는 밝은색이라 흰 글자를 그대로 얹으면 안 읽혀서, 사진이
- * 실제로 들어왔을 때도 쓸 어두운 스크림(반투명 검정 오버레이)을 배경과 텍스트 사이에 둔다 —
- * 실 사진이 아무리 밝아도 텍스트 대비가 보장된다. (첫 시도는 텍스트를 아예 어두운색으로
- * 바꿨었는데, 그건 배경이 헤더와 같은 어두운 단색이라 경계가 안 보이던 문제의 임시방편이었고
- * Figma 실측 색과도 안 맞았다 — 지금은 스크림으로 정공법 처리.)
+ * 제공된 공예품 사진을 배경으로 사용하며, 흰색 문구의 가독성을 위해 어두운 오버레이를 유지한다.
  *
  * CTA 2 「장인관 둘러보기」는 원래 `AL-1`(`/artisans`)로 이동하지만, `artisan` 도메인을
  * 만들지 않기로 한 로드맵 결정 때문에 실제 이동은 없앤다(design.md §1-1). GNB가 같은 상황을
@@ -37,7 +28,14 @@ export function HeroBanner() {
       aria-label="히어로"
       className="relative flex min-h-hero flex-col items-center justify-end gap-6 page-gutter pt-24 pb-8 text-(--white) md:pb-12 xl:pb-18 2xl:pb-20"
     >
-      <ImagePlaceholder className="absolute inset-0 -z-20" />
+      <Image
+        src="/images/home-hero.png"
+        alt=""
+        fill
+        sizes="100vw"
+        preload
+        className="-z-20 object-cover object-center"
+      />
       <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/45" />
       <div className="mx-auto flex w-full max-w-desktop flex-col items-start gap-6">
         <div className="flex flex-col gap-2">
