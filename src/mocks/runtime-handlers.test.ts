@@ -87,3 +87,17 @@ it("시연 업로드의 바이너리 바이트를 보존한다", async () => {
   const image = await getResponse(handlers, new Request(url));
   expect(new Uint8Array(await image!.arrayBuffer())).toEqual(bytes);
 });
+
+it("브라우저는 외부 토스 요청을 통과시키고 같은 출처의 시연 요청만 처리한다", async () => {
+  const handlers = createRuntimeHandlers("msw", "http://localhost:3141");
+  const external = await getResponse(
+    handlers,
+    new Request("https://event.tosspayments.com/api/v1/logs"),
+  );
+  expect(external?.headers.get("x-msw-intention")).toBe("passthrough");
+  const local = await getResponse(
+    handlers,
+    new Request("http://localhost:3141/api/mock/catalogue/products?size=2"),
+  );
+  expect(local?.status).toBe(200);
+});

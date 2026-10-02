@@ -19,14 +19,13 @@ import { mockError, mockOk } from "./envelope";
 import { handlers } from "./handlers";
 
 /** 시연 전용 주소는 원본 핸들러로 전달하되 실제 서버로 빠져나가지 않는다. */
-export function createRuntimeHandlers(mode: DataMode) {
+export function createRuntimeHandlers(mode: DataMode, browserOrigin?: string) {
   return [
     ...(mode === "msw" ? [imageHandlers[1]] : []),
     http.all("*/api/*", async ({ request }) => {
       const url = new URL(request.url);
       // 브라우저 MSW는 미담 API만 처리한다. 토스 등 외부 SDK 요청은 통과시킨다.
-      if (typeof window !== "undefined" && url.origin !== window.location.origin)
-        return passthrough();
+      if (browserOrigin && url.origin !== browserOrigin) return passthrough();
       if (!shouldMockRequest(mode, url.pathname)) return passthrough();
       if (mode === "api" && !isDemoFeatureRequest(url.pathname, request.method))
         return mockError(501, "MOCK_NOT_IMPLEMENTED");
