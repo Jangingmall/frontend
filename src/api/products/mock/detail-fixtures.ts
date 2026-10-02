@@ -7,11 +7,13 @@ import {
 } from "@/constants/product-information";
 
 import { productCatalogue } from "./catalogue";
+import { teacupDemo } from "./teacup-demo";
 
 /** 기존 목록과 동일한 ID·이름·가격을 사용한다. 모든 상세 확장은 개발용 예시다. */
 export function getProductDetailMockDto(
   productId: number,
 ): ProductDetailMockDto | null {
+  if (productId === 900002) return productDetailMockDto.parse(teacupDemo);
   const seed = productCatalogue.find((product) => product.id === productId);
   if (!seed) return null;
   const hasOptions = productId !== 102;

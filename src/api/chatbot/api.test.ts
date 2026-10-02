@@ -33,7 +33,11 @@ describe("챗봇", () => {
       "친구 선물 추천해줘",
     );
     expect(reply.products?.length).toBeGreaterThan(0);
-    expect(reply.products?.[0]?.reason).toBeTruthy();
+    expect(reply.products?.map(({ product }) => product.name)).toEqual([
+      "도기토 수반",
+      "청자 분청 찻잔",
+      "오배자염 테이블러너",
+    ]);
   });
 
   it("존재하지 않는 세션에 메시지를 보내면 실패한다", async () => {

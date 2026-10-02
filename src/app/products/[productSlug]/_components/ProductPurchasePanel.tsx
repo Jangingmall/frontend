@@ -471,7 +471,11 @@ export function ProductPurchasePanel({
                   >
                     <OptionSelect
                       ariaLabel={`${group.label}${group.required ? " (필수)" : " (선택)"}`}
-                      placeholder={`${index + 1}. ${group.label}${group.required ? " (필수)" : " (선택)"}`}
+                      placeholder={
+                        product.id === 900002
+                          ? `${index + 1}. ${group.label}${group.id === "color" ? "을" : "를"} 선택해주세요.`
+                          : `${index + 1}. ${group.label}${group.required ? " (필수)" : " (선택)"}`
+                      }
                       items={items.map((item) => {
                         const stock = group.values.find(
                           (value) => value.id === item.value,

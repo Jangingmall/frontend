@@ -11,7 +11,7 @@ import { ChatMessageBubble } from "./ChatMessageBubble";
 import { ChatThinkingIndicator } from "./ChatThinkingIndicator";
 
 const GREETING =
-  "안녕하세요, 미담AI입니다.\n어떤 상품을 찾고 계신가요?\n조건을 알려주시면, 딱 맞는 상품을 찾아드릴게요.";
+  "안녕하세요, 미담AI입니다.\n\n어떤 상품을 찾고 계신가요?\n조건을 알려주시면, 딱 맞는 상품을 찾아드릴게요.";
 
 interface ChatPanelProps {
   messages: ChatMessage[];
@@ -115,7 +115,7 @@ export const ChatPanel = forwardRef<HTMLDivElement, ChatPanelProps>(
          * 채팅처럼 그 아래로 위→아래 순서로 쌓인다. */}
         <div
           ref={scrollRef}
-          className="flex flex-1 flex-col gap-4 overflow-y-auto px-4 py-4"
+          className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-4"
         >
           <div className="w-70 rounded-xl rounded-tl-none border border-border-neutral-subtle bg-bg-default px-3 py-2 text-body-s whitespace-pre-line text-font-dark">
             {GREETING}

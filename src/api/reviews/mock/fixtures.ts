@@ -82,6 +82,59 @@ export const MY_REVIEW_FIXTURES: MyReview[] = [
 ];
 
 export function createReviewFixtures(productId: number): ProductReview[] {
+  if (productId === 900002)
+    return [
+      {
+        id: 90000200,
+        author: "김차향",
+        createdAt: "2026-09-01",
+        body: "정말 기대 이상이에요. 실물로 보면 색감이 훨씬 더 아름답고 손에 쥐었을 때 무게감이 딱 적당합니다. 차를 마실 때마다 기분이 달라지는 느낌이에요.",
+        optionLabel:
+          "찻잔 + 꽃잎 찻받침 세트 / 청자색 / 중 - 150ml / 고급 한지 박스 포장",
+        rating: 5,
+        images: [],
+      },
+      {
+        id: 90000201,
+        author: "이민준",
+        createdAt: "2026-08-28",
+        body: "선물용으로 구매했는데 받으신 분이 너무 좋아하셨어요. 나무 선물 상자 포장이 고급스러워서 따로 포장을 안 해도 될 정도였습니다.",
+        optionLabel:
+          "찻잔 + 꽃잎 찻받침 세트 / 청자색 / 중 - 150ml / 나무 선물 상자 포장",
+        rating: 5,
+        images: [],
+      },
+      {
+        id: 90000202,
+        author: "박초록",
+        createdAt: "2026-08-20",
+        body: "흙의 질감이 그대로 느껴지는 찻잔이에요. 녹차를 마시면 향이 더 잘 느껴지는 것 같아요. 배송도 꼼꼼하게 포장돼서 왔어요.",
+        optionLabel:
+          "찻잔 + 꽃잎 찻받침 세트 / 청자색 / 중 - 150ml / 포장 없음",
+        rating: 5,
+        images: [],
+      },
+      {
+        id: 90000203,
+        author: "박하늘",
+        createdAt: "2026-08-15",
+        body: "장인이 직접 만드신 거라 그런지 완성도가 남달라요. 찻받침 꽃 모양이 너무 예뻐서 인테리어 소품으로도 손색없을 것 같아요.",
+        optionLabel:
+          "찻잔 + 꽃잎 찻받침 세트 / 유백색 / 소 - 80ml / 전통 보자기 포장",
+        rating: 5,
+        images: [],
+      },
+      {
+        id: 90000204,
+        author: "이온결",
+        createdAt: "2026-08-10",
+        body: "색감과 질감은 정말 마음에 드는데 제작 기간이 4주로 조금 길게 느껴졌어요. 그래도 받고 나니 기다린 보람이 있었습니다.",
+        optionLabel:
+          "2인 세트 - 찻잔2개 + 꽃잎 찻받침2개 / 회청색 / 중 - 150ml / 포장 없음",
+        rating: 5,
+        images: [],
+      },
+    ];
   const count = productId === 102 ? 0 : productId === 101 ? 12 : 5;
   return Array.from({ length: count }, (_, index) => ({
     id: productId * 100 + index,

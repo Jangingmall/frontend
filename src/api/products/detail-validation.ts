@@ -12,7 +12,12 @@ const imageSource = z.string().refine((value) => {
     return false;
   }
 }, "지원하지 않는 이미지 주소입니다.");
-const image = z.object({ src: imageSource, alt: z.string() });
+const image = z.object({
+  src: imageSource,
+  alt: z.string(),
+  width: natural.positive().optional(),
+  height: natural.positive().optional(),
+});
 const backendImageVariant = z.object({
   url: imageSource,
   width: natural.positive(),
