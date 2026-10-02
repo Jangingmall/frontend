@@ -8,7 +8,11 @@ import {
   chatSessionDto,
 } from "./validation";
 
-/** `POST /api/mock/chatbot/sessions` — 인증(USER) 필요. (docs/api-contract.md §7) */
+/**
+ * 현재 소비자 시연은 로그인 여부 및 API 모드와 무관하게 고정 추천을 사용한다.
+ * 실제 계약(/api/chatbot) 대신 명시적인 MSW 전용 주소를 사용하며 인증 토큰은 전송하지 않는다.
+ * 실서비스 추천을 재개할 때는 세션 생성·전송·조회·종료 경로를 함께 전환해야 한다.
+ */
 export async function createChatSession(): Promise<{
   sessionId: string;
   expiresInSeconds: number;

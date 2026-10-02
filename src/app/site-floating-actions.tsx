@@ -30,9 +30,9 @@ interface StoredSession {
   messages: ChatMessage[];
 }
 
-// `sessionStorage` 키에 `userId`를 포함한다 — 계정별로 격리하지 않으면 로그아웃 후 다른
-// 계정으로 로그인해도 이전 계정의 대화가 그대로 남아있다(리뷰 지적). `userId`가 없으면
-// (게스트·부팅 중) 애초에 챗봇 세션을 만들 수 없으니 저장소 자체를 건드리지 않는다.
+// 로그인 사용자의 대화는 계정별로 격리한다. 로컬 MSW 게스트는 현재 화면에서만
+// 시연하며 새로고침 시 초기화한다. MSW 세션도 메모리에만 있으므로 게스트 키만
+// 저장해도 새로고침 후 유효한 서버 세션을 복원할 수 없다.
 function sessionStorageKey(userId: number | null): string | null {
   return userId == null ? null : `chatbot-demo-session:${userId}`;
 }
