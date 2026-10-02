@@ -119,7 +119,7 @@ describe("ChatPanel", () => {
         },
       ],
     });
-    expect(screen.getByText("예산에 맞아요.")).toBeInTheDocument();
+    expect(screen.getByRole("article")).toBeInTheDocument();
     expect(screen.getByText("백자 달항아리")).toBeInTheDocument();
   });
 

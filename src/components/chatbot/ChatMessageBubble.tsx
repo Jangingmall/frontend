@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/types/chatbot";
@@ -71,16 +72,37 @@ export function ChatMessageBubble({
       {!isUser && message.products && message.products.length > 0 && (
         <div className="flex w-full max-w-110 gap-3 overflow-x-auto rounded-xl border border-border-neutral-subtle bg-bg-default p-3 pb-2">
           {message.products.map(({ product }) => (
-            <article key={product.id} className="relative w-40 shrink-0 pb-2 text-body-s text-font-dark">
-              {product.id === 900002 && <Link href="/products/청자-분청-찻잔-900002?preview=1" aria-label="청자 분청 찻잔 상세 보기" className="absolute inset-0 z-10 rounded focus-visible:outline-2 focus-visible:outline-offset-2" />}
+            <article
+              key={product.id}
+              className="relative w-40 shrink-0 pb-2 text-body-s text-font-dark"
+            >
+              {product.id === 900002 && (
+                <Link
+                  href="/products/청자-분청-찻잔-900002?preview=1"
+                  aria-label="청자 분청 찻잔 상세 보기"
+                  className="absolute inset-0 z-10 rounded focus-visible:outline-2 focus-visible:outline-offset-2"
+                />
+              )}
               <div className="relative aspect-square bg-bg-skeleton">
-                <Image src={product.thumbnailUrl ?? "/images/product-placeholder.png"} alt={product.name} fill sizes="160px" className="object-cover" />
-                <Badge variant="solid" className="absolute top-2 right-2">신상품</Badge>
+                <Image
+                  src={
+                    product.thumbnailUrl ?? "/images/product-placeholder.png"
+                  }
+                  alt={product.name}
+                  fill
+                  sizes="160px"
+                  className="object-cover"
+                />
+                <Badge variant="solid" className="absolute top-2 right-2">
+                  신상품
+                </Badge>
               </div>
               <div className="pt-2 pl-2">
                 <p className="font-bold">{product.name}</p>
                 <p className="text-font-dark-subtle">{product.artisan.name}</p>
-                <p className="mt-1">{product.price.toLocaleString("ko-KR")}원</p>
+                <p className="mt-1">
+                  {product.price.toLocaleString("ko-KR")}원
+                </p>
               </div>
             </article>
           ))}

@@ -19,7 +19,8 @@ export function resolveDataMode(mode?: string, legacy?: string): DataMode {
 export function isDemoFeatureRequest(path: string, method = "GET") {
   const pathname = path.split(/[?#]/, 1)[0];
   const read = method.toUpperCase() === "GET";
-  if (pathname === "/api/mock/chatbot/sessions") return method.toUpperCase() === "POST";
+  if (pathname === "/api/mock/chatbot/sessions")
+    return method.toUpperCase() === "POST";
   if (/^\/api\/mock\/chatbot\/sessions\/[^/]+\/messages$/.test(pathname))
     return ["GET", "POST"].includes(method.toUpperCase());
   if (/^\/api\/mock\/chatbot\/sessions\/[^/]+$/.test(pathname))

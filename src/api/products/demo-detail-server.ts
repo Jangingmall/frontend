@@ -10,8 +10,7 @@ import { mapProductDetailMock } from "./detail-mapper";
 import { productDetailMockDto } from "./detail-validation";
 export const fetchProductPageDetail = cache(
   async (id: number, preview = false) => {
-    if (!preview)
-      return fetchProductDetail(id, preview);
+    if (!preview) return fetchProductDetail(id, preview);
     try {
       return mapProductDetailMock(
         productDetailMockDto.parse(

@@ -16,6 +16,11 @@ import { useAuthStore } from "@/stores/auth";
 
 import { SiteFloatingActions } from "./site-floating-actions";
 
+vi.mock("@/lib/env", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/env")>();
+  return { ...actual, publicEnv: { ...actual.publicEnv, apiMocking: false } };
+});
+
 const push = vi.fn();
 
 vi.mock("next/navigation", () => ({
@@ -23,6 +28,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 beforeEach(() => {
+  vi.restoreAllMocks();
   push.mockClear();
   window.sessionStorage.clear();
   useAuthStore.getState().clear();
@@ -59,11 +65,7 @@ describe("SiteFloatingActions", () => {
       { target: { value: "선물 추천" } },
     );
     fireEvent.click(screen.getByRole("button", { name: "전송" }));
-    await waitFor(() =>
-      expect(
-        screen.getAllByText("예산과 취향에 맞춰 골라봤어요."),
-      ).toHaveLength(3),
-    );
+    await waitFor(() => expect(screen.getAllByRole("article")).toHaveLength(3));
   });
 
   it("관리자 계정의 기존 챗봇 숨김 정책은 유지한다", () => {
@@ -113,7 +115,7 @@ describe("SiteFloatingActions", () => {
     // 같은 계정의 브라우저 sessionStorage에 실제로는 존재하지 않는(또는 이미 무효화된)
     // 세션이 남아있다고 가정한다.
     window.sessionStorage.setItem(
-      "chatbot-session:1",
+      "chatbot-demo-session:1",
       JSON.stringify({
         sessionId: "stale-session",
         messages: [
@@ -135,7 +137,9 @@ describe("SiteFloatingActions", () => {
 
     // 검증 실패 후에는 캐시 자체도 지워진다.
     await waitFor(() =>
-      expect(window.sessionStorage.getItem("chatbot-session:1")).toBeNull(),
+      expect(
+        window.sessionStorage.getItem("chatbot-demo-session:1"),
+      ).toBeNull(),
     );
     expect(screen.queryByText("이전 사용자 메시지")).not.toBeInTheDocument();
   });
@@ -146,7 +150,7 @@ describe("SiteFloatingActions", () => {
     // 세션의 GET history가 대기 중이거나 실패할 때 방금 정상적으로 주고받은 대화가
     // 화면에서 사라진다(리뷰 지적) — 이 회귀를 GET 호출 횟수로 직접 확인한다.
     window.sessionStorage.setItem(
-      "chatbot-session:1",
+      "chatbot-demo-session:1",
       JSON.stringify({
         sessionId: "stale-session",
         messages: [
@@ -162,20 +166,25 @@ describe("SiteFloatingActions", () => {
     );
     let historyCallCount = 0;
     server.use(
-      http.get("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
-        historyCallCount += 1;
-        const session = CHAT_SESSIONS.get(String(params.sessionId));
-        if (!session) return mockError(404, "NOT_FOUND");
-        return HttpResponse.json(
-          { success: true, status: 200, data: session.messages },
-          { status: 200 },
-        );
-      }),
+      http.get(
+        "*/api/mock/chatbot/sessions/:sessionId/messages",
+        ({ params }) => {
+          historyCallCount += 1;
+          const session = CHAT_SESSIONS.get(String(params.sessionId));
+          if (!session) return mockError(404, "NOT_FOUND");
+          return HttpResponse.json(
+            { success: true, status: 200, data: session.messages },
+            { status: 200 },
+          );
+        },
+      ),
     );
     setup();
     fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
     await waitFor(() =>
-      expect(window.sessionStorage.getItem("chatbot-session:1")).toBeNull(),
+      expect(
+        window.sessionStorage.getItem("chatbot-demo-session:1"),
+      ).toBeNull(),
     );
 
     const input = screen.getByPlaceholderText("궁금한 내용을 입력해주세요.");
@@ -183,7 +192,7 @@ describe("SiteFloatingActions", () => {
     fireEvent.click(screen.getByRole("button", { name: "전송" }));
 
     await waitFor(() =>
-      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+      expect(screen.getByText(/셰프 친구분의 개업/)).toBeInTheDocument(),
     );
     expect(screen.getByText("새 대화")).toBeInTheDocument();
     // 원래 캐시된(무효로 밝혀진) 세션 1건에 대해서만 검증했어야 한다.
@@ -200,7 +209,7 @@ describe("SiteFloatingActions", () => {
     fireEvent.change(input, { target: { value: "A의 비밀 이야기" } });
     fireEvent.click(screen.getByRole("button", { name: "전송" }));
     await waitFor(() =>
-      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+      expect(screen.getByText(/셰프 친구분의 개업/)).toBeInTheDocument(),
     );
 
     // 네비게이션 없이 다른 계정(B)으로 전환한다.
@@ -232,7 +241,7 @@ describe("SiteFloatingActions", () => {
 
     expect(screen.getByText("안녕")).toBeInTheDocument();
     await waitFor(() =>
-      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+      expect(screen.getByText(/셰프 친구분의 개업/)).toBeInTheDocument(),
     );
   });
 
@@ -240,7 +249,7 @@ describe("SiteFloatingActions", () => {
     login();
     let createCount = 0;
     server.use(
-      http.post("*/api/chatbot/sessions", async () => {
+      http.post("*/api/mock/chatbot/sessions", async () => {
         createCount += 1;
         const sessionId = `session-${createCount}`;
         await delay(30);
@@ -267,7 +276,7 @@ describe("SiteFloatingActions", () => {
     fireEvent.submit(form);
 
     await waitFor(() =>
-      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+      expect(screen.getByText(/셰프 친구분의 개업/)).toBeInTheDocument(),
     );
     expect(createCount).toBe(1);
   });
@@ -277,7 +286,7 @@ describe("SiteFloatingActions", () => {
     let createCount = 0;
     let messageAttempt = 0;
     server.use(
-      http.post("*/api/chatbot/sessions", () => {
+      http.post("*/api/mock/chatbot/sessions", () => {
         createCount += 1;
         const sessionId = `session-${createCount}`;
         CHAT_SESSIONS.set(sessionId, { ended: false, messages: [] });
@@ -290,27 +299,30 @@ describe("SiteFloatingActions", () => {
           { status: 201 },
         );
       }),
-      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
-        messageAttempt += 1;
-        // 첫 시도는 세션이 이미 만료된 것처럼 404를 낸다 — historyCheck는 아직 이
-        // 세션을 검증하지도 않은 새 세션이라 `isStaleSession`으로는 못 잡는 경우다.
-        if (messageAttempt === 1) return mockError(404, "SESSION_NOT_FOUND");
-        return HttpResponse.json(
-          {
-            success: true,
-            status: 201,
-            data: {
-              sessionId: String(params.sessionId),
-              messageId: 1,
-              reply: "무엇을 도와드릴까요?",
-              intent: null,
-              suggestions: [],
-              products: [],
+      http.post(
+        "*/api/mock/chatbot/sessions/:sessionId/messages",
+        ({ params }) => {
+          messageAttempt += 1;
+          // 첫 시도는 세션이 이미 만료된 것처럼 404를 낸다 — historyCheck는 아직 이
+          // 세션을 검증하지도 않은 새 세션이라 `isStaleSession`으로는 못 잡는 경우다.
+          if (messageAttempt === 1) return mockError(404, "SESSION_NOT_FOUND");
+          return HttpResponse.json(
+            {
+              success: true,
+              status: 201,
+              data: {
+                sessionId: String(params.sessionId),
+                messageId: 1,
+                reply: "셰프 친구분의 개업은 정말 축하할 일이네요!",
+                intent: null,
+                suggestions: [],
+                products: [],
+              },
             },
-          },
-          { status: 201 },
-        );
-      }),
+            { status: 201 },
+          );
+        },
+      ),
     );
     setup();
     fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
@@ -328,7 +340,7 @@ describe("SiteFloatingActions", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
     await waitFor(() =>
-      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+      expect(screen.getByText(/셰프 친구분의 개업/)).toBeInTheDocument(),
     );
     // 죽은 세션을 재사용하지 않고 재시도에서 새 세션을 만들었어야 한다.
     expect(createCount).toBe(2);
@@ -339,7 +351,7 @@ describe("SiteFloatingActions", () => {
     let createCount = 0;
     let messageAttempt = 0;
     server.use(
-      http.post("*/api/chatbot/sessions", () => {
+      http.post("*/api/mock/chatbot/sessions", () => {
         createCount += 1;
         const sessionId = `session-${createCount}`;
         CHAT_SESSIONS.set(sessionId, { ended: false, messages: [] });
@@ -352,27 +364,30 @@ describe("SiteFloatingActions", () => {
           { status: 201 },
         );
       }),
-      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
-        messageAttempt += 1;
-        // 두 번째 실제 전송에서 세션이 만료된 것처럼 404를 낸다 — 그 전에 이미
-        // 정상적으로 한 번 주고받은 대화가 있는 상태다.
-        if (messageAttempt === 2) return mockError(404, "SESSION_NOT_FOUND");
-        return HttpResponse.json(
-          {
-            success: true,
-            status: 201,
-            data: {
-              sessionId: String(params.sessionId),
-              messageId: messageAttempt,
-              reply: `답변 ${messageAttempt}`,
-              intent: null,
-              suggestions: [],
-              products: [],
+      http.post(
+        "*/api/mock/chatbot/sessions/:sessionId/messages",
+        ({ params }) => {
+          messageAttempt += 1;
+          // 두 번째 실제 전송에서 세션이 만료된 것처럼 404를 낸다 — 그 전에 이미
+          // 정상적으로 한 번 주고받은 대화가 있는 상태다.
+          if (messageAttempt === 2) return mockError(404, "SESSION_NOT_FOUND");
+          return HttpResponse.json(
+            {
+              success: true,
+              status: 201,
+              data: {
+                sessionId: String(params.sessionId),
+                messageId: messageAttempt,
+                reply: `답변 ${messageAttempt}`,
+                intent: null,
+                suggestions: [],
+                products: [],
+              },
             },
-          },
-          { status: 201 },
-        );
-      }),
+            { status: 201 },
+          );
+        },
+      ),
     );
     setup();
     fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
@@ -408,7 +423,7 @@ describe("SiteFloatingActions", () => {
     let createCount = 0;
     let messageAttempt = 0;
     server.use(
-      http.post("*/api/chatbot/sessions", () => {
+      http.post("*/api/mock/chatbot/sessions", () => {
         createCount += 1;
         const sessionId = `session-${createCount}`;
         CHAT_SESSIONS.set(sessionId, { ended: false, messages: [] });
@@ -421,26 +436,29 @@ describe("SiteFloatingActions", () => {
           { status: 201 },
         );
       }),
-      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
-        messageAttempt += 1;
-        // 첫 실제 전송에서 세션이 이미 만료된 것처럼 404를 낸다.
-        if (messageAttempt === 1) return mockError(404, "SESSION_NOT_FOUND");
-        return HttpResponse.json(
-          {
-            success: true,
-            status: 201,
-            data: {
-              sessionId: String(params.sessionId),
-              messageId: messageAttempt,
-              reply: `답변 ${messageAttempt}`,
-              intent: null,
-              suggestions: [],
-              products: [],
+      http.post(
+        "*/api/mock/chatbot/sessions/:sessionId/messages",
+        ({ params }) => {
+          messageAttempt += 1;
+          // 첫 실제 전송에서 세션이 이미 만료된 것처럼 404를 낸다.
+          if (messageAttempt === 1) return mockError(404, "SESSION_NOT_FOUND");
+          return HttpResponse.json(
+            {
+              success: true,
+              status: 201,
+              data: {
+                sessionId: String(params.sessionId),
+                messageId: messageAttempt,
+                reply: `답변 ${messageAttempt}`,
+                intent: null,
+                suggestions: [],
+                products: [],
+              },
             },
-          },
-          { status: 201 },
-        );
-      }),
+            { status: 201 },
+          );
+        },
+      ),
     );
     setup();
     fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
@@ -472,7 +490,7 @@ describe("SiteFloatingActions", () => {
     let createCount = 0;
     let messageAttempt = 0;
     server.use(
-      http.post("*/api/chatbot/sessions", () => {
+      http.post("*/api/mock/chatbot/sessions", () => {
         createCount += 1;
         const sessionId = `session-${createCount}`;
         CHAT_SESSIONS.set(sessionId, { ended: false, messages: [] });
@@ -485,26 +503,29 @@ describe("SiteFloatingActions", () => {
           { status: 201 },
         );
       }),
-      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
-        messageAttempt += 1;
-        // 두 번째 전송만 일반 서버 오류로 실패시킨다 — 세션 자체는 무효가 아니다.
-        if (messageAttempt === 2) return mockError(500, "INTERNAL_ERROR");
-        return HttpResponse.json(
-          {
-            success: true,
-            status: 201,
-            data: {
-              sessionId: String(params.sessionId),
-              messageId: messageAttempt,
-              reply: `답변 ${messageAttempt}`,
-              intent: null,
-              suggestions: [],
-              products: [],
+      http.post(
+        "*/api/mock/chatbot/sessions/:sessionId/messages",
+        ({ params }) => {
+          messageAttempt += 1;
+          // 두 번째 전송만 일반 서버 오류로 실패시킨다 — 세션 자체는 무효가 아니다.
+          if (messageAttempt === 2) return mockError(500, "INTERNAL_ERROR");
+          return HttpResponse.json(
+            {
+              success: true,
+              status: 201,
+              data: {
+                sessionId: String(params.sessionId),
+                messageId: messageAttempt,
+                reply: `답변 ${messageAttempt}`,
+                intent: null,
+                suggestions: [],
+                products: [],
+              },
             },
-          },
-          { status: 201 },
-        );
-      }),
+            { status: 201 },
+          );
+        },
+      ),
     );
     setup();
     fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
@@ -541,7 +562,7 @@ describe("SiteFloatingActions", () => {
   it("전송 실패 뒤 재시도/새 질문 없이 재마운트(새로고침)해도 실패 버블이 복원되지 않는다", async () => {
     login();
     server.use(
-      http.post("*/api/chatbot/sessions/:sessionId/messages", () =>
+      http.post("*/api/mock/chatbot/sessions/:sessionId/messages", () =>
         mockError(500, "INTERNAL_ERROR"),
       ),
     );
@@ -582,7 +603,7 @@ describe("SiteFloatingActions", () => {
     fireEvent.change(input, { target: { value: "안녕" } });
     fireEvent.click(screen.getByRole("button", { name: "전송" }));
     await waitFor(() =>
-      expect(screen.getByText("무엇을 도와드릴까요?")).toBeInTheDocument(),
+      expect(screen.getByText(/셰프 친구분의 개업/)).toBeInTheDocument(),
     );
 
     // 접기 — 대화 유지.
@@ -621,25 +642,28 @@ describe("SiteFloatingActions", () => {
     // 그러면 F1 수정(무효 세션 즉시 화면 숨김)이 재시도 응답까지 함께 가려버린다.
     let attempt = 0;
     server.use(
-      http.post("*/api/chatbot/sessions/:sessionId/messages", ({ params }) => {
-        attempt += 1;
-        if (attempt === 1) return mockError(500, "INTERNAL_ERROR");
-        return HttpResponse.json(
-          {
-            success: true,
-            status: 201,
-            data: {
-              sessionId: String(params.sessionId),
-              messageId: 1,
-              reply: "다시 답변할게요",
-              intent: null,
-              suggestions: [],
-              products: [],
+      http.post(
+        "*/api/mock/chatbot/sessions/:sessionId/messages",
+        ({ params }) => {
+          attempt += 1;
+          if (attempt === 1) return mockError(500, "INTERNAL_ERROR");
+          return HttpResponse.json(
+            {
+              success: true,
+              status: 201,
+              data: {
+                sessionId: String(params.sessionId),
+                messageId: 1,
+                reply: "다시 답변할게요",
+                intent: null,
+                suggestions: [],
+                products: [],
+              },
             },
-          },
-          { status: 201 },
-        );
-      }),
+            { status: 201 },
+          );
+        },
+      ),
     );
 
     setup();

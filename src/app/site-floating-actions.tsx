@@ -1,7 +1,5 @@
 "use client";
 
-import { publicEnv } from "@/lib/env";
-
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -9,9 +7,8 @@ import { ChatPanel } from "@/components/chatbot/ChatPanel";
 import { FloatingActions } from "@/components/common/floating-actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import {
-  CHAT_SUGGESTION_POOL,
-} from "@/constants/chatbot";
+import { CHAT_SUGGESTION_POOL } from "@/constants/chatbot";
+import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useCreateChatSessionMutation,
@@ -130,9 +127,9 @@ function SiteFloatingActionsInner({
     () => readStoredSession(userId)?.sessionId ?? null,
   );
   const [inputValue, setInputValue] = useState("");
-  const [suggestions, setSuggestions] = useState<string[]>(() =>
-    [...CHAT_SUGGESTION_POOL],
-  );
+  const [suggestions, setSuggestions] = useState<string[]>(() => [
+    ...CHAT_SUGGESTION_POOL,
+  ]);
   const [lastFailedContent, setLastFailedContent] = useState<string | null>(
     null,
   );
