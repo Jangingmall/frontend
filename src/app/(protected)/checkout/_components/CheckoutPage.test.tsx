@@ -13,8 +13,8 @@ const { openPayment, openAddress } = vi.hoisted(() => ({
   openPayment: vi.fn(),
   openAddress: vi.fn(),
 }));
-vi.mock("@/app/(protected)/checkout/_lib/toss-widget", () => ({
-  openTossWidget: openPayment,
+vi.mock("@/app/(protected)/checkout/_lib/toss-preview", () => ({
+  openPreviewPayment: openPayment,
 }));
 vi.mock("@/lib/env", async (original) => {
   const actual = await original<typeof import("@/lib/env")>();
@@ -28,14 +28,12 @@ vi.mock("react-daum-postcode", () => ({
 }));
 beforeEach(() => {
   openPayment.mockReset().mockResolvedValue(undefined);
-  openAddress
-    .mockReset()
-    .mockImplementation(async ({ onComplete }) =>
-      onComplete({
-        zonecode: "04524",
-        roadAddress: "서울특별시 중구 세종대로 110",
-      }),
-    );
+  openAddress.mockReset().mockImplementation(async ({ onComplete }) =>
+    onComplete({
+      zonecode: "04524",
+      roadAddress: "서울특별시 중구 세종대로 110",
+    }),
+  );
   sessionStorage.clear();
 });
 
@@ -161,7 +159,6 @@ it.each(["CARD", "BANK_TRANSFER"] as const)(
       await waitFor(() =>
         expect(openPayment).toHaveBeenCalledWith(
           expect.objectContaining({
-            clientKey: "test_gck_checkout",
             method: "CARD",
             orderId: expect.stringMatching(/^demo-/),
           }),
