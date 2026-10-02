@@ -1,6 +1,10 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useKakaoPostcodePopup } from "react-daum-postcode";
+import { publicEnv } from "@/lib/env";
+import { openTossWidget } from "@/app/(protected)/checkout/_lib/toss-widget";
+import { getPaymentErrorMessage } from "@/app/(protected)/checkout/_lib/payment-error";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { submitPreviewOrder } from "@/api/purchase-preview/api";
@@ -54,6 +58,9 @@ export function CheckoutPage({
   onComplete,
   onCart,
 }: CheckoutPageProps) {
+  const openPostcode = useKakaoPostcodePopup();
+  const paymentController = useRef<AbortController | null>(null);
+  useEffect(() => () => paymentController.current?.abort(), []);
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutFormSchema),
     defaultValues: { ...EMPTY_CHECKOUT_FORM, ...initialValues },
@@ -78,6 +85,17 @@ export function CheckoutPage({
       setWarning("결제수단을 선택해 주세요.");
       return;
     }
+    if (paymentController.current) return;
+    if (
+      !outcome &&
+      method !== "BANK_TRANSFER" &&
+      !/^test_gck_\S+$/.test(publicEnv.tossClientKey.trim())
+    ) {
+      setWarning(
+        "시연 결제에 사용할 토스 테스트 클라이언트 키가 설정되지 않았습니다.",
+      );
+      return;
+    }
     setWarning("");
     let result: PreviewPaymentOutcome;
     try {
@@ -88,6 +106,47 @@ export function CheckoutPage({
       );
       result = response.outcome;
       usePurchasePreviewStore.getState().setCheckoutTotal(response.total);
+      if (!outcome && method !== "BANK_TRANSFER") {
+        const orderId = `demo-${crypto.randomUUID()}`;
+        sessionStorage.setItem(
+          "preview-payment",
+          JSON.stringify({ orderId, amount: response.total, lines }),
+        );
+        const controller = new AbortController();
+        paymentController.current = controller;
+        try {
+          await openTossWidget(
+            {
+              clientKey: publicEnv.tossClientKey.trim(),
+              amount: response.total,
+              orderId,
+              orderName: (lines[0]?.productName ?? "미담 시연 주문").slice(
+                0,
+                100,
+              ),
+              successUrl:
+                window.location.origin +
+                "/checkout/ui-preview-order?paymentResult=success",
+              failUrl:
+                window.location.origin +
+                "/checkout/ui-preview-order?paymentResult=fail",
+              method:
+                method === "TOSS_PAY"
+                  ? "TOSSPAY"
+                  : method === "REALTIME_TRANSFER"
+                    ? "TRANSFER"
+                    : "CARD",
+            },
+            controller.signal,
+          );
+        } catch (error) {
+          sessionStorage.removeItem("preview-payment");
+          setWarning(getPaymentErrorMessage(error));
+        } finally {
+          paymentController.current = null;
+        }
+        return;
+      }
     } catch {
       setWarning("시연 주문을 처리하지 못했습니다. 다시 시도해 주세요.");
       return;
@@ -122,11 +181,21 @@ export function CheckoutPage({
               sameCustomer={sameCustomer}
               onSameCustomerChange={setSameCustomer}
               onAddressSearch={() => {
-                form.setValue("postcode", "00000", { shouldValidate: true });
-                form.setValue("address", "서울특별시 강남구 선릉로 123", {
-                  shouldValidate: true,
-                });
-                form.setFocus("addressDetail");
+                void openPostcode({
+                  onComplete: (data) => {
+                    form.setValue("postcode", data.zonecode, {
+                      shouldValidate: true,
+                    });
+                    form.setValue("address", data.roadAddress || data.address, {
+                      shouldValidate: true,
+                    });
+                    form.setFocus("addressDetail");
+                  },
+                }).catch(() =>
+                  setWarning(
+                    "주소 검색을 열지 못했습니다. 다시 시도해 주세요.",
+                  ),
+                );
               }}
             />
             <DeliveryMemoField />
@@ -164,6 +233,7 @@ export function CheckoutPage({
               totalLabel="총 주문금액"
             />
             <PaymentAgreement
+              disabled={form.formState.isSubmitting}
               agreed={agreed}
               onAgreedChange={(value) => {
                 setAgreed(value);
