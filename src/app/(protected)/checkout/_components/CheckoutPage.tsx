@@ -38,6 +38,11 @@ import {
   PaymentFeedbackDialog,
 } from "./PaymentFeedbackDialog";
 import { ShippingFields } from "./ShippingFields";
+// 토스 공식 결제창 샘플의 공개 시연 키. 실제 결제 페이지에는 사용하지 않는다.
+// https://github.com/tosspayments/tosspayments-sample/blob/main/express-javascript/public/widget/checkout-window.html
+const previewTossClientKey =
+  publicEnv.tossClientKey.trim() || "test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm";
+
 interface CheckoutPageProps {
   lines?: CartPreviewLine[];
   initialValues?: Partial<CheckoutFormValues>;
@@ -89,7 +94,7 @@ export function CheckoutPage({
     if (
       !outcome &&
       method !== "BANK_TRANSFER" &&
-      !/^test_gck_\S+$/.test(publicEnv.tossClientKey.trim())
+      !/^test_gck_\S+$/.test(previewTossClientKey)
     ) {
       setWarning(
         "시연 결제에 사용할 토스 테스트 클라이언트 키가 설정되지 않았습니다.",
@@ -117,7 +122,7 @@ export function CheckoutPage({
         try {
           await openTossWidget(
             {
-              clientKey: publicEnv.tossClientKey.trim(),
+              clientKey: previewTossClientKey,
               amount: response.total,
               orderId,
               orderName: (lines[0]?.productName ?? "미담 시연 주문").slice(
