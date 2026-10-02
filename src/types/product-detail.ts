@@ -1,6 +1,8 @@
 import type { ProductSummary } from "./product";
 
 export interface ProductImage {
+  width?: number;
+  height?: number;
   src: string;
   alt: string;
 }

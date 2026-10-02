@@ -19,7 +19,8 @@ export function ProductDetailContent({
             return (
               <div
                 key={index}
-                className="relative aspect-square w-full bg-fill-jade-weak"
+                className="relative w-full bg-fill-jade-weak"
+                style={{ aspectRatio: block.image.width && block.image.height ? `${block.image.width} / ${block.image.height}` : "1 / 1" }}
               >
                 <ProductDetailImage
                   image={block.image}

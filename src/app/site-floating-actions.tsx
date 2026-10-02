@@ -1,5 +1,7 @@
 "use client";
 
+import { publicEnv } from "@/lib/env";
+
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -8,7 +10,6 @@ import { FloatingActions } from "@/components/common/floating-actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import {
-  CHAT_SUGGESTION_DISPLAY_COUNT,
   CHAT_SUGGESTION_POOL,
 } from "@/constants/chatbot";
 import { ApiError } from "@/lib/http/api-error";
@@ -20,7 +21,6 @@ import {
 import { useChatHistoryQuery } from "@/queries/chatbot/queries";
 import { useAuthStore } from "@/stores/auth";
 import type { ChatMessage } from "@/types/chatbot";
-import { pickRandomSample } from "@/utils/random";
 
 // 세션 관련 에러 3종 — SESSION_NOT_FOUND(404) · SESSION_ALREADY_ENDED(422) ·
 // SESSION_FORBIDDEN(403), docs/api-contract.md §7. 검증(historyCheck) 통과 후에도
@@ -37,7 +37,7 @@ interface StoredSession {
 // 계정으로 로그인해도 이전 계정의 대화가 그대로 남아있다(리뷰 지적). `userId`가 없으면
 // (게스트·부팅 중) 애초에 챗봇 세션을 만들 수 없으니 저장소 자체를 건드리지 않는다.
 function sessionStorageKey(userId: number | null): string | null {
-  return userId == null ? null : `chatbot-session:${userId}`;
+  return userId == null ? null : `chatbot-demo-session:${userId}`;
 }
 
 function readStoredSession(userId: number | null): StoredSession | null {
@@ -131,7 +131,7 @@ function SiteFloatingActionsInner({
   );
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>(() =>
-    pickRandomSample(CHAT_SUGGESTION_POOL, CHAT_SUGGESTION_DISPLAY_COUNT),
+    [...CHAT_SUGGESTION_POOL],
   );
   const [lastFailedContent, setLastFailedContent] = useState<string | null>(
     null,
@@ -196,7 +196,7 @@ function SiteFloatingActionsInner({
       return;
     }
     if (status === "loading" || isWrongRole) return; // 진입점이 이미 숨겨져 있는 방어용
-    if (status !== "authenticated") {
+    if (status !== "authenticated" && !publicEnv.apiMocking) {
       setIsLoginOpen(true);
       return;
     }
@@ -329,12 +329,7 @@ function SiteFloatingActionsInner({
           suggestions={suggestions}
           onSuggestionClick={handleSend}
           onReshuffleSuggestions={() =>
-            setSuggestions(
-              pickRandomSample(
-                CHAT_SUGGESTION_POOL,
-                CHAT_SUGGESTION_DISPLAY_COUNT,
-              ),
-            )
+            setSuggestions([...CHAT_SUGGESTION_POOL])
           }
           onRequestClose={handleRequestClose}
         />

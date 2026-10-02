@@ -12,38 +12,12 @@ import {
 
 type Envelope = ApiResponse<unknown> | ApiErrorResponse;
 
-const NO_RESULT_REPLY =
-  "조건에 맞는 상품을 찾지 못했어요. 조건을 바꿔서 다시 찾아볼까요?";
-const NO_RESULT_SUGGESTIONS = ["질문 추천 1", "질문 추천 2", "질문 추천 3"];
-const GENERIC_REPLY = "무엇을 도와드릴까요?";
-const GENERIC_SUGGESTIONS = ["신상품 보여줘", "베스트 상품 추천해줘"];
-
-function buildBotReply(content: string) {
-  if (content.includes("선물") || content.includes("추천")) {
-    return {
-      reply: "요청하신 조건에 맞는 상품을 몇 가지 골라봤어요.",
-      intent: null,
-      suggestions: [] as string[],
-      products: buildRecommendProducts(),
-    };
-  }
-  if (
-    content.includes("없는") ||
-    content.includes("없음") ||
-    content.includes("품절")
-  ) {
-    return {
-      reply: NO_RESULT_REPLY,
-      intent: null,
-      suggestions: NO_RESULT_SUGGESTIONS,
-      products: [],
-    };
-  }
+function buildBotReply() {
   return {
-    reply: GENERIC_REPLY,
-    intent: null,
-    suggestions: GENERIC_SUGGESTIONS,
-    products: [],
+    reply: "셰프 친구분의 개업은 정말 축하할 일이네요!\n말씀해주신 내용을 바탕으로 한식당의 분위기를 살려줄 실용적인 선물로 3점을 골랐어요.\n\n청자 분청 찻잔은 부산 사기장의 국가무형유산 작품으로 손님 접대에 바로 쓸 수 있고, 도기토 수반은 공간에 운치를 더하며, 오배자염 테이블러너는 이천 명장의 작품으로 테이블을 정갈하게 완성해 줍니다.",
+    intent: "gift_recommendation",
+    suggestions: [] as string[],
+    products: buildRecommendProducts(),
   };
 }
 
@@ -83,7 +57,7 @@ export const chatbotHandlers = [
       };
       session.messages.push(userMessage);
 
-      const botReply = buildBotReply(body.content);
+      const botReply = buildBotReply();
       const botMessageId = nextChatMessageId();
       const botMessage: ChatMessageDto = {
         messageId: botMessageId,

@@ -2,7 +2,6 @@ import "server-only";
 
 import { cache } from "react";
 
-import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import { readDemoCatalogue } from "@/mocks/catalogue-server";
 
@@ -11,7 +10,7 @@ import { mapProductDetailMock } from "./detail-mapper";
 import { productDetailMockDto } from "./detail-validation";
 export const fetchProductPageDetail = cache(
   async (id: number, preview = false) => {
-    if (!preview || publicEnv.apiMocking)
+    if (!preview)
       return fetchProductDetail(id, preview);
     try {
       return mapProductDetailMock(

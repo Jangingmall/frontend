@@ -38,6 +38,7 @@ export function createRuntimeHandlers(mode: DataMode) {
       }
       url.pathname = url.pathname.replace(/^\/api\/mock\/session\//, "/api/");
       url.pathname = url.pathname.replace(/^\/api\/mock\/catalogue\//, "/api/");
+      url.pathname = url.pathname.replace(/^\/api\/mock\/chatbot\//, "/api/chatbot/");
       const headers = new Headers(request.headers);
       headers.delete("cookie");
       if (mode === "api") headers.delete("authorization");
