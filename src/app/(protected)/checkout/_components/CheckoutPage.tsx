@@ -1,6 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useKakaoPostcodePopup } from "react-daum-postcode";
 import { FormProvider, useForm } from "react-hook-form";
 
 import { submitPreviewOrder } from "@/api/purchase-preview/api";
@@ -11,6 +12,8 @@ import {
   type CheckoutFormValues,
   EMPTY_CHECKOUT_FORM,
 } from "@/app/(protected)/checkout/_lib/checkout-form-schema";
+import { getPaymentErrorMessage } from "@/app/(protected)/checkout/_lib/payment-error";
+import { openPreviewPayment } from "@/app/(protected)/checkout/_lib/toss-preview";
 import { OrderSummary } from "@/components/order/OrderSummary";
 import { PaymentsMethod } from "@/components/order/PaymentsMethod";
 import { PurchaseStepIndicator } from "@/components/order/PurchaseStepIndicator";
@@ -54,6 +57,9 @@ export function CheckoutPage({
   onComplete,
   onCart,
 }: CheckoutPageProps) {
+  const openPostcode = useKakaoPostcodePopup();
+  const paymentController = useRef<AbortController | null>(null);
+  useEffect(() => () => paymentController.current?.abort(), []);
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutFormSchema),
     defaultValues: { ...EMPTY_CHECKOUT_FORM, ...initialValues },
@@ -73,11 +79,12 @@ export function CheckoutPage({
     (sum, line) => sum + line.unitPrice * line.quantity,
     0,
   );
-  const submit = form.handleSubmit(async () => {
+  async function handlePayment() {
     if (!method) {
       setWarning("결제수단을 선택해 주세요.");
       return;
     }
+    if (paymentController.current) return;
     setWarning("");
     let result: PreviewPaymentOutcome;
     try {
@@ -88,13 +95,53 @@ export function CheckoutPage({
       );
       result = response.outcome;
       usePurchasePreviewStore.getState().setCheckoutTotal(response.total);
+      if (!outcome && method !== "BANK_TRANSFER") {
+        const orderId = `demo-${crypto.randomUUID()}`;
+        sessionStorage.setItem(
+          "preview-payment",
+          JSON.stringify({ orderId, amount: response.total, lines }),
+        );
+        const controller = new AbortController();
+        paymentController.current = controller;
+        try {
+          await openPreviewPayment(
+            {
+              amount: response.total,
+              orderId,
+              orderName: (lines[0]?.productName ?? "미담 시연 주문").slice(
+                0,
+                100,
+              ),
+              successUrl:
+                window.location.origin +
+                "/checkout/ui-preview-order?paymentResult=success",
+              failUrl:
+                window.location.origin +
+                "/checkout/ui-preview-order?paymentResult=fail",
+              method:
+                method === "TOSS_PAY"
+                  ? "TOSSPAY"
+                  : method === "REALTIME_TRANSFER"
+                    ? "TRANSFER"
+                    : "CARD",
+            },
+            controller.signal,
+          );
+        } catch (error) {
+          sessionStorage.removeItem("preview-payment");
+          setWarning(getPaymentErrorMessage(error));
+        } finally {
+          paymentController.current = null;
+        }
+        return;
+      }
     } catch {
       setWarning("시연 주문을 처리하지 못했습니다. 다시 시도해 주세요.");
       return;
     }
     if (result === "success" || result === "bank-pending") onComplete?.(result);
     else setFeedback(result);
-  });
+  }
   return (
     <FormProvider {...form}>
       <form
@@ -106,7 +153,7 @@ export function CheckoutPage({
             setWarning("약관에 동의해 주세요.");
             return;
           }
-          void submit(event);
+          void form.handleSubmit(handlePayment)(event);
         }}
         className="mx-auto w-full max-w-[936px] px-6 pt-16 pb-[200px] text-font-dark"
       >
@@ -122,11 +169,21 @@ export function CheckoutPage({
               sameCustomer={sameCustomer}
               onSameCustomerChange={setSameCustomer}
               onAddressSearch={() => {
-                form.setValue("postcode", "00000", { shouldValidate: true });
-                form.setValue("address", "서울특별시 강남구 선릉로 123", {
-                  shouldValidate: true,
-                });
-                form.setFocus("addressDetail");
+                void openPostcode({
+                  onComplete: (data) => {
+                    form.setValue("postcode", data.zonecode, {
+                      shouldValidate: true,
+                    });
+                    form.setValue("address", data.roadAddress || data.address, {
+                      shouldValidate: true,
+                    });
+                    form.setFocus("addressDetail");
+                  },
+                }).catch(() =>
+                  setWarning(
+                    "주소 검색을 열지 못했습니다. 다시 시도해 주세요.",
+                  ),
+                );
               }}
             />
             <DeliveryMemoField />
@@ -164,6 +221,7 @@ export function CheckoutPage({
               totalLabel="총 주문금액"
             />
             <PaymentAgreement
+              disabled={form.formState.isSubmitting}
               agreed={agreed}
               onAgreedChange={(value) => {
                 setAgreed(value);

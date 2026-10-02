@@ -8,14 +8,23 @@ import { PURCHASE_PREVIEW_ORDER_ID } from "@/types/purchase-preview";
 
 import { CheckoutPage } from "./CheckoutPage";
 import type { PaymentFailure } from "./PaymentFeedbackDialog";
+import { PreviewPaymentReturn } from "./PreviewPaymentReturn";
 import { RealCheckoutPage } from "./RealCheckoutPage";
 interface CheckoutEntryProps {
   orderId: string;
   initialFeedback?: PaymentFailure;
+  paymentResult?: string;
+  paymentOrderId?: string;
+  paymentAmount?: string;
+  paymentKey?: string;
 }
 export function CheckoutEntry({
   orderId,
   initialFeedback,
+  paymentResult,
+  paymentOrderId,
+  paymentAmount,
+  paymentKey,
 }: CheckoutEntryProps) {
   const router = useRouter();
   const snapshot = usePurchasePreviewStore((state) => state.checkoutLines);
@@ -23,6 +32,15 @@ export function CheckoutEntry({
   if (orderId === "new") return <RealCheckoutPage />;
   if (orderId !== PURCHASE_PREVIEW_ORDER_ID)
     return <RealCheckoutPage allowOrder={false} />;
+  if (paymentResult)
+    return (
+      <PreviewPaymentReturn
+        result={paymentResult}
+        orderId={paymentOrderId}
+        amount={paymentAmount}
+        paymentKey={paymentKey}
+      />
+    );
   const lines = snapshot.length ? snapshot : CHECKOUT_PREVIEW_LINES;
   return (
     <>
