@@ -1,20 +1,24 @@
 "use client";
 import "./seller-api.css";
+import "./seller-input.css";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
-import { Footer } from "@/components/common/footer";
+import { ChatThinkingIndicator } from "@/components/chatbot/ChatThinkingIndicator";
 import { Logo } from "@/components/ui/logo";
-import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useGeneration,
   useSellerContent,
 } from "@/queries/seller-studio/queries";
+import {
+  SellerStudioRuntimeContext,
+  useSellerStudioRuntime,
+} from "@/queries/seller-studio/runtime";
 import { useAuthStore } from "@/stores/auth";
 
+import { DemoFrontendEditor } from "./DemoFrontendEditor";
 import { SellerAccess } from "./SellerAccess";
 import { ServerStudioEditor } from "./ServerStudioEditor";
 import { ServerStudioInput } from "./ServerStudioInput";
@@ -27,6 +31,7 @@ function Studio({
   initialProductId?: number;
   initialGenerationId?: number;
 }) {
+  const runtime = useSellerStudioRuntime();
   const [productId, setProductId] = useState(initialProductId);
   const [generationId, setGenerationId] = useState(initialGenerationId);
   const [retryInput, setRetryInput] = useState(false);
@@ -53,23 +58,24 @@ function Studio({
           href="/seller/products"
           className="ss-logo"
           aria-label="판매 관리로 이동"
+          onClick={(event) => {
+            if (runtime.canNavigate && !runtime.canNavigate())
+              event.preventDefault();
+          }}
         >
           <Logo />
         </Link>
         <span>판매 관리</span>
       </header>
-      {publicEnv.apiMocking && (
-        <p className="sa-note">
-          MSW 시연 · 실제 AI 생성이나 서버 DB 저장은 실행하지 않습니다.
-        </p>
-      )}
       {showInput ? (
         <main className="ss-form-wrap sa-figma-input">
           <div className="ss-heading">
-            <h1>AI 제작 페이지</h1>
+            <h1>AI 상세페이지 제작</h1>
             <StudioSteps current={0} />
           </div>
-          <p className="ss-intro">정보 입력에 관한 설명.</p>
+          <p className="ss-intro">
+            작품 사진과 제작 정보를 입력하면 AI가 상세페이지를 만들어 드립니다.
+          </p>
           <ServerStudioInput
             productId={productId}
             onStarted={(pid, gid) => {
@@ -79,7 +85,7 @@ function Studio({
               window.history.replaceState(
                 null,
                 "",
-                `/seller/products/new?productId=${pid}&generationId=${gid}`,
+                runtime.studioUrl(pid, gid),
               );
             }}
           />
@@ -87,19 +93,14 @@ function Studio({
       ) : generationId && !ready ? (
         <main className="ss-form-wrap sa-generating">
           <div className="ss-heading">
-            <h1>AI 제작 페이지</h1>
+            <h1>AI 상세페이지 제작</h1>
             <StudioSteps current={1} />
           </div>
           <div className="sa-generation-message">
             {!generation.isError &&
               generation.data?.status !== "FAILED" &&
               generation.data?.status !== "DRAFT_READY" && (
-                <Image
-                  src="/seller-figma/loading.svg"
-                  width={40}
-                  height={8}
-                  alt=""
-                />
+                <ChatThinkingIndicator variant="dots" />
               )}
             <h2>
               {generation.data?.status === "DRAFT_READY"
@@ -148,10 +149,17 @@ function Studio({
               서버 재조회에 실패했습니다. 편집 내용은 유지됩니다.
             </p>
           )}
-          <ServerStudioEditor
-            key={content.data.contentId}
-            content={content.data}
-          />
+          {runtime.demo ? (
+            <DemoFrontendEditor
+              key={content.data.contentId}
+              content={content.data}
+            />
+          ) : (
+            <ServerStudioEditor
+              key={content.data.contentId}
+              content={content.data}
+            />
+          )}
         </>
       ) : content.isError ? (
         <main className="ss-form-wrap">
@@ -163,7 +171,6 @@ function Studio({
           <button onClick={() => void content.refetch()}>문서 다시 조회</button>
         </main>
       ) : null}
-      {showInput && <Footer />}
     </div>
   );
 }
@@ -171,10 +178,25 @@ export function ServerSellerStudio(props: {
   initialProductId?: number;
   initialGenerationId?: number;
 }) {
+  const runtime = useSellerStudioRuntime();
   const ownerId = useAuthStore((state) => state.user?.id);
+  const guard = useRef<(() => boolean) | null>(null);
+  const guardedRuntime = useMemo(
+    () => ({
+      ...runtime,
+      setNavigationGuard: (next: (() => boolean) | null) => {
+        guard.current = next;
+      },
+      canNavigate: () => guard.current?.() ?? true,
+    }),
+    [runtime],
+  );
+  if (runtime.demo) return <Studio key={runtime.scope} {...props} />;
   return (
     <SellerAccess>
-      <Studio key={ownerId} {...props} />
+      <SellerStudioRuntimeContext value={guardedRuntime}>
+        <Studio key={ownerId} {...props} />
+      </SellerStudioRuntimeContext>
     </SellerAccess>
   );
 }

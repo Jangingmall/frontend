@@ -12,18 +12,24 @@ import { ProductSpecifications } from "./ProductSpecifications";
 
 interface ProductInformationProps {
   product: ProductDetail;
+  content?: ReactNode;
 }
 
-export function ProductInformation({ product }: ProductInformationProps) {
+export function ProductInformation({
+  product,
+  content,
+}: ProductInformationProps) {
   return (
     <div className="space-y-6">
       <ProductSectionNav />
       <div id="product-information" className="scroll-mt-40">
         {product.artisan && <ArtisanSummary artisan={product.artisan} />}
-        <ProductDetailContent
-          content={product.content}
-          description={product.description}
-        />
+        {content ?? (
+          <ProductDetailContent
+            content={product.content}
+            description={product.description}
+          />
+        )}
         <ProductSpecifications rows={product.specifications} />
       </div>
       <ProductInformationAccordion
@@ -43,3 +49,4 @@ export function ProductInformation({ product }: ProductInformationProps) {
     </div>
   );
 }
+import type { ReactNode } from "react";

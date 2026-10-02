@@ -1,0 +1,152 @@
+/* Figma 77:2500, 77:2335, 77:2556, 77:2694의 공통 입력·생성 화면. */
+.sa-figma-input.ss-form-wrap {
+  max-width: 888px;
+  padding-top: 64px;
+  padding-bottom: 80px;
+}
+.sa-figma-input .ss-intro {
+  color: var(--ss-muted);
+}
+.sa-figma-input .ss-input-form {
+  margin-top: 48px;
+}
+.sa-figma-form .ss-upload {
+  height: auto;
+  min-height: 156px;
+}
+.sa-figma-form .ss-upload > .ss-upload-button {
+  min-height: 154px;
+}
+.sa-figma-form .ss-upload-button {
+  color: var(--ss-muted);
+  font-size: 10px;
+  line-height: 1.4;
+  gap: 8px;
+}
+.sa-figma-form .ss-thumbnails {
+  height: auto;
+  min-height: 154px;
+  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px;
+  overflow: visible;
+}
+.sa-figma-form .ss-thumbnails > div,
+.sa-figma-form .ss-thumbnails > .ss-upload-button {
+  width: 114px;
+  height: 114px;
+  flex: 0 0 114px;
+}
+.sa-figma-form .ss-thumbnails > .ss-upload-button {
+  border: 1px dashed var(--border-jade-fill, #8e9a9c);
+  border-radius: 4px;
+}
+.sa-figma-form .ss-thumbnails .sa-input-photo {
+  width: 114px;
+  height: 114px;
+  object-fit: cover;
+}
+.sa-figma-form .ss-thumbnails > div button {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  color: var(--ss-ink);
+  background: transparent;
+}
+.sa-figma-form .ss-thumbnails > div button img {
+  width: 16px;
+  height: 16px;
+}
+.sa-figma-form .sa-upload-icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+}
+.sa-figma-form .sa-upload-icon img {
+  width: 16px;
+  height: 16px;
+}
+.sa-figma-form .ss-field {
+  margin-top: 32px;
+}
+.sa-figma-form .ss-field textarea {
+  height: 62px;
+  padding: 12px;
+  resize: none;
+}
+.sa-figma-form .ss-field input,
+.sa-figma-form .ss-field textarea {
+  border: 1px solid var(--border-neutral-subtle, #ecedee);
+  border-radius: 0;
+  outline: none;
+  box-shadow: none;
+}
+.sa-figma-form .ss-field input:focus,
+.sa-figma-form .ss-field textarea:focus {
+  border-color: var(--border-neutral-subtle, #ecedee);
+}
+.sa-figma-form .ss-upload.is-invalid,
+.sa-figma-form .ss-field [aria-invalid="true"],
+.sa-figma-form .ss-field [aria-invalid="true"]:focus {
+  border-color: var(--red-border, #e84610);
+}
+.sa-figma-form .ss-form-actions {
+  margin-top: 40px;
+}
+.sa-figma-form .ss-form-actions .ss-button {
+  min-height: 56px;
+}
+.sa-input-toast {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  z-index: 60;
+  width: min(520px, calc(100vw - 40px));
+  min-height: 46px;
+  height: auto;
+  padding: 8px 8px 8px 24px;
+  background: var(--toast-toast, #000000bf);
+  transform: translateX(-50%);
+}
+.sa-input-toast > span {
+  padding: 0;
+}
+.sa-generating.ss-form-wrap {
+  padding-bottom: 48px;
+}
+.sa-generating .sa-generation-message {
+  min-height: 0;
+  margin-top: 279px;
+  gap: 0;
+}
+.sa-generation-message > [aria-label="생각 하는 중"] {
+  margin-bottom: 35px;
+}
+.sa-generating .sa-generation-message h2 {
+  line-height: 1.2;
+}
+.sa-generation-message > p {
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.sa-generating .sa-generation-hint {
+  margin-top: 290px;
+  line-height: 1.4;
+}
+@media (max-width: 700px) {
+  .sa-figma-input.ss-form-wrap {
+    padding-top: 32px;
+  }
+  .sa-generating .sa-generation-message {
+    margin-top: 140px;
+  }
+  .sa-generating .sa-generation-hint {
+    margin-top: 180px;
+  }
+}

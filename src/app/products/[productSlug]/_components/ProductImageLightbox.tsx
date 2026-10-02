@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 
 import { Dialog } from "@/components/ui/dialog";
 import { ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/icons";
@@ -14,6 +14,7 @@ interface ProductImageLightboxProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialIndex?: number;
+  container?: RefObject<HTMLElement | null>;
 }
 
 export function ProductImageLightbox({
@@ -21,23 +22,26 @@ export function ProductImageLightbox({
   open,
   onOpenChange,
   initialIndex = 0,
+  container,
 }: ProductImageLightboxProps) {
   return (
     <Dialog
+      container={container}
       open={open}
       onOpenChange={onOpenChange}
       title="상품 이미지 확대"
       hideTitle
       onClick={(event) => {
         // 전체 화면 Popup의 투명한 영역도 배경으로 취급한다.
+        const target = event.target as HTMLElement;
         if (
-          event.target instanceof Element &&
-          !event.target.closest("button, [data-lightbox-image]")
+          target.nodeType === 1 &&
+          !target.closest("button, [data-lightbox-image]")
         ) {
           onOpenChange(false);
         }
       }}
-      className="h-full max-w-none bg-transparent p-0 pt-7.5 text-font-white shadow-none [&_[data-slot=dialog-close]]:fixed [&_[data-slot=dialog-close]]:top-13.5 [&_[data-slot=dialog-close]]:right-13.5 [&_[data-slot=dialog-close]]:size-10 [&_[data-slot=dialog-close]>svg]:size-10"
+      className="h-full max-w-none bg-transparent p-0 pt-7.5 text-font-white shadow-none [&_[data-slot=dialog-close]]:fixed [&_[data-slot=dialog-close]]:top-13.5 [&_[data-slot=dialog-close]]:right-13.5 [&_[data-slot=dialog-close]]:z-20 [&_[data-slot=dialog-close]]:size-10 [&_[data-slot=dialog-close]>svg]:size-10"
     >
       {open && <LightboxImages images={images} initialIndex={initialIndex} />}
     </Dialog>
@@ -50,6 +54,7 @@ interface LightboxImagesProps {
 }
 
 function LightboxImages({ images, initialIndex }: LightboxImagesProps) {
+  const root = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(initialIndex);
   const activeIndex = Math.min(
     Math.max(selectedIndex, 0),
@@ -58,6 +63,7 @@ function LightboxImages({ images, initialIndex }: LightboxImagesProps) {
   const selectedImage = images[activeIndex];
 
   useEffect(() => {
+    const view = root.current?.ownerDocument.defaultView ?? window;
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
         event.preventDefault();
@@ -70,15 +76,15 @@ function LightboxImages({ images, initialIndex }: LightboxImagesProps) {
       }
     }
     // Base UI Popup은 방향키 버블링을 막으므로 확대 화면에서만 캡처 단계에 처리한다.
-    window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
+    view.addEventListener("keydown", handleKeyDown, true);
+    return () => view.removeEventListener("keydown", handleKeyDown, true);
   }, [activeIndex, images.length]);
 
   if (!selectedImage)
     return <p className="p-10 text-center text-body-m">이미지 준비 중</p>;
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div ref={root} className="flex flex-col items-center gap-4">
       <div className="flex w-full max-w-223 items-center justify-center gap-2 md:gap-8">
         <button
           type="button"

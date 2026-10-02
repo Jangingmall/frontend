@@ -83,95 +83,117 @@ const id = (value: number) => {
   return value;
 };
 const base = (productId: number) => `/api/content/products/${id(productId)}`;
-export async function listSellerProducts(page = 0) {
-  return productPageSchema.parse(
-    await clientFetch("/api/products/me?page=" + page + "&size=20"),
-  );
-}
-export async function createSellerProduct(input: {
-  title: string;
-  price: number;
-  stock: number;
-}) {
-  return productSchema.parse(
-    await clientFetch("/api/products", { method: "POST", body: input }),
-  );
-}
-export async function startGeneration(
-  productId: number,
-  input: GenerationInput,
+export function createSellerStudioApi(
+  fetcher: typeof clientFetch = clientFetch,
 ) {
-  return generationSchema.parse(
-    await clientFetch(base(productId) + "/generations", {
-      method: "POST",
-      body: input,
-    }),
-  );
-}
-export async function getGeneration(
-  productId: number,
-  generationId: number,
-  signal?: AbortSignal,
-) {
-  return generationSchema.parse(
-    await clientFetch(base(productId) + "/generations/" + id(generationId), {
-      signal,
-    }),
-  );
-}
-export async function getContent(productId: number, signal?: AbortSignal) {
-  return contentSchema.parse(
-    await clientFetch(base(productId) + "/contents", { signal }),
-  );
-}
-export async function saveContent(
-  productId: number,
-  contentId: number,
-  patches: NodePatch[],
-) {
-  const response = await clientFetch(
-    base(productId) + "/contents/" + id(contentId),
-    { method: "PATCH", body: { patches } },
-  );
-  return z
-    .object({
-      contentId: z.number(),
-      productId: z.number(),
-      status: contentStatusSchema,
-      version: z.number(),
-    })
-    .parse(response);
-}
-export async function changeContentStatus(
-  productId: number,
-  contentId: number,
-  action: "submit" | "approve" | "reject" | "publish",
-  approval?: {
-    factCheckConfirmed: boolean;
-    photoMatchConfirmed: boolean;
-    displayApprovalBadge: boolean;
-  },
-) {
-  const path =
-    action === "publish"
-      ? base(productId) + "/publish"
-      : base(productId) + "/contents/" + id(contentId) + "/" + action;
-  return z.object({ contentId: z.number(), status: contentStatusSchema }).parse(
-    await clientFetch(path, {
-      method: "POST",
-      ...(approval ? { body: approval } : {}),
-    }),
-  );
-}
+  async function listSellerProducts(page = 0) {
+    return productPageSchema.parse(
+      await fetcher("/api/products/me?page=" + page + "&size=20"),
+    );
+  }
+  async function createSellerProduct(input: {
+    title: string;
+    price: number;
+    stock: number;
+  }) {
+    return productSchema.parse(
+      await fetcher("/api/products", { method: "POST", body: input }),
+    );
+  }
+  async function startGeneration(productId: number, input: GenerationInput) {
+    return generationSchema.parse(
+      await fetcher(base(productId) + "/generations", {
+        method: "POST",
+        body: input,
+      }),
+    );
+  }
+  async function getGeneration(
+    productId: number,
+    generationId: number,
+    signal?: AbortSignal,
+  ) {
+    return generationSchema.parse(
+      await fetcher(base(productId) + "/generations/" + id(generationId), {
+        signal,
+      }),
+    );
+  }
+  async function getContent(productId: number, signal?: AbortSignal) {
+    return contentSchema.parse(
+      await fetcher(base(productId) + "/contents", { signal }),
+    );
+  }
+  async function saveContent(
+    productId: number,
+    contentId: number,
+    patches: NodePatch[],
+  ) {
+    const response = await fetcher(
+      base(productId) + "/contents/" + id(contentId),
+      { method: "PATCH", body: { patches } },
+    );
+    return z
+      .object({
+        contentId: z.number(),
+        productId: z.number(),
+        status: contentStatusSchema,
+        version: z.number(),
+      })
+      .parse(response);
+  }
+  async function changeContentStatus(
+    productId: number,
+    contentId: number,
+    action: "submit" | "approve" | "reject" | "publish",
+    approval?: {
+      factCheckConfirmed: boolean;
+      photoMatchConfirmed: boolean;
+      displayApprovalBadge: boolean;
+    },
+  ) {
+    const path =
+      action === "publish"
+        ? base(productId) + "/publish"
+        : base(productId) + "/contents/" + id(contentId) + "/" + action;
+    return z
+      .object({ contentId: z.number(), status: contentStatusSchema })
+      .parse(
+        await fetcher(path, {
+          method: "POST",
+          ...(approval ? { body: approval } : {}),
+        }),
+      );
+  }
 
-export async function getSellerProduct(
-  productId: number,
-  signal?: AbortSignal,
-) {
-  const result = productSchema.parse(
-    await clientFetch(`/api/products/${id(productId)}`, { signal }),
-  );
-  if (result.productId !== productId)
-    throw new Error("상품 정보가 일치하지 않습니다.");
-  return result;
+  async function getSellerProduct(productId: number, signal?: AbortSignal) {
+    const result = productSchema.parse(
+      await fetcher(`/api/products/${id(productId)}`, { signal }),
+    );
+    if (result.productId !== productId)
+      throw new Error("상품 정보가 일치하지 않습니다.");
+    return result;
+  }
+
+  return {
+    listSellerProducts,
+    createSellerProduct,
+    startGeneration,
+    getGeneration,
+    getContent,
+    saveContent,
+    changeContentStatus,
+    getSellerProduct,
+  };
 }
+export type SellerStudioApi = ReturnType<typeof createSellerStudioApi>;
+export const {
+  listSellerProducts,
+  createSellerProduct,
+  startGeneration,
+  getGeneration,
+  getContent,
+  saveContent,
+  changeContentStatus,
+  getSellerProduct,
+} = createSellerStudioApi();

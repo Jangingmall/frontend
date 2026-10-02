@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { Logo } from "@/components/ui/logo";
 
@@ -8,6 +8,9 @@ import { ContractPreview } from "./ContractPreview";
 import type { StudioAsset, StudioDraft } from "./studio-contract";
 import { buildPreview } from "./studio-contract";
 interface Props {
+  sale?: { price: number; stock: number };
+  preview?: ReactNode;
+  demoStatus?: boolean;
   draft: StudioDraft;
   assets: StudioAsset[];
   onBack: () => void;
@@ -18,6 +21,9 @@ interface Props {
 export function StudioReview({
   draft,
   assets,
+  preview,
+  sale,
+  demoStatus = true,
   onBack,
   onSave,
   onComplete,
@@ -103,12 +109,14 @@ export function StudioReview({
           <div className="ss-product-copy">
             <h1>{draft.product_name}</h1>
             <p>상품 상세페이지 미리보기</p>
-            <strong>판매 정보 등록 전</strong>
+            <strong>
+              {sale ? `${sale.price.toLocaleString()}원` : "판매 정보 등록 전"}
+            </strong>
             <p>{draft.summary}</p>
             <hr />
             <dl>
               <dt>판매 가격</dt>
-              <dd>미등록</dd>
+              <dd>{sale ? `${sale.price.toLocaleString()}원` : "미등록"}</dd>
               <dt>배송 정보</dt>
               <dd>미등록</dd>
               <dt>옵션</dt>
@@ -122,14 +130,18 @@ export function StudioReview({
         </div>
         <div className="ss-product-detail">
           <h2>상품 상세정보</h2>
-          <ContractPreview document={buildPreview(draft)} assets={assets} />
+          {preview ?? (
+            <ContractPreview document={buildPreview(draft)} assets={assets} />
+          )}
         </div>
       </div>
-      <p className="ss-review-status" role="status">
-        {isCompleted
-          ? "제작 완료본을 이 브라우저에 저장했습니다. 실제 상품은 게시되지 않았습니다."
-          : "시연 미리보기 · 상품을 게시하지 않으며 이 브라우저에만 저장됩니다."}
-      </p>
+      {(demoStatus || isCompleted) && (
+        <p className="ss-review-status" role="status">
+          {isCompleted
+            ? "제작 완료본을 이 브라우저에 저장했습니다. 실제 상품은 게시되지 않았습니다."
+            : "시연 미리보기 · 상품을 게시하지 않으며 이 브라우저에만 저장됩니다."}
+        </p>
+      )}
     </>
   );
 }

@@ -1,0 +1,1302 @@
+{
+  "schemaVersion": "2.0",
+  "canvasWidth": 774,
+  "root": [
+    {
+      "id": "section-01-hero-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#fff",
+          "color": "#121c2a",
+          "padding": "48px 54px",
+          "borderWidth": 0,
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "paddingTop": 52,
+          "paddingBottom": 44
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-9",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-2",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#414b58",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-1",
+                  "type": "text",
+                  "value": "OBJECT STORY"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-4",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 32,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#121c2a",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-3",
+                  "type": "text",
+                  "value": "청자 분청 찻잔"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-8",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58",
+                  "maxWidth": 520
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-5",
+                  "type": "text",
+                  "value": "물레로 빚고 귀얄로 백토를 발라 붓결을 남긴 뒤 청자빛 유약을 입힌 찻잔입니다."
+                },
+                {
+                  "id": "demo-node-6",
+                  "type": "element",
+                  "tag": "br",
+                  "props": {
+                    "style": {}
+                  },
+                  "children": []
+                },
+                {
+                  "id": "demo-text-7",
+                  "type": "text",
+                  "value": "장작 가마에서 구워 잔마다 빛깔이 조금씩 달라 같은 잔이 없습니다."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-11",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "margin": "30px 10px 0"
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-10",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 414,
+                  "objectFit": "cover"
+                },
+                "imageId": "hero",
+                "alt": "hero 작품 사진"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-02-statement-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#fff",
+          "color": "#121c2a",
+          "padding": "48px 54px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "minHeight": 251,
+          "paddingTop": 40,
+          "paddingBottom": 40
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-21",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "display": "grid",
+              "gridTemplateColumns": "54px minmax(0,1fr) 208px",
+              "gap": 36,
+              "alignItems": "center"
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-13",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 18,
+                  "fontWeight": 700,
+                  "lineHeight": 1.75,
+                  "color": "#414b58"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-12",
+                  "type": "text",
+                  "value": "02"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-18",
+              "type": "element",
+              "tag": "div",
+              "props": {
+                "style": {}
+              },
+              "children": [
+                {
+                  "id": "demo-node-15",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 10,
+                      "fontWeight": 700,
+                      "lineHeight": 1.5,
+                      "color": "#414b58",
+                      "letterSpacing": 1.2,
+                      "marginBottom": 12
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-14",
+                      "type": "text",
+                      "value": "MAKING STORY"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-17",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 28,
+                      "fontWeight": 700,
+                      "lineHeight": 1.3,
+                      "color": "#121c2a",
+                      "letterSpacing": -1,
+                      "marginBottom": 0
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-16",
+                      "type": "text",
+                      "value": "장작 가마의 흔적"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "demo-node-20",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-19",
+                  "type": "text",
+                  "value": "물레로 흙을 빚어 형태를 잡고, 귀얄로 백토를 발라 붓결을 남긴 뒤 청자빛 유약을 입혔습니다. 장작 가마에서 구워 잔마다 빛깔이 조금씩 달라 같은 잔이 없습니다."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-03-gallery-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#eef1f0",
+          "color": "#121c2a",
+          "padding": "48px 54px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "paddingBottom": 0
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-28",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-23",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#414b58",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-22",
+                  "type": "text",
+                  "value": "GALLERY"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-25",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 20,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#121c2a",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-24",
+                  "type": "text",
+                  "value": "잔과 받침의 조화"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-27",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-26",
+                  "type": "text",
+                  "value": "청자빛 잔과 꽃잎 모양의 받침이 어우러진 모습입니다."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-32",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "display": "grid",
+              "gridTemplateColumns": "repeat(3,minmax(0,1fr))",
+              "gap": 8,
+              "marginTop": 28
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-29",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 208,
+                  "objectFit": "cover"
+                },
+                "imageId": "gallery-1",
+                "alt": "gallery-1 작품 사진"
+              },
+              "children": []
+            },
+            {
+              "id": "demo-node-30",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 208,
+                  "objectFit": "cover"
+                },
+                "imageId": "gallery-2",
+                "alt": "gallery-2 작품 사진"
+              },
+              "children": []
+            },
+            {
+              "id": "demo-node-31",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 208,
+                  "objectFit": "cover"
+                },
+                "imageId": "gallery-3",
+                "alt": "gallery-3 작품 사진"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "demo-node-35",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "display": "grid",
+              "gridTemplateColumns": "repeat(2,minmax(0,1fr))",
+              "gap": 8,
+              "marginTop": 8
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-33",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 272,
+                  "objectFit": "contain",
+                  "backgroundColor": "#fff"
+                },
+                "imageId": "gallery-4",
+                "alt": "gallery-4 작품 사진"
+              },
+              "children": []
+            },
+            {
+              "id": "demo-node-34",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 272,
+                  "objectFit": "contain",
+                  "backgroundColor": "#fff"
+                },
+                "imageId": "gallery-5",
+                "alt": "gallery-5 작품 사진"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-04-detail_split-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#eef1f0",
+          "color": "#121c2a",
+          "padding": 0,
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "display": "grid",
+          "gridTemplateColumns": "repeat(2,minmax(0,1fr))"
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-36",
+          "type": "element",
+          "tag": "img",
+          "props": {
+            "style": {
+              "display": "block",
+              "width": "100%",
+              "height": 388,
+              "objectFit": "cover"
+            },
+            "imageId": "detail",
+            "alt": "detail 작품 사진"
+          },
+          "children": []
+        },
+        {
+          "id": "demo-node-44",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "padding": "36px",
+              "display": "flex",
+              "flexDirection": "column",
+              "justifyContent": "center"
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-43",
+              "type": "element",
+              "tag": "div",
+              "props": {
+                "style": {}
+              },
+              "children": [
+                {
+                  "id": "demo-node-38",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 10,
+                      "fontWeight": 700,
+                      "lineHeight": 1.5,
+                      "color": "#414b58",
+                      "letterSpacing": 1.2,
+                      "marginBottom": 12
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-37",
+                      "type": "text",
+                      "value": "DETAIL"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-40",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 26,
+                      "fontWeight": 700,
+                      "lineHeight": 1.3,
+                      "color": "#121c2a",
+                      "letterSpacing": -1,
+                      "marginBottom": 20
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-39",
+                      "type": "text",
+                      "value": "귀얄 붓결과 유약"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-42",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#414b58"
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-41",
+                      "type": "text",
+                      "value": "잔 안쪽과 바깥쪽에서 귀얄로 백토를 발랐을 때 남은 붓결과 청자빛 유약의 광택이 확인됩니다. 테두리에는 붉은색 선이 들어가 잔의 윤곽을 정리합니다."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-05-usage_scene-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#c5dbde",
+          "color": "#121c2a",
+          "padding": 0,
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "display": "grid",
+          "gridTemplateColumns": "minmax(0,316fr) minmax(0,350fr)",
+          "maxWidth": 666,
+          "margin": "0 auto"
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-53",
+          "type": "element",
+          "tag": "img",
+          "props": {
+            "style": {
+              "display": "block",
+              "width": "100%",
+              "height": 310,
+              "objectFit": "cover"
+            },
+            "imageId": "lifestyle",
+            "alt": "lifestyle 작품 사진"
+          },
+          "children": []
+        },
+        {
+          "id": "demo-node-52",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "padding": "56px 36px 56px 70px"
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-51",
+              "type": "element",
+              "tag": "div",
+              "props": {
+                "style": {}
+              },
+              "children": [
+                {
+                  "id": "demo-node-46",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 10,
+                      "fontWeight": 700,
+                      "lineHeight": 1.5,
+                      "color": "#414b58",
+                      "letterSpacing": 1.2,
+                      "marginBottom": 12
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-45",
+                      "type": "text",
+                      "value": "USAGE"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-48",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 30,
+                      "fontWeight": 700,
+                      "lineHeight": 1.3,
+                      "color": "#121c2a",
+                      "letterSpacing": -1,
+                      "marginBottom": 20
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-47",
+                      "type": "text",
+                      "value": "차 한 잔의 자리"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-50",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#414b58"
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-49",
+                      "type": "text",
+                      "value": "꽃잎 모양의 받침 위에 올려 차를 마시는 자리에 어울립니다. 잔마다 색이 조금씩 달라지는 장작 가마의 특징이 차 자리의 변화를 더합니다."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-06-info_table-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#f9fafb",
+          "color": "#121c2a",
+          "padding": "48px 54px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "paddingBottom": 0
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-75",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-70",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#414b58",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-69",
+                  "type": "text",
+                  "value": "INFO"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-72",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 20,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#121c2a",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-71",
+                  "type": "text",
+                  "value": "제품 정보"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-74",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-73",
+                  "type": "text",
+                  "value": "제품명과 제작 과정, 관리법에 대한 기본 정보입니다."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-77",
+          "type": "element",
+          "tag": "table",
+          "props": {
+            "style": {
+              "width": "100%",
+              "marginTop": 28,
+              "color": "#414b58"
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-76",
+              "type": "element",
+              "tag": "tbody",
+              "props": {
+                "style": {}
+              },
+              "children": [
+                {
+                  "id": "demo-node-58",
+                  "type": "element",
+                  "tag": "tr",
+                  "props": {
+                    "style": {}
+                  },
+                  "children": [
+                    {
+                      "id": "demo-node-55",
+                      "type": "element",
+                      "tag": "th",
+                      "props": {
+                        "style": {
+                          "textAlign": "left",
+                          "width": "26%",
+                          "padding": "16px 12px",
+                          "fontSize": 14,
+                          "fontWeight": 700,
+                          "borderWidth": "1px 0 0",
+                          "borderStyle": "solid",
+                          "borderColor": "#dde0e3"
+                        }
+                      },
+                      "children": [
+                        {
+                          "id": "demo-text-54",
+                          "type": "text",
+                          "value": "제품명"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "demo-node-57",
+                      "type": "element",
+                      "tag": "td",
+                      "props": {
+                        "style": {
+                          "padding": "16px 12px",
+                          "fontSize": 14,
+                          "lineHeight": 1.8,
+                          "borderWidth": "1px 0 0",
+                          "borderStyle": "solid",
+                          "borderColor": "#dde0e3"
+                        }
+                      },
+                      "children": [
+                        {
+                          "id": "demo-text-56",
+                          "type": "text",
+                          "value": "청자 분청 찻잔"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-63",
+                  "type": "element",
+                  "tag": "tr",
+                  "props": {
+                    "style": {}
+                  },
+                  "children": [
+                    {
+                      "id": "demo-node-60",
+                      "type": "element",
+                      "tag": "th",
+                      "props": {
+                        "style": {
+                          "textAlign": "left",
+                          "width": "26%",
+                          "padding": "16px 12px",
+                          "fontSize": 14,
+                          "fontWeight": 700,
+                          "borderWidth": "1px 0 0",
+                          "borderStyle": "solid",
+                          "borderColor": "#dde0e3"
+                        }
+                      },
+                      "children": [
+                        {
+                          "id": "demo-text-59",
+                          "type": "text",
+                          "value": "제작 과정"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "demo-node-62",
+                      "type": "element",
+                      "tag": "td",
+                      "props": {
+                        "style": {
+                          "padding": "16px 12px",
+                          "fontSize": 14,
+                          "lineHeight": 1.8,
+                          "borderWidth": "1px 0 0",
+                          "borderStyle": "solid",
+                          "borderColor": "#dde0e3"
+                        }
+                      },
+                      "children": [
+                        {
+                          "id": "demo-text-61",
+                          "type": "text",
+                          "value": "물레로 흙을 빚어 형태를 잡고, 귀얄로 백토를 발라 붓결을 남긴 뒤 청자빛 유약을 입혔습니다. 장작 가마에서 구워 잔마다 빛깔이 조금씩 달라 같은 잔이 없습니다."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-68",
+                  "type": "element",
+                  "tag": "tr",
+                  "props": {
+                    "style": {}
+                  },
+                  "children": [
+                    {
+                      "id": "demo-node-65",
+                      "type": "element",
+                      "tag": "th",
+                      "props": {
+                        "style": {
+                          "textAlign": "left",
+                          "width": "26%",
+                          "padding": "16px 12px",
+                          "fontSize": 14,
+                          "fontWeight": 700,
+                          "borderWidth": "1px 0 0",
+                          "borderStyle": "solid",
+                          "borderColor": "#dde0e3"
+                        }
+                      },
+                      "children": [
+                        {
+                          "id": "demo-text-64",
+                          "type": "text",
+                          "value": "관리법"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "demo-node-67",
+                      "type": "element",
+                      "tag": "td",
+                      "props": {
+                        "style": {
+                          "padding": "16px 12px",
+                          "fontSize": 14,
+                          "lineHeight": 1.8,
+                          "borderWidth": "1px 0 0",
+                          "borderStyle": "solid",
+                          "borderColor": "#dde0e3"
+                        }
+                      },
+                      "children": [
+                        {
+                          "id": "demo-text-66",
+                          "type": "text",
+                          "value": "첫 사용 전 미지근한 물에 한 번 헹궈 주세요. 전자레인지·식기세척기는 피하고, 부드러운 스펀지로 손설거지하면 오래 쓸 수 있습니다. 급격한 온도 변화는 피해 주세요."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-07-notice-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#121c2a",
+          "color": "#fff",
+          "padding": "48px 54px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "minHeight": 294,
+          "paddingTop": 44,
+          "paddingBottom": 44
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-84",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-79",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#8f9ca0",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-78",
+                  "type": "text",
+                  "value": "CARE"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-81",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 18,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#fff",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-80",
+                  "type": "text",
+                  "value": "관리 안내"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-83",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 15,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#d5d9de"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-82",
+                  "type": "text",
+                  "value": "첫 사용 전 미지근한 물에 한 번 헹궈 주세요. 전자레인지·식기세척기는 피하고, 부드러운 스펀지로 손설거지하면 오래 쓸 수 있습니다. 급격한 온도 변화는 피해 주세요."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-91",
+          "type": "element",
+          "tag": "ul",
+          "props": {
+            "style": {
+              "margin": "20px 0 0",
+              "padding": 0
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-86",
+              "type": "element",
+              "tag": "li",
+              "props": {
+                "style": {
+                  "fontSize": 15,
+                  "lineHeight": 1.75,
+                  "color": "#d5d9de"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-85",
+                  "type": "text",
+                  "value": "•  잔 표면 전체에 연한 청록색 유약이 입혀져 부드러운 광택을 냅니다."
+                }
+              ]
+            },
+            {
+              "id": "demo-node-88",
+              "type": "element",
+              "tag": "li",
+              "props": {
+                "style": {
+                  "fontSize": 15,
+                  "lineHeight": 1.75,
+                  "color": "#d5d9de"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-87",
+                  "type": "text",
+                  "value": "•  잔 안쪽과 바깥쪽에서 귀얄로 백토를 발랐을 때 남은 붓결이 확인됩니다."
+                }
+              ]
+            },
+            {
+              "id": "demo-node-90",
+              "type": "element",
+              "tag": "li",
+              "props": {
+                "style": {
+                  "fontSize": 15,
+                  "lineHeight": 1.75,
+                  "color": "#d5d9de"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-89",
+                  "type": "text",
+                  "value": "•  받침 가장자리에 꽃잎 모양의 주름이 반복되어 잔을 받칩니다."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-08-closing-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#eef1f0",
+          "color": "#121c2a",
+          "padding": "68px 150px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "textAlign": "center",
+          "minHeight": 280
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-100",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-93",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#414b58",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-92",
+                  "type": "text",
+                  "value": "CLOSING"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-95",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 30,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#121c2a",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-94",
+                  "type": "text",
+                  "value": "같은 잔이 없습니다"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-99",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-96",
+                  "type": "text",
+                  "value": "장작 가마에서 구워 잔마다 빛깔이 조금씩 달라지는 청자 분청 찻잔입니다."
+                },
+                {
+                  "id": "demo-node-97",
+                  "type": "element",
+                  "tag": "br",
+                  "props": {
+                    "style": {}
+                  },
+                  "children": []
+                },
+                {
+                  "id": "demo-text-98",
+                  "type": "text",
+                  "value": "꽃잎 모양의 받침과 함께 차 자리에 두면 좋습니다."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

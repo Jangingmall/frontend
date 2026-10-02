@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { Logo } from "@/components/ui/logo";
-import { publicEnv } from "@/lib/env";
 import { useSellerProducts } from "@/queries/seller-studio/queries";
 import { useAuthStore } from "@/stores/auth";
 
@@ -26,11 +25,6 @@ function Products() {
         </Link>
         <span>판매 관리</span>
       </header>
-      {publicEnv.apiMocking && (
-        <p className="sa-note">
-          MSW 시연 · 실제 AI 생성이나 서버 DB 저장은 실행하지 않습니다.
-        </p>
-      )}
       <main className="ss-form-wrap sa-main">
         <div className="ss-heading">
           <h1>내 상품</h1>

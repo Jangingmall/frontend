@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { ContractPreview } from "./ContractPreview";
 import type {
@@ -12,6 +12,8 @@ import { buildPreview, editSection } from "./studio-contract";
 import { readImages } from "./studio-state";
 import { StudioHelp } from "./StudioHelp";
 interface Props {
+  renderPreview?: (section: StudioSection) => ReactNode;
+  assetLimit?: number;
   draft: StudioDraft;
   assets: StudioAsset[];
   onEdit: (draft: StudioDraft) => void;
@@ -28,6 +30,8 @@ interface Props {
 export function StudioEditor({
   draft,
   assets,
+  renderPreview,
+  assetLimit = 8,
   onEdit,
   onAssets,
   onSave,
@@ -40,10 +44,11 @@ export function StudioEditor({
   onUploadPending,
 }: Props) {
   const [helpStep, setHelpStep] = useState<number | null>(0);
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelectedValue] = useState<string | null>(null);
   const [panel, setPanel] = useState<"pages" | "layout" | "text" | "image">(
     "pages",
   );
+  const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState("");
   const [isUploading, setUploading] = useState(false);
   const [isExpanded, setExpanded] = useState(false);
@@ -59,8 +64,27 @@ export function StudioEditor({
   const replaceId = useRef<string | null>(null);
   const section = draft.page_plan.find((item) => item.section_id === selected);
   const document = buildPreview(draft);
+  function setSelected(id: string | null) {
+    setImageIndex(0);
+    setSelectedValue(id);
+  }
   function patch(value: Partial<StudioSection>) {
     if (section) onEdit(editSection(draft, section.section_id, value));
+  }
+  function activePhoto(item: StudioSection) {
+    return item.sourceSectionId && imageIndex > 0
+      ? (item.photo_ids[imageIndex] ?? "")
+      : item.photo_id;
+  }
+  function patchPhoto(imageId: string) {
+    if (!section) return;
+    if (section.sourceSectionId && imageIndex > 0)
+      patch({
+        photo_ids: section.photo_ids.map((id, index) =>
+          index === imageIndex ? imageId : id,
+        ),
+      });
+    else patch({ photo_id: imageId });
   }
   function select(id: string) {
     setSelected(id);
@@ -109,6 +133,7 @@ export function StudioEditor({
       const next = await readImages(
         Array.from(files),
         replacing ? assets.length - 1 : assets.length,
+        assetLimit,
       );
       if (!isMounted.current) return;
       onAssets(
@@ -315,7 +340,7 @@ export function StudioEditor({
                       }
                       aria-label={`${variant} 배경`}
                       aria-pressed={item.variant === variant}
-                      onClick={() => patch({ variant })}
+                      onClick={() => patch({ variant, backgroundEdited: true })}
                     />
                   ))}
                   <button
@@ -395,10 +420,14 @@ export function StudioEditor({
                   setPanel("text");
                 }}
               />
-              <ContractPreview
-                document={{ ...document, root: [document.root[index]] }}
-                assets={assets}
-              />
+              {renderPreview ? (
+                renderPreview(item)
+              ) : (
+                <ContractPreview
+                  document={{ ...document, root: [document.root[index]] }}
+                  assets={assets}
+                />
+              )}
             </div>
             {selected === item.section_id &&
               (panel === "text" || panel === "image") && (
@@ -587,14 +616,32 @@ export function StudioEditor({
                   ) : (
                     <>
                       <h2>이미지 편집</h2>
+                      {item.sourceSectionId && item.photo_ids.length > 1 && (
+                        <label>
+                          편집할 사진
+                          <select
+                            aria-label="편집할 사진"
+                            value={imageIndex}
+                            onChange={(event) =>
+                              setImageIndex(Number(event.target.value))
+                            }
+                          >
+                            {item.photo_ids.map((_, index) => (
+                              <option key={index} value={index}>
+                                사진 {index + 1}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
                       <div className="ss-image-picker">
                         {assets.map((asset) => (
                           <button
                             type="button"
                             key={asset.imageId}
                             aria-label={`${asset.alt} 사용`}
-                            aria-pressed={item.photo_id === asset.imageId}
-                            onClick={() => patch({ photo_id: asset.imageId })}
+                            aria-pressed={activePhoto(item) === asset.imageId}
+                            onClick={() => patchPhoto(asset.imageId)}
                           >
                             <Image
                               src={asset.url}
@@ -607,7 +654,7 @@ export function StudioEditor({
                         ))}
                         <button
                           type="button"
-                          disabled={isUploading || assets.length >= 8}
+                          disabled={isUploading || assets.length >= assetLimit}
                           onClick={() => {
                             replaceId.current = null;
                             fileInput.current?.click();
@@ -616,20 +663,20 @@ export function StudioEditor({
                           ＋<small>사진 첨부하기</small>
                         </button>
                       </div>
-                      {item.photo_id && (
+                      {activePhoto(item) && (
                         <button
                           className="ss-button"
                           type="button"
                           disabled={isUploading}
                           onClick={() => {
-                            replaceId.current = item.photo_id;
+                            replaceId.current = activePhoto(item);
                             fileInput.current?.click();
                           }}
                         >
                           선택 사진 교체
                         </button>
                       )}
-                      {item.photo_id && (
+                      {activePhoto(item) && (
                         <p className="ss-image-help">
                           교체하면 이 사진을 사용한 모든 페이지에 반영됩니다.
                         </p>
@@ -649,8 +696,8 @@ export function StudioEditor({
                       <button
                         type="button"
                         className="ss-button"
-                        disabled={!item.photo_id}
-                        onClick={() => patch({ photo_id: "" })}
+                        disabled={!activePhoto(item)}
+                        onClick={() => patchPhoto("")}
                       >
                         이미지 삭제하기
                       </button>

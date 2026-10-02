@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import type { ProductImage } from "@/types/product-detail";
@@ -11,12 +11,15 @@ import { ProductImageLightbox } from "./ProductImageLightbox";
 interface ProductDetailGalleryProps {
   images: ProductImage[];
   productName: string;
+  preview?: boolean;
 }
 
 export function ProductDetailGallery({
   images,
   productName,
+  preview = false,
 }: ProductDetailGalleryProps) {
+  const lightboxContainer = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const galleryImages = images.slice(0, 6);
@@ -72,11 +75,18 @@ export function ProductDetailGallery({
         />
       </button>
       <ProductImageLightbox
+        container={preview ? lightboxContainer : undefined}
         images={galleryImages}
         open={isLightboxOpen}
         onOpenChange={setIsLightboxOpen}
         initialIndex={activeIndex}
       />
+      {preview && (
+        <div
+          ref={lightboxContainer}
+          className="pointer-events-none fixed inset-0 z-60 [&>*]:pointer-events-auto"
+        />
+      )}
     </section>
   );
 }

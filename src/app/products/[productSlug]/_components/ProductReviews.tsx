@@ -21,6 +21,7 @@ interface ProductReviewsProps {
   isMock: boolean;
   onNotify: ProductNotify;
   onRequireLogin: () => void;
+  preview?: boolean;
 }
 const SORT_ITEMS = [
   { value: "latest", label: "최신순" },
@@ -62,10 +63,13 @@ function ReviewContent({
   productId,
   isMock,
   filters,
+  preview = false,
 }: ProductReviewsProps & { filters: ReviewFilters }) {
   const pathname = usePathname();
-  const query = useProductReviews(productId, filters, isMock);
+  const query = useProductReviews(productId, filters, isMock, !preview);
+  const pending = !preview && query.isPending;
   function changeFilters(next: Partial<ReviewFilters>) {
+    if (preview) return;
     const updated = { ...filters, ...next };
     const search = new URLSearchParams(window.location.search);
     search.set("reviewPage", String(updated.page));
@@ -82,7 +86,9 @@ function ReviewContent({
     totalCount = 0,
     reviewCount,
     rating = null,
-  } = query.data ?? {};
+  } = preview
+    ? { items: [], totalCount: 0, reviewCount: 0, rating: null }
+    : (query.data ?? {});
   return (
     <>
       <h2 className="text-title-l leading-[1.3] font-bold text-font-dark">
@@ -92,7 +98,7 @@ function ReviewContent({
         <div className="flex items-center gap-2">
           <ReviewStars rating={rating} size="m" />
           <span className="text-title-l text-font-dark">
-            {query.isPending
+            {pending
               ? "—"
               : rating === null
                 ? isMock || filters.photoOnly
@@ -113,6 +119,7 @@ function ReviewContent({
           </Checkbox>
 
           <Select
+            disabled={preview}
             ariaLabel="후기 정렬"
             items={SORT_ITEMS}
             value={filters.sort}
@@ -135,9 +142,9 @@ function ReviewContent({
           사진 후기는 시연 데이터입니다.
         </p>
       )}
-      {query.isPending ? (
+      {pending ? (
         <ReviewLoading />
-      ) : query.isError ? (
+      ) : !preview && query.isError ? (
         <ErrorState
           title="후기를 불러오지 못했어요"
           onRetry={() => void query.refetch()}

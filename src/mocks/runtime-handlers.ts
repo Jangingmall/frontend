@@ -48,7 +48,7 @@ export function createRuntimeHandlers(mode: DataMode) {
           headers,
           body: ["GET", "HEAD"].includes(request.method)
             ? undefined
-            : await request.clone().text(),
+            : await request.clone().arrayBuffer(),
         }),
       );
       return response ?? mockError(501, "MOCK_NOT_IMPLEMENTED");

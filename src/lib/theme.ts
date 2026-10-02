@@ -7,6 +7,8 @@
  */
 
 export const THEME_STORAGE_KEY = "theme";
+// 발표용 두 시연 경로는 기기·계정 설정과 무관하게 라이트 테마를 사용한다.
+const LIGHT_DEMO_PATH = /^\/seller\/products\/new\/[12]\/?$/;
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
 /** 저장값(`dark`|`light`)이 있으면 그 값, 없거나 알 수 없으면 기기 테마. */
@@ -42,7 +44,10 @@ function writeStored(value: "dark" | "light" | null) {
 }
 
 function setDarkClass(dark: boolean) {
-  document.documentElement.classList.toggle("dark", dark);
+  document.documentElement.classList.toggle(
+    "dark",
+    dark && !LIGHT_DEMO_PATH.test(window.location.pathname),
+  );
 }
 
 /**
@@ -76,4 +81,4 @@ export function subscribeSystemTheme() {
  * `<head>` 인라인 스크립트 본문. 렌더 전에 동기 실행돼 첫 페인트 전에 `dark` 클래스를 붙인다.
  * `resolveDark` 와 같은 규칙이다(스크립트는 번들 밖이라 함수를 못 쓰고 문자열로 복제한다).
  */
-export const themeInitScript = `(function(){try{var s=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});var d=s==="dark"||(s!=="light"&&window.matchMedia(${JSON.stringify(DARK_QUERY)}).matches);document.documentElement.classList.toggle("dark",d)}catch(e){}})()`;
+export const themeInitScript = `(function(){try{if(${LIGHT_DEMO_PATH}.test(window.location.pathname)){document.documentElement.classList.remove("dark");return}var s=localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});var d=s==="dark"||(s!=="light"&&window.matchMedia(${JSON.stringify(DARK_QUERY)}).matches);document.documentElement.classList.toggle("dark",d)}catch(e){}})()`;

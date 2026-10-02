@@ -1,0 +1,10 @@
+.seller-demo .sa-document {
+  padding: 0;
+  word-break: keep-all;
+}
+.seller-demo .sa-document table {
+  border-collapse: collapse;
+}
+.seller-demo .sa-document ul {
+  list-style: none;
+}

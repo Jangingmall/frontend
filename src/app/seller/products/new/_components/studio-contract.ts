@@ -16,6 +16,8 @@ export const blockTypes = [
   "closing",
 ] as const;
 export const sectionSchema = z.strictObject({
+  sourceSectionId: z.string().optional(),
+  backgroundEdited: z.boolean().optional(),
   textStyle: z
     .object({
       align: z.enum(["left", "center", "right"]).optional(),

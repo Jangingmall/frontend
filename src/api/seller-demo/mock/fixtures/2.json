@@ -1,0 +1,1785 @@
+{
+  "schemaVersion": "2.0",
+  "canvasWidth": 774,
+  "root": [
+    {
+      "id": "section-01-hero-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#fff",
+          "color": "#121c2a",
+          "padding": "48px 54px",
+          "borderWidth": 0,
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "paddingTop": 52,
+          "paddingBottom": 44
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-11",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-2",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#414b58",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-1",
+                  "type": "text",
+                  "value": "전주 합죽선"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-4",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 32,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#121c2a",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-3",
+                  "type": "text",
+                  "value": "매화 한 획씩 직접 그린 부채"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-10",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58",
+                  "maxWidth": 490
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-5",
+                  "type": "text",
+                  "value": "담양 왕대를 3년 건조해 손으로 깎은 대나무 뼈대와 한지 선면 위에 매화를"
+                },
+                {
+                  "id": "demo-node-6",
+                  "type": "element",
+                  "tag": "br",
+                  "props": {
+                    "style": {}
+                  },
+                  "children": []
+                },
+                {
+                  "id": "demo-text-7",
+                  "type": "text",
+                  "value": "그렸습니다. 같은 부채가 하나도 없는, 한 획의 차이가 살아 있는 전주"
+                },
+                {
+                  "id": "demo-node-8",
+                  "type": "element",
+                  "tag": "br",
+                  "props": {
+                    "style": {}
+                  },
+                  "children": []
+                },
+                {
+                  "id": "demo-text-9",
+                  "type": "text",
+                  "value": "합죽선입니다."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-13",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "margin": "30px 30px 0"
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-12",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 406,
+                  "objectFit": "cover"
+                },
+                "imageId": "hero",
+                "alt": "hero 작품 사진"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-02-statement-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#eef1f0",
+          "color": "#121c2a",
+          "padding": "48px 54px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "minHeight": 196,
+          "paddingTop": 40,
+          "paddingBottom": 40
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-25",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "display": "grid",
+              "gridTemplateColumns": "54px minmax(0,1fr) 278px",
+              "gap": 36,
+              "alignItems": "center"
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-15",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 18,
+                  "fontWeight": 700,
+                  "lineHeight": 1.75,
+                  "color": "#8c9b9d"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-14",
+                  "type": "text",
+                  "value": "02"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-22",
+              "type": "element",
+              "tag": "div",
+              "props": {
+                "style": {}
+              },
+              "children": [
+                {
+                  "id": "demo-node-17",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 10,
+                      "fontWeight": 700,
+                      "lineHeight": 1.5,
+                      "color": "#414b58",
+                      "letterSpacing": 1.2,
+                      "marginBottom": 12
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-16",
+                      "type": "text",
+                      "value": "제작 이야기"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-21",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 28,
+                      "fontWeight": 700,
+                      "lineHeight": 1.3,
+                      "color": "#121c2a",
+                      "letterSpacing": -1,
+                      "marginBottom": 0
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-18",
+                      "type": "text",
+                      "value": "3년 건조한 대나무,"
+                    },
+                    {
+                      "id": "demo-node-19",
+                      "type": "element",
+                      "tag": "br",
+                      "props": {
+                        "style": {}
+                      },
+                      "children": []
+                    },
+                    {
+                      "id": "demo-text-20",
+                      "type": "text",
+                      "value": "손으로 깎은 선면"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "demo-node-24",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-23",
+                  "type": "text",
+                  "value": "담양 왕대를 3년 동안 건조한 뒤 손으로 겉대와 속대를 깎아 부채의 뼈대를 만듭니다. 그 위에 한지를 겹겹이 붙여 선면을 만들고, 매화를 한 획씩 직접 그려 완성합니다."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-03-detail_split-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#121c2a",
+          "color": "#fff",
+          "padding": 0,
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "display": "grid",
+          "gridTemplateColumns": "repeat(2,minmax(0,1fr))"
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-26",
+          "type": "element",
+          "tag": "img",
+          "props": {
+            "style": {
+              "display": "block",
+              "width": "100%",
+              "height": 388,
+              "objectFit": "cover"
+            },
+            "imageId": "detail",
+            "alt": "detail 작품 사진"
+          },
+          "children": []
+        },
+        {
+          "id": "demo-node-34",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "padding": "36px",
+              "display": "flex",
+              "flexDirection": "column",
+              "justifyContent": "center"
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-33",
+              "type": "element",
+              "tag": "div",
+              "props": {
+                "style": {}
+              },
+              "children": [
+                {
+                  "id": "demo-node-28",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 10,
+                      "fontWeight": 700,
+                      "lineHeight": 1.5,
+                      "color": "#8f9ca0",
+                      "letterSpacing": 1.2,
+                      "marginBottom": 12
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-27",
+                      "type": "text",
+                      "value": "표면과 문양"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-30",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 26,
+                      "fontWeight": 700,
+                      "lineHeight": 1.3,
+                      "color": "#fff",
+                      "letterSpacing": -1,
+                      "marginBottom": 20
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-29",
+                      "type": "text",
+                      "value": "한지 선면 위의 매화"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-32",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#d5d9de"
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-31",
+                      "type": "text",
+                      "value": "흰 한지 선면 위에 검은 먹과 분홍빛 매화가 대나무 뼈대 사이로 이어집니다. 선면의 결과 문양의 흐름이 한 장의 그림처럼 읽힙니다."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-04-palette-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#eef1f0",
+          "color": "#121c2a",
+          "padding": "48px 54px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "display": "grid",
+          "gridTemplateColumns": "repeat(2,minmax(0,1fr))",
+          "gap": 36,
+          "alignItems": "center",
+          "paddingTop": 64,
+          "paddingBottom": 64
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-64",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-62",
+              "type": "element",
+              "tag": "div",
+              "props": {
+                "style": {}
+              },
+              "children": [
+                {
+                  "id": "demo-node-57",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 10,
+                      "fontWeight": 700,
+                      "lineHeight": 1.5,
+                      "color": "#414b58",
+                      "letterSpacing": 1.2,
+                      "marginBottom": 12
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-56",
+                      "type": "text",
+                      "value": "색채"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-59",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 28,
+                      "fontWeight": 700,
+                      "lineHeight": 1.3,
+                      "color": "#121c2a",
+                      "letterSpacing": -1,
+                      "marginBottom": 20
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-58",
+                      "type": "text",
+                      "value": "흰 한지와 먹, 분홍 매화"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-61",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#414b58"
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-60",
+                      "type": "text",
+                      "value": "부채의 색은 흰 한지, 검은 먹, 분홍 매화 세 가지로 정리됩니다. 대나무의 자연스러운 색이 이 세 가지 색을 받쳐줍니다."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "demo-node-63",
+              "type": "element",
+              "tag": "div",
+              "props": {
+                "style": {
+                  "display": "grid",
+                  "gridTemplateColumns": "repeat(2,minmax(0,1fr))",
+                  "gap": 15,
+                  "marginTop": 32
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-node-41",
+                  "type": "element",
+                  "tag": "div",
+                  "props": {
+                    "style": {
+                      "display": "grid",
+                      "gridTemplateColumns": "17px minmax(0,1fr)",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "borderWidth": "1px 0 0",
+                      "borderStyle": "solid",
+                      "borderColor": "#d5e1e3",
+                      "paddingTop": 10
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-node-35",
+                      "type": "element",
+                      "tag": "span",
+                      "props": {
+                        "style": {
+                          "width": 17,
+                          "height": 17,
+                          "borderRadius": 9,
+                          "backgroundColor": "#8c9b9d"
+                        }
+                      },
+                      "children": []
+                    },
+                    {
+                      "id": "demo-node-40",
+                      "type": "element",
+                      "tag": "div",
+                      "props": {
+                        "style": {}
+                      },
+                      "children": [
+                        {
+                          "id": "demo-node-37",
+                          "type": "element",
+                          "tag": "p",
+                          "props": {
+                            "style": {
+                              "margin": 0,
+                              "fontSize": 12,
+                              "fontWeight": 700,
+                              "lineHeight": 1.75,
+                              "color": "#414b58"
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "demo-text-36",
+                              "type": "text",
+                              "value": "흰 한지"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "demo-node-39",
+                          "type": "element",
+                          "tag": "p",
+                          "props": {
+                            "style": {
+                              "margin": 0,
+                              "fontSize": 12,
+                              "fontWeight": 400,
+                              "lineHeight": 1.75,
+                              "color": "#414b58"
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "demo-text-38",
+                              "type": "text",
+                              "value": "선면의 기본 배경"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-48",
+                  "type": "element",
+                  "tag": "div",
+                  "props": {
+                    "style": {
+                      "display": "grid",
+                      "gridTemplateColumns": "17px minmax(0,1fr)",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "borderWidth": "1px 0 0",
+                      "borderStyle": "solid",
+                      "borderColor": "#d5e1e3",
+                      "paddingTop": 10
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-node-42",
+                      "type": "element",
+                      "tag": "span",
+                      "props": {
+                        "style": {
+                          "width": 17,
+                          "height": 17,
+                          "borderRadius": 9,
+                          "backgroundColor": "#ebedef"
+                        }
+                      },
+                      "children": []
+                    },
+                    {
+                      "id": "demo-node-47",
+                      "type": "element",
+                      "tag": "div",
+                      "props": {
+                        "style": {}
+                      },
+                      "children": [
+                        {
+                          "id": "demo-node-44",
+                          "type": "element",
+                          "tag": "p",
+                          "props": {
+                            "style": {
+                              "margin": 0,
+                              "fontSize": 12,
+                              "fontWeight": 700,
+                              "lineHeight": 1.75,
+                              "color": "#414b58"
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "demo-text-43",
+                              "type": "text",
+                              "value": "검은 먹"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "demo-node-46",
+                          "type": "element",
+                          "tag": "p",
+                          "props": {
+                            "style": {
+                              "margin": 0,
+                              "fontSize": 12,
+                              "fontWeight": 400,
+                              "lineHeight": 1.75,
+                              "color": "#414b58"
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "demo-text-45",
+                              "type": "text",
+                              "value": "매화 가지와 줄기"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-55",
+                  "type": "element",
+                  "tag": "div",
+                  "props": {
+                    "style": {
+                      "display": "grid",
+                      "gridTemplateColumns": "17px minmax(0,1fr)",
+                      "gap": 10,
+                      "alignItems": "center",
+                      "borderWidth": "1px 0 0",
+                      "borderStyle": "solid",
+                      "borderColor": "#d5e1e3",
+                      "paddingTop": 10
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-node-49",
+                      "type": "element",
+                      "tag": "span",
+                      "props": {
+                        "style": {
+                          "width": 17,
+                          "height": 17,
+                          "borderRadius": 9,
+                          "backgroundColor": "#c5dbde"
+                        }
+                      },
+                      "children": []
+                    },
+                    {
+                      "id": "demo-node-54",
+                      "type": "element",
+                      "tag": "div",
+                      "props": {
+                        "style": {}
+                      },
+                      "children": [
+                        {
+                          "id": "demo-node-51",
+                          "type": "element",
+                          "tag": "p",
+                          "props": {
+                            "style": {
+                              "margin": 0,
+                              "fontSize": 12,
+                              "fontWeight": 700,
+                              "lineHeight": 1.75,
+                              "color": "#414b58"
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "demo-text-50",
+                              "type": "text",
+                              "value": "분홍 매화"
+                            }
+                          ]
+                        },
+                        {
+                          "id": "demo-node-53",
+                          "type": "element",
+                          "tag": "p",
+                          "props": {
+                            "style": {
+                              "margin": 0,
+                              "fontSize": 12,
+                              "fontWeight": 400,
+                              "lineHeight": 1.75,
+                              "color": "#414b58"
+                            }
+                          },
+                          "children": [
+                            {
+                              "id": "demo-text-52",
+                              "type": "text",
+                              "value": "꽃과 꽃봉오리"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-65",
+          "type": "element",
+          "tag": "img",
+          "props": {
+            "style": {
+              "display": "block",
+              "width": "100%",
+              "height": 330,
+              "objectFit": "cover"
+            },
+            "imageId": "packshot",
+            "alt": "packshot 작품 사진"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "section-05-usage_scene-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#121c2a",
+          "color": "#fff",
+          "padding": 0,
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "display": "grid",
+          "gridTemplateColumns": "minmax(0,350fr) minmax(0,316fr)",
+          "maxWidth": 774,
+          "margin": "0 auto"
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-75",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "padding": "48px 36px"
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-74",
+              "type": "element",
+              "tag": "div",
+              "props": {
+                "style": {}
+              },
+              "children": [
+                {
+                  "id": "demo-node-67",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 10,
+                      "fontWeight": 700,
+                      "lineHeight": 1.5,
+                      "color": "#8f9ca0",
+                      "letterSpacing": 1.2,
+                      "marginBottom": 12
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-66",
+                      "type": "text",
+                      "value": "사용 장면"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-71",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 30,
+                      "fontWeight": 700,
+                      "lineHeight": 1.3,
+                      "color": "#fff",
+                      "letterSpacing": -1,
+                      "marginBottom": 20
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-68",
+                      "type": "text",
+                      "value": "손에 들면"
+                    },
+                    {
+                      "id": "demo-node-69",
+                      "type": "element",
+                      "tag": "br",
+                      "props": {
+                        "style": {}
+                      },
+                      "children": []
+                    },
+                    {
+                      "id": "demo-text-70",
+                      "type": "text",
+                      "value": "그림이 되는 부채"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-73",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#d5d9de",
+                      "maxWidth": 230
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-72",
+                      "type": "text",
+                      "value": "부채를 펼치면 선면의 매화가 손안에서 그림이 됩니다. 부채로 바람을 부는 순간에도 선면의 문양이 함께 움직입니다."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-76",
+          "type": "element",
+          "tag": "img",
+          "props": {
+            "style": {
+              "display": "block",
+              "width": "100%",
+              "height": 310,
+              "objectFit": "contain",
+              "marginTop": 13
+            },
+            "imageId": "lifestyle",
+            "alt": "lifestyle 작품 사진"
+          },
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "section-06-gallery-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#eef1f0",
+          "color": "#121c2a",
+          "padding": "48px 54px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "paddingBottom": 0
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-83",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-78",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#414b58",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-77",
+                  "type": "text",
+                  "value": "상세 보기"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-80",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 20,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#121c2a",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-79",
+                  "type": "text",
+                  "value": "부채의 각도"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-82",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-81",
+                  "type": "text",
+                  "value": "부채의 전체 형태와 선면의 매화 문양, 대나무 뼈대의 결을 각도별로 살펴봅니다."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-87",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "display": "grid",
+              "gridTemplateColumns": "repeat(3,minmax(0,1fr))",
+              "gap": 8,
+              "marginTop": 28
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-84",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 208,
+                  "objectFit": "cover"
+                },
+                "imageId": "gallery-1",
+                "alt": "detail 작품 사진"
+              },
+              "children": []
+            },
+            {
+              "id": "demo-node-85",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 208,
+                  "objectFit": "cover"
+                },
+                "imageId": "gallery-2",
+                "alt": "detail-02 작품 사진"
+              },
+              "children": []
+            },
+            {
+              "id": "demo-node-86",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 208,
+                  "objectFit": "cover"
+                },
+                "imageId": "gallery-3",
+                "alt": "detail-03 작품 사진"
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "demo-node-90",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "display": "grid",
+              "gridTemplateColumns": "repeat(2,minmax(0,1fr))",
+              "gap": 8,
+              "marginTop": 8
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-88",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 272,
+                  "objectFit": "contain",
+                  "backgroundColor": "#fff"
+                },
+                "imageId": "gallery-4",
+                "alt": "lifestyle-02 작품 사진"
+              },
+              "children": []
+            },
+            {
+              "id": "demo-node-89",
+              "type": "element",
+              "tag": "img",
+              "props": {
+                "style": {
+                  "display": "block",
+                  "width": "100%",
+                  "height": 272,
+                  "objectFit": "contain",
+                  "backgroundColor": "#fff"
+                },
+                "imageId": "gallery-5",
+                "alt": "detail-05 작품 사진"
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-07-recommendation-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#fff",
+          "color": "#121c2a",
+          "padding": "48px 54px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "paddingBottom": 0
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-97",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-92",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#414b58",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-91",
+                  "type": "text",
+                  "value": "함께 보기"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-94",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 20,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#121c2a",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-93",
+                  "type": "text",
+                  "value": "전주 부채 시리즈"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-96",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-95",
+                  "type": "text",
+                  "value": "같은 제작 방식과 한지 선면으로 완성된 다른 문양의 부채를 함께 살펴보세요."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-119",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {
+              "display": "grid",
+              "gridTemplateColumns": "repeat(3,minmax(0,1fr))",
+              "gap": 12,
+              "marginTop": 28
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-104",
+              "type": "element",
+              "tag": "article",
+              "props": {
+                "style": {
+                  "padding": "22px 24px 28px",
+                  "backgroundColor": "#ebedef"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-node-99",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#414b58",
+                      "marginBottom": 10
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-98",
+                      "type": "text",
+                      "value": "01"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-101",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 18,
+                      "fontWeight": 700,
+                      "lineHeight": 1.75,
+                      "color": "#121c2a",
+                      "marginBottom": 4
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-100",
+                      "type": "text",
+                      "value": "매화 문양"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-103",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#414b58"
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-102",
+                      "type": "text",
+                      "value": "흰 한지 선면 위에 검은 먹으로 그린 가지와 분홍 매화 꽃·꽃봉오리가 대나무 뼈대 사이로 이어집니다."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "demo-node-111",
+              "type": "element",
+              "tag": "article",
+              "props": {
+                "style": {
+                  "padding": "22px 24px 28px",
+                  "backgroundColor": "#ebedef"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-node-106",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#414b58",
+                      "marginBottom": 10
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-105",
+                      "type": "text",
+                      "value": "02"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-108",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 18,
+                      "fontWeight": 700,
+                      "lineHeight": 1.75,
+                      "color": "#121c2a",
+                      "marginBottom": 4
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-107",
+                      "type": "text",
+                      "value": "대나무 뼈대"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-110",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#414b58"
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-109",
+                      "type": "text",
+                      "value": "부채의 중심에서 바깥으로 방사형으로 나가는 대나무 겉대·속대가 선면을 받칩니다."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "demo-node-118",
+              "type": "element",
+              "tag": "article",
+              "props": {
+                "style": {
+                  "padding": "22px 24px 28px",
+                  "backgroundColor": "#ebedef"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-node-113",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#414b58",
+                      "marginBottom": 10
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-112",
+                      "type": "text",
+                      "value": "03"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-115",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 18,
+                      "fontWeight": 700,
+                      "lineHeight": 1.75,
+                      "color": "#121c2a",
+                      "marginBottom": 4
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-114",
+                      "type": "text",
+                      "value": "한지 선면"
+                    }
+                  ]
+                },
+                {
+                  "id": "demo-node-117",
+                  "type": "element",
+                  "tag": "p",
+                  "props": {
+                    "style": {
+                      "margin": 0,
+                      "fontSize": 16,
+                      "fontWeight": 400,
+                      "lineHeight": 1.75,
+                      "color": "#414b58"
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "demo-text-116",
+                      "type": "text",
+                      "value": "부채의 선면은 흰 한지로 만들어져 매끄럽고 밝은 배경을 이룹니다."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-08-notice-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#121c2a",
+          "color": "#fff",
+          "padding": "48px 54px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "minHeight": 294,
+          "paddingTop": 44,
+          "paddingBottom": 44
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-126",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-121",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#8f9ca0",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-120",
+                  "type": "text",
+                  "value": "관리 안내"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-123",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 18,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#fff",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-122",
+                  "type": "text",
+                  "value": "부채를 오래 쓰는 방법"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-125",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 15,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#d5d9de"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-124",
+                  "type": "text",
+                  "value": "펼칠 때는 아래에서 위로 천천히 펴 주세요. 사용 후에는 접어 직사광선과 습기를 피해 보관하면 오래 쓸 수 있습니다. 물티슈·물세척은 한지가 상하니 피해 주세요."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "demo-node-133",
+          "type": "element",
+          "tag": "ul",
+          "props": {
+            "style": {
+              "margin": "20px 0 0",
+              "padding": 0
+            }
+          },
+          "children": [
+            {
+              "id": "demo-node-128",
+              "type": "element",
+              "tag": "li",
+              "props": {
+                "style": {
+                  "fontSize": 15,
+                  "lineHeight": 1.75,
+                  "color": "#d5d9de"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-127",
+                  "type": "text",
+                  "value": "•  아래에서 위로 천천히 펴기"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-130",
+              "type": "element",
+              "tag": "li",
+              "props": {
+                "style": {
+                  "fontSize": 15,
+                  "lineHeight": 1.75,
+                  "color": "#d5d9de"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-129",
+                  "type": "text",
+                  "value": "•  접어 직사광선·습기 피하기"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-132",
+              "type": "element",
+              "tag": "li",
+              "props": {
+                "style": {
+                  "fontSize": 15,
+                  "lineHeight": 1.75,
+                  "color": "#d5d9de"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-131",
+                  "type": "text",
+                  "value": "•  물티슈·물세척 금지"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "section-09-closing-root",
+      "type": "element",
+      "tag": "section",
+      "props": {
+        "style": {
+          "backgroundColor": "#eef1f0",
+          "color": "#121c2a",
+          "padding": "68px 150px",
+          "borderWidth": "1px 0 0",
+          "borderStyle": "solid",
+          "borderColor": "#dce2e3",
+          "textAlign": "center",
+          "minHeight": 280
+        }
+      },
+      "children": [
+        {
+          "id": "demo-node-140",
+          "type": "element",
+          "tag": "div",
+          "props": {
+            "style": {}
+          },
+          "children": [
+            {
+              "id": "demo-node-135",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 10,
+                  "fontWeight": 700,
+                  "lineHeight": 1.5,
+                  "color": "#414b58",
+                  "letterSpacing": 1.2,
+                  "marginBottom": 12
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-134",
+                  "type": "text",
+                  "value": "마무리"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-137",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 30,
+                  "fontWeight": 700,
+                  "lineHeight": 1.3,
+                  "color": "#121c2a",
+                  "letterSpacing": -1,
+                  "marginBottom": 20
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-136",
+                  "type": "text",
+                  "value": "한 획의 차이가 만드는 부채"
+                }
+              ]
+            },
+            {
+              "id": "demo-node-139",
+              "type": "element",
+              "tag": "p",
+              "props": {
+                "style": {
+                  "margin": 0,
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "lineHeight": 1.75,
+                  "color": "#414b58"
+                }
+              },
+              "children": [
+                {
+                  "id": "demo-text-138",
+                  "type": "text",
+                  "value": "매화를 한 획씩 직접 그리기 때문에 같은 부채가 하나도 없습니다. 전주 합죽선 매화선은 손의 흔적이 선면에 남은 부채입니다."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,25 +1,37 @@
 "use client";
-import { useId, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 interface StudioHelpProps {
   api?: boolean;
+  mvp?: boolean;
   step: number | null;
   onStepChange: (step: number | null) => void;
 }
 
 export function StudioHelp({
   api = false,
+  mvp = false,
   step,
   onStepChange,
 }: StudioHelpProps) {
   const titleId = useId();
   const trigger = useRef<HTMLButtonElement>(null);
+  const container = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!mvp || step === null) return;
+    const outside = (event: PointerEvent) => {
+      if (!container.current?.contains(event.target as Node))
+        onStepChange(null);
+    };
+    window.addEventListener("pointerdown", outside);
+    return () => window.removeEventListener("pointerdown", outside);
+  }, [mvp, step, onStepChange]);
   const close = () => {
     onStepChange(null);
     trigger.current?.focus();
   };
   return (
-    <div className="ss-help">
+    <div className="ss-help" ref={container}>
       <button
         ref={trigger}
         type="button"
@@ -71,6 +83,7 @@ export function StudioHelp({
             </button>
             <button
               type="button"
+              disabled={mvp}
               onClick={() => (step === 2 ? close() : onStepChange(step + 1))}
             >
               {["튜토리얼 시작하기", "다음", "완료"][step]}
