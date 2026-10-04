@@ -156,7 +156,7 @@ for (const id of ["1", "2"]) {
     ).toContainText("직접 입력한 작품명");
     await expect(
       preview.getByRole("region", { name: "작품 구매 정보" }),
-    ).toContainText("120,000원");
+    ).toContainText("10,000원");
     await page.getByRole("button", { name: "모바일", exact: true }).click();
     await expect(page.locator(".ss-review-device")).toHaveClass(/mobile/);
     await expect(

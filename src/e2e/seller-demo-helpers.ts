@@ -12,10 +12,9 @@ export async function startSellerDemo(
   if (productName)
     await page.getByLabel("상품명", { exact: true }).fill(productName);
   await page.getByRole("button", { name: "생성하기", exact: true }).click();
-  const basic = page.getByRole("dialog", { name: "상품 기본정보" });
-  await basic.getByLabel("판매 가격 (원) *", { exact: true }).fill("120000");
-  await basic.getByLabel("재고 (개) *", { exact: true }).fill("5");
-  await basic.getByRole("button", { name: "입력하고 생성하기" }).click();
+  await expect(page.getByRole("dialog", { name: "상품 기본정보" })).toHaveCount(
+    0,
+  );
   await expect(
     page.getByRole("heading", {
       name: "AI가 상세페이지 초안을 만들고 있어요.",

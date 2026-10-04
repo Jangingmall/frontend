@@ -22,6 +22,7 @@ export function createSellerDemoRuntime(id: SellerDemoId, session: string) {
       uploadPublicImage(file, purpose, fetcher),
     scope: `seller-demo-${id}-${session}`,
     demo: true,
+    fixedSale: { price: 10000, stock: 1 },
     studioUrl: () => `/seller/products/new/${id}`,
   };
 }
