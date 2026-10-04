@@ -55,8 +55,8 @@ export function ServerStudioInput({
     const title = String(form.get("productName") ?? "").trim();
     const howMade = String(form.get("howMade") ?? "").trim();
     const careTips = String(form.get("careTips") ?? "").trim();
-    const price = Number(form.get("price")),
-      stock = Number(form.get("stock"));
+    const price = runtime.fixedSale?.price ?? Number(form.get("price")),
+      stock = runtime.fixedSale?.stock ?? Number(form.get("stock"));
     if (
       !title ||
       title.length > 15 ||
@@ -189,7 +189,7 @@ export function ServerStudioInput({
         onSubmit={(event) => {
           event.preventDefault();
           if (!validateFields()) return;
-          if (!created.current) {
+          if (!created.current && !runtime.fixedSale) {
             setError("");
             setBasicOpen(true);
             return;
@@ -381,65 +381,67 @@ export function ServerStudioInput({
         </fieldset>
       </form>
       {toast && <Toast className="sa-input-toast">{toast.message}</Toast>}
-      <Dialog
-        open={basicOpen}
-        onOpenChange={(open) => {
-          if (!mutation.isPending) setBasicOpen(open);
-        }}
-        title="상품 기본정보"
-        description="새 상품의 판매 가격과 재고를 입력하면 상세페이지 생성을 시작합니다."
-      >
-        <form
-          className="ss-shell sa-basic-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            submit(new FormData(event.currentTarget));
+      {!runtime.fixedSale && (
+        <Dialog
+          open={basicOpen}
+          onOpenChange={(open) => {
+            if (!mutation.isPending) setBasicOpen(open);
           }}
+          title="상품 기본정보"
+          description="새 상품의 판매 가격과 재고를 입력하면 상세페이지 생성을 시작합니다."
         >
-          <fieldset disabled={mutation.isPending}>
-            <label className="ss-field">
-              판매 가격 (원) *
-              <input
-                aria-label="판매 가격 (원) *"
-                name="price"
-                type="number"
-                min={1}
-                max={2147483647}
-                step={1}
-                required
-                readOnly={hasProduct}
-              />
-            </label>
-            <label className="ss-field">
-              재고 (개) *
-              <input
-                aria-label="재고 (개) *"
-                name="stock"
-                type="number"
-                min={0}
-                max={2147483647}
-                step={1}
-                required
-                readOnly={hasProduct}
-              />
-            </label>
-            {error && (
-              <p role="alert" className="ss-error">
-                {error}
-                {hasProduct
-                  ? " 상품은 등록되어 있으며 재시도 시 같은 상품을 사용합니다."
-                  : ""}
-              </p>
-            )}
-            {mutation.isPending && <p role="status">{phase}</p>}
-            <div className="ss-form-actions">
-              <button type="submit" className="ss-button ss-primary">
-                {mutation.isPending ? phase : "입력하고 생성하기"}
-              </button>
-            </div>
-          </fieldset>
-        </form>
-      </Dialog>
+          <form
+            className="ss-shell sa-basic-form"
+            onSubmit={(event) => {
+              event.preventDefault();
+              submit(new FormData(event.currentTarget));
+            }}
+          >
+            <fieldset disabled={mutation.isPending}>
+              <label className="ss-field">
+                판매 가격 (원) *
+                <input
+                  aria-label="판매 가격 (원) *"
+                  name="price"
+                  type="number"
+                  min={1}
+                  max={2147483647}
+                  step={1}
+                  required
+                  readOnly={hasProduct}
+                />
+              </label>
+              <label className="ss-field">
+                재고 (개) *
+                <input
+                  aria-label="재고 (개) *"
+                  name="stock"
+                  type="number"
+                  min={0}
+                  max={2147483647}
+                  step={1}
+                  required
+                  readOnly={hasProduct}
+                />
+              </label>
+              {error && (
+                <p role="alert" className="ss-error">
+                  {error}
+                  {hasProduct
+                    ? " 상품은 등록되어 있으며 재시도 시 같은 상품을 사용합니다."
+                    : ""}
+                </p>
+              )}
+              {mutation.isPending && <p role="status">{phase}</p>}
+              <div className="ss-form-actions">
+                <button type="submit" className="ss-button ss-primary">
+                  {mutation.isPending ? phase : "입력하고 생성하기"}
+                </button>
+              </div>
+            </fieldset>
+          </form>
+        </Dialog>
+      )}
     </>
   );
 }
