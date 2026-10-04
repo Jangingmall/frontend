@@ -136,7 +136,7 @@ export function ProductPurchasePanel({
     setLastSelectionKey(selection.key);
   }
 
-  function validatePurchase(confirmLogin = false) {
+  function validatePurchase(confirmLogin = false, allowGuest = false) {
     if (!lines.length) {
       setHasError(true);
       if (missingGroups.length) {
@@ -150,7 +150,7 @@ export function ProductPurchasePanel({
       } else onNotify("구매할 옵션을 다시 선택해 주세요.");
       return false;
     }
-    if (!isAuthenticated) {
+    if (!isAuthenticated && !allowGuest) {
       onRequireLogin(confirmLogin);
       return false;
     }
@@ -238,8 +238,16 @@ export function ProductPurchasePanel({
       void handleLivePurchase(checkout);
       return;
     }
-    if (!validatePurchase(true) || busy) return;
+    const isChatbotPreviewCheckout =
+      checkout && product.isMock && product.id === 900002;
+    if (!validatePurchase(true, isChatbotPreviewCheckout) || busy) return;
     const snapshot = toCartPreviewLines(product, lines);
+    if (isChatbotPreviewCheckout) {
+      // 챗봇 시연 상품의 바로 구매는 계정 장바구니를 거치지 않고 MSW 주문서로 전달한다.
+      usePurchasePreviewStore.getState().beginCheckout(snapshot);
+      router.push(`/checkout/${PURCHASE_PREVIEW_ORDER_ID}` as Route);
+      return;
+    }
     actions.cart.mutate(
       lines.map(({ choices, quantity }) => ({ choices, quantity })),
       {

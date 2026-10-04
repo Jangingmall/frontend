@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Toast } from "@/components/ui/toast";
+import { publicEnv } from "@/lib/env";
 import { usePurchasePreviewStore } from "@/stores/purchase-preview";
 
 import type { OrderCompleteOutcome } from "./order-complete-state";
@@ -38,7 +39,10 @@ export function OrderCompleteRoute({ outcome }: OrderCompleteRouteProps) {
       <OrderCompletePage
         outcome={outcome}
         totalAmount={checkoutTotal ?? (totalAmount || undefined)}
-        onViewOrders={() => setShowOrdersNotice(true)}
+        onViewOrders={() => {
+          if (publicEnv.apiMocking) setShowOrdersNotice(true);
+          else router.push("/mypage/orders");
+        }}
         onContinueBrowsing={() => router.push("/")}
       />
       {showOrdersNotice ? (

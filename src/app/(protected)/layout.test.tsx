@@ -6,19 +6,47 @@ import { useAuthStore } from "@/stores/auth";
 import ProtectedLayout from "./layout";
 
 const replace = vi.fn();
+const route = vi.hoisted(() => ({ pathname: "/mypage/orders" }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace }),
-  usePathname: () => "/mypage/orders",
+  usePathname: () => route.pathname,
 }));
 
 beforeEach(() => {
   replace.mockClear();
+  route.pathname = "/mypage/orders";
   window.history.replaceState(null, "", "/");
   useAuthStore.setState({ status: "loading", accessToken: null, user: null });
 });
 
 describe("ProtectedLayout", () => {
+  it.each([
+    "/checkout/ui-preview-order",
+    "/checkout/ui-preview-order/complete",
+  ])("시연 결제 경로 %s는 로그인 없이 표시한다", (pathname) => {
+    route.pathname = pathname;
+    useAuthStore.setState({ status: "anonymous" });
+    render(<ProtectedLayout>시연 결제 화면</ProtectedLayout>);
+    expect(screen.getByText("시연 결제 화면")).toBeVisible();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "/checkout/new",
+    "/checkout/123/complete",
+    "/checkout/ui-preview-order/other",
+    "/mypage/orders",
+  ])("실제·알 수 없는 경로 %s는 계속 로그인을 요구한다", (pathname) => {
+    route.pathname = pathname;
+    useAuthStore.setState({ status: "anonymous" });
+    render(<ProtectedLayout>보호된 화면</ProtectedLayout>);
+    expect(screen.queryByText("보호된 화면")).not.toBeInTheDocument();
+    expect(replace).toHaveBeenCalledWith(
+      `/login?returnUrl=${encodeURIComponent(pathname)}`,
+    );
+  });
+
   it("로그인 뒤 결제 콜백과 선택 상품의 쿼리 파라미터를 보존한다", () => {
     window.history.replaceState(
       null,

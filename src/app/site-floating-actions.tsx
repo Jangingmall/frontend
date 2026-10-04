@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { ChatPanel } from "@/components/chatbot/ChatPanel";
@@ -8,7 +7,6 @@ import { FloatingActions } from "@/components/common/floating-actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { CHAT_SUGGESTION_POOL } from "@/constants/chatbot";
-import { publicEnv } from "@/lib/env";
 import { ApiError } from "@/lib/http/api-error";
 import {
   useCreateChatSessionMutation,
@@ -30,7 +28,7 @@ interface StoredSession {
   messages: ChatMessage[];
 }
 
-// 로그인 사용자의 대화는 계정별로 격리한다. 로컬 MSW 게스트는 현재 화면에서만
+// 로그인 사용자의 대화는 계정별로 격리한다. 두 모드의 MSW 게스트는 현재 화면에서만
 // 시연하며 새로고침 시 초기화한다. MSW 세션도 메모리에만 있으므로 게스트 키만
 // 저장해도 새로고침 후 유효한 서버 세션을 복원할 수 없다.
 function sessionStorageKey(userId: number | null): string | null {
@@ -90,14 +88,12 @@ function SiteFloatingActionsInner({
   const status = useAuthStore((state) => state.status);
   const role = useAuthStore((state) => state.user?.role);
   const userId = useAuthStore((state) => state.user?.id ?? null);
-  const router = useRouter();
   const chatPanelRef = useRef<HTMLDivElement>(null);
   // 판매자도 백엔드 ROLE_USER 권한을 포함하므로 기존 추천 챗봇을 사용할 수 있다.
   const isWrongRole =
     status === "authenticated" && role !== "USER" && role !== "ARTISAN";
 
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isEndConfirmOpen, setIsEndConfirmOpen] = useState(false);
   // sessionStorage 캐시는 lazy initializer로 한 번만 동기 읽기 — 마운트 후 effect로
   // 따라 채우면 setState-in-effect(cascading render, react-hooks/set-state-in-effect)에
@@ -193,19 +189,8 @@ function SiteFloatingActionsInner({
       return;
     }
     if (status === "loading" || isWrongRole) return; // 진입점이 이미 숨겨져 있는 방어용
-    if (status !== "authenticated" && !publicEnv.apiMocking) {
-      setIsLoginOpen(true);
-      return;
-    }
+    // 챗봇은 두 데이터 모드 모두 MSW 시연이므로 실제 로그인 없이 이용한다.
     setIsOpen(true);
-  }
-
-  function handleLogin() {
-    const returnUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    const loginUrl =
-      `/login?returnUrl=${encodeURIComponent(encodeURIComponent(returnUrl))}` as const;
-    if (window.location.hash) window.location.assign(loginUrl);
-    else router.push(loginUrl);
   }
 
   function handleRequestClose() {
@@ -331,35 +316,6 @@ function SiteFloatingActionsInner({
           onRequestClose={handleRequestClose}
         />
       )}
-      <Dialog
-        open={isLoginOpen}
-        onOpenChange={setIsLoginOpen}
-        title="로그인 후 이용 가능한 서비스입니다"
-        description="로그인 페이지로 이동하시겠습니까?"
-        variant="confirmation"
-      >
-        <div className="flex gap-2.5">
-          <Button
-            variant="jade"
-            size="xl"
-            className="flex-1 border-border-neutral-subtle"
-            onClick={() => setIsLoginOpen(false)}
-          >
-            취소
-          </Button>
-          <Button
-            variant="solid"
-            size="xl"
-            className="flex-1"
-            onClick={() => {
-              setIsLoginOpen(false);
-              handleLogin();
-            }}
-          >
-            로그인하기
-          </Button>
-        </div>
-      </Dialog>
       <Dialog
         open={isEndConfirmOpen}
         onOpenChange={setIsEndConfirmOpen}
