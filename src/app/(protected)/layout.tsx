@@ -4,6 +4,7 @@ import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 
+import { isPurchasePreviewRoute } from "@/lib/purchase-preview-route";
 import { useAuthStore } from "@/stores/auth";
 
 /**
@@ -17,18 +18,19 @@ export default function ProtectedLayout({ children }: { children: ReactNode }) {
   const status = useAuthStore((state) => state.status);
   const router = useRouter();
   const pathname = usePathname();
+  const isPreview = isPurchasePreviewRoute(pathname);
 
   useEffect(() => {
-    if (status === "anonymous") {
+    if (status === "anonymous" && !isPreview) {
       // 쿼리스트링이 붙은 템플릿 리터럴이라 `/login` 라우트 존재 여부와 무관하게
       // typedRoutes가 검증 못 한다 — 캐스팅은 계속 필요하다.
       router.replace(
         `/login?returnUrl=${encodeURIComponent(pathname + window.location.search)}` as Route,
       );
     }
-  }, [status, pathname, router]);
+  }, [status, pathname, router, isPreview]);
 
-  if (status !== "authenticated") {
+  if (status !== "authenticated" && !isPreview) {
     // TODO: 공용 FullPageLoading/Skeleton 컴포넌트가 준비되면 교체. 지금은 최소 접근성 fallback.
     return (
       <output

@@ -48,6 +48,55 @@ function setup(id: number, overrides: Partial<ProductDetail> = {}) {
   return { onNotify, onRequireLogin, client };
 }
 
+it.each([false, true])(
+  "챗봇 찻잔은 로그인 없이 선택한 옵션·수량으로 시연 주문서를 연다 (MSW=%s)",
+  async (apiMocking) => {
+    Object.assign(publicEnv, { apiMocking });
+    const { onRequireLogin } = setup(900002);
+    const user = userEvent.setup();
+    await user.click(
+      screen.getByRole("combobox", { name: "찻잔 종류 (필수)" }),
+    );
+    for (const name of ["찻잔 단품", "청자색", "소 - 80ml", "포장 없음"]) {
+      await user.click(await screen.findByRole("option", { name }));
+    }
+    await user.click(screen.getByRole("button", { name: "증가" }));
+    await user.click(screen.getByRole("button", { name: "구매하기" }));
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith("/checkout/ui-preview-order"),
+    );
+    expect(onRequireLogin).not.toHaveBeenCalled();
+    expect(usePurchasePreviewStore.getState().checkoutLines).toEqual([
+      expect.objectContaining({
+        productId: 900002,
+        productName: "청자 분청 찻잔",
+        quantity: 2,
+        unitPrice: 120000,
+        options: [
+          "찻잔 종류: 찻잔 단품",
+          "색상: 청자색",
+          "사이즈: 소 - 80ml",
+          "선물 옵션: 포장 없음",
+        ],
+      }),
+    ]);
+    expect(useAuthStore.getState().accessToken).toBeNull();
+    expect(usePurchasePreviewStore.getState().lines).toEqual([]);
+  },
+);
+
+it("동일한 ID라도 실제 상품 구매에는 로그인이 필요하다", async () => {
+  Object.assign(publicEnv, { apiMocking: false });
+  const { onRequireLogin } = setup(900002, {
+    isMock: false,
+    optionGroups: [],
+    variants: null,
+  });
+  await userEvent.click(screen.getByRole("button", { name: "구매하기" }));
+  expect(onRequireLogin).toHaveBeenCalledWith(true);
+  expect(push).not.toHaveBeenCalled();
+});
+
 it.each([true])(
   "blocks missing required options for isMock=%s and focuses the first select",
   (isMock) => {

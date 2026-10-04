@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CHAT_SESSIONS } from "@/api/chatbot/mock/fixtures";
 import { mockError } from "@/mocks/envelope";
+import { createRuntimeHandlers } from "@/mocks/runtime-handlers";
 import { server } from "@/mocks/server";
 import { useAuthStore } from "@/stores/auth";
 
@@ -21,15 +22,8 @@ vi.mock("@/lib/env", async (importOriginal) => {
   return { ...actual, publicEnv: { ...actual.publicEnv, apiMocking: false } };
 });
 
-const push = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push }),
-}));
-
 beforeEach(() => {
   vi.restoreAllMocks();
-  push.mockClear();
   window.sessionStorage.clear();
   useAuthStore.getState().clear();
 });
@@ -78,26 +72,24 @@ describe("SiteFloatingActions", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("비로그인 상태에서 챗봇 버튼을 누르면 로그인 유도 다이얼로그가 뜬다", () => {
+  it("API 모드의 비로그인 사용자도 MSW 추천과 찻잔 시연 링크를 받는다", async () => {
+    server.use(...createRuntimeHandlers("api"));
     setup();
     fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
-
-    expect(
-      screen.getByText("로그인 후 이용 가능한 서비스입니다"),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByPlaceholderText("궁금한 내용을 입력해주세요."),
-    ).not.toBeInTheDocument();
-  });
-
-  it("로그인 다이얼로그에서 로그인하기를 누르면 returnUrl과 함께 /login으로 이동한다", () => {
-    setup();
-    fireEvent.click(screen.getByRole("button", { name: "미담 챗봇" }));
-    fireEvent.click(screen.getByRole("button", { name: "로그인하기" }));
-
-    expect(push).toHaveBeenCalledWith(
-      expect.stringContaining("/login?returnUrl="),
+    fireEvent.change(
+      screen.getByPlaceholderText("궁금한 내용을 입력해주세요."),
+      { target: { value: "친구에게 줄 선물을 추천해줘" } },
     );
+    fireEvent.click(screen.getByRole("button", { name: "전송" }));
+
+    expect(
+      await screen.findByRole("link", { name: "청자 분청 찻잔 상세 보기" }),
+    ).toHaveAttribute("href", "/products/청자-분청-찻잔-900002?preview=1");
+    expect(screen.getByText(/셰프 친구분의 개업/)).toBeInTheDocument();
+    expect(screen.getAllByRole("article")).toHaveLength(3);
+    expect(useAuthStore.getState().accessToken).toBeNull();
+    expect(useAuthStore.getState().user).toBeNull();
+    expect(window.sessionStorage.length).toBe(0);
   });
 
   it("로그인 상태에서 챗봇 버튼을 누르면 패널이 열린다", () => {
