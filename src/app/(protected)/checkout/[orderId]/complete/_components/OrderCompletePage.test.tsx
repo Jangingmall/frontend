@@ -20,6 +20,9 @@ describe("OrderCompletePage", () => {
       screen.getByRole("heading", { name: "주문이 완료되었습니다" }),
     ).toBeInTheDocument();
     expect(
+      screen.getByText("주문번호: MIDAM-20261005-482731"),
+    ).toBeInTheDocument();
+    expect(
       screen.getByText("장인이 주문을 확인한 후 제작을 시작할 예정입니다."),
     ).toBeInTheDocument();
     expect(screen.queryByText("가상계좌 정보")).not.toBeInTheDocument();

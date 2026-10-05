@@ -17,6 +17,8 @@ interface ProductCarouselSectionProps {
   /** 카드 개수(레이아웃 열 수와 일치). 베스트 5 / 신상품 4 — Figma 실측 카드 폭·행 간격도 다르다. */
   columns: 4 | 5;
   data?: Page<ProductSummary>;
+  /** 상세가 준비된 카드만 이동을 허용한다. 생략하면 모든 카드를 활성화한다. */
+  interactiveProductIds?: readonly number[];
 }
 
 /**
@@ -33,6 +35,7 @@ export function ProductCarouselSection({
   viewAllPreset,
   columns,
   data,
+  interactiveProductIds,
 }: ProductCarouselSectionProps) {
   if (!data?.items.length) return null;
 
@@ -63,6 +66,10 @@ export function ProductCarouselSection({
         {data.items.map((product, index) => (
           <div
             key={product.id}
+            inert={
+              interactiveProductIds !== undefined &&
+              !interactiveProductIds.includes(product.id)
+            }
             className={cn(
               "shrink-0",
               columns === 5

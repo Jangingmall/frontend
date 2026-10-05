@@ -57,6 +57,8 @@ export function isDemoFeatureRequest(path: string, method = "GET") {
     )
   )
     return true;
+  if (read && /^\/api\/mock\/home\/(?:best|promotions)$/.test(pathname))
+    return true;
   if (
     /^\/api\/mock\/products\/\d+\/(?:reviews|inquiries|restock|actions|cart-selections)$/.test(
       pathname,

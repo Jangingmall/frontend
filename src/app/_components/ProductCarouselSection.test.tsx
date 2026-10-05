@@ -73,3 +73,26 @@ describe("ProductCarouselSection", () => {
     expect(row?.firstElementChild).toHaveClass("w-36", "shrink-0", "xl:w-64");
   });
 });
+
+it("상세가 준비된 카드만 이동을 허용하고 나머지는 전시한다", () => {
+  const data = mapProductListPage(productListPage1, { page: 1, size: 5 });
+  render(
+    <ProductCarouselSection
+      title="베스트"
+      description="추천 작품"
+      viewAllPreset="best"
+      columns={5}
+      data={data}
+      interactiveProductIds={[data.items[0].id]}
+    />,
+  );
+  for (const [index, product] of data.items.entries()) {
+    const card = screen.getByText(product.name).closest("article")!;
+    if (index === 0) expect(card.closest("[inert]")).toBeNull();
+    else expect(card.closest("[inert]")).not.toBeNull();
+  }
+  expect(screen.getByRole("link", { name: "전체보기" })).toHaveAttribute(
+    "href",
+    "/products?preset=best",
+  );
+});

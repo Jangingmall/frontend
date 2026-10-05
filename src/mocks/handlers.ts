@@ -1,6 +1,7 @@
 import { getResponse, http, type HttpHandler } from "msw";
 
 import { chatbotHandlers } from "@/api/chatbot/mock/handlers";
+import { homeHandlers } from "@/api/home/mock/handlers";
 import { imageHandlers } from "@/api/images/mock/handlers";
 import { inquiryHandlers } from "@/api/inquiries/mock/handlers";
 import { memberHandlers } from "@/api/member/mock/handlers";
@@ -39,6 +40,7 @@ export const handlers: HttpHandler[] = [
   ...sellerDemoHandlers,
   ...sellerHandlers,
   ...extensionHandlers,
+  ...homeHandlers,
   ...productHandlers,
   ...productDetailHandlers,
   ...productDetailActionHandlers,
