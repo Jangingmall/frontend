@@ -4,11 +4,16 @@ import { expect, it, vi } from "vitest";
 import { server } from "@/mocks/server";
 import { GIFT_THEMES } from "@/types/gift-theme";
 
-import { fetchHomeDemoArtisans, fetchHomeDemoGifts } from "./demo-server";
+import {
+  fetchHomeDemoArtisans,
+  fetchHomeDemoBest,
+  fetchHomeDemoGifts,
+  fetchHomeDemoPromotions,
+} from "./demo-server";
 
 vi.mock("@/lib/env", () => ({ publicEnv: { apiMocking: false } }));
 
-it("API 모드의 홈은 네트워크 없이 장인과 모든 선물 테마를 MSW로 렌더링한다", async () => {
+it("API 모드의 홈은 전역 resolver·네트워크 없이 베스트·기획전·장인·선물을 렌더링한다", async () => {
   const network = vi.fn(() => {
     throw new Error("홈 시연은 네트워크를 사용하지 않는다");
   });
@@ -21,5 +26,7 @@ it("API 모드의 홈은 네트워크 없이 장인과 모든 선물 테마를 M
     expect(gifts.items).toHaveLength(3);
     expect(gifts.items.every((item) => item.isDemo)).toBe(true);
   }
+  expect((await fetchHomeDemoBest()).items).toHaveLength(5);
+  expect(await fetchHomeDemoPromotions()).toHaveLength(4);
   expect(network).not.toHaveBeenCalled();
 });

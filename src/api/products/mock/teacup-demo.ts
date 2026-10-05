@@ -278,8 +278,8 @@ export const teacupDemo: ProductDetailMockDto = {
       {
         type: "image",
         image: {
-          src: "/images/chatbot-demo/teacup-detail.png",
-          alt: "청자 분청 찻잔 작품 소개",
+          src: "/images/chatbot-demo/teacup-detail-clean.png",
+          alt: "청자 분청 찻잔 상품 상세 이미지",
           width: 774,
           height: 3535,
         },

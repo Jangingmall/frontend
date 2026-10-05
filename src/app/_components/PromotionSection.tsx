@@ -1,5 +1,5 @@
-import { PROMOTION_PRODUCTS } from "@/app/_lib/promotion-fixtures";
 import { ProductCard } from "@/components/product/ProductCard";
+import type { ProductSummary } from "@/types/product";
 
 import { SectionHeader } from "./SectionHeader";
 
@@ -12,9 +12,9 @@ import { SectionHeader } from "./SectionHeader";
  * `pointer-events-none`과 달리 Tab·Enter도 막는다) 시각은 `ProductCard` 그대로 유지한다.
  */
 export function PromotionSection({
-  items = PROMOTION_PRODUCTS,
+  items,
 }: {
-  items?: typeof PROMOTION_PRODUCTS;
+  items: readonly ProductSummary[];
 }) {
   return (
     <section

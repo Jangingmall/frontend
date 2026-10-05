@@ -2,10 +2,11 @@ import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import {
   fetchHomeDemoArtisans,
+  fetchHomeDemoBest,
   fetchHomeDemoGifts,
+  fetchHomeDemoPromotions,
 } from "@/api/home/demo-server";
 import { fetchProductCatalogue as fetchProductList } from "@/api/products/catalogue-server";
-import { publicEnv } from "@/lib/env";
 import { getQueryClient } from "@/lib/query/server";
 import { homeKeys } from "@/queries/home/keys";
 import { GIFT_THEMES } from "@/types/gift-theme";
@@ -25,9 +26,12 @@ export default async function HomePage() {
   const queryClient = getQueryClient();
 
   const [bestProducts, newProducts, promotions] = await Promise.all([
-    fetchProductList({ sort: "sales", size: 5 }).catch(() => undefined),
+    fetchHomeDemoBest().catch(() => undefined),
     fetchProductList({ sort: "newest", size: 4 }).catch(() => undefined),
-    fetchProductList({ sort: "wishlist", size: 4 }).catch(() => undefined),
+    fetchHomeDemoPromotions().catch((error: unknown) => {
+      console.error("홈 기획전 시연 데이터를 불러오지 못했습니다.", error);
+      return [];
+    }),
     queryClient.prefetchQuery({
       queryKey: homeKeys.gifts(INITIAL_GIFT_THEME),
       queryFn: () => fetchHomeDemoGifts(INITIAL_GIFT_THEME),
@@ -39,12 +43,11 @@ export default async function HomePage() {
       <HeroBanner />
       <ProductCarouselSection
         title="베스트"
-        description={
-          publicEnv.apiMocking ? "최근 4주 판매·조회 기준" : "베스트 상품 시연"
-        }
+        description="장인의 손길이 담긴 추천 작품"
         viewAllPreset="best"
         columns={5}
         data={bestProducts}
+        interactiveProductIds={[900002]}
       />
 
       <HydrationBoundary state={dehydrate(queryClient)}>
@@ -58,12 +61,7 @@ export default async function HomePage() {
         columns={4}
         data={newProducts}
       />
-      <div>
-        {!publicEnv.apiMocking && (
-          <p className="text-center text-body-s">기획전 시연</p>
-        )}
-        <PromotionSection items={promotions?.items ?? []} />
-      </div>
+      <PromotionSection items={promotions} />
 
       <SiteFloatingActions />
     </>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  isDemoFeatureRequest,
   isMockProductQuery,
   resolveDataMode,
   shouldMockRequest,
@@ -22,6 +23,11 @@ describe("두 데이터 모드의 요청 경계", () => {
     );
     expect(shouldMockRequest("msw", "/api/payments/confirm")).toBe(true);
     expect(shouldMockRequest("msw", "/other")).toBe(false);
+  });
+  it("API 모드에서도 홈 베스트·기획전은 MSW 전용 요청으로 유지한다", () => {
+    expect(isDemoFeatureRequest("/api/mock/home/best")).toBe(true);
+    expect(isDemoFeatureRequest("/api/mock/home/promotions")).toBe(true);
+    expect(isDemoFeatureRequest("/api/mock/home/best", "POST")).toBe(false);
   });
   it("실제 검색과 미지원 필터 조합을 명시적으로 구분한다", () => {
     expect(isMockProductQuery("api", { sort: "newest" })).toBe(false);
